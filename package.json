@@ -1,0 +1,12 @@
+{
+  "name": "chessai-engine-deps",
+  "private": true,
+  "description": "Runtime dependencies for ChessAI. Stockfish is provided as a WASM build driven over UCI by Node.js.",
+  "version": "0.1.0",
+  "dependencies": {
+    "stockfish": "19.0.0"
+  },
+  "scripts": {
+    "engine": "node node_modules/stockfish/bin/stockfish-19-lite-single.js"
+  }
+}

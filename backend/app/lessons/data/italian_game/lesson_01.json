@@ -1,0 +1,66 @@
+{
+  "id": "italian_01",
+  "title": "Italian Game — Basic Setup",
+  "description": "Meet the Italian Game: 1.e4 e5 2.Nf3 Nc6 3.Bc4. See it on the board, understand the ideas, then play the key move yourself.",
+  "difficulty": "beginner",
+  "concepts": ["center", "development", "king safety"],
+  "steps": [
+    {
+      "type": "teach",
+      "text": "Welcome! The **Italian Game** is one of the oldest and most instructive openings: 1.e4 e5 2.Nf3 Nc6 3.Bc4. White occupies the center, develops pieces quickly, and points the bishop at Black's weakest square, f7. Watch the moves first, then you'll try them yourself.",
+      "board": { "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "lock": true }
+    },
+    {
+      "type": "demonstrate",
+      "text": "Play the demonstration to see the Italian Game take shape move by move.",
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "moves": ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4"],
+      "comments": [
+        "1.e4 — grabs the center and opens lines for the bishop and queen.",
+        "1...e5 — Black mirrors, fighting for the center.",
+        "2.Nf3 — develops the knight and attacks the e5 pawn.",
+        "2...Nc6 — defends e5 and develops toward the center.",
+        "3.Bc4 — the Italian bishop! It eyes the f7 pawn, Black's most vulnerable point."
+      ],
+      "board": { "highlights": [ { "square": "f7", "color": "red" } ], "lock": true }
+    },
+    {
+      "type": "exercise",
+      "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+      "side": "white",
+      "prompt": "You're playing White after 1.e4 e5 2.Nf3 Nc6. Find the Italian bishop move.",
+      "hints": [
+        "Look at your light-squared bishop — it hasn't moved yet.",
+        "Which developing square also stares at Black's f7 pawn?",
+        "The Italian is 3.Bc4 — develop the bishop there."
+      ],
+      "advance_on": "accepted_move",
+      "accepted": ["Bc4"],
+      "continue_text": "That's it — 3.Bc4 is the Italian Game. The bishop develops with a purpose: pressure on f7 and quick castling behind it.",
+      "concepts": ["development", "center"]
+    },
+    {
+      "type": "exercise",
+      "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+      "side": "black",
+      "prompt": "Now you're Black after 1.e4 e5 2.Nf3 Nc6 3.Bc4. Continue your development — which natural move do you play?",
+      "hints": [
+        "Black needs to develop a piece and prepare the king's safety.",
+        "Two classical answers: bring out the king's knight or the king's bishop.",
+        "3...Nf6 (Two Knights) or 3...Bc5 (Giuoco Piano) are both main-line moves."
+      ],
+      "advance_on": "accepted_move",
+      "accepted": ["Nf6", "Bc5"],
+      "continue_text": "Correct — 3...Nf6 or 3...Bc5 are the two main replies, and both follow the same principles: develop, control the center, prepare to castle.",
+      "concepts": ["development", "king safety"]
+    },
+    {
+      "type": "teach",
+      "text": "You've learned the Italian Game setup: **control the center with e4, develop with Nf3, and place the bishop on c4 aiming at f7** — then castle quickly. Tomorrow we'll dig into *why* each move matters, move by move. Lesson complete!",
+      "board": { "fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3", "lock": true }
+    }
+  ],
+  "completion": {
+    "text": "Lesson complete! You played the Italian bishop move and answered Black's main development. Next up: why e4, Nf3, and Bc4 are played."
+  }
+}

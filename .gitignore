@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node (engine dependency — run `npm install` to fetch Stockfish)
+node_modules/
+package-lock.json
+
+# Local env config (Qwen endpoint, etc.)
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
