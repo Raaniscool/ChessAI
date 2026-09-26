@@ -71,6 +71,7 @@ def health() -> dict:
         "status": "ok" if engine_ok else "degraded",
         "engine": engine_ok,
         "teacher": get_teacher().name,
+        "teacher_model": get_settings().qwen_model or None,
         "courses": len(library.courses()),
         "lessons": len(library.lesson_ids()),
     }

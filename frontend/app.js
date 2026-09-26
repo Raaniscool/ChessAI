@@ -387,7 +387,7 @@ async function loadHealth() {
   const el = document.getElementById("health")
   try {
     const h = await api("/api/health")
-    el.textContent = `${h.engine ? "⚙ engine ✓" : "⚠ engine unavailable"} · teacher: ${h.teacher}` +
+    el.textContent = `${h.engine ? "⚙ engine ✓" : "⚠ engine unavailable"} · teacher: ${h.teacher === "qwen" ? `qwen (${h.teacher_model})` : "offline fallback"}` +
       ` · ${h.lessons} lesson${h.lessons === 1 ? "" : "s"}`
   } catch (err) {
     el.textContent = "⚠ server unreachable"

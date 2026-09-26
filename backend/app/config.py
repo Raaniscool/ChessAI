@@ -61,7 +61,12 @@ class Settings:
     qwen_base_url: str = _env("QWEN_BASE_URL", "http://localhost:11434/v1") or ""
     qwen_api_key: str = _env("QWEN_API_KEY", "ollama") or "ollama"
     qwen_model: str = _env("QWEN_MODEL", "") or ""
-    qwen_timeout: float = float(_env("QWEN_TIMEOUT", "60") or "60")
+    # Local models can take a while to load on the first request.
+    qwen_timeout: float = float(_env("QWEN_TIMEOUT", "120") or "120")
+    # Qwen3 "thinking" mode: auto (= off for qwen3 models), on, off.
+    # Thinking makes small local models much slower and adds no value here,
+    # because the chess facts come from Stockfish, not from the model.
+    qwen_thinking: str = (_env("QWEN_THINKING", "auto") or "auto").lower()
 
     # --- Server ---
     host: str = _env("HOST", "0.0.0.0") or "0.0.0.0"
@@ -79,6 +84,14 @@ class Settings:
         the app never pretends an LLM is available when it isn't.
         """
         return bool(self.qwen_model)
+
+    def qwen_disable_thinking(self) -> bool:
+        """Whether to send Qwen3's `/no_think` soft switch."""
+        if self.qwen_thinking in ("on", "true", "1", "yes"):
+            return False
+        if self.qwen_thinking in ("off", "false", "0", "no"):
+            return True
+        return "qwen3" in self.qwen_model.lower()
 
 
 _settings: Settings | None = None
