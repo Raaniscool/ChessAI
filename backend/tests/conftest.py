@@ -8,4 +8,5 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 # Tests must never write learner data into the repo, and must not depend on
 # whether the developer has a local Qwen configured (e.g. via `setx QWEN_MODEL`).
 os.environ["DATA_DIR"] = tempfile.mkdtemp(prefix="chessai-test-data-")
+os.environ["CHESSAI_DOTENV"] = "0"  # ignore the developer's .env (QWEN_MODEL etc.)
 os.environ.pop("QWEN_MODEL", None)

@@ -12,7 +12,7 @@ import time
 
 import httpx
 
-from .config import get_settings
+from .config import DOTENV_APPLIED, DOTENV_PATH, get_settings
 from .teacher.qwen import QwenTeacher, TeacherUnavailable
 
 
@@ -71,7 +71,8 @@ def speed_test(teacher) -> None:
 def main() -> int:
     s = get_settings()
     print(f"QWEN_BASE_URL = {s.qwen_base_url}")
-    print(f"QWEN_MODEL    = {s.qwen_model or '(not set)'}")
+    source = " (from .env)" if "QWEN_MODEL" in DOTENV_APPLIED else (" (from this shell)" if s.qwen_model else "")
+    print(f"QWEN_MODEL    = {s.qwen_model or '(not set)'}{source}")
     print(f"QWEN_TIMEOUT  = {s.qwen_timeout:g}s   thinking disabled: {s.qwen_disable_thinking()}")
     print()
 
@@ -87,7 +88,10 @@ def main() -> int:
     if not s.qwen_model:
         print("[FAIL] QWEN_MODEL is not set, so the app uses the offline fallback teacher.")
         if models:
-            print(f'       PowerShell:  $env:QWEN_MODEL = "{models[0]}"   then run this check again.')
+            pick = next((m for m in models if "coder" not in m), models[0])
+            print("       Save it once in the project's .env file (remembered in every new window):")
+            print(f"         Set-Content .env \"QWEN_MODEL={pick}\"")
+            print(f"       ({DOTENV_PATH}) — then run this check again.")
         return 1
 
     if models and s.qwen_model not in models:

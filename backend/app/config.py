@@ -11,6 +11,58 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DOTENV_PATH = REPO_ROOT / ".env"
+
+
+def _decode(raw: bytes) -> str:
+    """Windows PowerShell 5 writes UTF-16 with `>`/Out-File; editors may add a UTF-8 BOM."""
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return raw.decode("utf-16")
+    return raw.decode("utf-8-sig", errors="replace")
+
+
+def parse_dotenv(text: str) -> dict[str, str]:
+    """KEY=value lines; '#' comments, blank lines, 'export ' prefixes and quotes allowed."""
+    values: dict[str, str] = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        if line.startswith("export "):
+            line = line[len("export "):]
+        key, value = line.split("=", 1)
+        key, value = key.strip(), value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        elif " #" in value:
+            value = value.split(" #", 1)[0].rstrip()
+        if key:
+            values[key] = value
+    return values
+
+
+def load_dotenv(path: Path = DOTENV_PATH) -> dict[str, str]:
+    """Apply settings from .env without overriding variables already set in the shell.
+
+    Returns the keys that were applied. Disabled with CHESSAI_DOTENV=0 (the test
+    suite does this so a developer's .env can't change test behaviour).
+    """
+    if os.environ.get("CHESSAI_DOTENV", "1").lower() in ("0", "false", "no", "off"):
+        return {}
+    try:
+        values = parse_dotenv(_decode(path.read_bytes()))
+    except OSError:
+        return {}
+    applied = {}
+    for key, value in values.items():
+        if key not in os.environ:
+            os.environ[key] = value
+            applied[key] = value
+    return applied
+
+
+# Must run before Settings below evaluates its defaults.
+DOTENV_APPLIED = load_dotenv()
 
 
 def _env(name: str, default: str | None = None) -> str | None:

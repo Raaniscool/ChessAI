@@ -101,7 +101,13 @@ $env:QWEN_MODEL = "qwen3:4b"                  # same window you start the server
 .\.venv\Scripts\uvicorn backend.app.main:app --port 8000
 ```
 
-`$env:` lasts for that window only; `setx QWEN_MODEL "qwen3:4b"` makes it permanent (open a new window afterwards).
+`$env:` lasts for that window only. To make it stick, save it once in a **`.env` file** in the project folder (git-ignored, read at every start; see `.env.example`):
+
+```powershell
+Set-Content .env "QWEN_MODEL=qwen3:4b"
+```
+
+Settings typed in the shell still override `.env`.
 
 **macOS / Linux:**
 
