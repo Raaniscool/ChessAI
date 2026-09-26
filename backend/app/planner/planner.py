@@ -315,6 +315,28 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     return {"plan": plan, "course": course, "lessons": lessons}
 
 
+def plan_for_goal(goal: str, library_first: bool = True, level: str | None = None,
+                  catalog: Catalog | None = None, use_qwen: bool = True, engine=None) -> dict:
+    """Library first, then the existing planner.
+
+    1. Verified Knowledge Library examples for the requested concept (demonstration ->
+       guided example -> practice), when the library has something suitable;
+    2. otherwise exactly the old behaviour: catalog topics, then Qwen-organized plans
+       whose new lines are screened by Stockfish.
+    """
+    cleaned = " ".join((goal or "").split())[:MAX_GOAL_LENGTH]
+    if library_first and len(cleaned) >= 2:
+        from .knowledge_lessons import create_knowledge_plan
+        try:
+            record = create_knowledge_plan(cleaned, level=level, catalog=catalog)
+        except Exception as exc:  # the library must never break planning
+            log.warning("Knowledge Library retrieval failed, using the catalog planner: %s", exc)
+            record = None
+        if record:
+            return record
+    return create_plan(goal, catalog=catalog, use_qwen=use_qwen, engine=engine)
+
+
 def _planner_wants_qwen(matched: list[Topic]) -> bool:
     """QWEN_PLANNER: auto (only when the catalog has no answer — instant plans for
     known topics), always, or never."""
