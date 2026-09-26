@@ -22,6 +22,8 @@ PIECE_NAMES = {
 
 MAX_INTRO_EXERCISES = 4
 MAX_DRILL_EXERCISES = 8
+PATTERN_PUZZLES = 3  # puzzles in the "learn the pattern" lesson; the rest go to practice
+LICHESS_TRAINING_URL = "https://lichess.org/training/"
 
 
 def _move_label(ply: int, san: str) -> str:
@@ -188,8 +190,130 @@ def position_lesson(lesson_id: str, topic: Topic) -> dict:
     return lesson
 
 
+def _side(color: chess.Color) -> str:
+    return "white" if color == chess.WHITE else "black"
+
+
+def puzzle_steps(puzzle: dict, topic: Topic, number: int, total: int) -> list[dict]:
+    """One verified puzzle -> demonstrate (opponent's move) + exercise per learner move.
+
+    puzzle["moves"] = [opponent's setup move, learner, opponent, learner, ...] (UCI),
+    already checked by Stockfish (scripts/build_puzzle_library.py). Intermediate learner
+    moves were verified unique; on the last move every move in final_accepted is right.
+    """
+    text = topic.puzzle_text
+    concepts = [topic.category, topic.title]
+    board = chess.Board(puzzle["fen"])
+    setup = chess.Move.from_uci(puzzle["moves"][0])
+    setup_san = board.san(setup)
+    opponent = _side(board.turn)
+    learner = "black" if opponent == "white" else "white"
+    learner_moves = len(puzzle["moves"]) // 2
+    length = ""
+    if puzzle.get("mate"):
+        length = " (mate in one)" if learner_moves == 1 else f" (mate in {learner_moves})"
+    steps: list[dict] = [{
+        "type": "demonstrate",
+        "text": f"Puzzle {number} of {total}. You play {learner}. Your opponent plays "
+                f"{_move_label_from(board, setup_san)}…",
+        "fen": board.fen(),
+        "moves": [setup.uci()],
+    }]
+    board.push(setup)
+    source = f" (Lichess puzzle {LICHESS_TRAINING_URL}{puzzle['id']})"
+    solution = puzzle["moves"][1:]
+    for i in range(0, len(solution), 2):
+        move = chess.Move.from_uci(solution[i])
+        final = i + 1 >= len(solution)
+        san = board.san(move)
+        accepted = list(puzzle.get("final_accepted") or [san]) if final else [san]
+        if i == 0:
+            prompt = f"{text.get('task', 'Find the best move.')}{length}"
+        else:
+            prompt = "Keep going — find the next move."
+        hints = [text.get("hint") or move_hints(board, move)[0]] + move_hints(board, move)[1:]
+        if final:
+            done = "Checkmate! " if puzzle.get("mate") else "Correct! "
+            continue_text = done + (text.get("done", "") or "") + source
+        else:
+            continue_text = f"Correct — {san}!"
+        steps.append({
+            "type": "exercise",
+            "fen": board.fen(),
+            "side": learner,
+            "prompt": prompt,
+            "hints": hints,
+            "advance_on": "accepted_move",
+            "accepted": accepted,
+            "continue_text": continue_text.strip(),
+            "concepts": concepts,
+        })
+        board.push(move)
+        if not final:
+            reply = chess.Move.from_uci(solution[i + 1])
+            reply_san = board.san(reply)
+            steps.append({
+                "type": "demonstrate",
+                "text": f"Your opponent replies {_move_label_from(board, reply_san)}.",
+                "fen": board.fen(),
+                "moves": [reply.uci()],
+            })
+            board.push(reply)
+    return steps
+
+
+def _move_label_from(board: chess.Board, san: str) -> str:
+    """'...Rg8' style label for the side to move in `board`."""
+    return f"{board.fullmove_number}.{san}" if board.turn == chess.WHITE else f"{board.fullmove_number}...{san}"
+
+
+def puzzle_lesson(lesson_id: str, topic: Topic, puzzles: list[dict], title: str,
+                  intro: str, completion: str) -> dict:
+    concepts = [topic.category, topic.title]
+    steps: list[dict] = [{"type": "teach", "text": intro, "board": {"fen": puzzles[0]["fen"]}}]
+    for n, puzzle in enumerate(puzzles, start=1):
+        steps += puzzle_steps(puzzle, topic, n, len(puzzles))
+    lesson = {
+        "id": lesson_id,
+        "title": title,
+        "description": topic.summary,
+        "difficulty": topic.level,
+        "concepts": concepts,
+        "steps": steps,
+        "completion": {"text": completion},
+    }
+    parse_lesson(lesson, course_id="_generated")
+    return lesson
+
+
+def puzzle_lessons(lesson_prefix: str, topic: Topic) -> list[dict]:
+    """Topics with a verified puzzle set: learn the pattern (easier puzzles), then practice."""
+    ideas_text = "\n".join(f"• {idea}" for idea in topic.ideas)
+    explain = topic.summary + (f"\n\nKey ideas:\n{ideas_text}" if ideas_text else "")
+    credit = "Puzzles from real games on Lichess (public domain), each move checked by Stockfish."
+    lessons = []
+    if topic.positions:  # hand-made intro lesson exists: puzzles are extra practice
+        lessons.append(position_lesson(f"{lesson_prefix}a", topic))
+        practice = topic.puzzles
+    else:
+        pattern, practice = topic.puzzles[:PATTERN_PUZZLES], topic.puzzles[PATTERN_PUZZLES:]
+        lessons.append(puzzle_lesson(
+            f"{lesson_prefix}a", topic, pattern, f"{topic.title}: learn the pattern",
+            f"{explain}\n\nLet's see it in action. {credit}",
+            f"Lesson complete — you've seen the {topic.title.lower()} pattern. Next: practice."))
+    if practice:
+        lessons.append(puzzle_lesson(
+            f"{lesson_prefix}b", topic, practice, f"{topic.title}: practice",
+            f"Time to practise the {topic.title.lower()}. These are harder: some take several moves. "
+            f"Use hints if you get stuck. {credit}",
+            f"Practice complete — {topic.title} added to your toolkit."))
+    return lessons
+
+
 def topic_lessons(lesson_prefix: str, topic: Topic) -> list[dict]:
     if topic.category == "opening":
         return opening_lessons(lesson_prefix, topic.title, topic.side or "white", topic.line,
                                topic.summary, topic.ideas, topic.level)
+    if topic.puzzles:
+        return puzzle_lessons(lesson_prefix, topic)
     return [position_lesson(f"{lesson_prefix}a", topic)]

@@ -117,3 +117,23 @@ goal ─► Catalog.search (aliases, fuzzy tokens, categories, general curriculu
 
 - **Phase 1 (current):** core modules + tests ✅; session API, web UI, end-to-end MVP loop.
 - **Phase 2+:** more courses, puzzles + hints, game analysis, personalization, progress — all built on the same validated lesson/session primitives.
+
+## Puzzle library (themed tactics, mates, endgames)
+
+`planner/data/puzzles.json` is generated offline by `scripts/build_puzzle_library.py` from the
+Lichess puzzle database (CC0). A topic in `topics.json` opts in with `"puzzle_theme"` (a Lichess
+theme tag such as `smotheredMate`) and `"puzzle": {task, hint, done}` texts. For each theme the
+builder takes the simplest candidates (3 one-move puzzles, then up to 3-move ones), replays them
+with python-chess and runs Stockfish (depth 16, MultiPV 2) at every learner move: the solution must
+be the engine's first choice and at least 150 cp (or a mate) better than the second choice, so a
+student is never told an equally good move is wrong. On a final mating move all mates are accepted.
+
+`generator.puzzle_lessons` turns a set into "learn the pattern" (3 puzzles) + "practice" lessons:
+each puzzle is a `demonstrate` step for the opponent's move followed by an `accepted_move` exercise
+per learner move, with the opponent's replies animated in between. Topics that also have hand-made
+positions keep their original lesson and gain the puzzles as practice.
+
+Planning never substitutes topics: units are only topics the request matched (a match contained in
+a longer match, e.g. "checkmate" inside "smothered checkmate", doesn't count). Topics Qwen adds on
+its own are shown as related suggestions; with no match the API answers 422 with suggestions.
+

@@ -62,13 +62,14 @@ You organize learning plans; you do not teach. Reply with ONE JSON object and no
 
 
 def build_planner_messages(goal: str, catalog: Catalog) -> list[dict]:
+    # Compact (id | title [side]): every token here is prompt-reading time on a CPU.
     listing = "\n".join(
-        f"- {t.id} | {t.title} | {t.category}{' (' + t.side + ')' if t.side else ''} | {t.level}"
+        f"- {t.id} | {t.title}{' (' + t.side + ')' if t.side else ''}"
         for t in catalog.topics.values()
     )
     user = f"""Student's request: "{goal}"
 
-Verified topics available (id | title | category | level):
+Verified topics available (id | title):
 {listing}
 
 Return JSON with exactly these keys:

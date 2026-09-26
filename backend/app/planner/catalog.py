@@ -19,6 +19,8 @@ from .. import chess_system
 from ..chess_system import ChessError
 
 CATALOG_FILE = Path(__file__).resolve().parent / "data" / "topics.json"
+PUZZLE_FILE = Path(__file__).resolve().parent / "data" / "puzzles.json"
+MIN_PUZZLES = 3
 CATEGORIES = ("opening", "tactic", "endgame", "strategy")
 
 
@@ -39,6 +41,9 @@ class Topic:
     side: str | None = None  # openings: the side the learner plays
     line: list[str] = field(default_factory=list)  # openings: SAN from the start
     positions: list[dict] = field(default_factory=list)  # exercise dicts
+    puzzle_theme: str | None = None  # Lichess theme tag of the verified puzzle set
+    puzzle_text: dict = field(default_factory=dict)  # {"task", "hint", "done"}
+    puzzles: list[dict] = field(default_factory=list)  # records from puzzles.json
 
     def as_summary(self) -> dict:
         return {
@@ -78,23 +83,32 @@ def _token_match(a: str, b: str) -> bool:
     return SequenceMatcher(None, a, b).ratio() >= 0.84
 
 
-def _phrase_in(phrase: list[str], goal: list[str]) -> bool:
-    """Every token of the alias phrase fuzzily appears, in order, in the goal."""
+def _phrase_span(phrase: list[str], goal: list[str]) -> frozenset[int] | None:
+    """Goal token positions matched by the alias phrase (fuzzy, in order), or None."""
     if not phrase:
-        return False
+        return None
     pos = 0
+    hits = []
     for token in phrase:
         while pos < len(goal) and not _token_match(token, goal[pos]):
             pos += 1
         if pos >= len(goal):
-            return False
+            return None
+        hits.append(pos)
         pos += 1
-    return True
+    return frozenset(hits)
+
+
+def _phrase_in(phrase: list[str], goal: list[str]) -> bool:
+    """Every token of the alias phrase fuzzily appears, in order, in the goal."""
+    return _phrase_span(phrase, goal) is not None
 
 
 class Catalog:
-    def __init__(self, path: Path | None = None):
+    def __init__(self, path: Path | None = None, puzzle_path: Path | None = None):
         self.path = Path(path) if path else CATALOG_FILE
+        self.puzzle_path = Path(puzzle_path) if puzzle_path else PUZZLE_FILE
+        self.puzzle_meta: dict = {}
         with open(self.path, encoding="utf-8") as fh:
             raw = json.load(fh)
         self.categories: dict[str, dict] = raw.get("categories", {})
@@ -105,6 +119,7 @@ class Catalog:
             if topic.id in self.topics:
                 raise CatalogError(f"duplicate topic id {topic.id}")
             self.topics[topic.id] = topic
+        self._attach_puzzles()
         for topic in self.topics.values():
             for pre in topic.prerequisites:
                 if pre not in self.topics:
@@ -131,8 +146,8 @@ class Catalog:
                 line_moves = validate_line(line_moves)
             except ChessError as exc:
                 raise CatalogError(f"{entry['id']}: {exc}") from exc
-        elif not entry.get("positions"):
-            raise CatalogError(f"{entry['id']}: non-opening topics need positions")
+        elif not entry.get("positions") and not entry.get("puzzle_theme"):
+            raise CatalogError(f"{entry['id']}: non-opening topics need positions or a puzzle_theme")
         return Topic(
             id=entry["id"],
             title=entry["title"],
@@ -145,7 +160,26 @@ class Catalog:
             side=entry.get("side"),
             line=line_moves,
             positions=list(entry.get("positions", [])),
+            puzzle_theme=entry.get("puzzle_theme"),
+            puzzle_text=dict(entry.get("puzzle", {})),
         )
+
+    def _attach_puzzles(self) -> None:
+        """Give each puzzle_theme topic its verified puzzles (see scripts/build_puzzle_library.py)."""
+        themes: dict = {}
+        if self.puzzle_path.exists():
+            with open(self.puzzle_path, encoding="utf-8") as fh:
+                raw = json.load(fh)
+            themes = raw.get("themes", {})
+            self.puzzle_meta = {k: v for k, v in raw.items() if k != "themes"}
+        for topic in self.topics.values():
+            if not topic.puzzle_theme:
+                continue
+            topic.puzzles = list(themes.get(topic.puzzle_theme, []))
+            if len(topic.puzzles) < MIN_PUZZLES and not topic.positions:
+                raise CatalogError(
+                    f"{topic.id}: only {len(topic.puzzles)} puzzles for theme {topic.puzzle_theme} "
+                    f"in {self.puzzle_path.name} (need {MIN_PUZZLES}); rebuild the puzzle library")
 
     def get(self, topic_id: str) -> Topic | None:
         return self.topics.get(topic_id)
@@ -163,18 +197,23 @@ class Catalog:
         if not tokens:
             return []
 
-        scored: list[tuple[int, int, Topic]] = []
+        scored: list[tuple[int, int, Topic, frozenset[int]]] = []
         for order, topic in enumerate(self.topics.values()):
-            best = 0
+            best, best_span = 0, frozenset()
             for alias in topic.aliases:
                 phrase = _normalize(alias)
-                if _phrase_in(phrase, tokens):
-                    best = max(best, len(" ".join(phrase)))
+                span = _phrase_span(phrase, tokens)
+                if span is not None and len(" ".join(phrase)) > best:
+                    best, best_span = len(" ".join(phrase)), span
             if best:
-                scored.append((best, order, topic))
+                scored.append((best, order, topic, best_span))
+        # A match that is only part of a longer match ("checkmate" inside "smothered
+        # checkmate", "attack" inside "discovered attack") isn't what was asked for.
+        spans = [s[3] for s in scored]
+        scored = [s for s in scored if not any(s[3] < other for other in spans)]
         if scored:
             scored.sort(key=lambda s: (-s[0], s[1]))
-            found = [t for _, _, t in scored]
+            found = [s[2] for s in scored]
             wants_black = "black" in tokens
             wants_white = "white" in tokens
             if wants_black != wants_white:

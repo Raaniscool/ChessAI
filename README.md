@@ -23,7 +23,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 Type what you want to learn (sidebar box, or just say it in the chat: *"I want to learn the Sicilian"*, *"teach me knight forks"*, *"I want to get better at endgames"*). The tutor builds a plan of lessons and adds it to the sidebar.
 
-- Plans are built from a **verified topic catalog** (`backend/app/planner/data/topics.json`): 15 openings plus tactics, endgames and opening principles. Each opening becomes two lessons (watch + first moves, then the whole line from memory); each tactic/endgame topic becomes a set of positions to solve.
+- Plans are built from a **verified topic catalog** (`backend/app/planner/data/topics.json`, 57 topics): 15 openings, opening principles, and 40+ tactics, checkmate patterns and endgames — e.g. *smothered mate*, *Anastasia's mate*, *Boden's mate*, *deflection*, *zwischenzug*, *x-ray*, *zugzwang*, *rook endgames*. Each opening becomes two lessons (watch + first moves, then the whole line from memory); each tactic/endgame topic becomes "learn the pattern" + "practice" lessons.
+- **Puzzles come from real games**: `backend/app/planner/data/puzzles.json` holds 7 puzzles per theme from the [Lichess puzzle database](https://database.lichess.org/#puzzles) (public domain, CC0). `scripts/build_puzzle_library.py` picks the simplest ones and keeps a puzzle only if Stockfish confirms every one of your moves is the best move *and* clearly better than any alternative (on a final mating move every mate is accepted).
+- **A plan only contains what you asked for.** If there are no verified lessons on the subject, the tutor says so and offers related topics as one-click suggestions — it never quietly swaps in something else.
 - **Correctness:** every catalog line and position is audited by Stockfish in the test suite (`test_catalog_engine.py`). Add a topic to the JSON and it's audited automatically.
 - **With Qwen connected** the planner also *organizes* the plan (order, title, why each unit matters) and can add an opening that isn't in the catalog. Qwen's move sequence is only used after python-chess confirms it's legal **and** Stockfish checks it move by move; the line is cut at the first mistake, and anything unverifiable is listed as "left out" instead of being taught.
 - Without Qwen the planner works from the catalog alone (keyword + typo-tolerant matching).
@@ -43,6 +45,7 @@ backend/app/
   lessons/data/italian_game/   # first course (structured lesson JSON)
   planner/             # "I want to learn ___": catalog, plan builder, lesson generator, storage
   planner/data/topics.json     # verified topic catalog (openings, tactics, endgames, strategy)
+  planner/data/puzzles.json    # Stockfish-verified Lichess puzzles per theme (built by scripts/build_puzzle_library.py)
 backend/tests/         # pytest suite (chess, classification, lessons, engine, teacher)
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
@@ -145,7 +148,7 @@ The app never makes you wait for the language model to see a result:
 
 **Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite.
 
-**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Streaming AI text + instant move verdicts + speed diagnostics. Test suite: **118 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
+**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Test suite: **490 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
 **Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
 

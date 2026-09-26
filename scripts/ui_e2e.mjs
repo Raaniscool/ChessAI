@@ -147,6 +147,39 @@ $("btn-chat").click()
 await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /Fork/.test(h.textContent)), "fork plan")
 check(true, "chat 'I want to learn…' creates a plan")
 
+// 7) The user's report: "I want to learn the smothered mate" must teach smothered mate
+$("chat-input").value = "I want to learn the smothered mate"
+$("btn-chat").click()
+await waitFor(() => /Learn: Smothered mate/.test(lastMsgs(1)[0]), "smothered plan message")
+const smPlan = lastMsgs(1)[0]
+check(/Smothered mate/.test(smPlan) && !/Fork|Pin|Skewer/.test(smPlan), "smothered-mate plan contains only smothered mate")
+const smLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /Smothered mate: learn the pattern/.test(b.textContent))
+check(!!smLesson, "plan has 'Smothered mate: learn the pattern'")
+smLesson.click()
+await waitFor(() => /Smothered/.test($("lesson-title").textContent), "smothered lesson start")
+$("btn-continue").click()                                   // teach -> demo of the opponent's move
+await waitFor(() => !$("btn-play").classList.contains("hidden"), "puzzle demo button")
+$("btn-play").click()
+await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "puzzle demo", 30000)
+$("btn-continue").click()
+await waitFor(() => /smothered mate/i.test(lastMsgs(1)[0]) && /Your move/.test($("board-status").textContent), "puzzle exercise")
+console.log("  prompt:", lastMsgs(1)[0])
+check(move("h6", "f5") === "ok", "wrong knight move can be played")
+await waitFor(() => /Try again/i.test($("board-status").textContent) || !$("btn-continue").classList.contains("hidden"), "wrong move graded", 60000)
+check($("btn-continue").classList.contains("hidden"), "wrong move (Nf5) is not accepted")
+await waitFor(() => board.getPiece("h6") && !board.getPiece("f5"), "knight back on h6 after wrong move", 20000)
+check(move("h6", "f7") === "ok", "Nf7# playable")
+await waitFor(() => !$("btn-continue").classList.contains("hidden"), "Nf7# accepted", 60000)
+check(/Checkmate!/.test($("feedback-slot").textContent + lastMsgs(2).join(" ")), "Nf7# accepted as checkmate")
+
+// 8) Unknown subject: honest answer + suggestions, no substitute plan
+const plansBefore = (await planIds()).length
+$("chat-input").value = "I want to learn the zorblax gambit"
+$("btn-chat").click()
+await waitFor(() => /don't have verified lessons/.test(lastMsgs(1)[0]), "unknown-subject answer", 90000)
+check(document.querySelectorAll("#messages .suggestions").length > 0, "unknown subject: suggestion chips shown")
+check((await planIds()).length === plansBefore, "unknown subject: no substitute plan created")
+
 check(errors.length === 0, "no unhandled errors " + errors.join("\n"))
 for (const id of await planIds()) {
   if (!existingPlans.has(id)) await realFetch(new URL(`api/plans/${id}`, BASE), {method: "DELETE"})

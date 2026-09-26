@@ -62,7 +62,10 @@ def test_catalog_loads_and_every_topic_generates_valid_lessons():
     ("I want to learn how to checkmate with a rook", "kr_vs_k"),
     ("london system please", "london_system"),
     ("caro-kann", "caro_kann"),
-    ("what is the opposition in pawn endgames", "king_pawn_opposition"),
+    ("what is the opposition", "king_pawn_opposition"),
+    ("I want to learn the smothered mate", "smothered_mate"),
+    ("teach me the zwischenzug", "intermezzo"),
+    ("rook endgames", "rook_endgames"),
 ])
 def test_search_specific_topics(goal, expected_first):
     assert get_catalog().search(goal)[0].id == expected_first
