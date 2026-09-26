@@ -337,6 +337,13 @@ def session_chat(session_id: str, body: ChatRequest) -> dict:
     return get_manager().chat(get_manager().get(session_id), body.message)
 
 
+# --- game analysis (Chess.com games) ----------------------------------------
+
+from .game_api import router as games_router  # noqa: E402
+
+app.include_router(games_router)
+
+
 # --- frontend -------------------------------------------------------------
 
 if FRONTEND_DIR.is_dir():
