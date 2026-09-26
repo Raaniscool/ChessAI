@@ -98,6 +98,46 @@ class SessionManager:
     def current_step(self, session: Session) -> object:
         return self.lesson(session).steps[session.step_index]
 
+    # --- Knowledge Library examples (verified entries only) ---
+
+    def _example_for(self, session: Session, at_or_before: bool = True):
+        """The verified library example the current step presents (or the latest one
+        before it, e.g. for chat on a following step). None for ordinary lessons."""
+        from .knowledge.library import get_knowledge
+
+        steps = self.lesson(session).steps
+        indexes = range(session.step_index, -1, -1) if at_or_before else [session.step_index]
+        for i in indexes:
+            ref = getattr(steps[i], "example", None)
+            if ref:
+                return get_knowledge().get(ref)  # trusted_only: never an unverified entry
+        return None
+
+    def _example_facts(self, session: Session, example, board: chess.Board | None,
+                       reveal: bool = True) -> list[str]:
+        from .knowledge.library import get_knowledge
+        from .knowledge.retrieval import teaching_facts
+
+        if example is None:
+            return []
+        return teaching_facts(example, get_knowledge(), board=board, level=self.lesson(session).difficulty,
+                              reveal=reveal)
+
+    def _solution_pending(self, session: Session, example_id: str) -> bool:
+        """True while the learner still has to find a move of this example (no spoilers)."""
+        steps = self.lesson(session).steps
+        for i in range(session.step_index, len(steps)):
+            step = steps[i]
+            if isinstance(step, ExerciseStep) and step.example == example_id:
+                if i > session.step_index or not session.exercise_accepted:
+                    return True
+        return False
+
+    @staticmethod
+    def _usage():
+        from .knowledge.usage import get_usage
+        return get_usage()
+
     def step_payload(self, session: Session) -> dict:
         lesson = self.lesson(session)
         step = lesson.steps[session.step_index]
@@ -108,6 +148,11 @@ class SessionManager:
             "lesson_title": lesson.title,
             "accepted": session.exercise_accepted,
         }
+        example = self._example_for(session, at_or_before=False) if getattr(step, "example", None) else None
+        if example is not None:
+            base["example"] = {"id": example.id, "title": example.title, "concept": example.concept,
+                               "source_url": (example.source or {}).get("source_url"),
+                               "explainable": not self._solution_pending(session, example.id)}
         if isinstance(step, TeachStep):
             board = chess_system.validate_board_spec(
                 {**(step.board or {}), "fen": session.board.fen()}
@@ -152,9 +197,18 @@ class SessionManager:
         if next_index >= len(lesson.steps):
             session.status = "completed"
             self.completed_lessons.add(lesson.id)
+            self._record_completed(lesson)
             return None
         self._enter_step(session, lesson, next_index)
         return self.step_payload(session)
+
+    def _record_completed(self, lesson: Lesson) -> None:
+        ids = list(dict.fromkeys(s.example for s in lesson.steps if getattr(s, "example", None)))
+        for eid in ids:
+            try:
+                self._usage().record_completed(eid)
+            except OSError:  # statistics must never break a lesson
+                pass
 
     # --- exercise interaction ---
 
@@ -185,13 +239,21 @@ class SessionManager:
             session.exercise_accepted = True
 
         lesson = self.lesson(session)
+        example = self._example_for(session, at_or_before=False) if step.example else None
         context = LessonContext(
             course_title=self.library.course(lesson.course_id).title,
             lesson_title=lesson.title,
             concepts=step.concepts or lesson.concepts,
             exercise_prompt=step.prompt,
             accepted_moves=step.accepted_san,
+            facts=self._example_facts(session, example, before),
+            example_id=example.id if example else None,
         )
+        if example is not None:
+            try:
+                self._usage().record_attempt(example.id, accepted, hints=session.hint_index)
+            except OSError:
+                pass
         # Answer instantly with the engine verdict + deterministic explanation.
         # The (slower) Qwen explanation is streamed separately via explain_stream(),
         # so the learner never waits on the language model to see the result.
@@ -258,10 +320,14 @@ class SessionManager:
         from .teacher import LessonContext
 
         lesson = self.lesson(session)
+        example = self._example_for(session)
+        solving = example is not None and self._solution_pending(session, example.id)
         return LessonContext(
             course_title=self.library.course(lesson.course_id).title,
             lesson_title=lesson.title,
             concepts=lesson.concepts,
+            facts=self._example_facts(session, example, session.board, reveal=not solving),
+            example_id=example.id if example else None,
         )
 
     def chat(self, session: Session, message: str) -> dict:
@@ -290,6 +356,29 @@ class SessionManager:
         return stream_events(
             lambda: build_move_feedback_messages(feedback, context),
             lambda: FallbackTeacher().explain_move(feedback, context),
+        )
+
+    def explain_example_stream(self, session: Session):
+        """Stream an explanation of the current library example from its verified facts.
+
+        Offline (or if Qwen's reply contradicts the verified example) the learner gets
+        the library's own verified explanation instead.
+        """
+        from .knowledge.facts import check_explanation
+        from .teacher import stream_events
+        from .teacher.prompts import build_example_messages
+
+        example = self._example_for(session)
+        if example is None:
+            raise ExerciseConflict("This step has no library example to explain")
+        if self._solution_pending(session, example.id):
+            raise ExerciseConflict("Solve the exercise first — the explanation would give it away")
+        context = self._chat_context(session)
+        level = self.lesson(session).difficulty
+        return stream_events(
+            lambda: build_example_messages(context, level=level),
+            lambda: example.explanation or example.description,
+            validate=lambda text: check_explanation(text, example),
         )
 
     def chat_stream(self, session: Session, message: str):

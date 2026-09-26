@@ -22,7 +22,7 @@ from .chess_system import ChessError
 from .config import get_settings
 from .engine import EngineUnavailable
 from .lessons import LessonNotFound, get_library
-from .planner import PlanError, create_plan, get_catalog
+from .planner import PlanError, get_catalog, plan_for_goal
 from .planner.store import delete_record, register_record, save_record
 from .session import SessionError, get_manager
 from .teacher import get_teacher
@@ -105,6 +105,13 @@ class ChatRequest(BaseModel):
 
 class PlanRequest(BaseModel):
     goal: str
+    # Try the verified Knowledge Library first (the UI always does). Off = catalog planner only.
+    library: bool = False
+    level: str | None = None  # beginner | intermediate | advanced (learner skill, optional)
+
+
+class IntentRequest(BaseModel):
+    message: str
 
 
 # --- API ------------------------------------------------------------------
@@ -125,7 +132,16 @@ def health() -> dict:
         "courses": len(library.courses()),
         "catalog_topics": _catalog_size(),
         "lessons": len(library.lesson_ids()),
+        "knowledge_examples": _knowledge_size(),
     }
+
+
+def _knowledge_size() -> int | str:
+    try:
+        from .knowledge.library import get_knowledge
+        return len(get_knowledge().verified())
+    except Exception as exc:
+        return f"error: {exc}"
 
 
 def _catalog_size() -> int | str:
@@ -180,15 +196,30 @@ def topics() -> dict:
 
 @app.post("/api/plans")
 def make_plan(body: PlanRequest) -> dict:
-    """'I want to learn ___' → a personal course of verified lessons."""
-    record = create_plan(body.goal)
+    """'I want to learn ___' → a personal course of verified lessons.
+
+    With ``library: true`` verified Knowledge Library examples are tried first;
+    without a suitable example this is exactly the catalog → Qwen planner.
+    """
+    record = plan_for_goal(body.goal, library_first=body.library, level=body.level)
     register_record(get_library(), record)
     save_record(record)
     return {
         "plan": record["plan"],
         "course_id": record["course"]["id"],
         "first_lesson_id": record["lessons"][0]["id"],
+        "source": "knowledge" if record["plan"].get("planner") == "knowledge" else "planner",
     }
+
+
+@app.post("/api/knowledge/intent")
+def knowledge_intent(body: IntentRequest) -> dict:
+    """Is a chat message ("Show me checkmates") a request for a lesson the library can give?"""
+    from .knowledge.library import get_knowledge
+    from .knowledge.retrieval import lesson_request
+
+    concepts = lesson_request(get_knowledge(), body.message[:300])
+    return {"lesson_request": bool(concepts), "concepts": concepts}
 
 
 @app.get("/api/plans")
@@ -271,6 +302,13 @@ def explain_stream(session_id: str) -> StreamingResponse:
     """Stream the AI explanation of the latest graded move (one JSON event per line)."""
     manager = get_manager()
     return _ndjson(manager.explain_stream(manager.get(session_id)))
+
+
+@app.post("/api/sessions/{session_id}/example/explain")
+def explain_example(session_id: str) -> StreamingResponse:
+    """Stream an explanation of the current verified library example (facts → Qwen)."""
+    manager = get_manager()
+    return _ndjson(manager.explain_example_stream(manager.get(session_id)))
 
 
 @app.post("/api/sessions/{session_id}/chat/stream")
