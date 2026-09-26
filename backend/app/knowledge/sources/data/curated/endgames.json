@@ -1,0 +1,127 @@
+[
+ {
+  "id": "endgame_kq_box_mate",
+  "title": "King and queen: box, approach, mate",
+  "concept": "queen_mate",
+  "difficulty": 2,
+  "description": "The last phase of the queen mate: the queen cages the king on the back rank, the white king comes closer, and the queen mates.",
+  "start_fen": "3k4/8/8/3K4/8/8/8/7Q w - - 0 1",
+  "moves": ["Qh7", "Kc8", "Kc6", "Kd8", "Qd7#"],
+  "key_move": "1.Qh7",
+  "prompt": "White to move. First take away the seventh rank — without giving stalemate.",
+  "hints": ["The black king is already on the edge. Keep it there.", "Put the queen on the seventh rank, far from the king."],
+  "notes": {
+   "1.Qh7": "The queen takes the whole seventh rank. The king can only walk along the edge.",
+   "2.Kc6": "The white king comes closer. Black still has a square to move to, so this isn't stalemate.",
+   "3.Qd7#": "Checkmate: the queen checks, and the white king protects her."
+  },
+  "explanation": "King and queen always beat a lone king. The queen draws a box around the enemy king, your own king walks up to help, and the queen gives mate on the edge — protected by the king. The one danger is stalemate: always check that the enemy king still has a move.",
+  "tags": ["endgame", "checkmate", "queen", "technique"],
+  "related": ["stalemate"],
+  "source": {"source_type": "endgame_theory", "source_id": "kqk-box", "source_license": "CC0-1.0 (position composed; line from Stockfish 19)", "reference": "basic K+Q vs K technique; line verified with Stockfish 19", "import_date": "2026-09-25"}
+ },
+ {
+  "id": "endgame_kr_opposition_mate",
+  "title": "King and rook: take the opposition, then mate",
+  "concept": "rook_mate",
+  "concepts": ["opposition"],
+  "difficulty": 2,
+  "description": "The rook can only mate when the kings face each other. White's king steps into the opposition first.",
+  "start_fen": "3k4/8/4K3/8/8/8/8/7R w - - 0 1",
+  "moves": ["Kd6", "Ke8", "Rf1", "Kd8", "Rf8#"],
+  "key_move": "1.Kd6",
+  "prompt": "White to move. Get your king into the right place before using the rook.",
+  "hints": ["The rook mates on the back rank only when your king guards the squares in front of the enemy king.", "Put your king directly opposite Black's king."],
+  "notes": {
+   "1.Kd6": "The kings now face each other on d6 and d8, and it's Black's move: White has the opposition.",
+   "2.Rf1": "A waiting move. The rook will come to the eighth rank next.",
+   "3.Rf8#": "Checkmate: the rook checks along the eighth rank, and the white king guards c7, d7 and e7."
+  },
+  "explanation": "With king and rook you mate on the edge. The rook gives check along the edge, and your king must stand opposite the enemy king to cover the squares in front of it. That is why the kings meet in opposition first.",
+  "tags": ["endgame", "checkmate", "rook", "technique", "opposition"],
+  "source": {"source_type": "endgame_theory", "source_id": "krk-opposition", "source_license": "CC0-1.0 (position composed; line from Stockfish 19)", "reference": "basic K+R vs K technique; line verified with Stockfish 19", "import_date": "2026-09-25"}
+ },
+ {
+  "id": "endgame_opposition_e_pawn",
+  "title": "Opposition: the only winning move",
+  "concept": "opposition",
+  "difficulty": 3,
+  "description": "King and pawn against king. One king move wins; the natural-looking alternatives only draw.",
+  "start_fen": "8/8/4k3/8/8/3KP3/8/8 w - - 0 1",
+  "moves": ["Ke4", "Kf6", "Kd5", "Ke7", "Ke5"],
+  "key_move": "1.Ke4",
+  "prompt": "White to move. Which king move wins?",
+  "hints": ["Put your king in front of your pawn.", "Make the kings face each other with one square between them — with Black to move."],
+  "notes": {
+   "1.Ke4": "The kings face each other on e4 and e6 and Black must move: White has the opposition. The black king has to give way.",
+   "2.Kd5": "White's king walks forward past the black king.",
+   "3.Ke5": "Opposition again (e5 against e7). White's king leads the way and the pawn will follow."
+  },
+  "explanation": "When two kings stand face to face with one square between them, the side that has to move must step aside. Here 1.Ke4 takes the opposition and wins; 1.Kd4 or a pawn move would let Black take the opposition instead and draw. In king-and-pawn endings, put the king in front of the pawn and fight for the opposition.",
+  "tags": ["endgame", "pawn endgame", "opposition", "king and pawn"],
+  "related": ["passed_pawn"],
+  "source": {"source_type": "endgame_theory", "source_id": "kpk-opposition-1", "source_license": "CC0-1.0 (position found by engine search)", "reference": "K+P vs K theory; Stockfish 19 shows 1.Ke4 as the only win", "import_date": "2026-09-25"}
+ },
+ {
+  "id": "endgame_opposition_pawn_behind",
+  "title": "Opposition with the pawn behind the king",
+  "concept": "opposition",
+  "difficulty": 3,
+  "description": "White's king must get in front of its pawn — and grab the opposition to do it.",
+  "start_fen": "8/8/8/4k3/8/3K4/4P3/8 w - - 0 1",
+  "moves": ["Ke3", "Kd5", "Kf4", "Ke6", "Ke4"],
+  "key_move": "1.Ke3",
+  "prompt": "White to move. Only one move wins. Which?",
+  "hints": ["Pushing the pawn now lets Black's king block it.", "Face the black king on the same file, one square apart."],
+  "notes": {
+   "1.Ke3": "Opposition: e3 against e5, Black to move. Black can't keep the white king back.",
+   "2.Kf4": "White's king goes around the black king.",
+   "3.Ke4": "The opposition again. The pawn on e2 has plenty of spare moves to use later."
+  },
+  "explanation": "The pawn is safest behind its king: the king clears the way and the pawn follows. 1.Ke3 takes the opposition; after a pawn move instead, Black's king would reach the square in front of the pawn and draw.",
+  "tags": ["endgame", "pawn endgame", "opposition"],
+  "source": {"source_type": "endgame_theory", "source_id": "kpk-opposition-2", "source_license": "CC0-1.0 (position found by engine search)", "reference": "K+P vs K theory; Stockfish 19 shows 1.Ke3 as the only win", "import_date": "2026-09-25"}
+ },
+ {
+  "id": "endgame_rule_of_the_square",
+  "title": "The rule of the square",
+  "concept": "passed_pawn",
+  "concepts": ["promotion"],
+  "difficulty": 2,
+  "description": "Can Black's king catch the passed pawn? Count it out with the 'square'.",
+  "start_fen": "8/5k2/8/1P6/8/8/8/6K1 w - - 0 1",
+  "moves": ["b6", "Ke6", "b7", "Kd6", "b8=Q+"],
+  "key_move": "1.b6",
+  "prompt": "White to move. Win the race!",
+  "hints": ["Black's king is outside the pawn's square.", "Don't waste time: run with the pawn."],
+  "notes": {
+   "1.b6": "Imagine a square from the pawn to its promotion square (b6-b8-d8-d6). Black's king can't step into it — the pawn can't be caught.",
+   "3.b8=Q+": "The pawn promotes with check."
+  },
+  "explanation": "The rule of the square: draw a square from the pawn to its promotion square. If the enemy king can't step into that square with its move, it will never catch the pawn. Here 1.b6 is the only winning move — a king move would give Black time to get into the square.",
+  "tags": ["endgame", "passed pawn", "rule of the square", "promotion"],
+  "source": {"source_type": "endgame_theory", "source_id": "rule-of-the-square", "source_license": "CC0-1.0 (position composed)", "reference": "rule of the square; Stockfish 19 shows 1.b6 as the only win", "import_date": "2026-09-25"}
+ },
+ {
+  "id": "endgame_lucena_bridge",
+  "title": "The Lucena position: building a bridge",
+  "concept": "lucena_position",
+  "difficulty": 4,
+  "description": "The most important winning rook endgame: White's king is on the queening square, but has to get out without being checked forever.",
+  "start_fen": "1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1",
+  "moves": ["Rd1+", "Ke7", "Rd4", "Ra1", "Kc7", "Rc1+", "Kb6", "Rb1+", "Kc6", "Rc1+", "Kb5", "Rb1+", "Rb4"],
+  "key_move": "2.Rd4",
+  "prompt": "White to move. Black's king has been pushed away. Now prepare a shelter for your king.",
+  "hints": ["Your king will soon be checked from behind by the black rook.", "Put your rook on the fourth rank so it can block the checks later."],
+  "notes": {
+   "1.Rd1+": "First the rook drives Black's king one more file away.",
+   "2.Rd4": "Building the bridge: the rook goes to the fourth rank.",
+   "3.Kc7": "The king leaves b8. Now the black rook starts checking.",
+   "7.Rb4": "The bridge is complete: the rook blocks the check and the checks are over. The pawn will promote."
+  },
+  "explanation": "In the Lucena position the attacking king stands on the queening square. The plan is to cut off the defending king, put the rook on the fourth rank, step out with the king, and block the rook checks with your own rook — 'building a bridge'. Every rook endgame player needs to know this.",
+  "tags": ["endgame", "rook endgame", "lucena", "technique"],
+  "prerequisites": ["passed_pawn"],
+  "source": {"source_type": "endgame_theory", "source_id": "lucena", "source_license": "CC0-1.0 (textbook position)", "reference": "Lucena position (Salvio 1634); line verified with Stockfish 19", "import_date": "2026-09-25"}
+ }
+]

@@ -1,0 +1,257 @@
+[
+ {
+  "id": "opening_italian_center_attack",
+  "title": "Italian Game: the Center Attack with c3 and d4",
+  "concept": "italian_game",
+  "opening": "Italian Game: Classical Variation, Center Attack",
+  "extend": [
+   "exd4",
+   "cxd4",
+   "Bb4+"
+  ],
+  "difficulty": 2,
+  "description": "White develops quickly, prepares d4 with c3, and builds a big pawn centre.",
+  "notes": {
+   "3.Bc4": "The bishop aims at f7, the weakest square in Black's camp.",
+   "3...Bc5": "Black copies: the bishop aims at f2.",
+   "4.c3": "Preparing d4 — the pawn on c3 will support it.",
+   "5.d4": "White strikes in the centre and attacks the bishop's diagonal.",
+   "6.cxd4": "White now has two pawns side by side in the centre.",
+   "6...Bb4+": "The bishop has to leave c5 and gives check on the way."
+  },
+  "explanation": "The Italian Game is about fast development and the centre. White's bishop goes to c4 to aim at f7, then c3 and d4 build a strong pawn centre. After 6.cxd4 White has pawns on d4 and e4; Black must fight back quickly, for example with 6...Bb4+ and ...d5.",
+  "tags": [
+   "italian game",
+   "center",
+   "development",
+   "e4 e5"
+  ]
+ },
+ {
+  "id": "opening_italian_pianissimo",
+  "title": "Italian Game: the slow Giuoco Pianissimo",
+  "concept": "italian_game",
+  "opening": "Italian Game: Classical Variation, Giuoco Pianissimo",
+  "pgn": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 d6 6. Nbd2 O-O 7. O-O",
+  "difficulty": 2,
+  "description": "The 'very quiet game': White plays d3 instead of d4, keeps the centre closed and develops calmly.",
+  "notes": {
+   "4.c3": "Preparing a later d4. The bishop can also retreat to b3 and c2 when it is attacked.",
+   "5.d3": "A calm move: White defends e4 and keeps the tension for later.",
+   "6.Nbd2": "The knight heads for f1 and g3, a typical manoeuvre in this line.",
+   "7.O-O": "Both kings are safe. The real fight comes in the middlegame."
+  },
+  "explanation": "In the Pianissimo White does not rush with d4. Both sides develop, castle, and prepare plans such as a4, a rook move to e1, and a knight trip Nbd2-f1-g3. It's the most popular way to play the Italian at club and top level, because it keeps many pieces on the board.",
+  "tags": [
+   "italian game",
+   "pianissimo",
+   "quiet",
+   "development"
+  ]
+ },
+ {
+  "id": "opening_two_knights_polerio",
+  "title": "Two Knights Defense: 4.Ng5 and the Polerio Defense",
+  "concept": "two_knights_defense",
+  "opening": "Italian Game: Two Knights Defense, Polerio Defense",
+  "difficulty": 3,
+  "description": "White attacks f7 with 4.Ng5. Black gives a pawn for quick development with ...d5 and ...Na5.",
+  "notes": {
+   "3...Nf6": "The Two Knights Defense: Black counter-attacks e4 instead of copying with ...Bc5.",
+   "4.Ng5": "Knight and bishop both attack f7.",
+   "4...d5": "Black blocks the bishop's diagonal.",
+   "5.exd5": "White wins the d5 pawn.",
+   "5...Na5": "Black attacks the bishop on c4 instead of recapturing — a pawn sacrifice for time."
+  },
+  "explanation": "After 4.Ng5 White threatens Nxf7, forking queen and rook. Black answers 4...d5, and after 5.exd5 the solid choice is 5...Na5: the knight attacks the bishop, Black gets fast development and attacking chances in return for the pawn. Recapturing with 5...Nxd5 allows the dangerous Fried Liver Attack.",
+  "tags": [
+   "two knights",
+   "italian game",
+   "gambit",
+   "f7"
+  ]
+ },
+ {
+  "id": "opening_fried_liver",
+  "title": "The Fried Liver Attack",
+  "concept": "fried_liver",
+  "opening": "Italian Game: Two Knights Defense, Fried Liver Attack",
+  "extend": [
+   "Kxf7",
+   "Qf3+",
+   "Ke6",
+   "Nc3"
+  ],
+  "difficulty": 3,
+  "description": "White sacrifices a knight on f7 to drag Black's king into the centre.",
+  "notes": {
+   "5...Nxd5": "Natural, but it allows a knight sacrifice.",
+   "6.Nxf7": "The knight takes on f7, forking queen and rook.",
+   "6...Kxf7": "Black accepts. The king is pulled forward.",
+   "7.Qf3+": "Check, and the queen attacks the knight on d5.",
+   "7...Ke6": "The king must defend the pinned knight on d5 itself.",
+   "8.Nc3": "More pressure on d5. Black's king is stuck in the centre."
+  },
+  "explanation": "The Fried Liver is a famous sacrifice: White gives a knight on f7 so that Black's king has to walk into the centre. The knight on d5 is pinned to the king by the bishop on c4, and White keeps adding pressure with Qf3+ and Nc3. It's a great example of attacking an uncastled king.",
+  "tags": [
+   "fried liver",
+   "sacrifice",
+   "king hunt",
+   "two knights"
+  ]
+ },
+ {
+  "id": "opening_evans_gambit",
+  "title": "The Evans Gambit",
+  "concept": "evans_gambit",
+  "opening": "Italian Game: Evans Gambit, Main Line",
+  "extend": [
+   "d4"
+  ],
+  "difficulty": 3,
+  "description": "White gives a pawn on b4 to gain time and build a quick centre with c3 and d4.",
+  "notes": {
+   "4.b4": "The gambit: White offers the b-pawn to deflect the bishop.",
+   "4...Bxb4": "Black accepts.",
+   "5.c3": "Gaining time on the bishop and preparing d4.",
+   "5...Ba5": "The main-line retreat, keeping the bishop active.",
+   "6.d4": "White strikes in the centre with development ahead."
+  },
+  "explanation": "The Evans Gambit gives up a pawn for time. After 4...Bxb4 5.c3 the bishop is hit again, and White gets to play d4 with a strong centre and open lines against Black's king. It was a favourite of 19th-century attacking players, and it still teaches how development can be worth more than a pawn.",
+  "tags": [
+   "evans gambit",
+   "gambit",
+   "italian game",
+   "development"
+  ]
+ },
+ {
+  "id": "opening_caro_advance",
+  "title": "Caro-Kann: the Advance Variation",
+  "concept": "caro_kann",
+  "opening": "Caro-Kann Defense: Advance Variation",
+  "extend": [
+   "Bf5",
+   "Nf3",
+   "e6",
+   "Be2"
+  ],
+  "difficulty": 2,
+  "description": "White grabs space with 3.e5. Black develops the light-squared bishop outside the pawn chain.",
+  "notes": {
+   "1...c6": "The Caro-Kann: Black prepares ...d5 with the c-pawn's support.",
+   "2...d5": "Black challenges e4 right away.",
+   "3.e5": "White gains space and closes the centre.",
+   "3...Bf5": "The key idea: the bishop gets out before ...e6 locks it in.",
+   "4...e6": "Now the pawn chain d5–e6 is solid and the bishop is already outside.",
+   "5.Be2": "White develops calmly and prepares to castle."
+  },
+  "explanation": "The Caro-Kann is solid: 1...c6 prepares ...d5 without blocking any piece. In the Advance Variation White gains space with 3.e5, and Black answers by developing the light-squared bishop to f5 before playing ...e6. Black's plan later is to attack White's centre with ...c5.",
+  "tags": [
+   "caro-kann",
+   "advance variation",
+   "e4 c6",
+   "solid"
+  ]
+ },
+ {
+  "id": "opening_caro_classical",
+  "title": "Caro-Kann: the Classical Variation",
+  "concept": "caro_kann",
+  "opening": "Caro-Kann Defense: Classical Variation",
+  "pgn": "1. e4 c6 2. d4 d5 3. Nd2 dxe4 4. Nxe4 Bf5 5. Ng3 Bg6 6. h4 h6 7. Nf3 Nd7",
+  "difficulty": 3,
+  "description": "Black takes on e4 and develops the bishop with tempo. White chases it with the knight and the h-pawn.",
+  "notes": {
+   "3...dxe4": "Black gives up the centre to free the position.",
+   "4...Bf5": "The bishop develops with tempo, attacking the knight on e4.",
+   "5.Ng3": "The knight moves and attacks the bishop in return.",
+   "6.h4": "White threatens h5, trapping the bishop.",
+   "6...h6": "Black makes room: the bishop can retreat to h7.",
+   "7...Nd7": "Black prepares ...Ngf6 without allowing Ne5."
+  },
+  "explanation": "In the Classical Caro-Kann Black gets a healthy position with no bad pieces: the light-squared bishop comes out before ...e6. White uses the h-pawn to gain space and push the bishop back. Both sides then usually castle on opposite sides.",
+  "tags": [
+   "caro-kann",
+   "classical variation",
+   "e4 c6"
+  ]
+ },
+ {
+  "id": "opening_caro_exchange",
+  "title": "Caro-Kann: the Exchange Variation",
+  "concept": "caro_kann",
+  "opening": "Caro-Kann Defense: Exchange Variation",
+  "pgn": "1. e4 c6 2. d4 d5 3. exd5 cxd5",
+  "extend": [
+   "Bd3",
+   "Nc6",
+   "c3"
+  ],
+  "difficulty": 2,
+  "description": "White exchanges on d5. The pawn structure becomes symmetrical and both sides develop.",
+  "notes": {
+   "3.exd5": "White releases the tension in the centre.",
+   "3...cxd5": "Black recaptures toward the centre.",
+   "4.Bd3": "The bishop aims at h7 and controls f5.",
+   "5.c3": "White supports d4 and keeps a solid pawn structure."
+  },
+  "explanation": "After the exchange on d5 the structure is symmetrical. White develops the bishop to d3, where it stops Black's bishop from coming to f5 easily, and supports d4 with c3. It's a calm line that teaches piece placement in a symmetrical structure.",
+  "tags": [
+   "caro-kann",
+   "exchange variation",
+   "e4 c6",
+   "symmetrical"
+  ]
+ },
+ {
+  "id": "opening_caro_panov",
+  "title": "Caro-Kann: the Panov Attack",
+  "concept": "caro_kann",
+  "opening": "Caro-Kann Defense: Panov Attack",
+  "pgn": "1. e4 c6 2. d4 d5 3. exd5 cxd5 4. c4 Nf6 5. Nc3 e6",
+  "difficulty": 3,
+  "description": "White attacks d5 with the c-pawn, often leading to an isolated queen's pawn position.",
+  "notes": {
+   "4.c4": "The Panov: White attacks d5 immediately.",
+   "4...Nf6": "Black defends d5 with the knight.",
+   "5.Nc3": "A third attacker on d5.",
+   "5...e6": "Black supports d5 with the pawn."
+  },
+  "explanation": "The Panov Attack turns the Caro-Kann into an open game. White puts pressure on d5 with c4 and Nc3; after the exchanges White often ends up with an isolated pawn on d4 and active pieces, while Black aims to blockade it.",
+  "tags": [
+   "caro-kann",
+   "panov attack",
+   "isolated pawn",
+   "e4 c6"
+  ]
+ },
+ {
+  "id": "opening_caro_karpov",
+  "title": "Caro-Kann: the Karpov Variation",
+  "concept": "caro_kann",
+  "opening": "Caro-Kann Defense: Karpov Variation",
+  "extend": [
+   "Nf3",
+   "Ngf6",
+   "Nxf6+",
+   "Nxf6"
+  ],
+  "difficulty": 3,
+  "description": "Black plays ...Nd7 first, so the other knight can come to f6 without doubled pawns.",
+  "notes": {
+   "4...Nd7": "Preparing ...Ngf6: if White exchanges on f6, Black takes back with the knight.",
+   "5.Nf3": "White develops.",
+   "5...Ngf6": "Now the knight challenges the e4 knight.",
+   "6.Nxf6+": "White exchanges.",
+   "6...Nxf6": "Black recaptures with a piece and keeps a healthy pawn structure."
+  },
+  "explanation": "The Karpov Variation is a small but important idea: by putting a knight on d7 first, Black can meet an exchange on f6 by recapturing with the other knight. Black keeps a healthy pawn structure and a solid position.",
+  "tags": [
+   "caro-kann",
+   "karpov variation",
+   "e4 c6",
+   "structure"
+  ]
+ }
+]
