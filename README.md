@@ -52,6 +52,27 @@ npm install
 .venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
 
+<details>
+<summary>Windows (PowerShell)</summary>
+
+```powershell
+# 1. Python deps (venv scripts live in Scripts\ on Windows)
+py -3 -m venv .venv
+.\.venv\Scripts\pip install -r requirements.txt
+
+# 2. Engine (Stockfish WASM over Node — needs Node.js installed)
+npm install
+
+# 3. Tests
+.\.venv\Scripts\python -m pytest backend/tests/ -q
+
+# 4. Run the server
+.\.venv\Scripts\uvicorn backend.app.main:app --port 8000
+```
+
+Then open http://localhost:8000
+</details>
+
 ### Connecting your local Qwen
 
 The teacher speaks the OpenAI protocol, so Ollama, LM Studio, vLLM, or llama.cpp all work:
