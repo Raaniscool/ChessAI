@@ -75,6 +75,27 @@ planned Phase 3 work.
 
 `UciEngine` wraps Stockfish via `python-chess` (thread-locked singleton). Command resolution: `ENGINE_CMD` → Node + `node_modules/stockfish` WASM build → system `stockfish`. Tests skip engine tests when unavailable; a fake engine can be injected via `set_engine()`.
 
+## Learning plans (planner/)
+
+`POST /api/plans {"goal": "I want to learn the Sicilian"}` → a course of generated lessons.
+
+```
+goal ─► Catalog.search (aliases, fuzzy tokens, categories, general curriculum)
+     └► Qwen (optional): picks catalog topic ids + order + reasons; may propose
+        SAN lines for openings NOT in the catalog
+                         │
+   catalog topics ───────┼──► generator.py ──► lesson JSON ──► lessons.schema.parse_lesson
+   Qwen lines ──► python-chess replay ──► Stockfish screen (cut at first mistake)
+                         │
+                         ▼
+   store.py: data/plans/<id>.json  +  LessonLibrary.register_course(kind="plan")
+```
+
+- **Qwen organizes, it never supplies truth.** Unknown topic ids are dropped; custom lines must be legal and mistake-free per Stockfish (depth 10, ≥6 plies) or they're reported under `skipped`.
+- **Generated lessons use the same schema and validation** as hand-written ones, so sessions, hints, grading and the frontend need no special cases.
+- **Catalog audit:** `test_catalog_engine.py` asserts every exercise's accepted move is the engine's top choice (the best move is never rejected), every accepted alternative rates good/excellent, mate-in-one tasks have a mate, open-ended tasks have ≥2 good moves, and every opening line is mistake-free.
+- Frontend: the chat routes "I want to learn…" (or any message before a lesson starts) to the planner; plan cards list first in the sidebar.
+
 ## Roadmap alignment
 
 - **Phase 1 (current):** core modules + tests ✅; session API, web UI, end-to-end MVP loop.

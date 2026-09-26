@@ -19,6 +19,18 @@ Frontend (cm-chessboard) ──move──► Application (FastAPI)
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
+## "I want to learn ___" — personal learning plans
+
+Type what you want to learn (sidebar box, or just say it in the chat: *"I want to learn the Sicilian"*, *"teach me knight forks"*, *"I want to get better at endgames"*). The tutor builds a plan of lessons and adds it to the sidebar.
+
+- Plans are built from a **verified topic catalog** (`backend/app/planner/data/topics.json`): 15 openings plus tactics, endgames and opening principles. Each opening becomes two lessons (watch + first moves, then the whole line from memory); each tactic/endgame topic becomes a set of positions to solve.
+- **Correctness:** every catalog line and position is audited by Stockfish in the test suite (`test_catalog_engine.py`). Add a topic to the JSON and it's audited automatically.
+- **With Qwen connected** the planner also *organizes* the plan (order, title, why each unit matters) and can add an opening that isn't in the catalog. Qwen's move sequence is only used after python-chess confirms it's legal **and** Stockfish checks it move by move; the line is cut at the first mistake, and anything unverifiable is listed as "left out" instead of being taught.
+- Without Qwen the planner works from the catalog alone (keyword + typo-tolerant matching).
+- Plans are saved to `data/plans/` (gitignored) and survive restarts. Delete one with the ✕ on its card.
+
+While the teacher is explaining (or after a demonstration) you can **move pieces freely** to try ideas — those moves aren't graded; ↺ resets the board.
+
 ## Repository layout
 
 ```
@@ -29,8 +41,11 @@ backend/app/
   teacher/             # Qwen client, prompts, deterministic fallback teacher
   lessons/             # lesson schema + loader + JSON course data
   lessons/data/italian_game/   # first course (structured lesson JSON)
+  planner/             # "I want to learn ___": catalog, plan builder, lesson generator, storage
+  planner/data/topics.json     # verified topic catalog (openings, tactics, endgames, strategy)
 backend/tests/         # pytest suite (chess, classification, lessons, engine, teacher)
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
+scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
 docs/ARCHITECTURE.md
 requirements.txt
 package.json           # Stockfish WASM engine dependency
@@ -107,7 +122,9 @@ Qwen3 `<think>…</think>` reasoning is always stripped before it reaches the st
 
 ## Status
 
-**Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite (39 passing).
+**Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite.
+
+**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Test suite: **94 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
 **Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
 
