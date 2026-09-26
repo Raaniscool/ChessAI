@@ -51,3 +51,8 @@ test("weakness line doesn't repeat the title", () => {
     "In 2 of your 4 games.")
   assert.equal(weaknessLine({title: "Hanging a piece"}), "Hanging a piece")
 })
+
+test("an unfinished game says so instead of showing '*'", () => {
+  assert.equal(resultLabel({result: "*", learner_result: null}), "Unfinished")
+  assert.equal(gameMeta({result: "*", date: "2026-09-20"}), "Unfinished · 2026-09-20")
+})

@@ -5,7 +5,8 @@
 const RESULT_WORDS = {win: "Won", loss: "Lost", draw: "Draw", unfinished: "Unfinished"}
 
 export function resultLabel(summary) {
-  return RESULT_WORDS[summary.learner_result] || summary.result || ""
+  if (RESULT_WORDS[summary.learner_result]) return RESULT_WORDS[summary.learner_result]
+  return summary.result === "*" ? RESULT_WORDS.unfinished : summary.result || ""
 }
 
 export function colorWord(color) {
