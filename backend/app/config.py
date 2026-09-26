@@ -107,6 +107,9 @@ class Settings:
     engine_cmd: list[str] | None = field(default_factory=resolve_engine_command)
     engine_depth: int = int(_env("ENGINE_DEPTH", "14") or "14")
     engine_timeout: float = float(_env("ENGINE_TIMEOUT", "20") or "20")
+    # Game analysis: a quick pass over every position at this depth, then each candidate
+    # mistake is re-checked at ENGINE_DEPTH before it is shown (40 moves ~ 30-60 s on a laptop).
+    game_analysis_depth: int = int(_env("GAME_ANALYSIS_DEPTH", "12") or "12")
 
     # --- Qwen / AI teacher (OpenAI-compatible endpoint) ---
     # Works with Ollama (/v1), LM Studio, vLLM, llama.cpp server, etc.
