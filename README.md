@@ -36,6 +36,16 @@ Type what you want to learn in the chat box (*"I want to learn the Sicilian"*, *
 
 **🔊 Read aloud:** turn it on in the header (speed and voice next to it) and the tutor's messages are read to you; every message also has its own 🔊 button. Chess notation is spoken as words (*Nxg5* → "knight takes G5", *O-O* → "castles kingside"), and as each move or square is spoken it lights up on the board and in the text. With read-aloud on, a demonstration waits for each comment to be read before playing the next move. It uses the browser's built-in voices (Edge and Chrome on Windows work offline; Edge's "Natural" voices sound best) — nothing to install.
 
+## 🔍 Game Analysis — learn from your own Chess.com games
+
+Paste one or more Chess.com PGNs into the **Game Analysis** tab.
+- **Checking the games:** python-chess validates every move.
+- **Stockfish analysis:** Stockfish finds the moments that mattered, and the Knowledge Library's validators name them (missed forks, hung pieces, ignored threats, missed mates, opening habits…).
+- **Review:** step through each moment: the position before, your move, Stockfish's move and line, and a plain-language explanation. The optional 🧠 AI explanation is built only from verified facts.
+- **Recurring weaknesses:** a weakness counts only when it shows up in **two or more different games**. **Start training** turns it into a lesson plan: verified library examples first, then positions from your own games.
+
+Your games stay in `data/games/` and never enter the shared library. Details: [docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md).
+
 ## Repository layout
 
 ```
@@ -49,11 +59,15 @@ backend/app/
   planner/             # "I want to learn ___": catalog, plan builder, lesson generator, storage
   planner/data/topics.json     # verified topic catalog (openings, tactics, endgames, strategy)
   planner/data/puzzles.json    # Stockfish-verified Lichess puzzles per theme (built by scripts/build_puzzle_library.py)
+  games/               # PGN import (python-chess validation), platform-neutral GameRecord, importers/chesscom.py, storage
+  analysis/            # game analyzer (Stockfish), motif + habit detection, recurring weaknesses, review cards, training plans
+  game_api.py          # /api/games endpoints
 backend/tests/         # pytest suite (chess, classification, lessons, engine, teacher)
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
+frontend/analysis.js   # Game Analysis screen (game-format.js: pure display helpers)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
-docs/ARCHITECTURE.md
+docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/GAME_ANALYSIS.md
 requirements.txt
 package.json           # Stockfish WASM engine dependency
 ```
@@ -154,7 +168,7 @@ The app never makes you wait for the language model to see a result:
 
 **Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Verified Knowledge Library (107 examples) wired into plans, lessons, chat and the AI teacher. Test suite: **653 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
-**Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
+**Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, recurring weaknesses (2+ games), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Test suite: **792 passing**. The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
 
 The proven MVP loop:
 

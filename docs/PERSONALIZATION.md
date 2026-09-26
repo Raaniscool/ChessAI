@@ -1,6 +1,7 @@
 # Personalized Training — Architecture Proposal
 
-> Status: **proposal** (inspection complete, implementation starts with the MVP below).
+> Status: the game-import → analysis → weakness → training MVP is **implemented** — see
+> [GAME_ANALYSIS.md](GAME_ANALYSIS.md) for what was built (module names differ slightly from this proposal).
 > Second pillar of the AI Chess Tutor: *study how the player actually plays, find
 > recurring weaknesses across games, and build training that fixes them.*
 
