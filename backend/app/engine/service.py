@@ -86,8 +86,21 @@ class MoveFeedback:
         }
 
 
+@dataclass
+class Line:
+    """One engine candidate line (multi-PV). `score` is from White's point of view."""
+
+    move: chess.Move
+    san: str
+    score: Score
+    pv_san: list[str] = field(default_factory=list)
+
+
 class AnalysisEngine(Protocol):
     def analyse(self, board: chess.Board, depth: int | None = None) -> Analysis: ...
+
+    def analyse_lines(self, board: chess.Board, depth: int | None = None,
+                      multipv: int = 3, fresh: bool = False) -> list[Line]: ...
 
     def evaluate_move(
         self, board_before: chess.Board, move: chess.Move, depth: int | None = None
@@ -139,6 +152,33 @@ class UciEngine:
             pv_san=pv_san,
             depth=depth,
         )
+
+    def analyse_lines(self, board: chess.Board, depth: int | None = None,
+                      multipv: int = 3, fresh: bool = False) -> list[Line]:
+        """The engine's top `multipv` moves, best first (used to spot equally good alternatives).
+
+        fresh=True starts a new game first (clears the hash table), so the result depends only
+        on the position and depth: library verification must be reproducible."""
+        depth = depth or self.settings.engine_depth
+        with self._lock:
+            infos = self._engine.analyse(board, chess.engine.Limit(depth=depth), multipv=multipv,
+                                         game=object() if fresh else None)
+        if isinstance(infos, dict):
+            infos = [infos]
+        lines = []
+        for info in infos:
+            pv = list(info.get("pv", []))
+            if not pv or "score" not in info:
+                continue
+            display, pv_san = board.copy(), []
+            for m in pv[:6]:
+                if not display.is_legal(m):
+                    break
+                pv_san.append(display.san(m))
+                display.push(m)
+            lines.append(Line(move=pv[0], san=board.san(pv[0]),
+                              score=Score.from_pov_white(info["score"]), pv_san=pv_san))
+        return lines
 
     def evaluate_move(
         self, board_before: chess.Board, move: chess.Move, depth: int | None = None
