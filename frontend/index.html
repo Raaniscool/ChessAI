@@ -14,6 +14,11 @@
       <span class="logo">♞</span>
       <h1>AI Chess Tutor</h1>
     </div>
+    <nav class="tabs" role="tablist">
+      <button id="tab-lessons" class="tab active" role="tab" aria-selected="true">📚 Lessons</button>
+      <button id="tab-games" class="tab" role="tab" aria-selected="false"
+              title="Import your Chess.com games and review your mistakes">🔍 Game Analysis</button>
+    </nav>
     <div class="header-right">
       <div id="speech-controls" class="speech-controls hidden">
         <button id="btn-read-aloud" class="btn toggle" aria-pressed="false"
@@ -32,8 +37,14 @@
 
   <div class="layout">
     <aside id="sidebar">
-      <h2>Your lessons</h2>
-      <div id="course-list" class="course-list"></div>
+      <div id="lessons-side">
+        <h2>Your lessons</h2>
+        <div id="course-list" class="course-list"></div>
+      </div>
+      <div id="games-side" class="hidden">
+        <h2>Your games</h2>
+        <div id="ga-games" class="course-list"></div>
+      </div>
     </aside>
 
     <main class="main">
@@ -62,6 +73,33 @@
           <input id="chat-input" type="text" placeholder="What do you want to learn? Or ask a question…"
                  autocomplete="off">
           <button id="btn-chat" class="btn primary">Send</button>
+        </div>
+      </section>
+
+      <section id="analysis-pane" class="lesson-pane analysis-pane hidden">
+        <div class="lesson-header">
+          <h2 id="ga-title">Game Analysis</h2>
+          <span id="ga-counter" class="step-indicator"></span>
+        </div>
+        <div id="ga-body" class="messages ga-body">
+          <div id="ga-import" class="ga-card">
+            <p>Paste your games from <b>Chess.com</b>: open a game, click <b>Share → PGN</b>, and copy the text.
+              You can paste several games at once. Your games stay private to you.</p>
+            <textarea id="ga-pgn" rows="6" spellcheck="false"
+                      placeholder='[Event "Live Chess"]&#10;[Site "Chess.com"]&#10;…&#10;&#10;1. e4 e5 2. Nf3 …'></textarea>
+            <div class="ga-row">
+              <input id="ga-username" type="text" placeholder="Your Chess.com username" autocomplete="off">
+              <button id="ga-import-btn" class="btn primary">Import &amp; analyze</button>
+            </div>
+            <div id="ga-status" class="ga-status"></div>
+          </div>
+          <div id="ga-overview"></div>
+          <div id="ga-review" class="hidden"></div>
+        </div>
+        <div class="controls">
+          <button id="ga-back" class="btn hidden">← All games</button>
+          <button id="ga-prev" class="btn hidden">← Previous</button>
+          <button id="ga-next" class="btn primary hidden">Next →</button>
         </div>
       </section>
     </main>

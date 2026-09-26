@@ -6,6 +6,7 @@ import {Chessboard, COLOR, INPUT_EVENT_TYPE, FEN, BORDER_TYPE} from "./vendor/cm
 import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/markers/Markers.js"
 import {Chess} from "./vendor/chess.mjs/Chess.js"
 import {Narrator, decorateMoves} from "./speech.js"
+import {setupGameAnalysis} from "./analysis.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -13,7 +14,9 @@ import {Narrator, decorateMoves} from "./speech.js"
 const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "lesson-title", "step-indicator",
   "course-list", "health", "chat-input", "btn-chat", "btn-continue", "btn-hint", "btn-reveal", "btn-play",
   "btn-explain-example", "speech-controls", "btn-read-aloud", "speech-rate", "speech-voice", "btn-stop-speech",
-  "welcome"]
+  "welcome", "tab-lessons", "tab-games", "lessons-side", "games-side", "analysis-pane", "ga-games", "ga-pgn",
+  "ga-username", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
+  "ga-back", "ga-prev", "ga-next", "ga-body"]
 const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))
 if (missingIds.length) {
   const bar = document.createElement("div")
@@ -34,6 +37,7 @@ const state = {
   busy: false,
   demoPlaying: false,
   stream: null,            // AbortController of the AI text currently streaming
+  view: "lessons",         // "lessons" | "games"
 }
 
 // ---------- api ----------
@@ -54,10 +58,14 @@ async function api(path, method = "GET", body = undefined) {
 }
 
 // Stream newline-delimited JSON events (AI text appears while it's generated).
-async function streamEvents(path, body, onEvent) {
-  if (state.stream) state.stream.abort()
+// Exclusive streams (teacher replies) replace each other; a background stream
+// (game analysis progress) runs alongside them and is never cancelled by them.
+async function streamEvents(path, body, onEvent, {exclusive = true} = {}) {
   const controller = new AbortController()
-  state.stream = controller
+  if (exclusive) {
+    if (state.stream) state.stream.abort()
+    state.stream = controller
+  }
   try {
     const res = await fetch(path, {
       method: "POST",
@@ -128,11 +136,18 @@ function applyHighlights(highlights = []) {
   }
 }
 
-async function showPosition(fen, {orientation = COLOR.white, highlights = [], animated = false} = {}) {
-  clearMarkers()
-  await board.setOrientation(orientation)
-  await board.setPosition(fen, animated)
-  applyHighlights(highlights)
+// Board updates run one after another: two views (a lesson and a game review) may
+// ask for a position at nearly the same moment, and cm-chessboard can't overlap them.
+let boardQueue = Promise.resolve()
+function showPosition(fen, {orientation = COLOR.white, highlights = [], animated = false} = {}) {
+  const run = async () => {
+    clearMarkers()
+    if (board.getOrientation() !== orientation) await board.setOrientation(orientation)
+    await board.setPosition(fen, animated)
+    applyHighlights(highlights)
+  }
+  boardQueue = boardQueue.then(run, run)
+  return boardQueue
 }
 
 function applyUci(chess, uci) {
@@ -523,7 +538,7 @@ async function playDemonstration() {
   setStatus("Watch the demonstration…")
   try {
     for (let i = 0; i < step.moves.length; i++) {
-      if (state.step !== step) return  // learner moved on
+      if (state.step !== step || state.view !== "lessons") return  // learner moved on
       applyUci(demoChess, step.moves[i])
       await board.setPosition(demoChess.fen(), true)
       const comment = step.comments && step.comments[i]
@@ -636,6 +651,7 @@ async function explainExample() {
   } finally {
     bubble.classList.remove("typing")
     if (bubble.isConnected && text) finishStreamedMsg(bubble)
+    else if (bubble.isConnected) bubble.remove()  // stopped before any text arrived
   }
 }
 
@@ -679,6 +695,7 @@ async function sendChat() {
   } finally {
     bubble.classList.remove("typing")
     if (bubble.isConnected && text) finishStreamedMsg(bubble)
+    else if (bubble.isConnected) bubble.remove()  // stopped before any text arrived
   }
 }
 
@@ -838,7 +855,63 @@ async function loadHealth() {
   }
 }
 
+// ---------- tabs: lessons / game analysis ----------
+
+const gameAnalysis = setupGameAnalysis({
+  api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
+  setStatus, makeSpeakable, narrator,
+  // A training plan built from the learner's games is an ordinary plan: show it in the lessons view.
+  onTraining: async res => {
+    await switchView("lessons")
+    renderPlan(res)
+    await loadCourses()
+  },
+})
+
+let lessonBoard = null  // what the lesson view showed, restored when coming back
+
+async function switchView(name) {
+  if (state.view === name) return
+  narrator.stop()
+  const games = name === "games"
+  if (games) {
+    // A lesson reply still streaming keeps going (its pane is only hidden).
+    lessonBoard = {fen: board.getPosition(), orientation: board.getOrientation(),
+      status: document.getElementById("board-status").textContent}
+  } else {
+    gameAnalysis.leave()
+  }
+  state.view = name
+  for (const [id, on] of [["tab-lessons", !games], ["tab-games", games]]) {
+    const tab = document.getElementById(id)
+    tab.classList.toggle("active", on)
+    tab.setAttribute("aria-selected", String(on))
+  }
+  document.getElementById("lessons-side").classList.toggle("hidden", games)
+  document.getElementById("games-side").classList.toggle("hidden", !games)
+  document.querySelector(".lesson-pane:not(.analysis-pane)").classList.toggle("hidden", games)
+  document.getElementById("analysis-pane").classList.toggle("hidden", !games)
+  if (games) {
+    await gameAnalysis.enter()
+  } else {
+    board.disableMoveInput()
+    if (lessonBoard) {
+      await showPosition(lessonBoard.fen, {orientation: lessonBoard.orientation})
+      setStatus(lessonBoard.status)
+    }
+    const step = state.step
+    if (step && step.type === "exercise" && !step.accepted) {
+      state.chess = new Chess(step.board.fen)
+      await showPosition(step.board.fen, {orientation: step.side === "black" ? COLOR.black : COLOR.white})
+      board.enableMoveInput(moveInputHandler, step.side === "black" ? COLOR.black : COLOR.white)
+    }
+  }
+}
+
 // ---------- wire up ----------
+
+document.getElementById("tab-lessons").addEventListener("click", () => switchView("lessons"))
+document.getElementById("tab-games").addEventListener("click", () => switchView("games"))
 
 document.getElementById("btn-play").addEventListener("click", playDemonstration)
 document.getElementById("btn-continue").addEventListener("click", () => { narrator.stop(); advanceLesson() })

@@ -260,3 +260,94 @@ header h1 { margin: 0; font-size: 20px; }
 
 .course-list .empty { margin: 0 0 6px; line-height: 1.5; }
 .stale-page { background: #b8860b; color: #111; padding: 10px 16px; font-size: 15px; cursor: pointer; text-align: center; }
+
+/* ---------- tabs ---------- */
+.tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 10px; padding: 4px; }
+.tab {
+  background: none; border: none; color: var(--muted); padding: 7px 14px; border-radius: 7px;
+  font-size: 13.5px; cursor: pointer;
+}
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--panel-2); color: var(--text); font-weight: 600; }
+
+/* ---------- game analysis ---------- */
+.ga-body { gap: 12px; }
+.ga-card {
+  background: var(--panel-2); border: 1px solid #343c45; border-radius: 10px; padding: 12px 14px;
+  font-size: 14.5px; line-height: 1.55;
+}
+.ga-card h3 { margin: 0 0 8px; font-size: 16px; }
+.ga-card p { margin: 0 0 8px; }
+#ga-pgn {
+  width: 100%; resize: vertical; background: var(--bg); color: var(--text); border: 1px solid #3c4550;
+  border-radius: 8px; padding: 9px 11px; font: 12.5px/1.45 ui-monospace, Consolas, monospace;
+}
+#ga-pgn:focus, #ga-username:focus, .moment-ask input:focus { outline: none; border-color: var(--accent); }
+.ga-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+#ga-username, .moment-ask input {
+  flex: 1; min-width: 160px; background: var(--bg); border: 1px solid #3c4550; color: var(--text);
+  border-radius: 8px; padding: 9px 12px; font-size: 13.5px;
+}
+.ga-status { margin-top: 8px; font-size: 13.5px; }
+.ga-status:empty { display: none; }
+.ga-status.error { color: #f1b7b5; }
+.ga-status.warn .muted { margin-top: 4px; }
+.ga-errors { margin: 4px 0 0; padding-left: 20px; font-size: 12.5px; color: var(--muted); }
+.ga-progress { margin-top: 8px; }
+.ga-progress-text { font-size: 13px; color: #c3cad2; }
+.ga-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.ga-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.ga-progress.error .ga-progress-text { color: #f1b7b5; }
+
+.game-item {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left;
+  background: var(--panel); border: 1px solid #343c45; color: var(--text); border-radius: 8px;
+  padding: 9px 11px; margin-bottom: 7px; font-size: 13.5px; cursor: pointer;
+}
+.game-item:hover, .game-item.active { border-color: var(--accent); }
+.game-vs { font-weight: 600; display: flex; justify-content: space-between; gap: 6px; }
+.res { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.res.win { color: var(--accent-2); }
+.res.loss { color: var(--danger); }
+.res.draw { color: var(--warn); }
+
+.weakness-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.weakness {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 11px;
+  background: var(--bg); border-radius: 8px; border-left: 3px solid #3c4550; margin-top: 6px;
+}
+.weakness.recurring { border-left-color: var(--warn); }
+.weakness .muted { font-size: 12.5px; }
+.weakness-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.weakness-actions .btn { padding: 6px 11px; font-size: 12.5px; }
+details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+.ga-game-head { font-size: 12.5px; }
+.ga-game-head a { color: var(--accent-2); }
+.moment-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.moment-chips .chip.active { border-color: var(--text); font-weight: 600; }
+.moment-chips .chip.blunder { color: #f1b7b5; }
+.moment-chips .chip.mistake { color: #f0b48a; }
+.moment-chips .chip.habit { color: var(--muted); }
+.ga-card.moment { border-left: 4px solid #3c4550; }
+.ga-card.moment.blunder { border-left-color: var(--danger); }
+.ga-card.moment.mistake { border-left-color: #d97b3f; }
+.ga-card.moment.inaccurate { border-left-color: var(--warn); }
+.ga-card.moment.habit { border-left-color: var(--muted); }
+.moment-headline { font-weight: 600; color: #f0b48a; margin-bottom: 8px; }
+.ga-card.moment.habit .moment-headline { color: var(--warn); }
+.moment-views { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.moment-views .btn { padding: 6px 11px; font-size: 12.5px; }
+.moment-views .btn.active { border-color: var(--accent); background: #2f4a3a; }
+.moment-why, .moment-ai { position: relative; padding-right: 30px; white-space: pre-line; }
+.moment-ai { margin-top: 10px; padding: 9px 30px 9px 11px; background: var(--bg); border-radius: 8px; }
+.moment-ask { display: flex; gap: 8px; margin-top: 10px; }
+.moment-related {
+  margin-top: 10px; padding: 8px 11px; border-radius: 8px; background: #3a3322; font-size: 13.5px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.moment-related .btn { padding: 6px 11px; font-size: 12.5px; margin: 0; }
+.engine-details table { margin-top: 6px; font-size: 12.5px; border-collapse: collapse; }
+.engine-details th { text-align: left; color: var(--muted); font-weight: 500; padding: 2px 12px 2px 0; }
+.engine-details td { padding: 2px 0; }
+@media (max-width: 980px) { header { flex-wrap: wrap; gap: 10px; } }
