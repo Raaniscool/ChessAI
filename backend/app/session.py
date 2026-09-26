@@ -168,6 +168,9 @@ class SessionManager:
             "total_steps": len(lesson.steps),
             "lesson_title": lesson.title,
             "accepted": session.exercise_accepted,
+            # What Continue leads to, so the button can say "Your turn: practise it".
+            "next_type": (lesson.steps[session.step_index + 1].type
+                          if session.step_index + 1 < len(lesson.steps) else None),
         }
         example = self._example_for(session, at_or_before=False) if getattr(step, "example", None) else None
         if example is not None:

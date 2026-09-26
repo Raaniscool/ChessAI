@@ -559,3 +559,15 @@ def test_knowledge_plans_survive_restart(client):
 
 def test_health_reports_the_library(client):
     assert client.get("/api/health").json()["knowledge_examples"] >= 100
+
+
+def test_plan_lesson_titles_are_distinct():
+    """Sidebar clutter: a library plan listed 'Back-rank mate: practice' twice."""
+    from app.planner.knowledge_lessons import _distinct_titles
+    existing = [{"title": "Back-rank mate: learn from examples"}, {"title": "Back-rank mate: practice"}]
+    new = [{"title": "Back-rank mate"}, {"title": "Back-rank mate: practice"}]
+    _distinct_titles(new, existing, "Back-rank mate")
+    assert [lesson["title"] for lesson in new] == ["Back-rank mate: more examples", "Back-rank mate: more practice"]
+    other = [{"title": "Forks"}, {"title": "Forks: practice"}]
+    _distinct_titles(other, existing, "Forks")
+    assert [lesson["title"] for lesson in other] == ["Forks: more examples", "Forks: practice"]

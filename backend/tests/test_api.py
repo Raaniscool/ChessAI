@@ -167,3 +167,10 @@ def test_session_resume(client):
     data = client.get(f"/api/sessions/{sid}").json()
     assert data["step"]["type"] == "demonstrate"
     assert data["status"] == "active"
+
+
+def test_step_payload_says_what_comes_next(client):
+    """The UI labels Continue ("Your turn: practise it") from next_type."""
+    sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
+    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    assert step["type"] == "demonstrate" and step["next_type"] == "exercise"

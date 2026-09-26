@@ -13,6 +13,7 @@ that entry to the AI teacher. Nothing here asks an LLM for chess content.
 """
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -61,7 +62,6 @@ def _explanation(example) -> str:
     credit = _credit(example)
     if credit:
         parts.append(credit)
-    parts.append("Every move here was checked with python-chess and Stockfish.")
     return "\n\n".join(p for p in parts if p)
 
 
@@ -185,6 +185,24 @@ def _level(examples) -> str:
     return max(examples, key=lambda e: e.difficulty).level if examples else "beginner"
 
 
+def _distinct_titles(new: list[dict], existing: list[dict], topic_title: str) -> None:
+    """Catalog lessons added to a library plan are the *extra* practice: rename them when
+    they'd read like the library lessons ("Back-rank mate: practice" twice in one plan)."""
+    taken = {lesson["title"].lower() for lesson in existing}
+    for lesson in new:
+        title = lesson["title"]
+        if title.lower() == topic_title.lower():
+            title = f"{topic_title}: more examples"
+        if title.lower() in taken and title.lower().endswith(": practice"):
+            title = title[: -len("practice")] + "more practice"
+        n = 2
+        base = title
+        while title.lower() in taken:
+            title, n = f"{base} ({n})", n + 1
+        lesson["title"] = title
+        taken.add(title.lower())
+
+
 def knowledge_lesson(lesson_id: str, title: str, intro: str, sequence: list[tuple], completion: str,
                      concept_names: list[str]) -> dict:
     examples = [e for e, _ in sequence]
@@ -219,7 +237,12 @@ def _intro(library, retrieval, names: list[str]) -> str:
         plan.append("then you'll find the key move in a slightly harder one")
     if "practice" in roles:
         plan.append("and finally you'll solve one on your own")
-    text = f"{main.name}: {main.summary}" if len(names) == 1 else f"{', '.join(names)}."
+    if len(names) == 1:
+        # "A back-rank mate: ..." already names the idea — don't prefix "Back-rank mate:" again.
+        names_it = re.match(rf"^(an?\s+|the\s+)?{re.escape(main.name)}\b", main.summary, re.IGNORECASE)
+        text = main.summary if names_it else f"{main.name}: {main.summary}"
+    else:
+        text = f"{', '.join(names)}."
     count = len(retrieval.sequence)
     text += f"\n\nI picked {count} verified example{'s' if count != 1 else ''} for you"
     text += (": " + ", ".join(plan) + ".") if plan else "."
@@ -282,6 +305,7 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
     for n, tid in enumerate(topic_ids[:MAX_TOPIC_UNITS], start=2):
         topic = catalog.topics[tid]
         new = topic_lessons(f"plan_{plan_id}_{n:02d}", topic)
+        _distinct_titles(new, lessons, topic.title)
         units.append({"topic_id": tid, "title": topic.title, "category": topic.category,
                       "reason": f"More practice: {topic.summary}", "verified_by": "catalog + Stockfish",
                       "lesson_ids": [lesson["id"] for lesson in new]})
@@ -290,7 +314,7 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
     count = len(retrieval.examples)
     title = f"Learn: {subject}"
     summary = (f"{count} verified examples of {subject.lower()}: watch one, find the key move in the next, "
-               "then solve on your own. Every move was checked with python-chess and Stockfish.")
+               "then solve on your own. Every move is checked by the Stockfish chess engine.")
     plan = {
         "id": plan_id,
         "goal": goal,
