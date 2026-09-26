@@ -1,0 +1,6064 @@
+[
+ {
+  "id": "lichess_aubdy",
+  "status": "verified",
+  "title": "Absolute pin: rook pinned to the king",
+  "concept": "absolute_pin",
+  "category": "tactics",
+  "subcategory": "pin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Use the pin.",
+  "start_fen": "8/p3k3/1b1R4/8/4K3/8/8/8 w - - 36 70",
+  "moves": [
+   "Ke5",
+   "Bc7",
+   "Kd5",
+   "Bxd6"
+  ],
+  "final_fen": "8/p3k3/3b4/3K4/8/8/8/8 w - - 0 72",
+  "key_move": "70...Bc7",
+  "prompt": "What would you play here? Use the pin.",
+  "hints": [
+   "Which enemy piece can't move without exposing something more valuable behind it?",
+   "Look for a line through the rook to the king behind it."
+  ],
+  "notes": {
+   "70.Ke5": "The opponent's last move. Something is now possible — look closely.",
+   "70...Bc7": "The bishop on c7 pins the rook on d6 to the king on e5 — the pinned piece can't legally move.",
+   "71...Bxd6": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "In an absolute pin the piece behind is the king, so the pinned piece may not legally move at all. The bishop on c7 pins the rook on d6 to the king on e5 — the pinned piece can't legally move. Black comes out 5 points of material ahead.",
+  "tags": [
+   "pin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "c7"
+    },
+    "pinned": {
+     "piece": "rook",
+     "color": "white",
+     "square": "d6"
+    },
+    "behind": {
+     "piece": "king",
+     "color": "white",
+     "square": "e5"
+    },
+    "kind": "absolute",
+    "move": "70...Bc7",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "auBdY",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/auBdY",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bc7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 821,
+     "best_move": "Bc7",
+     "best_cp": 821,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "70...Bc7"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxd6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 523,
+      "best_move": "Bxd6",
+      "best_cp": 523,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "71...Bxd6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_k9qyf",
+  "status": "verified",
+  "title": "Absolute pin: queen pinned to the king",
+  "concept": "absolute_pin",
+  "category": "tactics",
+  "subcategory": "pin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Use the pin.",
+  "start_fen": "8/8/8/1KR1q3/5k2/1P6/8/8 b - - 1 69",
+  "moves": [
+   "Qd4",
+   "Rc4",
+   "Ke3",
+   "Rxd4"
+  ],
+  "final_fen": "8/8/8/1K6/3R4/1P2k3/8/8 b - - 0 71",
+  "key_move": "70.Rc4",
+  "prompt": "What would you play here? Use the pin.",
+  "hints": [
+   "Which enemy piece can't move without exposing something more valuable behind it?",
+   "Look for a line through the queen to the king behind it."
+  ],
+  "notes": {
+   "69...Qd4": "The opponent's last move. Something is now possible — look closely.",
+   "70.Rc4": "The rook on c4 pins the queen on d4 to the king on f4 — the pinned piece can't legally move.",
+   "71.Rxd4": "White comes out 9 points of material ahead."
+  },
+  "explanation": "In an absolute pin the piece behind is the king, so the pinned piece may not legally move at all. The rook on c4 pins the queen on d4 to the king on f4 — the pinned piece can't legally move. White comes out 9 points of material ahead.",
+  "tags": [
+   "pin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "rook",
+     "color": "white",
+     "square": "c4"
+    },
+    "pinned": {
+     "piece": "queen",
+     "color": "black",
+     "square": "d4"
+    },
+    "behind": {
+     "piece": "king",
+     "color": "black",
+     "square": "f4"
+    },
+    "kind": "absolute",
+    "move": "70.Rc4",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "K9QyF",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/K9QyF",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rc4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 602,
+     "best_move": "Rc4",
+     "best_cp": 602,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "70.Rc4"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxd4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 609,
+      "best_move": "Rxd4",
+      "best_cp": 609,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "71.Rxd4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_kuf0s",
+  "status": "verified",
+  "title": "Absolute pin: knight pinned to the king",
+  "concept": "absolute_pin",
+  "category": "tactics",
+  "subcategory": "pin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Use the pin.",
+  "start_fen": "2B5/8/8/4nK2/1p6/1P3k2/8/8 b - - 2 72",
+  "moves": [
+   "Nc6",
+   "Bb7",
+   "Kg3",
+   "Bxc6"
+  ],
+  "final_fen": "8/8/2B5/5K2/1p6/1P4k1/8/8 b - - 0 74",
+  "key_move": "73.Bb7",
+  "prompt": "What would you play here? Use the pin.",
+  "hints": [
+   "Which enemy piece can't move without exposing something more valuable behind it?",
+   "Look for a line through the knight to the king behind it."
+  ],
+  "notes": {
+   "72...Nc6": "The opponent's last move. Something is now possible — look closely.",
+   "73.Bb7": "The bishop on b7 pins the knight on c6 to the king on f3 — the pinned piece can't legally move.",
+   "74.Bxc6": "White comes out 3 points of material ahead."
+  },
+  "explanation": "In an absolute pin the piece behind is the king, so the pinned piece may not legally move at all. The bishop on b7 pins the knight on c6 to the king on f3 — the pinned piece can't legally move. White comes out 3 points of material ahead.",
+  "tags": [
+   "pin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "b7"
+    },
+    "pinned": {
+     "piece": "knight",
+     "color": "black",
+     "square": "c6"
+    },
+    "behind": {
+     "piece": "king",
+     "color": "black",
+     "square": "f3"
+    },
+    "kind": "absolute",
+    "move": "73.Bb7",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "KUF0S",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/KUF0S",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bb7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 613,
+     "best_move": "Bb7",
+     "best_cp": 613,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "73.Bb7"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxc6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 882,
+      "best_move": "Bxc6",
+      "best_cp": 882,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "74.Bxc6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ajsxi",
+  "status": "verified",
+  "title": "Deflection",
+  "concept": "deflection",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the deflection.",
+  "start_fen": "6k1/5R2/6K1/7P/6r1/8/8/8 w - - 0 84",
+  "moves": [
+   "Kf6",
+   "Rf4+",
+   "Ke5",
+   "Rxf7"
+  ],
+  "final_fen": "6k1/5r2/8/4K2P/8/8/8/8 w - - 0 86",
+  "key_move": "84...Rf4+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "84.Kf6": "The opponent's last move. Something is now possible — look closely.",
+   "85...Rxf7": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "Deflection lures a defender away from its job — then the square or piece it guarded falls. Black comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "deflection": {
+    "move": "84...Rf4+",
+    "defender": {
+     "piece": "king",
+     "color": "white",
+     "square": "f6"
+    },
+    "dragged_to": "e5",
+    "undefended_square": "f7",
+    "follow_up": "85...Rxf7"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "AJSxI",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/AJSxI",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "deflection"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 488,
+     "best_move": "Rf4+",
+     "best_cp": 488,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "84...Rf4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxf7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 496,
+      "best_move": "Rxf7",
+      "best_cp": 496,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "85...Rxf7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ebohy",
+  "status": "verified",
+  "title": "Deflection",
+  "concept": "deflection",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the deflection.",
+  "start_fen": "8/8/8/4R1P1/3K1k2/8/8/5r2 w - - 0 67",
+  "moves": [
+   "g6",
+   "Rd1+",
+   "Kc3",
+   "Kxe5"
+  ],
+  "final_fen": "8/8/6P1/4k3/8/2K5/8/3r4 w - - 0 69",
+  "key_move": "67...Rd1+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "67.g6": "The opponent's last move. Something is now possible — look closely.",
+   "68...Kxe5": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "Deflection lures a defender away from its job — then the square or piece it guarded falls. Black comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "deflection": {
+    "move": "67...Rd1+",
+    "defender": {
+     "piece": "king",
+     "color": "white",
+     "square": "d4"
+    },
+    "dragged_to": "c3",
+    "undefended_square": "e5",
+    "follow_up": "68...Kxe5"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "EBohy",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/EBohy",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "deflection"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rd1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 510,
+     "best_move": "Rd1+",
+     "best_cp": 510,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "67...Rd1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxe5",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 483,
+      "best_move": "Kxe5",
+      "best_cp": 483,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "68...Kxe5"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_hl0fb",
+  "status": "verified",
+  "title": "Deflection",
+  "concept": "deflection",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the deflection.",
+  "start_fen": "8/4k1p1/4r3/5K2/1R6/8/8/8 b - - 11 60",
+  "moves": [
+   "Kd6",
+   "Rb6+",
+   "Kc5",
+   "Rxe6"
+  ],
+  "final_fen": "8/6p1/4R3/2k2K2/8/8/8/8 b - - 0 62",
+  "key_move": "61.Rb6+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "60...Kd6": "The opponent's last move. Something is now possible — look closely.",
+   "62.Rxe6": "White comes out 5 points of material ahead."
+  },
+  "explanation": "Deflection lures a defender away from its job — then the square or piece it guarded falls. White comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "deflection": {
+    "move": "61.Rb6+",
+    "defender": {
+     "piece": "king",
+     "color": "black",
+     "square": "d6"
+    },
+    "dragged_to": "c5",
+    "undefended_square": "e6",
+    "follow_up": "62.Rxe6"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Hl0FB",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Hl0FB",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "deflection"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rb6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 507,
+     "best_move": "Rb6+",
+     "best_cp": 507,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "61.Rb6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxe6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 489,
+      "best_move": "Rxe6",
+      "best_cp": 489,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "62.Rxe6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_aa9wy",
+  "status": "verified",
+  "title": "Discovered attack",
+  "concept": "discovered_attack",
+  "category": "tactics",
+  "subcategory": "discoveredAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the discovered attack.",
+  "start_fen": "8/6R1/8/4p3/3b3p/7k/4K3/8 w - - 0 41",
+  "moves": [
+   "Kf3",
+   "e4+",
+   "Kxe4",
+   "Bxg7"
+  ],
+  "final_fen": "8/6b1/8/8/4K2p/7k/8/8 w - - 0 43",
+  "key_move": "41...e4+",
+  "prompt": "What would you play here? Find the discovered attack.",
+  "hints": [
+   "Move one piece to uncover an attack by the piece behind it.",
+   "One of your pieces is hiding another one. Move the front piece with a threat."
+  ],
+  "notes": {
+   "41.Kf3": "The opponent's last move. Something is now possible — look closely.",
+   "41...e4+": "The pawn on e4 steps aside and uncovers the bishop on d4, which now attacks the rook on g7.",
+   "42...Bxg7": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "A discovered attack: one piece moves out of the way and uncovers an attack by the piece behind it — two threats with one move. The pawn on e4 steps aside and uncovers the bishop on d4, which now attacks the rook on g7. Black comes out 4 points of material ahead.",
+  "tags": [
+   "discoveredAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "discovered_attack": {
+    "move": "41...e4+",
+    "moved_piece": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "e4"
+    },
+    "revealed_attacker": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "d4"
+    },
+    "target": {
+     "piece": "rook",
+     "color": "white",
+     "square": "g7"
+    },
+    "is_check": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Aa9wY",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Aa9wY",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "discovered_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "e4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 759,
+     "best_move": "e4+",
+     "best_cp": 759,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "41...e4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxg7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 851,
+      "best_move": "Bxg7",
+      "best_cp": 851,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "42...Bxg7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_7qyav",
+  "status": "verified",
+  "title": "Discovered check",
+  "concept": "discovered_check",
+  "category": "tactics",
+  "subcategory": "discoveredAttack",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the discovered attack.",
+  "start_fen": "6Rq/2p2p1k/1p1p1n1p/p4P2/P1PP1P1Q/3B4/5K2/8 b - - 0 30",
+  "moves": [
+   "Nxg8",
+   "f6#"
+  ],
+  "final_fen": "6nq/2p2p1k/1p1p1P1p/p7/P1PP1P1Q/3B4/5K2/8 b - - 0 31",
+  "key_move": "31.f6#",
+  "prompt": "What would you play here? Find the discovered attack.",
+  "hints": [
+   "Move one piece to uncover an attack by the piece behind it.",
+   "One of your pieces is hiding another one. Move the front piece with a threat."
+  ],
+  "notes": {
+   "30...Nxg8": "The opponent's last move. Something is now possible — look closely.",
+   "31.f6#": "Discovered check: moving the pawn on f6 reveals check from the bishop on d3."
+  },
+  "explanation": "A discovered check: moving one piece reveals check from another. The piece that moved is free to grab something while the king deals with the check. Discovered check: moving the pawn on f6 reveals check from the bishop on d3. The line ends in checkmate.",
+  "tags": [
+   "discoveredAttack",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "discovered_check": {
+    "move": "31.f6#",
+    "moved_piece": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "f6"
+    },
+    "checking_piece": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "d3"
+    },
+    "double_check": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7qYaV",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7qYaV",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "discovered_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "f6#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "f6#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "31.f6#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_eme08",
+  "status": "verified",
+  "title": "Discovered check",
+  "concept": "discovered_check",
+  "category": "tactics",
+  "subcategory": "discoveredAttack",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the discovered attack.",
+  "start_fen": "8/5pkp/8/8/P7/2q1P1P1/5P1P/2Rr1bK1 w - - 0 33",
+  "moves": [
+   "Rxc3",
+   "Bh3#"
+  ],
+  "final_fen": "8/5pkp/8/8/P7/2R1P1Pb/5P1P/3r2K1 w - - 1 34",
+  "key_move": "33...Bh3#",
+  "prompt": "What would you play here? Find the discovered attack.",
+  "hints": [
+   "Move one piece to uncover an attack by the piece behind it.",
+   "One of your pieces is hiding another one. Move the front piece with a threat."
+  ],
+  "notes": {
+   "33.Rxc3": "The opponent's last move. Something is now possible — look closely.",
+   "33...Bh3#": "Discovered check: moving the bishop on h3 reveals check from the rook on d1."
+  },
+  "explanation": "A discovered check: moving one piece reveals check from another. The piece that moved is free to grab something while the king deals with the check. Discovered check: moving the bishop on h3 reveals check from the rook on d1. The line ends in checkmate.",
+  "tags": [
+   "discoveredAttack",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "discovered_check": {
+    "move": "33...Bh3#",
+    "moved_piece": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "h3"
+    },
+    "checking_piece": {
+     "piece": "rook",
+     "color": "black",
+     "square": "d1"
+    },
+    "double_check": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "eMe08",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/eMe08",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "discovered_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bh3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Bh3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "33...Bh3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_qhact",
+  "status": "verified",
+  "title": "Discovered check",
+  "concept": "discovered_check",
+  "category": "tactics",
+  "subcategory": "discoveredAttack",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the discovered attack.",
+  "start_fen": "1r1q1rk1/4bpBp/4pn2/8/p7/P1NP1N2/1Pn1PP1P/3K2R1 b - - 1 19",
+  "moves": [
+   "Rxb2",
+   "Bxf6#"
+  ],
+  "final_fen": "3q1rk1/4bp1p/4pB2/8/p7/P1NP1N2/1rn1PP1P/3K2R1 b - - 0 20",
+  "key_move": "20.Bxf6#",
+  "prompt": "What would you play here? Find the discovered attack.",
+  "hints": [
+   "Move one piece to uncover an attack by the piece behind it.",
+   "One of your pieces is hiding another one. Move the front piece with a threat."
+  ],
+  "notes": {
+   "19...Rxb2": "The opponent's last move. Something is now possible — look closely.",
+   "20.Bxf6#": "Discovered check: moving the bishop on f6 reveals check from the rook on g1."
+  },
+  "explanation": "A discovered check: moving one piece reveals check from another. The piece that moved is free to grab something while the king deals with the check. Discovered check: moving the bishop on f6 reveals check from the rook on g1. The line ends in checkmate.",
+  "tags": [
+   "discoveredAttack",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "discovered_check": {
+    "move": "20.Bxf6#",
+    "moved_piece": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "f6"
+    },
+    "checking_piece": {
+     "piece": "rook",
+     "color": "white",
+     "square": "g1"
+    },
+    "double_check": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "QhAct",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/QhAct",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "discovered_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxf6#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Bxf6#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "20.Bxf6#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_jmdgy",
+  "status": "verified",
+  "title": "Double check",
+  "concept": "double_check",
+  "category": "tactics",
+  "subcategory": "doubleCheck",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the double check.",
+  "start_fen": "8/1pN1bk2/1p3npK/4P3/7r/P5R1/1P6/R7 w - - 3 32",
+  "moves": [
+   "Kg5",
+   "Nh7#"
+  ],
+  "final_fen": "8/1pN1bk1n/1p4p1/4P1K1/7r/P5R1/1P6/R7 w - - 5 33",
+  "key_move": "32...Nh7#",
+  "prompt": "What would you play here? Find the double check.",
+  "hints": [
+   "Which of your pieces can move with check and uncover a second attacker?",
+   "Can you give check with two pieces at the same time?"
+  ],
+  "notes": {
+   "32.Kg5": "The opponent's last move. Something is now possible — look closely.",
+   "32...Nh7#": "Double check from the bishop on e7 and knight on h7 — the only defence is a king move."
+  },
+  "explanation": "Double check: two pieces give check at once. Blocking or capturing can't stop both, so the king must move. Double check from the bishop on e7 and knight on h7 — the only defence is a king move. The line ends in checkmate.",
+  "tags": [
+   "doubleCheck",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_check": {
+    "move": "32...Nh7#",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e7"
+     },
+     {
+      "piece": "knight",
+      "color": "black",
+      "square": "h7"
+     }
+    ],
+    "king": "g5",
+    "only_king_moves": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "jMDGy",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/jMDGy",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "other good moves: Ne4#, Nd5#, Ng8#"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Ne4#, Nd5#, Ng8#"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [
+     "other good moves: Ne4#, Nd5#, Ng8#"
+    ],
+    "depth": 14,
+    "key_move": {
+     "move": "Nh7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Ne4#",
+     "best_cp": 9990,
+     "alternatives": [
+      "Ne4#",
+      "Nd5#",
+      "Ng8#"
+     ],
+     "mate_after": true,
+     "label": "32...Nh7#"
+    },
+    "learner_moves": [],
+    "alternatives": [
+     "Ne4#",
+     "Nd5#",
+     "Ng8#"
+    ]
+   },
+   "alternatives": [
+    "Ne4#",
+    "Nd5#",
+    "Ng8#"
+   ]
+  }
+ },
+ {
+  "id": "lichess_u6wfi",
+  "status": "verified",
+  "title": "Double check",
+  "concept": "double_check",
+  "category": "tactics",
+  "subcategory": "doubleCheck",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the double check.",
+  "start_fen": "8/p7/5kpp/3Bp2K/4Pr2/1R2b2P/P7/8 w - - 0 36",
+  "moves": [
+   "Kxh6",
+   "Rh4#"
+  ],
+  "final_fen": "8/p7/5kpK/3Bp3/4P2r/1R2b2P/P7/8 w - - 1 37",
+  "key_move": "36...Rh4#",
+  "prompt": "What would you play here? Find the double check.",
+  "hints": [
+   "Which of your pieces can move with check and uncover a second attacker?",
+   "Can you give check with two pieces at the same time?"
+  ],
+  "notes": {
+   "36.Kxh6": "The opponent's last move. Something is now possible — look closely.",
+   "36...Rh4#": "Double check from the bishop on e3 and rook on h4 — the only defence is a king move."
+  },
+  "explanation": "Double check: two pieces give check at once. Blocking or capturing can't stop both, so the king must move. Double check from the bishop on e3 and rook on h4 — the only defence is a king move. The line ends in checkmate.",
+  "tags": [
+   "doubleCheck",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_check": {
+    "move": "36...Rh4#",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e3"
+     },
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "h4"
+     }
+    ],
+    "king": "h6",
+    "only_king_moves": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "U6WFi",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/U6WFi",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rh4#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rh4#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "36...Rh4#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_0y8cu",
+  "status": "verified",
+  "title": "Double check",
+  "concept": "double_check",
+  "category": "tactics",
+  "subcategory": "doubleCheck",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the double check.",
+  "start_fen": "8/8/k3NR2/3p3p/2p5/1r6/8/3K4 b - - 0 52",
+  "moves": [
+   "c3",
+   "Nc5+",
+   "Kb5",
+   "Nxb3"
+  ],
+  "final_fen": "8/8/5R2/1k1p3p/8/1Np5/8/3K4 b - - 0 54",
+  "key_move": "53.Nc5+",
+  "prompt": "What would you play here? Find the double check.",
+  "hints": [
+   "Which of your pieces can move with check and uncover a second attacker?",
+   "Can you give check with two pieces at the same time?"
+  ],
+  "notes": {
+   "52...c3": "The opponent's last move. Something is now possible — look closely.",
+   "53.Nc5+": "Double check from the knight on c5 and rook on f6 — the only defence is a king move.",
+   "54.Nxb3": "White comes out 5 points of material ahead."
+  },
+  "explanation": "Double check: two pieces give check at once. Blocking or capturing can't stop both, so the king must move. Double check from the knight on c5 and rook on f6 — the only defence is a king move. White comes out 5 points of material ahead.",
+  "tags": [
+   "doubleCheck",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_check": {
+    "move": "53.Nc5+",
+    "checkers": [
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "c5"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "f6"
+     }
+    ],
+    "king": "a6",
+    "only_king_moves": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0y8cu",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0y8cu",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nc5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 619,
+     "best_move": "Nc5+",
+     "best_cp": 619,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "53.Nc5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxb3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 609,
+      "best_move": "Nxb3",
+      "best_cp": 609,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "54.Nxb3"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_a9uno",
+  "status": "verified",
+  "title": "Fork: queen and king",
+  "concept": "fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the fork.",
+  "start_fen": "8/4k3/5RK1/5PP1/6q1/8/8/8 b - - 0 65",
+  "moves": [
+   "Qe4",
+   "Re6+",
+   "Qxe6+",
+   "fxe6"
+  ],
+  "final_fen": "8/4k3/4P1K1/6P1/8/8/8/8 b - - 0 67",
+  "key_move": "66.Re6+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your rook can attack two things at once.",
+   "Find a square that hits the queen and king."
+  ],
+  "notes": {
+   "65...Qe4": "The opponent's last move. Something is now possible — look closely.",
+   "66.Re6+": "Fork! The rook on e6 attacks the queen on e4 and king on e7 at once. It's check, so the king must move first.",
+   "67.fxe6": "White comes out 4 points of material ahead."
+  },
+  "explanation": "A fork is one piece attacking two or more enemy pieces at once. The opponent can usually save only one of them. Fork! The rook on e6 attacks the queen on e4 and king on e7 at once. It's check, so the king must move first. White comes out 4 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "66.Re6+",
+    "attacker": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e6"
+    },
+    "targets": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "e4"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "e7"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "A9Uno",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/A9Uno",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Re6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 541,
+     "best_move": "Re6+",
+     "best_cp": 541,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "66.Re6+"
+    },
+    "learner_moves": [
+     {
+      "move": "fxe6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 592,
+      "best_move": "fxe6",
+      "best_cp": 592,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "67.fxe6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_jxbqd",
+  "status": "verified",
+  "title": "Fork: bishop and king",
+  "concept": "fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the fork.",
+  "start_fen": "4k3/R7/3K4/3P1b2/2P5/8/8/3r4 b - - 7 64",
+  "moves": [
+   "Be4",
+   "Re7+",
+   "Kd8",
+   "Rxe4"
+  ],
+  "final_fen": "3k4/8/3K4/3P4/2P1R3/8/8/3r4 b - - 0 66",
+  "key_move": "65.Re7+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your rook can attack two things at once.",
+   "Find a square that hits the bishop and king."
+  ],
+  "notes": {
+   "64...Be4": "The opponent's last move. Something is now possible — look closely.",
+   "65.Re7+": "Fork! The rook on e7 attacks the bishop on e4 and king on e8 at once. It's check, so the king must move first.",
+   "66.Rxe4": "White comes out 3 points of material ahead."
+  },
+  "explanation": "A fork is one piece attacking two or more enemy pieces at once. The opponent can usually save only one of them. Fork! The rook on e7 attacks the bishop on e4 and king on e8 at once. It's check, so the king must move first. White comes out 3 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "65.Re7+",
+    "attacker": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e7"
+    },
+    "targets": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e4"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "e8"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "jxbQD",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/jxbQD",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Re7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 621,
+     "best_move": "Re7+",
+     "best_cp": 621,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "65.Re7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxe4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 650,
+      "best_move": "Rxe4",
+      "best_cp": 650,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "66.Rxe4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_lriuh",
+  "status": "verified",
+  "title": "Fork: knight and king",
+  "concept": "fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the fork.",
+  "start_fen": "8/8/R3k3/2Pn4/3P4/8/7r/1K6 b - - 4 73",
+  "moves": [
+   "Kd7",
+   "Rd6+",
+   "Kc8",
+   "Rxd5"
+  ],
+  "final_fen": "2k5/8/8/2PR4/3P4/8/7r/1K6 b - - 0 75",
+  "key_move": "74.Rd6+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your rook can attack two things at once.",
+   "Find a square that hits the knight and king."
+  ],
+  "notes": {
+   "73...Kd7": "The opponent's last move. Something is now possible — look closely.",
+   "74.Rd6+": "Fork! The rook on d6 attacks the knight on d5 and king on d7 at once. It's check, so the king must move first.",
+   "75.Rxd5": "White comes out 3 points of material ahead."
+  },
+  "explanation": "A fork is one piece attacking two or more enemy pieces at once. The opponent can usually save only one of them. Fork! The rook on d6 attacks the knight on d5 and king on d7 at once. It's check, so the king must move first. White comes out 3 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "74.Rd6+",
+    "attacker": {
+     "piece": "rook",
+     "color": "white",
+     "square": "d6"
+    },
+    "targets": [
+     {
+      "piece": "knight",
+      "color": "black",
+      "square": "d5"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "d7"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "LRIuH",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/LRIuH",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rd6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 216,
+     "best_move": "Rd6+",
+     "best_cp": 216,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "74.Rd6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxd5",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 293,
+      "best_move": "Rxd5",
+      "best_cp": 293,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "75.Rxd5"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_60pm9",
+  "status": "verified",
+  "title": "Free pieces (hanging pieces): the loose knight",
+  "concept": "hanging_piece",
+  "category": "tactics",
+  "subcategory": "hangingPiece",
+  "difficulty": 1,
+  "description": "A position from a real Lichess game. Black to move: Win the free material.",
+  "start_fen": "8/P7/4k3/R7/7n/3p2bP/3r4/3N1K2 w - - 3 46",
+  "moves": [
+   "a8=Q",
+   "Rxd1#"
+  ],
+  "final_fen": "Q7/8/4k3/R7/7n/3p2bP/8/3r1K2 w - - 0 47",
+  "key_move": "46...Rxd1#",
+  "prompt": "What would you play here? Win the free material.",
+  "hints": [
+   "Is any enemy piece undefended, or attacked more times than it's defended?",
+   "Is the knight on d1 really protected?"
+  ],
+  "notes": {
+   "46.a8=Q": "The opponent's last move. Something is now possible — look closely.",
+   "46...Rxd1#": "The knight on d1 was undefended — take it!"
+  },
+  "explanation": "A hanging piece is one that is attacked and not defended. Always check: can I take something for free? The knight on d1 was undefended — take it! The line ends in checkmate.",
+  "tags": [
+   "hangingPiece",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hanging_piece": {
+    "move": "46...Rxd1#",
+    "captured": {
+     "piece": "knight",
+     "color": "white",
+     "square": "d1"
+    },
+    "capturer": {
+     "piece": "rook",
+     "color": "black",
+     "square": "d2"
+    },
+    "was_defended": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "60pM9",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/60pM9",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hanging_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxd1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rxd1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "46...Rxd1#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_hdjdz",
+  "status": "verified",
+  "title": "Free pieces (hanging pieces): the loose rook",
+  "concept": "hanging_piece",
+  "category": "tactics",
+  "subcategory": "hangingPiece",
+  "difficulty": 1,
+  "description": "A position from a real Lichess game. White to move: Win the free material.",
+  "start_fen": "k3R3/P4R2/8/8/3K4/6r1/2r3bp/8 b - - 2 43",
+  "moves": [
+   "Rc8",
+   "Rxc8#"
+  ],
+  "final_fen": "k1R5/P4R2/8/8/3K4/6r1/6bp/8 b - - 0 44",
+  "key_move": "44.Rxc8#",
+  "prompt": "What would you play here? Win the free material.",
+  "hints": [
+   "Is any enemy piece undefended, or attacked more times than it's defended?",
+   "Is the rook on c8 really protected?"
+  ],
+  "notes": {
+   "43...Rc8": "The opponent's last move. Something is now possible — look closely.",
+   "44.Rxc8#": "The rook on c8 was undefended — take it!"
+  },
+  "explanation": "A hanging piece is one that is attacked and not defended. Always check: can I take something for free? The rook on c8 was undefended — take it! The line ends in checkmate.",
+  "tags": [
+   "hangingPiece",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hanging_piece": {
+    "move": "44.Rxc8#",
+    "captured": {
+     "piece": "rook",
+     "color": "black",
+     "square": "c8"
+    },
+    "capturer": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e8"
+    },
+    "was_defended": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "HDJdZ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/HDJdZ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hanging_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxc8#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rxc8#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "44.Rxc8#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_n4l3r",
+  "status": "verified",
+  "title": "Free pieces (hanging pieces): the loose queen",
+  "concept": "hanging_piece",
+  "category": "tactics",
+  "subcategory": "hangingPiece",
+  "difficulty": 1,
+  "description": "A position from a real Lichess game. White to move: Win the free material.",
+  "start_fen": "8/8/8/8/2Q5/K7/3q4/k7 b - - 61 83",
+  "moves": [
+   "Qc1+",
+   "Qxc1#"
+  ],
+  "final_fen": "8/8/8/8/8/K7/8/k1Q5 b - - 0 84",
+  "key_move": "84.Qxc1#",
+  "prompt": "What would you play here? Win the free material.",
+  "hints": [
+   "Is any enemy piece undefended, or attacked more times than it's defended?",
+   "Is the queen on c1 really protected?"
+  ],
+  "notes": {
+   "83...Qc1+": "The opponent's last move. Something is now possible — look closely.",
+   "84.Qxc1#": "The queen on c1 was undefended — take it!"
+  },
+  "explanation": "A hanging piece is one that is attacked and not defended. Always check: can I take something for free? The queen on c1 was undefended — take it! The line ends in checkmate.",
+  "tags": [
+   "hangingPiece",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hanging_piece": {
+    "move": "84.Qxc1#",
+    "captured": {
+     "piece": "queen",
+     "color": "black",
+     "square": "c1"
+    },
+    "capturer": {
+     "piece": "queen",
+     "color": "white",
+     "square": "c4"
+    },
+    "was_defended": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "N4L3r",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/N4L3r",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hanging_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxc1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxc1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "84.Qxc1#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_cnulq",
+  "status": "verified",
+  "title": "Knight fork: king and rook",
+  "concept": "knight_fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the fork.",
+  "start_fen": "8/8/8/3n3R/1pk3p1/6K1/8/8 w - - 0 53",
+  "moves": [
+   "Kxg4",
+   "Nf6+",
+   "Kf3",
+   "Nxh5"
+  ],
+  "final_fen": "8/8/8/7n/1pk5/5K2/8/8 w - - 0 55",
+  "key_move": "53...Nf6+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your knight can attack two things at once.",
+   "Find a square that hits the king and rook."
+  ],
+  "notes": {
+   "53.Kxg4": "The opponent's last move. Something is now possible — look closely.",
+   "53...Nf6+": "Fork! The knight on f6 attacks the king on g4 and rook on h5 at once. It's check, so the king must move first.",
+   "54...Nxh5": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "Knights are the best forking pieces: they jump, and their attack can't be blocked. Fork! The knight on f6 attacks the king on g4 and rook on h5 at once. It's check, so the king must move first. Black comes out 5 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "53...Nf6+",
+    "attacker": {
+     "piece": "knight",
+     "color": "black",
+     "square": "f6"
+    },
+    "targets": [
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "g4"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "h5"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "cNulq",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/cNulq",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nf6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 704,
+     "best_move": "Nf6+",
+     "best_cp": 704,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "53...Nf6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxh5",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 882,
+      "best_move": "Nxh5",
+      "best_cp": 882,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "54...Nxh5"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_foazq",
+  "status": "verified",
+  "title": "Knight fork: king and rook",
+  "concept": "knight_fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the fork.",
+  "start_fen": "8/4R3/4p3/2kpP3/3n1K2/8/8/8 w - - 4 69",
+  "moves": [
+   "Ke3",
+   "Nf5+",
+   "Kd2",
+   "Nxe7"
+  ],
+  "final_fen": "8/4n3/4p3/2kpP3/8/8/3K4/8 w - - 0 71",
+  "key_move": "69...Nf5+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your knight can attack two things at once.",
+   "Find a square that hits the king and rook."
+  ],
+  "notes": {
+   "69.Ke3": "The opponent's last move. Something is now possible — look closely.",
+   "69...Nf5+": "Fork! The knight on f5 attacks the king on e3 and rook on e7 at once. It's check, so the king must move first.",
+   "70...Nxe7": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "Knights are the best forking pieces: they jump, and their attack can't be blocked. Fork! The knight on f5 attacks the king on e3 and rook on e7 at once. It's check, so the king must move first. Black comes out 5 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "69...Nf5+",
+    "attacker": {
+     "piece": "knight",
+     "color": "black",
+     "square": "f5"
+    },
+    "targets": [
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "e3"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "e7"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "FOazq",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/FOazq",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nf5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 659,
+     "best_move": "Nf5+",
+     "best_cp": 659,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "69...Nf5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxe7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 705,
+      "best_move": "Nxe7",
+      "best_cp": 705,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "70...Nxe7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_qo6ha",
+  "status": "verified",
+  "title": "Knight fork: bishop and king",
+  "concept": "knight_fork",
+  "category": "tactics",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the fork.",
+  "start_fen": "8/8/8/8/4p2p/3b3k/6NP/6K1 b - - 1 43",
+  "moves": [
+   "Be2",
+   "Nf4+",
+   "Kg4",
+   "Nxe2"
+  ],
+  "final_fen": "8/8/8/8/4p1kp/8/4N2P/6K1 b - - 0 45",
+  "key_move": "44.Nf4+",
+  "prompt": "What would you play here? Find the fork.",
+  "hints": [
+   "Which move attacks two things at once?",
+   "Your knight can attack two things at once.",
+   "Find a square that hits the bishop and king."
+  ],
+  "notes": {
+   "43...Be2": "The opponent's last move. Something is now possible — look closely.",
+   "44.Nf4+": "Fork! The knight on f4 attacks the bishop on e2 and king on h3 at once. It's check, so the king must move first.",
+   "45.Nxe2": "White comes out 3 points of material ahead."
+  },
+  "explanation": "Knights are the best forking pieces: they jump, and their attack can't be blocked. Fork! The knight on f4 attacks the bishop on e2 and king on h3 at once. It's check, so the king must move first. White comes out 3 points of material ahead.",
+  "tags": [
+   "fork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "44.Nf4+",
+    "attacker": {
+     "piece": "knight",
+     "color": "white",
+     "square": "f4"
+    },
+    "targets": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e2"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "h3"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "qO6Ha",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/qO6Ha",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 388,
+     "best_move": "Nf4+",
+     "best_cp": 388,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "44.Nf4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxe2",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 303,
+      "best_move": "Nxe2",
+      "best_cp": 303,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "45.Nxe2"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_5tmgv",
+  "status": "verified",
+  "title": "Overloaded piece",
+  "concept": "overloaded_piece",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the deflection.",
+  "start_fen": "8/8/8/pk6/1b5R/1K6/1P6/8 w - - 14 54",
+  "moves": [
+   "Rc4",
+   "a4+",
+   "Kc2",
+   "Kxc4"
+  ],
+  "final_fen": "8/8/8/8/pbk5/8/1PK5/8 w - - 0 56",
+  "key_move": "54...a4+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "54.Rc4": "The opponent's last move. Something is now possible — look closely.",
+   "55...Kxc4": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "An overloaded piece has two defensive jobs at once. Attack one of them and the other collapses. Black comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "overloaded_piece": {
+    "move": "54...a4+",
+    "defender": {
+     "piece": "king",
+     "color": "white",
+     "square": "b3"
+    },
+    "dragged_to": "c2",
+    "undefended_square": "c4",
+    "follow_up": "55...Kxc4",
+    "duties": [
+     "b2",
+     "a4",
+     "c4"
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "5Tmgv",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/5Tmgv",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "overloaded_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "a4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 752,
+     "best_move": "a4+",
+     "best_cp": 752,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "54...a4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxc4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 978,
+      "best_move": "Kxc4",
+      "best_cp": 978,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "55...Kxc4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_elcpn",
+  "status": "verified",
+  "title": "Overloaded piece",
+  "concept": "overloaded_piece",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the deflection.",
+  "start_fen": "8/7r/8/6K1/5RP1/6k1/8/8 w - - 3 70",
+  "moves": [
+   "Kf5",
+   "Rf7+",
+   "Ke6",
+   "Rxf4"
+  ],
+  "final_fen": "8/8/4K3/8/5rP1/6k1/8/8 w - - 0 72",
+  "key_move": "70...Rf7+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "70.Kf5": "The opponent's last move. Something is now possible — look closely.",
+   "71...Rxf4": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "An overloaded piece has two defensive jobs at once. Attack one of them and the other collapses. Black comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "overloaded_piece": {
+    "move": "70...Rf7+",
+    "defender": {
+     "piece": "king",
+     "color": "white",
+     "square": "f5"
+    },
+    "dragged_to": "e6",
+    "undefended_square": "f4",
+    "follow_up": "71...Rxf4",
+    "duties": [
+     "f4",
+     "g4"
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "ELcpn",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/ELcpn",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "overloaded_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rf7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 471,
+     "best_move": "Rf7+",
+     "best_cp": 471,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "70...Rf7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxf4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 454,
+      "best_move": "Rxf4",
+      "best_cp": 454,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "71...Rxf4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_zheqc",
+  "status": "verified",
+  "title": "Overloaded piece",
+  "concept": "overloaded_piece",
+  "category": "tactics",
+  "subcategory": "deflection",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the deflection.",
+  "start_fen": "8/5k2/6R1/6P1/6K1/8/r7/8 w - - 17 64",
+  "moves": [
+   "Kh5",
+   "Rh2+",
+   "Kg4",
+   "Kxg6"
+  ],
+  "final_fen": "8/8/6k1/6P1/6K1/8/7r/8 w - - 0 66",
+  "key_move": "64...Rh2+",
+  "prompt": "What would you play here? Find the deflection.",
+  "hints": [
+   "Which enemy piece is doing an important defensive job? Lure it away."
+  ],
+  "notes": {
+   "64.Kh5": "The opponent's last move. Something is now possible — look closely.",
+   "65...Kxg6": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "An overloaded piece has two defensive jobs at once. Attack one of them and the other collapses. Black comes out 5 points of material ahead.",
+  "tags": [
+   "deflection",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "overloaded_piece": {
+    "move": "64...Rh2+",
+    "defender": {
+     "piece": "king",
+     "color": "white",
+     "square": "h5"
+    },
+    "dragged_to": "g4",
+    "undefended_square": "g6",
+    "follow_up": "65...Kxg6",
+    "duties": [
+     "g5",
+     "g6"
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "zHEqC",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/zHEqC",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "overloaded_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rh2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 485,
+     "best_move": "Rh2+",
+     "best_cp": 485,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "64...Rh2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxg6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 494,
+      "best_move": "Kxg6",
+      "best_cp": 494,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "65...Kxg6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9yeoi",
+  "status": "verified",
+  "title": "Removing the defender",
+  "concept": "removing_defender",
+  "category": "tactics",
+  "subcategory": "capturingDefender",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Remove the defender.",
+  "start_fen": "8/1p6/p1P5/PP3k2/3KpP2/4P3/8/4b3 b - - 0 54",
+  "moves": [
+   "Bxa5",
+   "cxb7",
+   "Bc7",
+   "bxa6"
+  ],
+  "final_fen": "8/1Pb5/P7/5k2/3KpP2/4P3/8/8 b - - 0 56",
+  "key_move": "55.cxb7",
+  "prompt": "What would you play here? Remove the defender.",
+  "hints": [
+   "What protects the target? Capture that piece first."
+  ],
+  "notes": {
+   "54...Bxa5": "The opponent's last move. Something is now possible — look closely.",
+   "56.bxa6": "White comes out 2 points of material ahead."
+  },
+  "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 2 points of material ahead.",
+  "tags": [
+   "capturingDefender",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "removing_defender": {
+    "move": "55.cxb7",
+    "removed_defender": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "b7"
+    },
+    "then": "56.bxa6",
+    "won_square": "a6"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9yEoi",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9yEoi",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "removing_defender"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "cxb7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 549,
+     "best_move": "cxb7",
+     "best_cp": 549,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "55.cxb7"
+    },
+    "learner_moves": [
+     {
+      "move": "bxa6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 500,
+      "best_move": "bxa6",
+      "best_cp": 500,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "56.bxa6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_kouio",
+  "status": "verified",
+  "title": "Removing the defender",
+  "concept": "removing_defender",
+  "category": "tactics",
+  "subcategory": "capturingDefender",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Remove the defender.",
+  "start_fen": "8/5p2/2k4N/4P2p/K1n2P2/7P/8/8 b - - 0 40",
+  "moves": [
+   "Nxe5",
+   "fxe5",
+   "Kd5",
+   "Nxf7"
+  ],
+  "final_fen": "8/5N2/8/3kP2p/K7/7P/8/8 b - - 0 42",
+  "key_move": "41.fxe5",
+  "prompt": "What would you play here? Remove the defender.",
+  "hints": [
+   "What protects the target? Capture that piece first."
+  ],
+  "notes": {
+   "40...Nxe5": "The opponent's last move. Something is now possible — look closely.",
+   "42.Nxf7": "White comes out 4 points of material ahead."
+  },
+  "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 4 points of material ahead.",
+  "tags": [
+   "capturingDefender",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "removing_defender": {
+    "move": "41.fxe5",
+    "removed_defender": {
+     "piece": "knight",
+     "color": "black",
+     "square": "e5"
+    },
+    "then": "42.Nxf7",
+    "won_square": "f7"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Kouio",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Kouio",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "removing_defender"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "fxe5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 420,
+     "best_move": "fxe5",
+     "best_cp": 420,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "41.fxe5"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxf7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 555,
+      "best_move": "Nxf7",
+      "best_cp": 555,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "42.Nxf7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_nvjyd",
+  "status": "verified",
+  "title": "Removing the defender",
+  "concept": "removing_defender",
+  "category": "tactics",
+  "subcategory": "capturingDefender",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Remove the defender.",
+  "start_fen": "8/1r6/1Pk5/1R3p1P/5Kp1/6P1/8/8 w - - 1 55",
+  "moves": [
+   "h6",
+   "Kxb5",
+   "Kxf5",
+   "Rxb6"
+  ],
+  "final_fen": "8/8/1r5P/1k3K2/6p1/6P1/8/8 w - - 0 57",
+  "key_move": "55...Kxb5",
+  "prompt": "What would you play here? Remove the defender.",
+  "hints": [
+   "What protects the target? Capture that piece first."
+  ],
+  "notes": {
+   "55.h6": "The opponent's last move. Something is now possible — look closely.",
+   "56...Rxb6": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. Black comes out 5 points of material ahead.",
+  "tags": [
+   "capturingDefender",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "removing_defender": {
+    "move": "55...Kxb5",
+    "removed_defender": {
+     "piece": "rook",
+     "color": "white",
+     "square": "b5"
+    },
+    "then": "56...Rxb6",
+    "won_square": "b6"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "NvjYd",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/NvjYd",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "removing_defender"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Kxb5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 298,
+     "best_move": "Kxb5",
+     "best_cp": 298,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "55...Kxb5"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxb6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 414,
+      "best_move": "Rxb6",
+      "best_cp": 414,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "56...Rxb6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_b3rqv",
+  "status": "verified",
+  "title": "Sacrifice",
+  "concept": "sacrifice",
+  "category": "tactics",
+  "subcategory": "sacrifice",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the sacrifice.",
+  "start_fen": "6k1/6P1/2r2PK1/8/1p6/3B4/p1P5/8 b - - 2 48",
+  "moves": [
+   "a1=Q",
+   "Bc4+",
+   "Rxc4",
+   "f7#"
+  ],
+  "final_fen": "6k1/5PP1/6K1/8/1pr5/8/2P5/q7 b - - 0 50",
+  "key_move": "49.Bc4+",
+  "prompt": "What would you play here? Find the sacrifice.",
+  "hints": [
+   "Give something up to open the enemy position. What's the most forcing sacrifice?"
+  ],
+  "notes": {
+   "48...a1=Q": "The opponent's last move. Something is now possible — look closely.",
+   "49.Bc4+": "A sacrifice: 3 points of material are given up on purpose.",
+   "50.f7#": "Checkmate!"
+  },
+  "explanation": "A sacrifice gives up material on purpose to get something bigger: a mating attack, or even more material back. A sacrifice: 3 points of material are given up on purpose. The line ends in checkmate.",
+  "tags": [
+   "sacrifice",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "sacrifice": {
+    "material_given": 3,
+    "given_after": "49...Rxc4",
+    "ends_in_mate": true,
+    "final_material_balance": -3
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "b3RQv",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/b3RQv",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "sacrifice"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bc4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Bc4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "49.Bc4+"
+    },
+    "learner_moves": [
+     {
+      "move": "f7#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "f7#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "50.f7#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_pqtcv",
+  "status": "verified",
+  "title": "Sacrifice",
+  "concept": "sacrifice",
+  "category": "tactics",
+  "subcategory": "sacrifice",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the sacrifice.",
+  "start_fen": "5r1k/R3R3/7K/4P2p/4bn2/8/8/8 b - - 2 43",
+  "moves": [
+   "Rg8",
+   "Rh7+",
+   "Bxh7",
+   "Rxh7#"
+  ],
+  "final_fen": "6rk/7R/7K/4P2p/5n2/8/8/8 b - - 0 45",
+  "key_move": "44.Rh7+",
+  "prompt": "What would you play here? Find the sacrifice.",
+  "hints": [
+   "Give something up to open the enemy position. What's the most forcing sacrifice?"
+  ],
+  "notes": {
+   "43...Rg8": "The opponent's last move. Something is now possible — look closely.",
+   "44.Rh7+": "A sacrifice: 5 points of material are given up on purpose.",
+   "45.Rxh7#": "Checkmate!"
+  },
+  "explanation": "A sacrifice gives up material on purpose to get something bigger: a mating attack, or even more material back. A sacrifice: 5 points of material are given up on purpose. The line ends in checkmate.",
+  "tags": [
+   "sacrifice",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "sacrifice": {
+    "material_given": 5,
+    "given_after": "44...Bxh7",
+    "ends_in_mate": true,
+    "final_material_balance": -2
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "pQtcV",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/pQtcV",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "sacrifice"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rh7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rh7+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "44.Rh7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxh7#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rxh7#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "45.Rxh7#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_48i61",
+  "status": "verified",
+  "title": "Skewer: king and rook",
+  "concept": "skewer",
+  "category": "tactics",
+  "subcategory": "skewer",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the skewer.",
+  "start_fen": "6k1/5r2/8/8/1K6/8/8/2R5 w - - 17 84",
+  "moves": [
+   "Rb1",
+   "Rb7+",
+   "Kc3",
+   "Rxb1"
+  ],
+  "final_fen": "6k1/8/8/8/8/2K5/8/1r6 w - - 0 86",
+  "key_move": "84...Rb7+",
+  "prompt": "What would you play here? Find the skewer.",
+  "hints": [
+   "Attack a valuable piece that has another piece behind it on the same line.",
+   "The king and the rook stand on one line."
+  ],
+  "notes": {
+   "84.Rb1": "The opponent's last move. Something is now possible — look closely.",
+   "84...Rb7+": "Skewer! The rook on b7 attacks the king on b4; when it moves, the rook on b1 behind it falls.",
+   "85...Rxb1": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "A skewer is a pin in reverse: a line piece attacks a valuable piece, and when it moves away, the piece behind it is captured. Skewer! The rook on b7 attacks the king on b4; when it moves, the rook on b1 behind it falls. Black comes out 5 points of material ahead.",
+  "tags": [
+   "skewer",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "skewer": {
+    "move": "84...Rb7+",
+    "attacker": {
+     "piece": "rook",
+     "color": "black",
+     "square": "b7"
+    },
+    "front": {
+     "piece": "king",
+     "color": "white",
+     "square": "b4"
+    },
+    "back": {
+     "piece": "rook",
+     "color": "white",
+     "square": "b1"
+    },
+    "front_is_king": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "48i61",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/48i61",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "skewer"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rb7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 479,
+     "best_move": "Rb7+",
+     "best_cp": 479,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "84...Rb7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxb1",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 472,
+      "best_move": "Rxb1",
+      "best_cp": 472,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "85...Rxb1"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_4ckq5",
+  "status": "verified",
+  "title": "Skewer: king and queen",
+  "concept": "skewer",
+  "category": "tactics",
+  "subcategory": "skewer",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the skewer.",
+  "start_fen": "8/8/3R4/8/2k5/8/2p1K3/8 b - - 0 59",
+  "moves": [
+   "c1=Q",
+   "Rc6+",
+   "Kd5",
+   "Rxc1"
+  ],
+  "final_fen": "8/8/8/3k4/8/8/4K3/2R5 b - - 0 61",
+  "key_move": "60.Rc6+",
+  "prompt": "What would you play here? Find the skewer.",
+  "hints": [
+   "Attack a valuable piece that has another piece behind it on the same line.",
+   "The king and the queen stand on one line."
+  ],
+  "notes": {
+   "59...c1=Q": "The opponent's last move. Something is now possible — look closely.",
+   "60.Rc6+": "Skewer! The rook on c6 attacks the king on c4; when it moves, the queen on c1 behind it falls.",
+   "61.Rxc1": "White comes out 9 points of material ahead."
+  },
+  "explanation": "A skewer is a pin in reverse: a line piece attacks a valuable piece, and when it moves away, the piece behind it is captured. Skewer! The rook on c6 attacks the king on c4; when it moves, the queen on c1 behind it falls. White comes out 9 points of material ahead.",
+  "tags": [
+   "skewer",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "skewer": {
+    "move": "60.Rc6+",
+    "attacker": {
+     "piece": "rook",
+     "color": "white",
+     "square": "c6"
+    },
+    "front": {
+     "piece": "king",
+     "color": "black",
+     "square": "c4"
+    },
+    "back": {
+     "piece": "queen",
+     "color": "black",
+     "square": "c1"
+    },
+    "front_is_king": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4ckQ5",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4ckQ5",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "skewer"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rc6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 479,
+     "best_move": "Rc6+",
+     "best_cp": 479,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "60.Rc6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxc1",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 482,
+      "best_move": "Rxc1",
+      "best_cp": 482,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "61.Rxc1"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_bcopw",
+  "status": "verified",
+  "title": "Skewer: king and rook",
+  "concept": "skewer",
+  "category": "tactics",
+  "subcategory": "skewer",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the skewer.",
+  "start_fen": "8/8/8/R2k4/6r1/4K3/8/8 b - - 21 65",
+  "moves": [
+   "Kc4",
+   "Ra4+",
+   "Kc5",
+   "Rxg4"
+  ],
+  "final_fen": "8/8/8/2k5/6R1/4K3/8/8 b - - 0 67",
+  "key_move": "66.Ra4+",
+  "prompt": "What would you play here? Find the skewer.",
+  "hints": [
+   "Attack a valuable piece that has another piece behind it on the same line.",
+   "The king and the rook stand on one line."
+  ],
+  "notes": {
+   "65...Kc4": "The opponent's last move. Something is now possible — look closely.",
+   "66.Ra4+": "Skewer! The rook on a4 attacks the king on c4; when it moves, the rook on g4 behind it falls.",
+   "67.Rxg4": "White comes out 5 points of material ahead."
+  },
+  "explanation": "A skewer is a pin in reverse: a line piece attacks a valuable piece, and when it moves away, the piece behind it is captured. Skewer! The rook on a4 attacks the king on c4; when it moves, the rook on g4 behind it falls. White comes out 5 points of material ahead.",
+  "tags": [
+   "skewer",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "skewer": {
+    "move": "66.Ra4+",
+    "attacker": {
+     "piece": "rook",
+     "color": "white",
+     "square": "a4"
+    },
+    "front": {
+     "piece": "king",
+     "color": "black",
+     "square": "c4"
+    },
+    "back": {
+     "piece": "rook",
+     "color": "black",
+     "square": "g4"
+    },
+    "front_is_king": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Bcopw",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Bcopw",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "skewer"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ra4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 500,
+     "best_move": "Ra4+",
+     "best_cp": 500,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "66.Ra4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxg4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 488,
+      "best_move": "Rxg4",
+      "best_cp": 488,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "67.Rxg4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_l4lit",
+  "status": "verified",
+  "title": "Trapped piece: trapping the knight",
+  "concept": "trapped_piece",
+  "category": "tactics",
+  "subcategory": "trappedPiece",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+  "start_fen": "8/8/7p/8/1p6/2k2PP1/6P1/N5K1 w - - 6 51",
+  "moves": [
+   "Kf1",
+   "Kb2",
+   "Nb3",
+   "Kxb3"
+  ],
+  "final_fen": "8/8/7p/8/1p6/1k3PP1/6P1/5K2 w - - 0 53",
+  "key_move": "51...Kb2",
+  "prompt": "What would you play here? Win the trapped piece.",
+  "hints": [
+   "Which enemy piece has run out of safe squares?",
+   "The knight has very few squares. Take them away."
+  ],
+  "notes": {
+   "51.Kf1": "The opponent's last move. Something is now possible — look closely.",
+   "51...Kb2": "The knight on a1 is trapped: every square it can go to is covered.",
+   "52...Kxb3": "Black comes out 3 points of material ahead."
+  },
+  "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The knight on a1 is trapped: every square it can go to is covered. Black comes out 3 points of material ahead.",
+  "tags": [
+   "trappedPiece",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "trapped_piece": {
+    "move": "51...Kb2",
+    "trapped": {
+     "piece": "knight",
+     "color": "white",
+     "square": "a1"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "b2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "L4lit",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/L4lit",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "trapped_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Kb2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 634,
+     "best_move": "Kb2",
+     "best_cp": 634,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "51...Kb2"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxb3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 642,
+      "best_move": "Kxb3",
+      "best_cp": 642,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "52...Kxb3"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_lhuwe",
+  "status": "verified",
+  "title": "Trapped piece: trapping the rook",
+  "concept": "trapped_piece",
+  "category": "tactics",
+  "subcategory": "trappedPiece",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+  "start_fen": "8/8/5pkp/8/5KP1/7r/5p2/5R2 b - - 1 54",
+  "moves": [
+   "Rh2",
+   "Kg3",
+   "Kg5",
+   "Kxh2"
+  ],
+  "final_fen": "8/8/5p1p/6k1/6P1/8/5p1K/5R2 b - - 0 56",
+  "key_move": "55.Kg3",
+  "prompt": "What would you play here? Win the trapped piece.",
+  "hints": [
+   "Which enemy piece has run out of safe squares?",
+   "The rook has very few squares. Take them away."
+  ],
+  "notes": {
+   "54...Rh2": "The opponent's last move. Something is now possible — look closely.",
+   "55.Kg3": "The rook on h2 is trapped: every square it can go to is covered.",
+   "56.Kxh2": "White comes out 5 points of material ahead."
+  },
+  "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on h2 is trapped: every square it can go to is covered. White comes out 5 points of material ahead.",
+  "tags": [
+   "trappedPiece",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "trapped_piece": {
+    "move": "55.Kg3",
+    "trapped": {
+     "piece": "rook",
+     "color": "black",
+     "square": "h2"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "g3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "lHuWE",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/lHuWE",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "trapped_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Kg3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 478,
+     "best_move": "Kg3",
+     "best_cp": 478,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "55.Kg3"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxh2",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 448,
+      "best_move": "Kxh2",
+      "best_cp": 448,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "56.Kxh2"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_3wzn7",
+  "status": "verified",
+  "title": "Zwischenzug (in-between move)",
+  "concept": "zwischenzug",
+  "category": "tactics",
+  "subcategory": "intermezzo",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the in-between move.",
+  "start_fen": "6k1/5rp1/7P/6Q1/1p3P1K/3q2R1/7P/8 w - - 5 59",
+  "moves": [
+   "hxg7",
+   "Qh7+",
+   "Kg4",
+   "Rxg7"
+  ],
+  "final_fen": "6k1/6rq/8/6Q1/1p3PK1/6R1/7P/8 w - - 0 61",
+  "key_move": "59...Qh7+",
+  "prompt": "What would you play here? Find the in-between move.",
+  "hints": [
+   "Don't play the automatic move. Is there a check or bigger threat first?"
+  ],
+  "notes": {
+   "59.hxg7": "The opponent's last move. Something is now possible — look closely.",
+   "60...Rxg7": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. Black comes out 1 point of material ahead.",
+  "tags": [
+   "intermezzo",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zwischenzug": {
+    "move": "59...Qh7+",
+    "instead_of_recapturing_on": "g7",
+    "forcing": "check"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "3WZn7",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/3WZn7",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zwischenzug"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qh7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 607,
+     "best_move": "Qh7+",
+     "best_cp": 607,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "59...Qh7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxg7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 581,
+      "best_move": "Rxg7",
+      "best_cp": 581,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "60...Rxg7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_eapfp",
+  "status": "verified",
+  "title": "Zwischenzug (in-between move)",
+  "concept": "zwischenzug",
+  "category": "tactics",
+  "subcategory": "intermezzo",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+  "start_fen": "8/7k/5b2/3N3p/1r5P/8/K6R/8 b - - 9 41",
+  "moves": [
+   "Rxh4",
+   "Nxf6+",
+   "Kh6",
+   "Rxh4"
+  ],
+  "final_fen": "8/8/5N1k/7p/7R/8/K7/8 b - - 0 43",
+  "key_move": "42.Nxf6+",
+  "prompt": "What would you play here? Find the in-between move.",
+  "hints": [
+   "Don't play the automatic move. Is there a check or bigger threat first?"
+  ],
+  "notes": {
+   "41...Rxh4": "The opponent's last move. Something is now possible — look closely.",
+   "43.Rxh4": "White comes out 8 points of material ahead."
+  },
+  "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 8 points of material ahead.",
+  "tags": [
+   "intermezzo",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zwischenzug": {
+    "move": "42.Nxf6+",
+    "instead_of_recapturing_on": "h4",
+    "forcing": "check"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "eapfp",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/eapfp",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zwischenzug"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nxf6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 496,
+     "best_move": "Nxf6+",
+     "best_cp": 496,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "42.Nxf6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxh4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 515,
+      "best_move": "Rxh4",
+      "best_cp": 515,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "43.Rxh4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_rverp",
+  "status": "verified",
+  "title": "Zwischenzug (in-between move)",
+  "concept": "zwischenzug",
+  "category": "tactics",
+  "subcategory": "intermezzo",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+  "start_fen": "k2r4/p7/4p3/3q4/P7/5Q2/6P1/3R3K b - - 3 45",
+  "moves": [
+   "Qxf3",
+   "Rxd8+",
+   "Kb7",
+   "gxf3"
+  ],
+  "final_fen": "3R4/pk6/4p3/8/P7/5P2/8/7K b - - 0 47",
+  "key_move": "46.Rxd8+",
+  "prompt": "What would you play here? Find the in-between move.",
+  "hints": [
+   "Don't play the automatic move. Is there a check or bigger threat first?"
+  ],
+  "notes": {
+   "45...Qxf3": "The opponent's last move. Something is now possible — look closely.",
+   "47.gxf3": "White comes out 14 points of material ahead."
+  },
+  "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 14 points of material ahead.",
+  "tags": [
+   "intermezzo",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zwischenzug": {
+    "move": "46.Rxd8+",
+    "instead_of_recapturing_on": "f3",
+    "forcing": "check"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "RVerp",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/RVerp",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zwischenzug"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxd8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 806,
+     "best_move": "Rxd8+",
+     "best_cp": 806,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "46.Rxd8+"
+    },
+    "learner_moves": [
+     {
+      "move": "gxf3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 818,
+      "best_move": "gxf3",
+      "best_cp": 818,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "47.gxf3"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ }
+]

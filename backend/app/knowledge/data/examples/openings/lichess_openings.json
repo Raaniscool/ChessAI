@@ -1,0 +1,1777 @@
+[
+ {
+  "id": "opening_caro_advance",
+  "status": "verified",
+  "title": "Caro-Kann: the Advance Variation",
+  "concept": "caro_kann",
+  "category": "openings",
+  "subcategory": "Caro-Kann Defense: Advance Variation",
+  "difficulty": 2,
+  "description": "White grabs space with 3.e5. Black develops the light-squared bishop outside the pawn chain.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "e5",
+   "Bf5",
+   "Nf3",
+   "e6",
+   "Be2"
+  ],
+  "final_fen": "rn1qkbnr/pp3ppp/2p1p3/3pPb2/3P4/5N2/PPP1BPPP/RNBQK2R b KQkq - 1 5",
+  "notes": {
+   "1...c6": "The Caro-Kann: Black prepares ...d5 with the c-pawn's support.",
+   "2...d5": "Black challenges e4 right away.",
+   "3.e5": "White gains space and closes the centre.",
+   "3...Bf5": "The key idea: the bishop gets out before ...e6 locks it in.",
+   "4...e6": "Now the pawn chain d5–e6 is solid and the bishop is already outside.",
+   "5.Be2": "White develops calmly and prepares to castle."
+  },
+  "explanation": "The Caro-Kann is solid: 1...c6 prepares ...d5 without blocking any piece. In the Advance Variation White gains space with 3.e5, and Black answers by developing the light-squared bishop to f5 before playing ...e6. Black's plan later is to attack White's centre with ...c5.",
+  "tags": [
+   "caro-kann",
+   "advance variation",
+   "e4 c6",
+   "solid"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "B12",
+    "name": "Caro-Kann Defense: Advance Variation, Short Variation",
+    "book_plies": 7,
+    "extra_plies": 2
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "B12 Caro-Kann Defense: Advance Variation",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO B12; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "9 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...c6",
+      "loss_cp": 15
+     },
+     {
+      "label": "2.d4",
+      "loss_cp": 7
+     },
+     {
+      "label": "2...d5",
+      "loss_cp": 1
+     },
+     {
+      "label": "3.e5",
+      "loss_cp": 4
+     },
+     {
+      "label": "3...Bf5",
+      "loss_cp": 7
+     },
+     {
+      "label": "4.Nf3",
+      "loss_cp": 6
+     },
+     {
+      "label": "4...e6",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.Be2",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 37
+   }
+  }
+ },
+ {
+  "id": "opening_caro_exchange",
+  "status": "verified",
+  "title": "Caro-Kann: the Exchange Variation",
+  "concept": "caro_kann",
+  "category": "openings",
+  "subcategory": "Caro-Kann Defense: Exchange Variation",
+  "difficulty": 2,
+  "description": "White exchanges on d5. The pawn structure becomes symmetrical and both sides develop.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "exd5",
+   "cxd5",
+   "Bd3",
+   "Nc6",
+   "c3"
+  ],
+  "final_fen": "r1bqkbnr/pp2pppp/2n5/3p4/3P4/2PB4/PP3PPP/RNBQK1NR b KQkq - 0 5",
+  "notes": {
+   "3.exd5": "White releases the tension in the centre.",
+   "3...cxd5": "Black recaptures toward the centre.",
+   "4.Bd3": "The bishop aims at h7 and controls f5.",
+   "5.c3": "White supports d4 and keeps a solid pawn structure."
+  },
+  "explanation": "After the exchange on d5 the structure is symmetrical. White develops the bishop to d3, where it stops Black's bishop from coming to f5 easily, and supports d4 with c3. It's a calm line that teaches piece placement in a symmetrical structure.",
+  "tags": [
+   "caro-kann",
+   "exchange variation",
+   "e4 c6",
+   "symmetrical"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "B13",
+    "name": "Caro-Kann Defense: Exchange Variation",
+    "book_plies": 6,
+    "extra_plies": 3
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "B13 Caro-Kann Defense: Exchange Variation",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO B13; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "9 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...c6",
+      "loss_cp": 15
+     },
+     {
+      "label": "2.d4",
+      "loss_cp": 7
+     },
+     {
+      "label": "2...d5",
+      "loss_cp": 1
+     },
+     {
+      "label": "3.exd5",
+      "loss_cp": 19
+     },
+     {
+      "label": "3...cxd5",
+      "loss_cp": 0
+     },
+     {
+      "label": "4.Bd3",
+      "loss_cp": 1
+     },
+     {
+      "label": "4...Nc6",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.c3",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 16
+   }
+  }
+ },
+ {
+  "id": "opening_caro_classical",
+  "status": "verified",
+  "title": "Caro-Kann: the Classical Variation",
+  "concept": "caro_kann",
+  "category": "openings",
+  "subcategory": "Caro-Kann Defense: Classical Variation",
+  "difficulty": 3,
+  "description": "Black takes on e4 and develops the bishop with tempo. White chases it with the knight and the h-pawn.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "Nd2",
+   "dxe4",
+   "Nxe4",
+   "Bf5",
+   "Ng3",
+   "Bg6",
+   "h4",
+   "h6",
+   "Nf3",
+   "Nd7"
+  ],
+  "final_fen": "r2qkbnr/pp1nppp1/2p3bp/8/3P3P/5NN1/PPP2PP1/R1BQKB1R w KQkq - 2 8",
+  "notes": {
+   "3...dxe4": "Black gives up the centre to free the position.",
+   "4...Bf5": "The bishop develops with tempo, attacking the knight on e4.",
+   "5.Ng3": "The knight moves and attacks the bishop in return.",
+   "6.h4": "White threatens h5, trapping the bishop.",
+   "6...h6": "Black makes room: the bishop can retreat to h7.",
+   "7...Nd7": "Black prepares ...Ngf6 without allowing Ne5."
+  },
+  "explanation": "In the Classical Caro-Kann Black gets a healthy position with no bad pieces: the light-squared bishop comes out before ...e6. White uses the h-pawn to gain space and push the bishop back. Both sides then usually castle on opposite sides.",
+  "tags": [
+   "caro-kann",
+   "classical variation",
+   "e4 c6"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "B19",
+    "name": "Caro-Kann Defense: Classical Variation",
+    "book_plies": 14,
+    "extra_plies": 0
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "B19 Caro-Kann Defense: Classical Variation",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO B19; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "14 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...c6",
+      "loss_cp": 15
+     },
+     {
+      "label": "2.d4",
+      "loss_cp": 7
+     },
+     {
+      "label": "2...d5",
+      "loss_cp": 1
+     },
+     {
+      "label": "3.Nd2",
+      "loss_cp": 12
+     },
+     {
+      "label": "3...dxe4",
+      "loss_cp": 0
+     },
+     {
+      "label": "4.Nxe4",
+      "loss_cp": 0
+     },
+     {
+      "label": "4...Bf5",
+      "loss_cp": 4
+     },
+     {
+      "label": "5.Ng3",
+      "loss_cp": 0
+     },
+     {
+      "label": "5...Bg6",
+      "loss_cp": 0
+     },
+     {
+      "label": "6.h4",
+      "loss_cp": 0
+     },
+     {
+      "label": "6...h6",
+      "loss_cp": 0
+     },
+     {
+      "label": "7.Nf3",
+      "loss_cp": 0
+     },
+     {
+      "label": "7...Nd7",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 32
+   }
+  }
+ },
+ {
+  "id": "opening_caro_karpov",
+  "status": "verified",
+  "title": "Caro-Kann: the Karpov Variation",
+  "concept": "caro_kann",
+  "category": "openings",
+  "subcategory": "Caro-Kann Defense: Karpov Variation",
+  "difficulty": 3,
+  "description": "Black plays ...Nd7 first, so the other knight can come to f6 without doubled pawns.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "Nd2",
+   "dxe4",
+   "Nxe4",
+   "Nd7",
+   "Nf3",
+   "Ngf6",
+   "Nxf6+",
+   "Nxf6"
+  ],
+  "final_fen": "r1bqkb1r/pp2pppp/2p2n2/8/3P4/5N2/PPP2PPP/R1BQKB1R w KQkq - 0 7",
+  "notes": {
+   "4...Nd7": "Preparing ...Ngf6: if White exchanges on f6, Black takes back with the knight.",
+   "5.Nf3": "White develops.",
+   "5...Ngf6": "Now the knight challenges the e4 knight.",
+   "6.Nxf6+": "White exchanges.",
+   "6...Nxf6": "Black recaptures with a piece and keeps a healthy pawn structure."
+  },
+  "explanation": "The Karpov Variation is a small but important idea: by putting a knight on d7 first, Black can meet an exchange on f6 by recapturing with the other knight. Black keeps a healthy pawn structure and a solid position.",
+  "tags": [
+   "caro-kann",
+   "karpov variation",
+   "e4 c6",
+   "structure"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "B17",
+    "name": "Caro-Kann Defense: Karpov Variation",
+    "book_plies": 8,
+    "extra_plies": 4
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "B17 Caro-Kann Defense: Karpov Variation",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO B17; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...c6",
+      "loss_cp": 15
+     },
+     {
+      "label": "2.d4",
+      "loss_cp": 7
+     },
+     {
+      "label": "2...d5",
+      "loss_cp": 1
+     },
+     {
+      "label": "3.Nd2",
+      "loss_cp": 12
+     },
+     {
+      "label": "3...dxe4",
+      "loss_cp": 0
+     },
+     {
+      "label": "4.Nxe4",
+      "loss_cp": 0
+     },
+     {
+      "label": "4...Nd7",
+      "loss_cp": 27
+     },
+     {
+      "label": "5.Nf3",
+      "loss_cp": 0
+     },
+     {
+      "label": "5...Ngf6",
+      "loss_cp": 14
+     },
+     {
+      "label": "6.Nxf6+",
+      "loss_cp": 41
+     },
+     {
+      "label": "6...Nxf6",
+      "loss_cp": 3
+     }
+    ],
+    "final_eval_white": 32
+   }
+  }
+ },
+ {
+  "id": "opening_caro_panov",
+  "status": "verified",
+  "title": "Caro-Kann: the Panov Attack",
+  "concept": "caro_kann",
+  "category": "openings",
+  "subcategory": "Caro-Kann Defense: Panov Attack",
+  "difficulty": 3,
+  "description": "White attacks d5 with the c-pawn, often leading to an isolated queen's pawn position.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "exd5",
+   "cxd5",
+   "c4",
+   "Nf6",
+   "Nc3",
+   "e6"
+  ],
+  "final_fen": "rnbqkb1r/pp3ppp/4pn2/3p4/2PP4/2N5/PP3PPP/R1BQKBNR w KQkq - 0 6",
+  "notes": {
+   "4.c4": "The Panov: White attacks d5 immediately.",
+   "4...Nf6": "Black defends d5 with the knight.",
+   "5.Nc3": "A third attacker on d5.",
+   "5...e6": "Black supports d5 with the pawn."
+  },
+  "explanation": "The Panov Attack turns the Caro-Kann into an open game. White puts pressure on d5 with c4 and Nc3; after the exchanges White often ends up with an isolated pawn on d4 and active pieces, while Black aims to blockade it.",
+  "tags": [
+   "caro-kann",
+   "panov attack",
+   "isolated pawn",
+   "e4 c6"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "B14",
+    "name": "Caro-Kann Defense: Panov Attack",
+    "book_plies": 10,
+    "extra_plies": 0
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "B14 Caro-Kann Defense: Panov Attack",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO B14; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "10 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...c6",
+      "loss_cp": 15
+     },
+     {
+      "label": "2.d4",
+      "loss_cp": 7
+     },
+     {
+      "label": "2...d5",
+      "loss_cp": 1
+     },
+     {
+      "label": "3.exd5",
+      "loss_cp": 19
+     },
+     {
+      "label": "3...cxd5",
+      "loss_cp": 0
+     },
+     {
+      "label": "4.c4",
+      "loss_cp": 1
+     },
+     {
+      "label": "4...Nf6",
+      "loss_cp": 2
+     },
+     {
+      "label": "5.Nc3",
+      "loss_cp": 6
+     },
+     {
+      "label": "5...e6",
+      "loss_cp": 8
+     }
+    ],
+    "final_eval_white": 20
+   }
+  }
+ },
+ {
+  "id": "opening_evans_gambit",
+  "status": "verified",
+  "title": "The Evans Gambit",
+  "concept": "evans_gambit",
+  "category": "openings",
+  "subcategory": "Italian Game: Evans Gambit, Main Line",
+  "difficulty": 3,
+  "description": "White gives a pawn on b4 to gain time and build a quick centre with c3 and d4.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Bc5",
+   "b4",
+   "Bxb4",
+   "c3",
+   "Ba5",
+   "d4"
+  ],
+  "final_fen": "r1bqk1nr/pppp1ppp/2n5/b3p3/2BPP3/2P2N2/P4PPP/RNBQK2R b KQkq - 0 6",
+  "notes": {
+   "4.b4": "The gambit: White offers the b-pawn to deflect the bishop.",
+   "4...Bxb4": "Black accepts.",
+   "5.c3": "Gaining time on the bishop and preparing d4.",
+   "5...Ba5": "The main-line retreat, keeping the bishop active.",
+   "6.d4": "White strikes in the centre with development ahead."
+  },
+  "explanation": "The Evans Gambit gives up a pawn for time. After 4...Bxb4 5.c3 the bishop is hit again, and White gets to play d4 with a strong centre and open lines against Black's king. It was a favourite of 19th-century attacking players, and it still teaches how development can be worth more than a pawn.",
+  "tags": [
+   "evans gambit",
+   "gambit",
+   "italian game",
+   "development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "C52",
+    "name": "Italian Game: Evans Gambit, Main Line",
+    "book_plies": 10,
+    "extra_plies": 1
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "C52 Italian Game: Evans Gambit, Main Line",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO C52; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "11 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...e5",
+      "loss_cp": 0
+     },
+     {
+      "label": "2.Nf3",
+      "loss_cp": 1
+     },
+     {
+      "label": "2...Nc6",
+      "loss_cp": 7
+     },
+     {
+      "label": "3.Bc4",
+      "loss_cp": 26
+     },
+     {
+      "label": "3...Bc5",
+      "loss_cp": 36
+     },
+     {
+      "label": "4.b4",
+      "loss_cp": 73
+     },
+     {
+      "label": "4...Bxb4",
+      "loss_cp": 10
+     },
+     {
+      "label": "5.c3",
+      "loss_cp": 14
+     },
+     {
+      "label": "5...Ba5",
+      "loss_cp": 13
+     },
+     {
+      "label": "6.d4",
+      "loss_cp": 8
+     }
+    ],
+    "final_eval_white": -28
+   }
+  }
+ },
+ {
+  "id": "opening_fried_liver",
+  "status": "verified",
+  "title": "The Fried Liver Attack",
+  "concept": "fried_liver",
+  "category": "openings",
+  "subcategory": "Italian Game: Two Knights Defense, Fried Liver Attack",
+  "difficulty": 3,
+  "description": "White sacrifices a knight on f7 to drag Black's king into the centre.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Nf6",
+   "Ng5",
+   "d5",
+   "exd5",
+   "Nxd5",
+   "Nxf7",
+   "Kxf7",
+   "Qf3+",
+   "Ke6",
+   "Nc3"
+  ],
+  "final_fen": "r1bq1b1r/ppp3pp/2n1k3/3np3/2B5/2N2Q2/PPPP1PPP/R1B1K2R b KQ - 3 8",
+  "notes": {
+   "5...Nxd5": "Natural, but it allows a knight sacrifice.",
+   "6.Nxf7": "The knight takes on f7, forking queen and rook.",
+   "6...Kxf7": "Black accepts. The king is pulled forward.",
+   "7.Qf3+": "Check, and the queen attacks the knight on d5.",
+   "7...Ke6": "The king must defend the pinned knight on d5 itself.",
+   "8.Nc3": "More pressure on d5. Black's king is stuck in the centre."
+  },
+  "explanation": "The Fried Liver is a famous sacrifice: White gives a knight on f7 so that Black's king has to walk into the centre. The knight on d5 is pinned to the king by the bishop on c4, and White keeps adding pressure with Qf3+ and Nc3. It's a great example of attacking an uncastled king.",
+  "tags": [
+   "fried liver",
+   "sacrifice",
+   "king hunt",
+   "two knights"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "C57",
+    "name": "Italian Game: Two Knights Defense, Fried Liver Attack",
+    "book_plies": 11,
+    "extra_plies": 4
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "C57 Italian Game: Two Knights Defense, Fried Liver Attack",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO C57; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "15 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...e5",
+      "loss_cp": 0
+     },
+     {
+      "label": "2.Nf3",
+      "loss_cp": 1
+     },
+     {
+      "label": "2...Nc6",
+      "loss_cp": 7
+     },
+     {
+      "label": "3.Bc4",
+      "loss_cp": 26
+     },
+     {
+      "label": "3...Nf6",
+      "loss_cp": 10
+     },
+     {
+      "label": "4.Ng5",
+      "loss_cp": 6
+     },
+     {
+      "label": "4...d5",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.exd5",
+      "loss_cp": 3
+     },
+     {
+      "label": "5...Nxd5",
+      "loss_cp": 106
+     },
+     {
+      "label": "6.Nxf7",
+      "loss_cp": 0
+     },
+     {
+      "label": "6...Kxf7",
+      "loss_cp": 12
+     },
+     {
+      "label": "7.Qf3+",
+      "loss_cp": 2
+     },
+     {
+      "label": "7...Ke6",
+      "loss_cp": 0
+     },
+     {
+      "label": "8.Nc3",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 112
+   }
+  }
+ },
+ {
+  "id": "opening_italian_center_attack",
+  "status": "verified",
+  "title": "Italian Game: the Center Attack with c3 and d4",
+  "concept": "italian_game",
+  "category": "openings",
+  "subcategory": "Italian Game: Classical Variation, Center Attack",
+  "difficulty": 2,
+  "description": "White develops quickly, prepares d4 with c3, and builds a big pawn centre.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Bc5",
+   "c3",
+   "Nf6",
+   "d4",
+   "exd4",
+   "cxd4",
+   "Bb4+"
+  ],
+  "final_fen": "r1bqk2r/pppp1ppp/2n2n2/8/1bBPP3/5N2/PP3PPP/RNBQK2R w KQkq - 1 7",
+  "notes": {
+   "3.Bc4": "The bishop aims at f7, the weakest square in Black's camp.",
+   "3...Bc5": "Black copies: the bishop aims at f2.",
+   "4.c3": "Preparing d4 — the pawn on c3 will support it.",
+   "5.d4": "White strikes in the centre and attacks the bishop's diagonal.",
+   "6.cxd4": "White now has two pawns side by side in the centre.",
+   "6...Bb4+": "The bishop has to leave c5 and gives check on the way."
+  },
+  "explanation": "The Italian Game is about fast development and the centre. White's bishop goes to c4 to aim at f7, then c3 and d4 build a strong pawn centre. After 6.cxd4 White has pawns on d4 and e4; Black must fight back quickly, for example with 6...Bb4+ and ...d5.",
+  "tags": [
+   "italian game",
+   "center",
+   "development",
+   "e4 e5"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "C54",
+    "name": "Italian Game: Classical Variation, Greco Gambit, Traditional Line",
+    "book_plies": 11,
+    "extra_plies": 1
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "C54 Italian Game: Classical Variation, Center Attack",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO C54; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...e5",
+      "loss_cp": 0
+     },
+     {
+      "label": "2.Nf3",
+      "loss_cp": 1
+     },
+     {
+      "label": "2...Nc6",
+      "loss_cp": 7
+     },
+     {
+      "label": "3.Bc4",
+      "loss_cp": 26
+     },
+     {
+      "label": "3...Bc5",
+      "loss_cp": 36
+     },
+     {
+      "label": "4.c3",
+      "loss_cp": 0
+     },
+     {
+      "label": "4...Nf6",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.d4",
+      "loss_cp": 0
+     },
+     {
+      "label": "5...exd4",
+      "loss_cp": 0
+     },
+     {
+      "label": "6.cxd4",
+      "loss_cp": 0
+     },
+     {
+      "label": "6...Bb4+",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 15
+   }
+  }
+ },
+ {
+  "id": "opening_italian_pianissimo",
+  "status": "verified",
+  "title": "Italian Game: the slow Giuoco Pianissimo",
+  "concept": "italian_game",
+  "category": "openings",
+  "subcategory": "Italian Game: Classical Variation, Giuoco Pianissimo",
+  "difficulty": 2,
+  "description": "The 'very quiet game': White plays d3 instead of d4, keeps the centre closed and develops calmly.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Bc5",
+   "c3",
+   "Nf6",
+   "d3",
+   "d6",
+   "Nbd2",
+   "O-O",
+   "O-O"
+  ],
+  "final_fen": "r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2PP1N2/PP1N1PPP/R1BQ1RK1 b - - 3 7",
+  "notes": {
+   "4.c3": "Preparing a later d4. The bishop can also retreat to b3 and c2 when it is attacked.",
+   "5.d3": "A calm move: White defends e4 and keeps the tension for later.",
+   "6.Nbd2": "The knight heads for f1 and g3, a typical manoeuvre in this line.",
+   "7.O-O": "Both kings are safe. The real fight comes in the middlegame."
+  },
+  "explanation": "In the Pianissimo White does not rush with d4. Both sides develop, castle, and prepare plans such as a4, a rook move to e1, and a knight trip Nbd2-f1-g3. It's the most popular way to play the Italian at club and top level, because it keeps many pieces on the board.",
+  "tags": [
+   "italian game",
+   "pianissimo",
+   "quiet",
+   "development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "C54",
+    "name": "Italian Game: Classical Variation, Giuoco Pianissimo",
+    "book_plies": 13,
+    "extra_plies": 0
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "C54 Italian Game: Classical Variation, Giuoco Pianissimo",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO C54; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "13 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...e5",
+      "loss_cp": 0
+     },
+     {
+      "label": "2.Nf3",
+      "loss_cp": 1
+     },
+     {
+      "label": "2...Nc6",
+      "loss_cp": 7
+     },
+     {
+      "label": "3.Bc4",
+      "loss_cp": 26
+     },
+     {
+      "label": "3...Bc5",
+      "loss_cp": 36
+     },
+     {
+      "label": "4.c3",
+      "loss_cp": 0
+     },
+     {
+      "label": "4...Nf6",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.d3",
+      "loss_cp": 0
+     },
+     {
+      "label": "5...d6",
+      "loss_cp": 0
+     },
+     {
+      "label": "6.Nbd2",
+      "loss_cp": 3
+     },
+     {
+      "label": "6...O-O",
+      "loss_cp": 0
+     },
+     {
+      "label": "7.O-O",
+      "loss_cp": 0
+     }
+    ],
+    "final_eval_white": 11
+   }
+  }
+ },
+ {
+  "id": "opening_two_knights_polerio",
+  "status": "verified",
+  "title": "Two Knights Defense: 4.Ng5 and the Polerio Defense",
+  "concept": "two_knights_defense",
+  "category": "openings",
+  "subcategory": "Italian Game: Two Knights Defense, Polerio Defense",
+  "difficulty": 3,
+  "description": "White attacks f7 with 4.Ng5. Black gives a pawn for quick development with ...d5 and ...Na5.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Nf6",
+   "Ng5",
+   "d5",
+   "exd5",
+   "Na5"
+  ],
+  "final_fen": "r1bqkb1r/ppp2ppp/5n2/n2Pp1N1/2B5/8/PPPP1PPP/RNBQK2R w KQkq - 1 6",
+  "notes": {
+   "3...Nf6": "The Two Knights Defense: Black counter-attacks e4 instead of copying with ...Bc5.",
+   "4.Ng5": "Knight and bishop both attack f7.",
+   "4...d5": "Black blocks the bishop's diagonal.",
+   "5.exd5": "White wins the d5 pawn.",
+   "5...Na5": "Black attacks the bishop on c4 instead of recapturing — a pawn sacrifice for time."
+  },
+  "explanation": "After 4.Ng5 White threatens Nxf7, forking queen and rook. Black answers 4...d5, and after 5.exd5 the solid choice is 5...Na5: the knight attacks the bishop, Black gets fast development and attacking chances in return for the pawn. Recapturing with 5...Nxd5 allows the dangerous Fried Liver Attack.",
+  "tags": [
+   "two knights",
+   "italian game",
+   "gambit",
+   "f7"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "opening_line": {
+    "eco": "C58",
+    "name": "Italian Game: Two Knights Defense, Polerio Defense",
+    "book_plies": 10,
+    "extra_plies": 0
+   }
+  },
+  "source": {
+   "source_type": "lichess_openings",
+   "source_id": "C58 Italian Game: Two Knights Defense, Polerio Defense",
+   "source_license": "CC0-1.0",
+   "source_url": "https://github.com/lichess-org/chess-openings",
+   "reference": "ECO C58; upstream commit c67912be58",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "10 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "opening"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "opening",
+    "reasons": [],
+    "depth": 12,
+    "move_losses": [
+     {
+      "label": "1.e4",
+      "loss_cp": 0
+     },
+     {
+      "label": "1...e5",
+      "loss_cp": 0
+     },
+     {
+      "label": "2.Nf3",
+      "loss_cp": 1
+     },
+     {
+      "label": "2...Nc6",
+      "loss_cp": 7
+     },
+     {
+      "label": "3.Bc4",
+      "loss_cp": 26
+     },
+     {
+      "label": "3...Nf6",
+      "loss_cp": 10
+     },
+     {
+      "label": "4.Ng5",
+      "loss_cp": 6
+     },
+     {
+      "label": "4...d5",
+      "loss_cp": 0
+     },
+     {
+      "label": "5.exd5",
+      "loss_cp": 3
+     },
+     {
+      "label": "5...Na5",
+      "loss_cp": 8
+     }
+    ],
+    "final_eval_white": 17
+   }
+  }
+ }
+]

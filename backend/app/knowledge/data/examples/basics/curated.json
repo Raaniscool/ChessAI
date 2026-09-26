@@ -1,0 +1,1669 @@
+[
+ {
+  "id": "rules_no_castling_in_check",
+  "status": "verified",
+  "title": "You can't castle out of check",
+  "concept": "cannot_castle",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "A rook check stops White from castling — even though neither the king nor the rook has moved.",
+  "start_fen": "4k3/r7/8/8/8/8/8/4K2R b K - 0 1",
+  "moves": [
+   "Re7+"
+  ],
+  "final_fen": "4k3/4r3/8/8/8/8/8/4K2R w K - 1 2",
+  "notes": {
+   "1...Re7+": "Check along the e-file. Castling is not a way out of check."
+  },
+  "explanation": "When you are in check you must answer the check: move the king, block, or capture. Castling doesn't count — it's illegal while the king is in check. Once the check is gone (and the king and rook still haven't moved), castling is allowed again.",
+  "tags": [
+   "rules",
+   "castling",
+   "check",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "white",
+   "wing": "kingside"
+  },
+  "facts": {
+   "cannot_castle": {
+    "side": "white",
+    "wing": "kingside",
+    "reason": "the king is in check"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2.2",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "cannot_castle"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_no_castling_through_check",
+  "status": "verified",
+  "title": "You can't castle through an attacked square",
+  "concept": "cannot_castle",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "White would like to castle, but a black bishop controls f1 — the square the king has to cross.",
+  "start_fen": "4k3/8/8/8/8/1b6/8/4K2R b K - 0 1",
+  "moves": [
+   "Bc4"
+  ],
+  "final_fen": "4k3/8/8/8/2b5/8/8/4K2R w K - 1 2",
+  "notes": {
+   "1...Bc4": "The bishop now attacks f1. White still has the right to castle, but can't do it this move."
+  },
+  "explanation": "The king may not castle out of check, through an attacked square, or onto an attacked square. The bishop on c4 attacks f1, which the king would pass over, so castling kingside is illegal until that changes.",
+  "highlights": [
+   {
+    "square": "f1",
+    "color": "red"
+   },
+   {
+    "square": "c4",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "white",
+   "wing": "kingside"
+  },
+  "facts": {
+   "cannot_castle": {
+    "side": "white",
+    "wing": "kingside",
+    "reason": "the king would pass through or land on an attacked square (f1)"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2.2 (castling is prevented temporarily)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "cannot_castle"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_capture_scandinavian",
+  "status": "verified",
+  "title": "Captures",
+  "concept": "captures",
+  "category": "basics",
+  "difficulty": 1,
+  "description": "Pawns and pieces capture in the first moves of the Scandinavian Defense.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "d5",
+   "exd5",
+   "Qxd5"
+  ],
+  "final_fen": "rnb1kbnr/ppp1pppp/8/3q4/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 3",
+  "notes": {
+   "2.exd5": "A pawn captures diagonally forward: e4 takes d5.",
+   "2...Qxd5": "The queen captures the same way it moves — in a straight line."
+  },
+  "explanation": "To capture, a piece moves onto the square of an enemy piece, which is removed from the board. Every piece captures the way it moves, except the pawn: it moves straight ahead but captures diagonally forward.",
+  "tags": [
+   "rules",
+   "captures",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "capture": {
+    "move": "2.exd5",
+    "capturing_piece": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "e4"
+    },
+    "captured": "pawn",
+    "square": "d5"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Articles 3.1-3.7 (moves and captures)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "capture"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_castling_kingside",
+  "status": "verified",
+  "title": "Castling kingside",
+  "concept": "castling",
+  "category": "basics",
+  "difficulty": 1,
+  "description": "In the Italian Game, White develops the knight and bishop and then castles.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Bc5",
+   "O-O"
+  ],
+  "final_fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4",
+  "notes": {
+   "2.Nf3": "The knight leaves g1.",
+   "3.Bc4": "The bishop leaves f1. Now nothing stands between the king and the rook.",
+   "4.O-O": "Castling: the king jumps two squares to g1 and the rook lands on f1, next to it."
+  },
+  "explanation": "Castling is the only move where two pieces move at once. The king goes two squares towards the rook and the rook jumps over to the other side. The king gets a safe home behind its pawns and the rook comes towards the centre.",
+  "highlights": [
+   {
+    "square": "g1",
+    "color": "green"
+   },
+   {
+    "square": "f1",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "king safety",
+   "fide"
+  ],
+  "related": [
+   "king_safety",
+   "italian_game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "castling": {
+    "move": "4.O-O",
+    "side": "white",
+    "wing": "kingside",
+    "king_to": "g1",
+    "rook_to": "f1"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2 (castling)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "7 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "castling"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_castling_queenside",
+  "status": "verified",
+  "title": "Castling queenside",
+  "concept": "castling",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "To castle queenside, three squares must be empty: the knight, the bishop and the queen all move first.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "d4",
+   "d5",
+   "Nc3",
+   "Nc6",
+   "Bf4",
+   "Bf5",
+   "Qd2",
+   "Qd7",
+   "O-O-O"
+  ],
+  "final_fen": "r3kbnr/pppqpppp/2n5/3p1b2/3P1B2/2N5/PPPQPPPP/2KR1BNR b kq - 7 5",
+  "notes": {
+   "5.O-O-O": "Queenside castling: the king goes two squares to c1 and the rook from a1 lands on d1."
+  },
+  "explanation": "Queenside castling works like kingside castling, but the rook travels further: the king ends on c1 and the rook on d1, ready to use the d-file.",
+  "highlights": [
+   {
+    "square": "c1",
+    "color": "green"
+   },
+   {
+    "square": "d1",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "wing": "queenside"
+  },
+  "facts": {
+   "castling": {
+    "move": "5.O-O-O",
+    "side": "white",
+    "wing": "queenside",
+    "king_to": "c1",
+    "rook_to": "d1"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2 (castling)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "9 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "castling"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_check_block",
+  "status": "verified",
+  "title": "Check — and the three ways out",
+  "concept": "check",
+  "category": "basics",
+  "difficulty": 1,
+  "description": "White gives check with the bishop. Black must deal with it right away.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "d6",
+   "Bb5+",
+   "c6"
+  ],
+  "final_fen": "rnbqkbnr/pp3ppp/2pp4/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+  "notes": {
+   "3.Bb5+": "Check! The bishop attacks the king on e8 along the diagonal.",
+   "3...c6": "Black blocks the check by putting a pawn in the way. The pawn also attacks the bishop."
+  },
+  "explanation": "A king in check must get out of check on the very next move. There are only three ways: move the king, block the line of attack, or capture the checking piece. Here Black blocks with a pawn — the best way, because it also attacks the bishop.",
+  "highlights": [
+   {
+    "square": "b5",
+    "color": "red"
+   },
+   {
+    "square": "e8",
+    "color": "yellow"
+   },
+   {
+    "square": "c6",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "check",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "check": {
+    "move": "3.Bb5+",
+    "king": "e8",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "white",
+      "square": "b5"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.9",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.9 (the king in check)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "check"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_en_passant_black",
+  "status": "verified",
+  "title": "En passant for Black",
+  "concept": "en_passant",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "White's e-pawn jumps past Black's pawn on d4 — and Black captures it in passing.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "Nf3",
+   "d5",
+   "g3",
+   "d4",
+   "e4",
+   "dxe3"
+  ],
+  "final_fen": "rnbqkbnr/ppp1pppp/8/8/8/4pNP1/PPPP1P1P/RNBQKB1R w KQkq - 0 4",
+  "notes": {
+   "3.e4": "The pawn jumps two squares to e4, right beside the black pawn on d4.",
+   "3...dxe3": "En passant: Black captures onto e3 and White's pawn on e4 is removed."
+  },
+  "explanation": "En passant works for both sides. Black's pawn on d4 captures White's e-pawn as if it had stopped on e3. If Black had waited one move, the chance would be gone.",
+  "tags": [
+   "rules",
+   "en passant",
+   "pawn",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "en_passant": {
+    "move": "3...dxe3",
+    "pawn_from": "d4",
+    "lands_on": "e3",
+    "captured_pawn_on": "e4",
+    "previous_move": "3.e4"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.3.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.3.2 (en passant)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "en_passant"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_en_passant_white",
+  "status": "verified",
+  "title": "En passant",
+  "concept": "en_passant",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "Black's d-pawn jumps two squares and lands right next to White's pawn on e5.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e6",
+   "e5",
+   "d5",
+   "exd6"
+  ],
+  "final_fen": "rnbqkbnr/ppp2ppp/3Pp3/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3",
+  "key_move": "3.exd6",
+  "prompt": "Black's pawn just moved two squares, from d7 to d5. Can you capture it?",
+  "hints": [
+   "Your pawn on e5 is right next to Black's pawn.",
+   "A pawn that jumps two squares can be captured as if it had moved only one."
+  ],
+  "notes": {
+   "2...d5": "The pawn moves two squares and lands beside White's pawn on e5.",
+   "3.exd6": "En passant! White's pawn captures diagonally onto d6, and the black pawn on d5 disappears."
+  },
+  "explanation": "En passant ('in passing') is a special pawn capture. When a pawn moves two squares and lands beside an enemy pawn, that pawn may capture it as if it had moved only one square. It is only allowed on the very next move.",
+  "highlights": [
+   {
+    "square": "d6",
+    "color": "green"
+   },
+   {
+    "square": "d5",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "en passant",
+   "pawn",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "en_passant": {
+    "move": "3.exd6",
+    "pawn_from": "e5",
+    "lands_on": "d6",
+    "captured_pawn_on": "d5",
+    "previous_move": "2...d5"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.3.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.3.2 (en passant)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "en_passant"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: strong_alternative"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "exd6",
+     "category": "strong_alternative",
+     "loss_cp": 48,
+     "eval_cp": -13,
+     "best_move": "d4",
+     "best_cp": 35,
+     "alternatives": [
+      "d4",
+      "Nf3",
+      "h4",
+      "c3"
+     ],
+     "mate_after": false
+    }
+   },
+   "alternatives": [
+    "d4",
+    "Nf3",
+    "h4",
+    "c3"
+   ]
+  }
+ },
+ {
+  "id": "rules_pinned_knight_illegal",
+  "status": "verified",
+  "title": "A pinned piece can't move",
+  "concept": "legal_moves",
+  "concepts": [
+   "absolute_pin"
+  ],
+  "category": "basics",
+  "difficulty": 2,
+  "description": "Black's knight on c6 blocks a check. Now it is stuck: moving it would expose the king.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "d6",
+   "Bb5+",
+   "Nc6",
+   "O-O"
+  ],
+  "final_fen": "r1bqkbnr/ppp2ppp/2np4/1B2p3/4P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 4",
+  "notes": {
+   "3.Bb5+": "Check from the bishop.",
+   "3...Nc6": "Black blocks with the knight. Now the knight stands between the bishop and the king.",
+   "4.O-O": "It's Black's move. The knight on c6 has squares to go to — but moving it is illegal."
+  },
+  "explanation": "A move that leaves your own king in check is illegal. The knight on c6 is pinned to the king by the bishop on b5, so a knight move like Nd4 would open the diagonal to the king and is not allowed.",
+  "highlights": [
+   {
+    "square": "c6",
+    "color": "red"
+   },
+   {
+    "square": "b5",
+    "color": "yellow"
+   },
+   {
+    "square": "e8",
+    "color": "yellow"
+   }
+  ],
+  "tags": [
+   "rules",
+   "legal moves",
+   "pin",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "move": "Nd4",
+   "uci": "c6d4"
+  },
+  "facts": {
+   "illegal_move": {
+    "move": "Nd4",
+    "position_after": "end",
+    "legal": false,
+    "reason": "it would leave the king in check"
+   },
+   "pin": {
+    "pinner": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "b5"
+    },
+    "pinned": {
+     "piece": "knight",
+     "color": "black",
+     "square": "c6"
+    },
+    "behind": {
+     "piece": "king",
+     "color": "black",
+     "square": "e8"
+    },
+    "kind": "absolute",
+    "move": "4.O-O",
+    "created_by_move": false
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.9.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.9.2 (no move may expose one's own king to check)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "7 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "illegal_move, pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_promotion_queen",
+  "status": "verified",
+  "title": "Promotion: a new queen",
+  "concept": "promotion",
+  "category": "basics",
+  "difficulty": 1,
+  "description": "White's pawn is one step from the last rank.",
+  "start_fen": "8/4P3/8/8/8/k7/8/K7 w - - 0 1",
+  "moves": [
+   "e8=Q"
+  ],
+  "final_fen": "4Q3/8/8/8/8/k7/8/K7 b - - 0 1",
+  "key_move": "1.e8=Q",
+  "prompt": "Your pawn is about to reach the last rank. What do you play?",
+  "hints": [
+   "A pawn that reaches the last rank becomes a new piece.",
+   "Which piece is the strongest?"
+  ],
+  "notes": {
+   "1.e8=Q": "The pawn reaches the eighth rank and becomes a queen."
+  },
+  "explanation": "When a pawn reaches the last rank it must be promoted to a queen, rook, bishop or knight of the same colour. You almost always choose a queen, the strongest piece. You can have two or more queens at once.",
+  "highlights": [
+   {
+    "square": "e8",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "promotion",
+   "pawn",
+   "fide"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "1.e8=Q",
+    "square": "e8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.5",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.5 (promotion)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "e8=Q",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 683,
+     "best_move": "e8=Q",
+     "best_cp": 683,
+     "alternatives": [
+      "Kb1",
+      "e8=R"
+     ],
+     "mate_after": false
+    }
+   },
+   "alternatives": [
+    "Kb1",
+    "e8=R"
+   ]
+  }
+ },
+ {
+  "id": "rules_stalemate_queen",
+  "status": "verified",
+  "title": "Stalemate: winning becomes a draw",
+  "concept": "stalemate",
+  "category": "basics",
+  "difficulty": 1,
+  "description": "White has a queen against a lone king — and throws the win away with one careless move.",
+  "start_fen": "7k/8/4Q3/8/8/8/8/K7 w - - 0 1",
+  "moves": [
+   "Qg6"
+  ],
+  "final_fen": "7k/8/6Q1/8/8/8/8/K7 b - - 1 1",
+  "notes": {
+   "1.Qg6": "The queen covers g8, g7 and h7. The black king isn't in check, but it has nowhere to go — and Black has no other piece to move."
+  },
+  "explanation": "Black is not in check, but has no legal move: that is stalemate, and the game is a draw. With a queen against a lone king, always leave the king at least one square until you can give checkmate.",
+  "highlights": [
+   {
+    "square": "h8",
+    "color": "yellow"
+   },
+   {
+    "square": "g8",
+    "color": "red"
+   },
+   {
+    "square": "g7",
+    "color": "red"
+   },
+   {
+    "square": "h7",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "stalemate",
+   "draw",
+   "fide"
+  ],
+  "related": [
+   "queen_mate"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "stalemate": {
+    "stalemated_side": "black",
+    "king": "h8",
+    "in_check": false,
+    "legal_moves": 0,
+    "king_squares": [
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g6"
+      }
+     },
+     {
+      "square": "h7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g6"
+      }
+     },
+     {
+      "square": "g8",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g6"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-5.2.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 5.2.1 (stalemate)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "stalemate"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ },
+ {
+  "id": "rules_stalemate_pawn",
+  "status": "verified",
+  "title": "Stalemate with king and pawn",
+  "concept": "stalemate",
+  "category": "basics",
+  "difficulty": 2,
+  "description": "A pawn on the seventh rank and a careless king move: the black king is left without a single legal move.",
+  "start_fen": "4k3/8/3K4/4P3/8/8/8/8 w - - 0 1",
+  "moves": [
+   "e6",
+   "Kd8",
+   "e7+",
+   "Ke8",
+   "Ke6"
+  ],
+  "final_fen": "4k3/4P3/4K3/8/8/8/8/8 b - - 2 3",
+  "notes": {
+   "1.e6": "White pushes the pawn — but this lets Black's king get in front of it.",
+   "2.e7+": "Check with the pawn; the black king must step back to e8.",
+   "3.Ke6": "The king protects the pawn, but now the black king has no legal move and is not in check: stalemate."
+  },
+  "explanation": "The black king on e8 can't move: d7 and f7 are next to White's king, and d8 and f8 are attacked by the pawn. It isn't in check, so it's stalemate — a draw. When the defending king reaches the square in front of the pawn, the stronger side has to be very careful.",
+  "tags": [
+   "rules",
+   "stalemate",
+   "pawn endgame"
+  ],
+  "related": [
+   "opposition"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "stalemate": {
+    "stalemated_side": "black",
+    "king": "e8",
+    "in_check": false,
+    "legal_moves": 0,
+    "king_squares": [
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "d8",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "e7"
+      }
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "e7"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-5.2.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 5.2.1 (stalemate); standard king-and-pawn theory",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "stalemate"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ]
+   }
+  }
+ }
+]

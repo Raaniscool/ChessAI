@@ -1,0 +1,727 @@
+[
+ {
+  "id": "lichess_8owde_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose bishop",
+  "concept": "hung_piece",
+  "category": "mistakes",
+  "subcategory": "hangingPiece",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "4K3/1Bk5/P7/8/8/8/7p/8 w - - 0 67",
+  "moves": [
+   "a7",
+   "Kxb7",
+   "a8=Q+",
+   "Kxa8"
+  ],
+  "final_fen": "k3K3/8/8/8/8/8/7p/8 w - - 0 69",
+  "key_move": "67...Kxb7",
+  "mistake_move": "67.a7",
+  "prompt": "White just played 67.a7. You are Black: how do you punish it?",
+  "hints": [
+   "Which white piece is attacked and not defended enough?",
+   "Look at the bishop on b7."
+  ],
+  "notes": {
+   "67.a7": "The mistake: after this move the bishop on b7 can be won.",
+   "67...Kxb7": "Black wins the bishop.",
+   "68...Kxa8": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "After 67.a7 the bishop on b7 could be captured, and Black took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingPiece",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "67.a7",
+    "mistake_by": "white",
+    "punishment": "67...Kxb7",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "b7"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "c7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "8oWde",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/8oWde",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "a7",
+     "category": "blunder",
+     "loss_cp": 618,
+     "eval_cp": -608,
+     "best_move": "Ke7",
+     "best_cp": 10,
+     "alternatives": [
+      "Ke7",
+      "Kf8",
+      "Kf7",
+      "Ba8"
+     ],
+     "mate_after": false,
+     "label": "67.a7"
+    },
+    "punishment": {
+     "move": "Kxb7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 608,
+     "best_move": "Kxb7",
+     "best_cp": 608,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "67...Kxb7"
+    },
+    "key_move": {
+     "move": "Kxb7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 608,
+     "best_move": "Kxb7",
+     "best_cp": 608,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_jldya_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hung_piece",
+  "category": "mistakes",
+  "subcategory": "hangingPiece",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/8/6k1/4K1p1/6Qp/8/8/8 w - - 2 61",
+  "moves": [
+   "Qxg5+",
+   "Kxg5",
+   "Ke4",
+   "Kg4"
+  ],
+  "final_fen": "8/8/8/8/4K1kp/8/8/8 w - - 2 63",
+  "key_move": "61...Kxg5",
+  "mistake_move": "61.Qxg5+",
+  "prompt": "White just played 61.Qxg5+. You are Black: how do you punish it?",
+  "hints": [
+   "Which white piece is attacked and not defended enough?",
+   "Look at the queen on g5."
+  ],
+  "notes": {
+   "61.Qxg5+": "The mistake: after this move the queen on g5 can be won.",
+   "61...Kxg5": "Black wins the queen.",
+   "62...Kg4": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "After 61.Qxg5+ the queen on g5 could be captured, and Black took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingPiece",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "61.Qxg5+",
+    "mistake_by": "white",
+    "punishment": "61...Kxg5",
+    "material_lost": 8,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "white",
+     "square": "g5"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "g6"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "jLdYA",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/jLdYA",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qxg5+",
+     "category": "blunder",
+     "loss_cp": 10622,
+     "eval_cp": -672,
+     "best_move": "Ke6",
+     "best_cp": 9950,
+     "alternatives": [
+      "Ke6",
+      "Qf5+",
+      "Qe6+",
+      "Qf3"
+     ],
+     "mate_after": false,
+     "label": "61.Qxg5+"
+    },
+    "punishment": {
+     "move": "Kxg5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 597,
+     "best_move": "Kxg5",
+     "best_cp": 597,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "61...Kxg5"
+    },
+    "key_move": {
+     "move": "Kxg5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 597,
+     "best_move": "Kxg5",
+     "best_cp": 597,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ym8eb_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose rook",
+  "concept": "hung_piece",
+  "category": "mistakes",
+  "subcategory": "hangingPiece",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/8/8/1R6/8/1pp5/2k1K3/8 w - - 0 70",
+  "moves": [
+   "Rxb3",
+   "Kxb3",
+   "Kd1",
+   "Kb2"
+  ],
+  "final_fen": "8/8/8/8/8/2p5/1k6/3K4 w - - 2 72",
+  "key_move": "70...Kxb3",
+  "mistake_move": "70.Rxb3",
+  "prompt": "White just played 70.Rxb3. You are Black: how do you punish it?",
+  "hints": [
+   "Which white piece is attacked and not defended enough?",
+   "Look at the rook on b3."
+  ],
+  "notes": {
+   "70.Rxb3": "The mistake: after this move the rook on b3 can be won.",
+   "70...Kxb3": "Black wins the rook.",
+   "71...Kb2": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "After 70.Rxb3 the rook on b3 could be captured, and Black took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingPiece",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "70.Rxb3",
+    "mistake_by": "white",
+    "punishment": "70...Kxb3",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "rook",
+     "color": "white",
+     "square": "b3"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "c2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "YM8eb",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/YM8eb",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxb3",
+     "category": "blunder",
+     "loss_cp": 582,
+     "eval_cp": -582,
+     "best_move": "Ke3",
+     "best_cp": 0,
+     "alternatives": [
+      "Ke3"
+     ],
+     "mate_after": false,
+     "label": "70.Rxb3"
+    },
+    "punishment": {
+     "move": "Kxb3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 602,
+     "best_move": "Kxb3",
+     "best_cp": 602,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "70...Kxb3"
+    },
+    "key_move": {
+     "move": "Kxb3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 602,
+     "best_move": "Kxb3",
+     "best_cp": 602,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ziae4_mistake",
+  "status": "verified",
+  "title": "Walking into a fork: king and rook",
+  "concept": "walked_into_fork",
+  "category": "mistakes",
+  "subcategory": "fork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "5R2/8/8/3K4/4pn2/4k3/8/8 w - - 4 69",
+  "moves": [
+   "Ke5",
+   "Ng6+",
+   "Kd5",
+   "Nxf8"
+  ],
+  "final_fen": "5n2/8/8/3K4/4p3/4k3/8/8 w - - 0 71",
+  "key_move": "69...Ng6+",
+  "mistake_move": "69.Ke5",
+  "prompt": "White just played 69.Ke5. You are Black: how do you punish it?",
+  "hints": [
+   "Your knight can attack two things at once.",
+   "Find a square that hits the king and rook."
+  ],
+  "notes": {
+   "69.Ke5": "The mistake: now the knight can attack two pieces at once.",
+   "69...Ng6+": "Fork! The knight on g6 attacks the king on e5 and rook on f8 at once. It's check, so the king must move first.",
+   "70...Nxf8": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "White played 69.Ke5 and walked into a fork: the knight on g6 attacks the king on e5 and rook on f8, and the king has to get out of check, so the rook is lost. Before every move, check where your opponent's pieces can go next, and whether one square would attack two of your pieces at once.",
+  "tags": [
+   "fork",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "walked_into_fork": {
+    "mistake": "69.Ke5",
+    "mistake_by": "white",
+    "punishment": "69...Ng6+",
+    "material_lost": 5,
+    "ends_in_mate": false,
+    "fork": {
+     "move": "69...Ng6+",
+     "attacker": {
+      "piece": "knight",
+      "color": "black",
+      "square": "g6"
+     },
+     "targets": [
+      {
+       "piece": "king",
+       "color": "white",
+       "square": "e5"
+      },
+      {
+       "piece": "rook",
+       "color": "white",
+       "square": "f8"
+      }
+     ],
+     "gives_check": true
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "zIAe4",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/zIAe4",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "walked_into_fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Ke5",
+     "category": "blunder",
+     "loss_cp": 684,
+     "eval_cp": -684,
+     "best_move": "Kd6",
+     "best_cp": 0,
+     "alternatives": [
+      "Kd6",
+      "Kc4",
+      "Kc6"
+     ],
+     "mate_after": false,
+     "label": "69.Ke5"
+    },
+    "punishment": {
+     "move": "Ng6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 670,
+     "best_move": "Ng6+",
+     "best_cp": 670,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "69...Ng6+"
+    },
+    "key_move": {
+     "move": "Ng6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 670,
+     "best_move": "Ng6+",
+     "best_cp": 670,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ }
+]

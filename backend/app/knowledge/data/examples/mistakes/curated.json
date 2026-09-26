@@ -1,0 +1,1382 @@
+[
+ {
+  "id": "mistake_early_queen_f6",
+  "status": "verified",
+  "title": "The early queen gets chased",
+  "concept": "early_queen",
+  "category": "mistakes",
+  "difficulty": 2,
+  "description": "Black brings the queen out on move two. White develops and gains time by attacking it.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Qf6",
+   "Nc3",
+   "c6",
+   "d4",
+   "exd4",
+   "e5",
+   "Qe6"
+  ],
+  "final_fen": "rnb1kbnr/pp1p1ppp/2p1q3/4P3/3p4/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 1 6",
+  "mistake_move": "2...Qf6",
+  "notes": {
+   "2...Qf6": "The queen defends e5, but takes the best square from the knight on g8.",
+   "3.Nc3": "White develops and eyes d5, where the knight would attack the queen.",
+   "5.e5": "The pawn attacks the queen, which has to move again.",
+   "5...Qe6": "Black has moved the queen twice and developed no pieces."
+  },
+  "explanation": "An early queen becomes a target: every time White develops with an attack on it, White gains a move. After five moves White has a knight out and a strong centre, while Black has only moved the queen and pawns. Develop your knights and bishops first; the queen comes later.",
+  "tags": [
+   "opening principles",
+   "early queen",
+   "development"
+  ],
+  "related": [
+   "ignoring_development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "early_queen": {
+    "mistake": "2...Qf6",
+    "queen_chased_by": [
+     "5.e5"
+    ],
+    "queen_lost": false,
+    "mistake_by": "black"
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "early-queen-f6",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: Black's position drops from +0.32 to +1.59",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "10 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "early_queen"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "black",
+    "eval_before": -27,
+    "eval_end": -128,
+    "drop_cp": 101
+   }
+  }
+ },
+ {
+  "id": "mistake_queen_to_g5",
+  "status": "verified",
+  "title": "Hanging the queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "difficulty": 1,
+  "description": "Black brings the queen out to attack — onto a square White's knight controls.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bb5",
+   "Qg5",
+   "Nxg5"
+  ],
+  "final_fen": "r1b1kbnr/pppp1ppp/2n5/1B2p1N1/4P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 4",
+  "key_move": "4.Nxg5",
+  "mistake_move": "3...Qg5",
+  "prompt": "White to move. Black's queen just moved. Is it safe?",
+  "hints": [
+   "Which of your pieces attacks g5?",
+   "Is the black queen defended?"
+  ],
+  "notes": {
+   "3...Qg5": "The queen attacks g2 — but g5 is attacked by the knight on f3, and nothing defends the queen.",
+   "4.Nxg5": "White simply takes the queen."
+  },
+  "explanation": "Before every move, ask: can the piece I'm moving be captured on its new square? The queen on g5 was attacked by the knight on f3 and not defended, so it was lost for nothing. Queens are especially easy to hang because they go so far.",
+  "tags": [
+   "blunder",
+   "hanging piece",
+   "queen",
+   "beginner"
+  ],
+  "related": [
+   "hanging_piece"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "3...Qg5",
+    "mistake_by": "black",
+    "punishment": "4.Nxg5",
+    "material_lost": 9,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "black",
+     "square": "g5"
+    },
+    "attacked_by": [
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "f3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "hang-queen-g5",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "typical beginner blunder; verified with Stockfish 19",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "7 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Bxc6"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qg5",
+     "category": "blunder",
+     "loss_cp": 778,
+     "eval_cp": -812,
+     "best_move": "a6",
+     "best_cp": -34,
+     "alternatives": [
+      "a6",
+      "Nf6",
+      "Nge7",
+      "Bc5"
+     ],
+     "mate_after": false,
+     "label": "3...Qg5"
+    },
+    "punishment": {
+     "move": "Nxg5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 862,
+     "best_move": "Nxg5",
+     "best_cp": 862,
+     "alternatives": [
+      "Bxc6"
+     ],
+     "mate_after": false,
+     "label": "4.Nxg5"
+    },
+    "key_move": {
+     "move": "Nxg5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 862,
+     "best_move": "Nxg5",
+     "best_cp": 862,
+     "alternatives": [
+      "Bxc6"
+     ],
+     "mate_after": false
+    }
+   },
+   "alternatives": [
+    "Bxc6"
+   ]
+  }
+ },
+ {
+  "id": "mistake_pawn_moves_only",
+  "status": "verified",
+  "title": "Pawn moves instead of development",
+  "concept": "ignoring_development",
+  "category": "mistakes",
+  "difficulty": 1,
+  "description": "Black plays little pawn moves on the edge. White gets three pieces into the game.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "h6",
+   "Nc3",
+   "a6",
+   "d4",
+   "exd4",
+   "Nxd4",
+   "g6",
+   "Bc4",
+   "Bg7"
+  ],
+  "final_fen": "rnbqk1nr/1ppp1pb1/p5pp/8/2BNP3/2N5/PPP2PPP/R1BQK2R w KQkq - 2 7",
+  "mistake_move": "2...h6",
+  "notes": {
+   "2...h6": "A pawn move that doesn't help development.",
+   "3...a6": "Another one.",
+   "6.Bc4": "White already has two knights and a bishop out, aiming at f7.",
+   "6...Bg7": "Black has developed one piece; White has three."
+  },
+  "explanation": "Moves like h6 and a6 don't bring pieces into play. White used the same moves to develop both knights and a bishop and to open the centre. In the opening, play pawn moves only when they open lines for your pieces or fight for the centre.",
+  "tags": [
+   "opening principles",
+   "development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "white",
+   "ahead_by": 2
+  },
+  "facts": {
+   "development_lead": {
+    "side": "white",
+    "developed": 3,
+    "opponent_developed": 1,
+    "lead": 2
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "pawn-moves-only",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: Black drops from +0.32 to +1.75",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "development_lead"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "black",
+    "eval_before": -27,
+    "eval_end": -204,
+    "drop_cp": 177
+   }
+  }
+ },
+ {
+  "id": "mistake_pawn_shield_g5",
+  "status": "verified",
+  "title": "Weakening the king: mate on the e8-h5 diagonal",
+  "concept": "king_safety_mistake",
+  "category": "mistakes",
+  "difficulty": 1,
+  "description": "Black moves the f- and g-pawns in front of the king. The diagonal to e8 opens and the white queen mates at once.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "f6",
+   "d4",
+   "g5",
+   "Qh5#"
+  ],
+  "final_fen": "rnbqkbnr/ppppp2p/5p2/6pQ/3PP3/8/PPP2PPP/RNB1KBNR b KQkq - 1 3",
+  "key_move": "3.Qh5#",
+  "mistake_move": "2...g5",
+  "prompt": "White to move. Black has moved the f- and g-pawns. Can you checkmate in one?",
+  "hints": [
+   "Look at the diagonal from your queen towards Black's king.",
+   "Nothing can block on f7 or g6."
+  ],
+  "notes": {
+   "1...f6": "This takes the f6 square from the knight and opens the diagonal e8-h5.",
+   "2...g5": "Now nothing can block the diagonal between h5 and e8.",
+   "3.Qh5#": "Checkmate: the king can't move, and nothing can capture the queen or block the check."
+  },
+  "explanation": "The f- and g-pawns shelter the king. After ...f6 and ...g5 the diagonal from h5 to e8 is wide open, and 3.Qh5 is checkmate. It's the mirror image of Fool's Mate. Early in the game, be very careful with the pawns next to your king.",
+  "tags": [
+   "king safety",
+   "checkmate",
+   "mate in 1",
+   "pawn shield"
+  ],
+  "related": [
+   "king_safety",
+   "fools_mate"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "king_safety_mistake": {
+    "mistake": "2...g5",
+    "mistake_by": "black",
+    "punishment": "3.Qh5#",
+    "material_lost": 0,
+    "ends_in_mate": true,
+    "weakening_move": "2...g5",
+    "king": "e8"
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "pawn-shield-g5",
+   "source_license": "CC0-1.0 (original composition of a standard pattern)",
+   "reference": "standard miniature: the reversed Fool's Mate",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "king_safety_mistake"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "g5",
+     "category": "blunder",
+     "loss_cp": 9853,
+     "eval_cp": -9990,
+     "best_move": "e6",
+     "best_cp": -137,
+     "alternatives": [
+      "e6",
+      "Nc6",
+      "e5",
+      "Na6"
+     ],
+     "mate_after": false,
+     "label": "2...g5"
+    },
+    "punishment": {
+     "move": "Qh5#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qh5#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "3.Qh5#"
+    },
+    "key_move": {
+     "move": "Qh5#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qh5#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "mistake_damiano_defense",
+  "status": "verified",
+  "title": "Weakening the king: the Damiano Defense",
+  "concept": "king_safety_mistake",
+  "category": "mistakes",
+  "difficulty": 2,
+  "description": "Black defends the e5 pawn with the f-pawn, weakening the king. After a knight sacrifice, Black's king gets hunted.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "f6",
+   "Nxe5",
+   "fxe5",
+   "Qh5+",
+   "g6",
+   "Qxe5+",
+   "Qe7",
+   "Qxh8"
+  ],
+  "final_fen": "rnb1kbnQ/ppppq2p/6p1/8/4P3/8/PPPP1PPP/RNB1KB1R b KQq - 0 6",
+  "key_move": "4.Qh5+",
+  "mistake_move": "3...fxe5",
+  "prompt": "White to move. You gave up a knight. Now use the weakened diagonal to Black's king.",
+  "hints": [
+   "Black's f-pawn no longer shields the king.",
+   "A queen check on the long diagonal forks king and more."
+  ],
+  "notes": {
+   "2...f6": "This defends e5 with a pawn, but it takes away the king's best defender and opens the diagonal h5-e8.",
+   "3...fxe5": "Taking the knight lets the white queen in.",
+   "4.Qh5+": "Check along the diagonal that f6 opened.",
+   "5.Qxe5+": "Check again, and the rook on h8 is attacked too.",
+   "6.Qxh8": "White wins the rook and ends up with more material."
+  },
+  "explanation": "The pawns in front of your king are its shield. Moving the f-pawn (2...f6) and then taking the knight (3...fxe5) let the white queen in with check. Black should have played 3...Qe7. Think twice before moving the pawns next to your king.",
+  "tags": [
+   "king safety",
+   "opening trap",
+   "damiano"
+  ],
+  "related": [
+   "king_safety"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "king_safety_mistake": {
+    "mistake": "3...fxe5",
+    "mistake_by": "black",
+    "punishment": "4.Qh5+",
+    "material_lost": 3,
+    "ends_in_mate": false,
+    "weakening_move": "3...fxe5",
+    "king": "e8"
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "damiano-defense",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Damiano Defense (1.e4 e5 2.Nf3 f6), refuted since Damiano (1512)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "11 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "king_safety_mistake"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "fxe5",
+     "category": "mistake",
+     "loss_cp": 238,
+     "eval_cp": -427,
+     "best_move": "Qe7",
+     "best_cp": -189,
+     "alternatives": [
+      "Qe7",
+      "Ne7"
+     ],
+     "mate_after": false,
+     "label": "3...fxe5"
+    },
+    "punishment": {
+     "move": "Qh5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 369,
+     "best_move": "Qh5+",
+     "best_cp": 369,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "4.Qh5+"
+    },
+    "key_move": {
+     "move": "Qh5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 369,
+     "best_move": "Qh5+",
+     "best_cp": 369,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "mistake_blackburne_shilling",
+  "status": "verified",
+  "title": "Missing a threat: the Blackburne Shilling trap",
+  "concept": "missed_threat",
+  "concepts": [
+   "smothered_mate"
+  ],
+  "category": "mistakes",
+  "difficulty": 3,
+  "description": "White grabs material with a fork and ignores Black's threat against g2 — then gets mated.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Nd4",
+   "Nxe5",
+   "Qg5",
+   "Nxf7",
+   "Qxg2",
+   "Rf1",
+   "Qxe4+",
+   "Be2",
+   "Nf3#"
+  ],
+  "final_fen": "r1b1kbnr/pppp1Npp/8/8/4q3/5n2/PPPPBP1P/RNBQKR2 w Qkq - 2 8",
+  "key_move": "5...Qxg2",
+  "mistake_move": "5.Nxf7",
+  "prompt": "Black to move. White's knight forks your queen and rook. What do you play?",
+  "hints": [
+   "Before saving your pieces: what does your queen already attack?",
+   "White's g2 pawn and rook on h1 have no protection."
+  ],
+  "notes": {
+   "3...Nd4": "A cheeky move that sets a trap.",
+   "4...Qg5": "The queen attacks the knight on e5 AND the pawn on g2.",
+   "5.Nxf7": "White forks queen and rook — but ignores the threat on g2.",
+   "5...Qxg2": "Black takes on g2 and attacks the rook on h1.",
+   "6...Qxe4+": "Check, and the white pieces are in each other's way.",
+   "7...Nf3#": "Smothered mate: the knight checks e1, and every square around the king is blocked by White's own pieces."
+  },
+  "explanation": "White saw a fork and took it — without asking what Black's last move threatened. The queen on g5 was attacking g2, and after 5...Qxg2 White's king gets caught in a smothered mate. Before you play your own idea, always check your opponent's threats first.",
+  "tags": [
+   "missed threat",
+   "opening trap",
+   "smothered mate",
+   "classic"
+  ],
+  "related": [
+   "fork"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "5.Nxf7",
+    "mistake_by": "white",
+    "punishment": "5...Qxg2",
+    "material_lost": 1,
+    "ends_in_mate": true,
+    "ignored_threat": "Qxg2"
+   },
+   "smothered_mate": {
+    "mated_side": "white",
+    "king": "e1",
+    "checkers": [
+     {
+      "piece": "knight",
+      "color": "black",
+      "square": "f3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d1",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f1",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "d2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e2",
+      "blocked_by": "bishop"
+     },
+     {
+      "square": "f2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "7...Nf3#",
+    "pattern": "smothered mate",
+    "smothered_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d1"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "f1"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "d2"
+     },
+     {
+      "piece": "bishop",
+      "color": "white",
+      "square": "e2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "f2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "blackburne-shilling-gambit",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Blackburne Shilling Gambit trap, a standard opening trap",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "14 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat, smothered_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Nxf7",
+     "category": "blunder",
+     "loss_cp": 447,
+     "eval_cp": -497,
+     "best_move": "O-O",
+     "best_cp": -50,
+     "alternatives": [
+      "O-O",
+      "Bxf7+"
+     ],
+     "mate_after": false,
+     "label": "5.Nxf7"
+    },
+    "punishment": {
+     "move": "Qxg2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "Qxg2",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "5...Qxg2"
+    },
+    "key_move": {
+     "move": "Qxg2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "Qxg2",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "mistake_elephant_trap",
+  "status": "verified",
+  "title": "Poisoned pawn: the Elephant Trap",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "difficulty": 3,
+  "description": "White wins a pawn on d5 — and loses a piece, because the 'pinned' knight isn't really pinned.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "d4",
+   "d5",
+   "c4",
+   "e6",
+   "Nc3",
+   "Nf6",
+   "Bg5",
+   "Nbd7",
+   "cxd5",
+   "exd5",
+   "Nxd5",
+   "Nxd5",
+   "Bxd8",
+   "Bb4+",
+   "Qd2",
+   "Bxd2+",
+   "Kxd2",
+   "Kxd8"
+  ],
+  "final_fen": "r1bk3r/pppn1ppp/8/3n4/3P4/8/PP1KPPPP/R4BNR w - - 0 10",
+  "key_move": "6...Nxd5",
+  "mistake_move": "6.Nxd5",
+  "prompt": "Black to move. White just took your d5 pawn. Your knight on f6 looks pinned. What now?",
+  "hints": [
+   "If you give up your queen, can you get even more back?",
+   "Look for a check with your dark-squared bishop."
+  ],
+  "notes": {
+   "6.Nxd5": "White thinks the knight on f6 is pinned to the queen and grabs the pawn.",
+   "6...Nxd5": "Black gives up the queen!",
+   "7.Bxd8": "White takes the queen...",
+   "7...Bb4+": "...but this check wins it back: White must give up the queen on d2.",
+   "9...Kxd8": "Black is a piece up — the pawn on d5 was poisoned."
+  },
+  "explanation": "The pawn on d5 looked free because the knight on f6 was pinned to the queen. But a pin to the queen is only a relative pin: Black gives the queen, wins it back with a check, and comes out a piece ahead. When material looks free, check what your opponent gets in return.",
+  "tags": [
+   "poisoned pawn",
+   "opening trap",
+   "queens gambit",
+   "classic"
+  ],
+  "related": [
+   "relative_pin"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "6.Nxd5",
+    "mistake_by": "white",
+    "punishment": "6...Nxd5",
+    "material_lost": 2,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "d5"
+    }
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "elephant-trap",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Elephant Trap in the Queen's Gambit Declined, a standard opening trap",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "18 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Nxd5",
+     "category": "blunder",
+     "loss_cp": 523,
+     "eval_cp": -485,
+     "best_move": "e3",
+     "best_cp": 38,
+     "alternatives": [
+      "e3",
+      "Nf3",
+      "Qc2",
+      "Rc1"
+     ],
+     "mate_after": false,
+     "label": "6.Nxd5"
+    },
+    "punishment": {
+     "move": "Nxd5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "Nxd5",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "6...Nxd5"
+    },
+    "key_move": {
+     "move": "Nxd5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "Nxd5",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "mistake_knight_wanders",
+  "status": "verified",
+  "title": "Moving the same knight again and again",
+  "concept": "repeated_moves",
+  "category": "mistakes",
+  "difficulty": 2,
+  "description": "Black's knight moves four times while White develops piece after piece.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nf6",
+   "Nc3",
+   "Ng4",
+   "d4",
+   "Nf6",
+   "dxe5",
+   "Ng8",
+   "Bc4"
+  ],
+  "final_fen": "rnbqkbnr/pppp1ppp/8/4P3/2B1P3/2N2N2/PPP2PPP/R1BQK2R b KQkq - 2 6",
+  "mistake_move": "3...Ng4",
+  "notes": {
+   "3...Ng4": "The knight moves again — it attacks nothing important.",
+   "4...Nf6": "And back again, instead of taking on d4.",
+   "5...Ng8": "Four knight moves, and the knight is back home.",
+   "6.Bc4": "White has two knights and a bishop in play and a pawn more."
+  },
+  "explanation": "In the opening every move counts. Black's knight went f6-g4-f6-g8 and ended where it started, while White developed three pieces and won a pawn. Move each piece once, to a good square, before moving any piece twice.",
+  "tags": [
+   "opening principles",
+   "tempo",
+   "development"
+  ],
+  "related": [
+   "ignoring_development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "black",
+   "min": 4
+  },
+  "facts": {
+   "repeated_moves": {
+    "side": "black",
+    "moves_by_one_piece": 4,
+    "development": {
+     "white": 3,
+     "black": 0
+    }
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "knight-wanders",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: +0.27 before 3...Ng4, +5.80 at the end",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "11 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "repeated_moves"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "black",
+    "eval_before": -22,
+    "eval_end": -554,
+    "drop_cp": 532
+   }
+  }
+ }
+]

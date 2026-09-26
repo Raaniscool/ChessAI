@@ -1,0 +1,1506 @@
+[
+ {
+  "id": "mate_back_rank_basic",
+  "status": "verified",
+  "title": "Back-rank mate: the pawns become a cage",
+  "concept": "back_rank_mate",
+  "category": "checkmates",
+  "difficulty": 1,
+  "description": "Black's king is tucked behind its three pawns, and White's rook has an open file.",
+  "start_fen": "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+  "moves": [
+   "Rd8#"
+  ],
+  "final_fen": "3R2k1/5ppp/8/8/8/8/5PPP/6K1 b - - 1 1",
+  "key_move": "1.Rd8#",
+  "prompt": "White to move. Can you checkmate in one?",
+  "hints": [
+   "Black's king has no squares on the seventh rank — its own pawns are in the way.",
+   "Your rook can reach the eighth rank."
+  ],
+  "notes": {
+   "1.Rd8#": "The rook checks along the eighth rank. The king can't step forward because its own pawns block f7, g7 and h7."
+  },
+  "explanation": "This is the back-rank mate. The pawns in front of the king, which normally protect it, now take away all its escape squares. Nothing can block the rook or capture it. To avoid it, give your king an escape square (a 'luft') by moving one of those pawns, or keep a rook on the back rank.",
+  "highlights": [
+   {
+    "square": "d8",
+    "color": "red"
+   },
+   {
+    "square": "g8",
+    "color": "yellow"
+   }
+  ],
+  "tags": [
+   "checkmate",
+   "back rank",
+   "mate in 1"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_mate": {
+    "mated_side": "black",
+    "king": "g8",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "d8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     },
+     {
+      "square": "h8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     }
+    ],
+    "mating_move": "1.Rd8#",
+    "pattern": "back-rank mate",
+    "boxed_in_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "f7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "g7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "h7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "pattern-back-rank-1",
+   "source_license": "CC0-1.0 (original composition of a standard pattern)",
+   "reference": "standard mating pattern (e.g. Renaud & Kahn, The Art of the Checkmate, 1953)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rd8#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rd8#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "1.Rd8#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "mate_fools_mate",
+  "status": "verified",
+  "title": "Fool's mate — the fastest checkmate",
+  "concept": "fools_mate",
+  "concepts": [
+   "king_safety_mistake"
+  ],
+  "category": "checkmates",
+  "difficulty": 1,
+  "description": "White makes two weakening pawn moves, and Black mates on move two.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "f3",
+   "e5",
+   "g4",
+   "Qh4#"
+  ],
+  "final_fen": "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3",
+  "key_move": "2...Qh4#",
+  "mistake_move": "2.g4",
+  "prompt": "Black to move. White has opened the diagonal to the king. Can you end the game?",
+  "hints": [
+   "Look at the diagonal from your queen towards White's king.",
+   "The squares f2 and g3 are no longer protected by pawns."
+  ],
+  "notes": {
+   "1.f3": "A weak first move: it opens the diagonal between e1 and h4.",
+   "2.g4": "A second pawn leaves the king's side. Now nothing can block the diagonal.",
+   "2...Qh4#": "Checkmate. The queen attacks the king along h4-e1, and no White piece can block or capture."
+  },
+  "explanation": "Fool's mate is the shortest possible game. White's two pawn moves (f3 and g4) open the diagonal to the king, and the queen mates at once. The lesson: don't push the pawns in front of your king in the opening.",
+  "highlights": [
+   {
+    "square": "h4",
+    "color": "red"
+   },
+   {
+    "square": "e1",
+    "color": "yellow"
+   }
+  ],
+  "tags": [
+   "checkmate",
+   "opening trap",
+   "king safety",
+   "classic"
+  ],
+  "related": [
+   "king_safety"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "early_mate": {
+    "mated_side": "white",
+    "king": "e1",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "h4"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d1",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f1",
+      "blocked_by": "bishop"
+     },
+     {
+      "square": "d2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "h4"
+      }
+     }
+    ],
+    "mating_move": "2...Qh4#",
+    "plies": 4
+   },
+   "king_safety_mistake": {
+    "mistake": "2.g4",
+    "mistake_by": "white",
+    "punishment": "2...Qh4#",
+    "material_lost": 0,
+    "ends_in_mate": true,
+    "weakening_move": "2.g4",
+    "king": "e1"
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "fools-mate",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "the classical Fool's mate, a standard pattern in chess literature",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "early_mate, king_safety_mistake"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qh4#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qh4#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "2...Qh4#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "mate_ladder_two_rooks",
+  "status": "verified",
+  "title": "Ladder mate with two rooks",
+  "concept": "ladder_mate",
+  "category": "checkmates",
+  "difficulty": 2,
+  "description": "Two rooks take turns: one blocks a rank, the other gives check — like climbing a ladder.",
+  "start_fen": "8/8/2k5/7R/8/8/6R1/K7 w - - 0 1",
+  "moves": [
+   "Rg6+",
+   "Kd7",
+   "Rh7+",
+   "Ke8",
+   "Rg8#"
+  ],
+  "final_fen": "4k1R1/7R/8/8/8/8/8/K7 b - - 5 3",
+  "key_move": "1.Rg6+",
+  "prompt": "White to move. Use both rooks to push the king to the edge.",
+  "hints": [
+   "The rook on h5 already stops the king from going down.",
+   "Give check with the other rook one rank higher."
+  ],
+  "notes": {
+   "1.Rg6+": "Check on the sixth rank. The h5 rook guards the fifth, so the king must go up.",
+   "2.Rh7+": "Now the other rook checks on the seventh rank, while the g6 rook guards the sixth.",
+   "3.Rg8#": "Checkmate on the edge: the g8 rook checks and the h7 rook guards the seventh rank."
+  },
+  "explanation": "In the ladder mate the rooks work in turns. One rook stands guard on a rank so the king can't come back, and the other rook gives check one rank further. Step by step the king is pushed to the edge, where the last check is mate. Keep the rooks far away from the enemy king so it can't attack them.",
+  "tags": [
+   "checkmate",
+   "endgame",
+   "ladder",
+   "two rooks"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "ladder_mate": {
+    "mated_side": "black",
+    "king": "e8",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "g8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "h7"
+      }
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "h7"
+      }
+     },
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "h7"
+      }
+     },
+     {
+      "square": "d8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g8"
+      }
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g8"
+      }
+     }
+    ],
+    "mating_move": "3.Rg8#",
+    "pattern": "ladder mate",
+    "heavy_pieces": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "h7"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "g8"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "ladder-mate",
+   "source_license": "CC0-1.0 (original composition of a standard technique)",
+   "reference": "standard two-rook (ladder) mate technique",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "ladder_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Rg7"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 9970,
+    "key_move": {
+     "move": "Rg6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Rg6+",
+     "best_cp": 9970,
+     "alternatives": [
+      "Rg7"
+     ],
+     "mate_after": true
+    }
+   },
+   "alternatives": [
+    "Rg7"
+   ]
+  }
+ },
+ {
+  "id": "mate_legals_mate",
+  "status": "verified",
+  "title": "Légal's mate: the queen 'sacrifice'",
+  "concept": "legals_mate",
+  "concepts": [
+   "sacrifice"
+  ],
+  "category": "checkmates",
+  "difficulty": 3,
+  "description": "White seems to give away the queen. If Black grabs it, three white minor pieces deliver mate.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "d6",
+   "Bc4",
+   "Bg4",
+   "Nc3",
+   "g6",
+   "Nxe5",
+   "Bxd1",
+   "Bxf7+",
+   "Ke7",
+   "Nd5#"
+  ],
+  "final_fen": "rn1q1bnr/ppp1kB1p/3p2p1/3NN3/4P3/8/PPPP1PPP/R1BbK2R b KQ - 2 7",
+  "key_move": "5.Nxe5",
+  "prompt": "White to move. The knight on f3 is pinned to the queen — or is it?",
+  "hints": [
+   "What happens if Black takes your queen?",
+   "Count the attackers on f7 and the squares around Black's king."
+  ],
+  "notes": {
+   "3...Bg4": "The bishop pins the knight to the queen on d1.",
+   "5.Nxe5": "White ignores the pin! If Black takes the knight, White wins a pawn; if Black takes the queen...",
+   "5...Bxd1": "Greed. Black grabs the queen.",
+   "6.Bxf7+": "Check! The king has to go to e7.",
+   "7.Nd5#": "Checkmate with three minor pieces: the knights on d5 and e5 and the bishop on f7 cover every escape square."
+  },
+  "explanation": "Légal's mate, named after the 18th-century French master Legall de Kermeur, shows that a pin to the queen is only a relative pin — the knight may move if the result is worth more than the queen. After 5.Nxe5 Black should play 5...dxe5 and accept being a pawn down; taking the queen gets mated.",
+  "tags": [
+   "checkmate",
+   "opening trap",
+   "sacrifice",
+   "classic",
+   "historical game"
+  ],
+  "related": [
+   "relative_pin",
+   "sacrifice"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "early_mate": {
+    "mated_side": "black",
+    "king": "e7",
+    "checkers": [
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "d5"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d6",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e6",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "f7"
+      }
+     },
+     {
+      "square": "f6",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "d5"
+      }
+     },
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "e5"
+      }
+     },
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "e5"
+      }
+     },
+     {
+      "square": "d8",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "e8",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "f7"
+      }
+     },
+     {
+      "square": "f8",
+      "blocked_by": "bishop"
+     }
+    ],
+    "mating_move": "7.Nd5#",
+    "plies": 13
+   },
+   "sacrifice": {
+    "material_given": 8,
+    "given_after": "5...Bxd1",
+    "ends_in_mate": true,
+    "final_material_balance": -7
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "legall-saint-brie-1750",
+   "source_game": "traditionally: Legall de Kermeur - Saint Brie, Paris 1750",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Légal's mate; the game is traditionally attributed to Legall de Kermeur vs Saint Brie, Paris 1750",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "13 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "early_mate, sacrifice"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nxe5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 213,
+     "best_move": "Nxe5",
+     "best_cp": 213,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "5.Nxe5"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxf7+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Bxf7+",
+      "best_cp": 9980,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "6.Bxf7+"
+     },
+     {
+      "move": "Nd5#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Nd5#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "7.Nd5#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "mate_scholars_mate",
+  "status": "verified",
+  "title": "Scholar's mate",
+  "concept": "scholars_mate",
+  "category": "checkmates",
+  "difficulty": 1,
+  "description": "White's queen and bishop both aim at f7 — a square only Black's king defends.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Bc4",
+   "Nc6",
+   "Qh5",
+   "Nf6",
+   "Qxf7#"
+  ],
+  "final_fen": "r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4",
+  "key_move": "4.Qxf7#",
+  "prompt": "White to move. Black's last move allowed a checkmate. Find it!",
+  "hints": [
+   "Which black square is attacked by two White pieces?",
+   "The queen and the bishop both look at f7."
+  ],
+  "notes": {
+   "2.Bc4": "The bishop aims at f7, the weakest square in Black's camp.",
+   "3.Qh5": "The queen attacks f7 too — and also the e5 pawn.",
+   "3...Nf6": "A natural developing move, but it ignores the threat on f7.",
+   "4.Qxf7#": "The queen takes on f7 with checkmate. The king can't take it back, because the bishop protects the queen."
+  },
+  "explanation": "Scholar's mate uses the queen and the bishop against f7, which only the king defends at the start. After 3.Qh5 Black should defend with 3...g6 or 3...Qe7. Knowing this trap makes you safe from it — and the early queen can then be chased around with tempo.",
+  "highlights": [
+   {
+    "square": "f7",
+    "color": "red"
+   },
+   {
+    "square": "c4",
+    "color": "yellow"
+   }
+  ],
+  "tags": [
+   "checkmate",
+   "opening trap",
+   "f7",
+   "classic"
+  ],
+  "related": [
+   "early_queen"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "scholars_mate": {
+    "mated_side": "black",
+    "king": "e8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "f7"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "f7"
+      }
+     },
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "c4"
+      }
+     },
+     {
+      "square": "d8",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f8",
+      "blocked_by": "bishop"
+     }
+    ],
+    "mating_move": "4.Qxf7#",
+    "pattern": "Scholar's mate"
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "scholars-mate",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "the classical Scholar's mate, a standard pattern in chess literature",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "7 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "scholars_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "4.Qxf7#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "mate_smothered_caro_kann",
+  "status": "verified",
+  "title": "Smothered mate in the Caro-Kann",
+  "concept": "smothered_mate",
+  "concepts": [
+   "caro_kann"
+  ],
+  "category": "checkmates",
+  "difficulty": 2,
+  "description": "A famous opening trap: Black develops the wrong knight and the king is smothered by its own pieces.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "c6",
+   "d4",
+   "d5",
+   "Nc3",
+   "dxe4",
+   "Nxe4",
+   "Nd7",
+   "Qe2",
+   "Ngf6",
+   "Nd6#"
+  ],
+  "final_fen": "r1bqkb1r/pp1npppp/2pN1n2/8/3P4/8/PPP1QPPP/R1B1KBNR b KQkq - 4 6",
+  "key_move": "6.Nd6#",
+  "mistake_move": "5...Ngf6",
+  "prompt": "White to move. Black's king is surrounded by its own pieces. Can you checkmate?",
+  "hints": [
+   "The e-pawn in front of Black's king can't capture on d6 — the queen on e2 pins it.",
+   "Which knight jump checks the king on e8?"
+  ],
+  "notes": {
+   "5.Qe2": "The queen lines up on the e-file with Black's king.",
+   "5...Ngf6": "A blunder: now d8, e7, f8, d7 and f7 are all filled with Black's own pieces.",
+   "6.Nd6#": "Smothered mate! The knight checks e8. The e7 pawn can't take it because it is pinned to the king by the queen on e2."
+  },
+  "explanation": "A smothered mate happens when the king is surrounded by its own pieces and a knight gives check — nothing can block a knight check. Here the pawn on e7 would normally capture on d6, but it is pinned by the queen on e2. This trap appears in real games at every level.",
+  "highlights": [
+   {
+    "square": "d6",
+    "color": "red"
+   },
+   {
+    "square": "e8",
+    "color": "yellow"
+   },
+   {
+    "square": "e2",
+    "color": "blue"
+   }
+  ],
+  "tags": [
+   "checkmate",
+   "smothered mate",
+   "opening trap",
+   "caro-kann"
+  ],
+  "related": [
+   "absolute_pin",
+   "caro_kann"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "smothered_mate": {
+    "mated_side": "black",
+    "king": "e8",
+    "checkers": [
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "d6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d7",
+      "blocked_by": "knight"
+     },
+     {
+      "square": "e7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "d8",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f8",
+      "blocked_by": "bishop"
+     }
+    ],
+    "mating_move": "6.Nd6#",
+    "pattern": "smothered mate",
+    "smothered_by": [
+     {
+      "piece": "knight",
+      "color": "black",
+      "square": "d7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "e7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "f7"
+     },
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "d8"
+     },
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "f8"
+     }
+    ]
+   },
+   "opening_line": {
+    "eco": "B15",
+    "name": "Caro-Kann Defense",
+    "book_plies": 6,
+    "extra_plies": 5
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "caro-kann-nd6-trap",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "well-known Caro-Kann trap (Karpov Variation, 5.Qe2 Ngf6?? 6.Nd6#)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "11 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "smothered_mate, opening_line"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nd6#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Nd6#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "6.Nd6#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "mate_smothered_kieninger",
+  "status": "verified",
+  "title": "Kieninger trap: smothered mate by Black",
+  "concept": "smothered_mate",
+  "category": "checkmates",
+  "difficulty": 3,
+  "description": "In the Budapest Gambit, White greedily takes a bishop and walks into a smothered mate.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "d4",
+   "Nf6",
+   "c4",
+   "e5",
+   "dxe5",
+   "Ng4",
+   "Bf4",
+   "Nc6",
+   "Nf3",
+   "Bb4+",
+   "Nbd2",
+   "Qe7",
+   "a3",
+   "Ngxe5",
+   "axb4",
+   "Nd3#"
+  ],
+  "final_fen": "r1b1k2r/ppppqppp/2n5/8/1PP2B2/3n1N2/1P1NPPPP/R2QKB1R w KQkq - 1 9",
+  "key_move": "8...Nd3#",
+  "mistake_move": "8.axb4",
+  "prompt": "Black to move. White just took your bishop. Punish it!",
+  "hints": [
+   "White's king is boxed in by its own queen, bishop, knight and pawns.",
+   "The pawn on e2 can't capture — your queen on e7 pins it."
+  ],
+  "notes": {
+   "7...Ngxe5": "Black lets the bishop go and threatens a knight check.",
+   "8.axb4": "White grabs the bishop — a blunder.",
+   "8...Nd3#": "Smothered mate! The knight checks e1; the e2 pawn is pinned by the queen on e7, and every other square is blocked by White's own pieces."
+  },
+  "explanation": "The Kieninger trap is a smothered mate: White's king on e1 is surrounded by its own queen, bishop, knight and pawns. The e2 pawn would normally capture the knight, but the black queen pins it to the king. White should have played 8.e3 instead of grabbing the bishop.",
+  "highlights": [
+   {
+    "square": "d3",
+    "color": "red"
+   },
+   {
+    "square": "e1",
+    "color": "yellow"
+   },
+   {
+    "square": "e7",
+    "color": "blue"
+   }
+  ],
+  "tags": [
+   "checkmate",
+   "smothered mate",
+   "opening trap",
+   "budapest gambit",
+   "historical game"
+  ],
+  "related": [
+   "absolute_pin"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "smothered_mate": {
+    "mated_side": "white",
+    "king": "e1",
+    "checkers": [
+     {
+      "piece": "knight",
+      "color": "black",
+      "square": "d3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d1",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f1",
+      "blocked_by": "bishop"
+     },
+     {
+      "square": "d2",
+      "blocked_by": "knight"
+     },
+     {
+      "square": "e2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "8...Nd3#",
+    "pattern": "smothered mate",
+    "smothered_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d1"
+     },
+     {
+      "piece": "bishop",
+      "color": "white",
+      "square": "f1"
+     },
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "d2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "e2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "f2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "kieninger-trap",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Kieninger trap in the Budapest Gambit, named after Georg Kieninger",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "16 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "smothered_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nd3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Nd3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "8...Nd3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ }
+]

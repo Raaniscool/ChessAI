@@ -1,0 +1,185 @@
+[
+ {
+  "id": "mistake_petrov_nc6",
+  "status": "verified",
+  "title": "Discovered check wins the queen (Petrov trap)",
+  "concept": "discovered_check",
+  "category": "tactics",
+  "difficulty": 2,
+  "description": "In the Petrov Defense, Black copies White one move too long. White's queen and knight line up on the e-file.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nf6",
+   "Nxe5",
+   "Nxe4",
+   "Qe2",
+   "Nf6",
+   "Nc6+",
+   "Be7",
+   "Nxd8",
+   "Kxd8"
+  ],
+  "final_fen": "rnbk3r/ppppbppp/5n2/8/8/8/PPPPQPPP/RNB1KB1R w KQ - 0 7",
+  "key_move": "5.Nc6+",
+  "mistake_move": "4...Nf6",
+  "prompt": "White to move. Your queen and the black king are on the same file. How do you win material?",
+  "hints": [
+   "Your knight on e5 blocks the e-file between your queen and Black's king.",
+   "Move the knight with a threat of its own."
+  ],
+  "notes": {
+   "3...Nxe4": "Black copies White's capture. This is already risky.",
+   "4.Qe2": "The queen lines up with Black's king on the e-file.",
+   "4...Nf6": "The knight retreats — but the real danger is the discovered check.",
+   "5.Nc6+": "Discovered check from the queen, and the knight attacks Black's queen.",
+   "6.Nxd8": "After Black deals with the check, White takes the queen."
+  },
+  "explanation": "A discovered check is two threats in one: the knight moves away, the queen behind it gives check, and the knight uses its free move to attack something. Black must answer the check, so the queen on d8 is lost.",
+  "tags": [
+   "discovered check",
+   "opening trap",
+   "petrov",
+   "win the queen"
+  ],
+  "related": [
+   "discovered_attack"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "discovered_check": {
+    "move": "5.Nc6+",
+    "moved_piece": {
+     "piece": "knight",
+     "color": "white",
+     "square": "c6"
+    },
+    "checking_piece": {
+     "piece": "queen",
+     "color": "white",
+     "square": "e2"
+    },
+    "double_check": false
+   }
+  },
+  "source": {
+   "source_type": "historical_game",
+   "source_id": "petrov-nc6-trap",
+   "source_license": "public domain (chess moves are facts)",
+   "reference": "Petrov Defense trap (3...Nxe4? 4.Qe2), a standard opening trap",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "discovered_check"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "other good moves: Ng6+"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Ng6+"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [
+     "other good moves: Ng6+"
+    ],
+    "depth": 14,
+    "key_move": {
+     "move": "Nc6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 560,
+     "best_move": "Nc6+",
+     "best_cp": 560,
+     "alternatives": [
+      "Ng6+"
+     ],
+     "mate_after": false,
+     "label": "5.Nc6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxd8",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 579,
+      "best_move": "Nxd8",
+      "best_cp": 579,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "6.Nxd8"
+     }
+    ],
+    "alternatives": [
+     "Ng6+"
+    ]
+   },
+   "alternatives": [
+    "Ng6+"
+   ]
+  }
+ }
+]

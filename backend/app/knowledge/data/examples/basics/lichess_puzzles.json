@@ -1,0 +1,420 @@
+[
+ {
+  "id": "lichess_sppwp",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Promote a pawn.",
+  "start_fen": "8/8/8/8/8/1k6/p6p/K4Rr1 w - - 2 70",
+  "moves": [
+   "Rxg1",
+   "hxg1=Q#"
+  ],
+  "final_fen": "8/8/8/8/8/1k6/p7/K5q1 w - - 0 71",
+  "key_move": "70...hxg1=Q#",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "70.Rxg1": "The opponent's last move. Something is now possible — look closely.",
+   "70...hxg1=Q#": "The pawn promotes to a queen on g1."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on g1. The line ends in checkmate.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "70...hxg1=Q#",
+    "square": "g1",
+    "promoted_to": "queen",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "sPpWp",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/sPpWp",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "hxg1=Q#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "hxg1=Q#",
+     "best_cp": 9990,
+     "alternatives": [
+      "hxg1=R#"
+     ],
+     "mate_after": true
+    }
+   },
+   "alternatives": [
+    "hxg1=R#"
+   ]
+  }
+ },
+ {
+  "id": "lichess_u7qki",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Promote a pawn.",
+  "start_fen": "8/P7/5p2/8/8/6k1/5p1p/7K w - - 0 66",
+  "moves": [
+   "a8=Q",
+   "f1=Q#"
+  ],
+  "final_fen": "Q7/8/5p2/8/8/6k1/7p/5q1K w - - 0 67",
+  "key_move": "66...f1=Q#",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "66.a8=Q": "The opponent's last move. Something is now possible — look closely.",
+   "66...f1=Q#": "The pawn promotes to a queen on f1."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on f1. The line ends in checkmate.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "66...f1=Q#",
+    "square": "f1",
+    "promoted_to": "queen",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "u7QkI",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/u7QkI",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "f1=Q#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "f1=R#",
+     "best_cp": 9990,
+     "alternatives": [
+      "f1=R#"
+     ],
+     "mate_after": true
+    }
+   },
+   "alternatives": [
+    "f1=R#"
+   ]
+  }
+ },
+ {
+  "id": "lichess_vl58l",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Promote a pawn.",
+  "start_fen": "5k2/3BP3/5P2/4K3/8/8/8/3r4 b - - 0 71",
+  "moves": [
+   "Kf7",
+   "e8=Q#"
+  ],
+  "final_fen": "4Q3/3B1k2/5P2/4K3/8/8/8/3r4 b - - 0 72",
+  "key_move": "72.e8=Q#",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "71...Kf7": "The opponent's last move. Something is now possible — look closely.",
+   "72.e8=Q#": "The pawn promotes to a queen on e8."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on e8. The line ends in checkmate.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "72.e8=Q#",
+    "square": "e8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "VL58L",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/VL58L",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "e8=Q#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "e8=Q#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ }
+]
