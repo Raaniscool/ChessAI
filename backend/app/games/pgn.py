@@ -69,11 +69,40 @@ def _clean_headers(game: chess.pgn.Game) -> dict[str, str]:
     return {k: v for k, v in game.headers.items() if v not in ("", "?", "????.??.??")}
 
 
+_SAN_TOKEN = re.compile(r"^(?:[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=?[QRBN])?|O-O(?:-O)?|0-0(?:-0)?|--|Z0)"
+                        r"[+#]?[!?]*$")
+_SKIP_TOKEN = re.compile(r"^(?:\d+\.+|\$\d+|[!?]+|1-0|0-1|1/2-1/2|\*)$")
+
+
+def _movetext(raw: str) -> str:
+    """The move section of one game's text, without headers, comments and side lines."""
+    lines = [ln for ln in raw.split("\n") if not _TAG.match(ln.strip()) and not ln.lstrip().startswith("%")]
+    text = re.sub(r"\{[^}]*\}", " ", "\n".join(lines))
+    text = re.sub(r";[^\n]*", " ", text)
+    while True:  # side lines can nest
+        stripped = re.sub(r"\([^()]*\)", " ", text)
+        if stripped == text:
+            break
+        text = stripped
+    return re.sub(r"(\d+\.+)(?=[^\s.])", r"\1 ", text)  # "1.e4" / "1...e5" -> "1. e4" / "1... e5"
+
+
+def unreadable_token(raw: str) -> str | None:
+    """python-chess skips text it can't read; we don't. Returns the first unreadable token."""
+    for token in _movetext(raw).split():
+        if not (_SKIP_TOKEN.match(token) or _SAN_TOKEN.match(token)):
+            return token
+    return None
+
+
 def _validate(game: chess.pgn.Game, index: int, raw: str) -> ParsedGame:
     headers = _clean_headers(game)
     if game.errors:
         first = game.errors[0]
         raise PgnError(_describe_error(first))
+    bad = unreadable_token(raw)
+    if bad is not None:
+        raise PgnError(f"the moves contain text that isn't a chess move: {bad[:20]!r}")
     variant = game.headers.get("Variant", "Standard")
     if variant.lower() not in ("standard", "chess", "from position"):
         raise PgnError(f"only standard chess is supported (this game is {variant})")
