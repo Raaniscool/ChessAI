@@ -295,6 +295,10 @@ def _parse(raw: dict, concepts: dict[str, Concept], path: str, tier: str) -> Exa
     source = raw.get("source") or {}
     if not isinstance(source, dict) or source.get("source_type") not in SOURCE_TYPES:
         raise KnowledgeError(f"{eid}: source.source_type must be one of {', '.join(SOURCE_TYPES)}")
+    if source["source_type"] == "user_game" and tier != "personal":
+        # A learner's own games are private training data. They can never become shared
+        # (global or generated) library material, whatever their status says.
+        raise KnowledgeError(f"{eid}: positions from a learner's games belong to the personal tier only")
 
     return Example(
         id=eid, status=status, title=raw["title"].strip(), concept=raw["concept"], concepts=concept_ids,
