@@ -42,7 +42,7 @@ Paste one or more Chess.com PGNs into the **Game Analysis** tab.
 - **Checking the games:** python-chess validates every move.
 - **Stockfish analysis:** Stockfish finds the moments that mattered, and the Knowledge Library's validators name them (missed forks, hung pieces, ignored threats, missed mates, opening habits…).
 - **Review:** step through each moment: the position before, your move, Stockfish's move and line, and a plain-language explanation. The optional 🧠 AI explanation is built only from verified facts.
-- **Recurring weaknesses:** a weakness counts only when it shows up in **two or more different games**. **Start training** turns it into a lesson plan: verified library examples first, then positions from your own games.
+- **Game history:** your last 10 (or 20, 30, 50, custom) games analyzed together. It shows which mistakes keep showing up ("♞ Missed knight fork: found in 4 of 10 games"), ranked by how often *and* how costly they were. A mistake from one game is never called a pattern, and recurring patterns need at least 10 games. Click a pattern to see every game and position; **Practice** turns it into a lesson plan: verified library examples first, then positions from your own games.
 
 Your games stay in `data/games/` and never enter the shared library. Details: [docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md).
 
@@ -65,7 +65,7 @@ backend/app/
 backend/tests/         # pytest suite (chess, classification, lessons, engine, teacher)
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
-frontend/analysis.js   # Game Analysis screen (game-format.js: pure display helpers)
+frontend/analysis.js   # Game Analysis screen (game-format.js, history-view.js: pure display helpers)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
 docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/GAME_ANALYSIS.md
 requirements.txt
@@ -168,7 +168,7 @@ The app never makes you wait for the language model to see a result:
 
 **Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Verified Knowledge Library (107 examples) wired into plans, lessons, chat and the AI teacher. Test suite: **653 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
-**Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, recurring weaknesses (2+ games), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Test suite: **792 passing**. The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
+**Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, game history analysis across your last N games (tiered, scored patterns), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Test suite: **831 passing**. The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
 
 The proven MVP loop:
 
