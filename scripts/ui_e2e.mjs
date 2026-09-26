@@ -144,7 +144,7 @@ check(true, "1...c5 accepted")
 // 6) Chat routing: "I want to learn ..." makes a plan even mid-lesson
 $("chat-input").value = "I want to learn knight forks"
 $("btn-chat").click()
-await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /Fork/.test(h.textContent)), "fork plan")
+await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /fork/i.test(h.textContent)), "fork plan")
 check(true, "chat 'I want to learn…' creates a plan")
 
 // 7) The user's report: "I want to learn the smothered mate" must teach smothered mate
@@ -179,6 +179,51 @@ $("btn-chat").click()
 await waitFor(() => /don't have verified lessons/.test(lastMsgs(1)[0]), "unknown-subject answer", 90000)
 check(document.querySelectorAll("#messages .suggestions").length > 0, "unknown subject: suggestion chips shown")
 check((await planIds()).length === plansBefore, "unknown subject: no substitute plan created")
+
+// 9) Knowledge Library: "Show me checkmates" mid-lesson -> verified examples as a lesson
+$("chat-input").value = "Show me checkmates"
+$("btn-chat").click()
+await waitFor(() => /Learn: Checkmate/.test(lastMsgs(1)[0]), "library plan message", 30000)
+check(/verified example library/.test([...document.querySelectorAll("#messages .msg")].pop().textContent),
+      "chat 'Show me…' builds a lesson from the verified library")
+const kLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /Checkmate: learn from examples/.test(b.textContent))
+check(!!kLesson, "library lesson listed in the sidebar")
+kLesson.click()
+await waitFor(() => /learn from examples/.test($("lesson-title").textContent), "library lesson start")
+check(/verified example/.test(lastMsgs(1)[0]), "intro explains the sequence")
+$("btn-continue").click()
+await waitFor(() => !$("btn-play").classList.contains("hidden"), "example 1 demo button")
+check(/Example 1 of/.test(lastMsgs(1)[0]), "example 1 is demonstrated first")
+$("btn-play").click()
+await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "example 1 demo", 30000)
+$("btn-continue").click()
+await waitFor(() => !$("btn-explain-example").classList.contains("hidden"), "explain-example button")
+$("btn-explain-example").click()
+await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && /^🧠/.test(m.textContent) && !m.classList.contains("typing") }, "example explanation", 90000)
+check(true, "example explained: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 60))
+// example 2: guided — find the key move (read from the server's verified example)
+$("btn-continue").click()
+await waitFor(() => /Your move/.test($("board-status").textContent) || !$("btn-play").classList.contains("hidden") ||
+                    (/Example 2/.test(lastMsgs(1)[0]) && /aren't graded/.test($("board-status").textContent)), "example 2")
+await sleep(500)
+if (!$("btn-play").classList.contains("hidden")) {
+  $("btn-play").click()
+  await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "example 2 setup", 30000)
+}
+if (!/Your move/.test($("board-status").textContent)) {
+  $("btn-continue").click()
+  await waitFor(() => /Your move/.test($("board-status").textContent), "example 2 exercise")
+}
+check($("btn-explain-example").classList.contains("hidden"), "no explain button while the exercise is unsolved")
+$("btn-reveal").click()
+await waitFor(() => /Solution/.test(lastMsgs(1)[0]), "solution shown")
+check(/Solution: \S+/.test(lastMsgs(1)[0]), "exercise solution comes from the verified example: " + lastMsgs(1)[0])
+// a question starting with "show me" stays in the chat
+const before = (await planIds()).length
+$("chat-input").value = "show me why this move is bad"
+$("btn-chat").click()
+await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && !m.classList.contains("typing") && m.textContent.length > 10 }, "chat reply", 90000)
+check((await planIds()).length === before, "'show me why…' is answered in the chat, not turned into a plan")
 
 check(errors.length === 0, "no unhandled errors " + errors.join("\n"))
 for (const id of await planIds()) {

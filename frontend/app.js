@@ -329,7 +329,7 @@ function showBtn(id) { document.getElementById(id).classList.remove("hidden") }
 function hideBtn(id) { document.getElementById(id).classList.add("hidden") }
 
 function hideControls() {
-  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal", "btn-reset"].forEach(hideBtn)
+  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal", "btn-reset", "btn-explain-example"].forEach(hideBtn)
 }
 
 // ---------- step rendering ----------
@@ -350,6 +350,7 @@ async function renderStep(step) {
     addMsg(step.text)
     await showPosition(step.board.fen, {highlights: step.board.highlights || []})
     showBtn("btn-continue")
+    if (step.example && step.example.explainable) showBtn("btn-explain-example")
     enableExplore(step.board.fen)
     setStatus("You can try moves on the board — they aren't graded.")
   } else if (step.type === "demonstrate") {
@@ -469,6 +470,31 @@ async function revealSolution() {
   }
 }
 
+// Verified library example: the AI explains it from the library's facts (offline: the
+// library's own verified explanation).
+async function explainExample() {
+  if (!state.sessionId) return
+  hideBtn("btn-explain-example")
+  const bubble = addMsg("…", "assistant")
+  bubble.classList.add("typing")
+  let text = ""
+  try {
+    await streamEvents(`/api/sessions/${state.sessionId}/example/explain`, undefined, ev => {
+      if (ev.type === "delta") text += ev.text
+      else if (ev.type === "replace" || ev.type === "done") text = ev.text
+      if (text) {
+        bubble.textContent = "🧠 " + text
+        messagesEl.scrollTop = messagesEl.scrollHeight
+      }
+    })
+  } catch (err) {
+    bubble.remove()
+    addMsg(err.message, "system")
+  } finally {
+    bubble.classList.remove("typing")
+  }
+}
+
 async function sendChat() {
   const input = document.getElementById("chat-input")
   const message = input.value.trim()
@@ -478,6 +504,17 @@ async function sendChat() {
   if (!state.sessionId || isLearnRequest(message)) {
     await requestPlan(message)
     return
+  }
+  // "Show me checkmates" / "Give me an endgame lesson": ask the server whether the
+  // verified library covers it; questions like "show me why…" stay in the chat.
+  if (MAYBE_LESSON.test(message)) {
+    try {
+      const intent = await api("/api/knowledge/intent", "POST", {message})
+      if (intent.lesson_request) {
+        await requestPlan(message)
+        return
+      }
+    } catch (_) { /* fall through to the chat */ }
   }
   addMsg(message, "user")
   const bubble = addMsg("…", "assistant")
@@ -504,6 +541,8 @@ async function sendChat() {
 
 const LEARN_REQUEST = /^\s*(i\s*(really\s*)?(want|would like|'d like|wanna|need)\s*(to\s*)?(learn|study|practice|practise|get better at|improve|master)|teach me|help me (learn|with|improve|understand)|show me how|how do i (play|learn)|can you teach me|learn\b|plan\b)/i
 
+const MAYBE_LESSON = /^\s*(please\s+)?(show|give|quiz|test)\s+me\b|^\s*let\s+me\s+(see|practi[cs]e|try)\b/i
+
 function isLearnRequest(text) {
   return LEARN_REQUEST.test(text)
 }
@@ -512,11 +551,12 @@ async function requestPlan(goal) {
   goal = goal.trim()
   if (!goal) return
   addMsg(goal, "user")
-  const pending = addMsg("🧭 Building your learning plan… (with Qwen this can take a little while)", "system")
+  const pending = addMsg("🧭 Looking for verified examples and building your lesson…", "system")
   const btn = document.getElementById("btn-plan")
   btn.disabled = true
   try {
-    const res = await api("/api/plans", "POST", {goal})
+    // library: true → verified Knowledge Library examples first, then the catalog/Qwen planner.
+    const res = await api("/api/plans", "POST", {goal, library: true})
     pending.remove()
     renderPlan(res)
     await loadCourses()
@@ -531,6 +571,11 @@ async function requestPlan(goal) {
 }
 
 const CATEGORY_ICONS = {opening: "♟", tactic: "⚔", endgame: "♔", strategy: "🧠"}
+const PLANNER_LABELS = {
+  knowledge: "Built from the verified example library",
+  qwen: "Planned by Qwen",
+  catalog: "Planned by the built-in catalog",
+}
 
 function renderPlan(res) {
   const plan = res.plan
@@ -543,7 +588,7 @@ function renderPlan(res) {
   const div = addMsg(
     `🧭 <b>${escapeHtml(plan.title)}</b><br>${escapeHtml(plan.summary)}<ol class="plan-units">${units}</ol>` +
     (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : "") +
-    `<div class="muted">Planned by ${plan.planner === "qwen" ? "Qwen" : "the built-in catalog"}; every move you'll be asked to find is checked by Stockfish.</div>`,
+    `<div class="muted">${PLANNER_LABELS[plan.planner] || "Planned by the built-in catalog"}; every move you'll be asked to find is checked by Stockfish.</div>`,
     "assistant", true)
   const start = document.createElement("button")
   start.className = "btn primary"
@@ -639,6 +684,7 @@ document.getElementById("btn-hint").addEventListener("click", requestHint)
 document.getElementById("btn-reveal").addEventListener("click", revealSolution)
 document.getElementById("btn-chat").addEventListener("click", sendChat)
 document.getElementById("btn-reset").addEventListener("click", resetExplore)
+document.getElementById("btn-explain-example").addEventListener("click", explainExample)
 document.getElementById("plan-form").addEventListener("submit", e => {
   e.preventDefault()
   const input = document.getElementById("plan-input")
