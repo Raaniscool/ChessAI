@@ -21,7 +21,7 @@ from ..knowledge.facts import check_explanation
 from ..knowledge.positions import PIECE_NAMES, Replay
 from ..teacher.base import _fmt_eval
 from ..teacher.consistency import verdict_conflicts
-from .motifs import replay_moves
+from .motifs import _material_word, replay_moves
 
 LINE_PLIES = 4
 
@@ -47,6 +47,11 @@ HEADLINES = {
     "missed_castling": "Your king stayed in the centre.",
 }
 MISSED_HEADLINE = "You missed a tactical opportunity here."
+MISSED_WHAT = {"missed_fork": "a fork", "missed_pin": "a pin", "missed_skewer": "a skewer",
+               "missed_discovered_attack": "a discovered attack", "missed_double_check": "a double check",
+               "missed_free_piece": "a free piece", "missed_trapped_piece": "a chance to trap a piece",
+               "missed_check": "a strong check"}
+CONCEPT_WHAT = {"knight_fork": "a knight fork", "pawn_fork": "a pawn fork", "queen_fork": "a queen fork"}
 
 TIPS = {
     "missed_checkmate": "Always look at every check first — a forcing move might end the game.",
@@ -95,6 +100,9 @@ def headline(moment: dict) -> str:
     finding = (moment.get("findings") or [{}])[0]
     if motif in HEADLINES:
         return HEADLINES[motif]
+    what = CONCEPT_WHAT.get(moment.get("concept") or "") or MISSED_WHAT.get(motif or "")
+    if what:
+        return f"You missed {what}."
     if finding.get("family") == "missed":
         return MISSED_HEADLINE
     return "This move makes your position much worse."
@@ -108,8 +116,8 @@ def title(moment: dict) -> str:
     """'Move 17: Nf3??'"""
     if moment["category"] == "habit":
         return HEADLINES.get(moment.get("motif"), "Opening habit").rstrip(".")
-    return f"Move {moment['move_number']}{'...' if moment.get('side') == 'black' else ''}: " \
-           f"{moment['san']}{moment.get('symbol', '')}"
+    sep = "..." if moment.get("side") == "black" else ": "  # "Move 17: Nf3??" / "Move 17...Nf6??"
+    return f"Move {moment['move_number']}{sep}{moment['san']}{moment.get('symbol', '')}"
 
 
 def _score(d: dict | None) -> Score | None:
@@ -136,9 +144,7 @@ def fact_lines(moment: dict) -> list[str]:
 def _material_sentence(pawns: int | None) -> str | None:
     if not pawns:
         return None
-    words = {1: "a pawn", 2: "two pawns", 3: "a piece", 4: "about a piece and a pawn", 5: "a rook",
-             6: "a rook and a pawn", 9: "the queen"}
-    what = words.get(abs(pawns), f"{abs(pawns)} pawns' worth of material")
+    what = _material_word(pawns)
     return f"{'wins' if pawns > 0 else 'loses'} {what} for the student"
 
 

@@ -162,8 +162,11 @@ def mate_concept(rep: Replay, ctx: V.Ctx) -> tuple[str, dict]:
 
 
 def _material_word(pawns: int) -> str:
-    return {1: "a pawn", 2: "two pawns", 3: "a piece", 5: "a rook", 9: "the queen"}.get(abs(pawns),
-                                                                                     f"{abs(pawns)} pawns of material")
+    """Material by value: it never names a piece that wasn't actually lost (6 can be B+N)."""
+    n = abs(pawns)
+    return {1: "a pawn", 2: "two pawns", 3: "a piece's worth of material (3 pawns)",
+            5: "a rook's worth of material (5 pawns)", 9: "a queen's worth of material (9 pawns)"}.get(
+        n, f"{n} pawns' worth of material")
 
 
 # --------------------------------------------------------------- detection
