@@ -122,7 +122,8 @@ def test_exactly_ten_games_are_analyzed_together(client):
     assert report["recurring"] == ["knight_fork"]
     assert report["mistakes"]["blunders"] == 5
     assert report["summary"][0] == "I found 1 recurring pattern in your last 10 games."
-    assert "missed knight fork: found 4 of your 10 games" in report["summary"][1]
+    assert report["summary"][1] == \
+        "The most important one is missed knight fork: found in 4 of your 10 games, with 4 blunders."
 
 
 @pytest.mark.parametrize("count,threshold", [(20, 3), (30, 5), (50, 8)])
@@ -451,6 +452,7 @@ def test_ranking_puts_significance_over_raw_counts():
     assert fork["significance"] == pytest.approx(3 * 3 * 1.9)   # 17.1
     assert check["significance"] == pytest.approx(8 * 2 * 1.1)  # 17.6: 8 games do count for something
     assert report["recurring"] == [p["key"] for p in recurring]
+    assert report["summary"][2] == "You also had missed knight fork in 3 of 10 games."
     # with 8 *inaccuracy-sized* slips the big tactic clearly leads
     for i in range(1, 9):
         m = docs[i]["analysis"]["moments"][0]

@@ -152,7 +152,9 @@ def _kind(evidence: list[dict]) -> str:
 def _where(games: int, n: int) -> str:
     if games == 1:
         return "in 1 game"
-    return f"in all {n} games" if games == n else f"in {games} of your {n} games"
+    if games == n:
+        return "in both games" if n == 2 else f"in all {n} games"
+    return f"in {games} of your {n} games"
 
 
 def _pattern(w: dict, n: int) -> dict:
@@ -380,10 +382,10 @@ def summary_lines(report: dict) -> list[str]:
         lines.append(f"I found {len(recurring)} recurring pattern{'s' if len(recurring) != 1 else ''} "
                      f"in your last {n} games.")
         top = recurring[0]
-        lines.append(f"The most important one is {_subject(top)}: found {top['found_in']}"
+        lines.append(f"The most important one is {_subject(top)}: found in {top['found_in']}"
                      f"{_severity_phrase(top)}.")
         for p in recurring[1:3]:
-            lines.append(f"You also had {_subject(p)} {p['found_in'].replace('of your', 'of')}.")
+            lines.append(f"You also had {_subject(p)} in {p['found_in'].replace('of your', 'of')}.")
     elif report["enough_history"]:
         lines.append(f"No mistake came back often enough in your last {n} games to call it a pattern "
                      f"(that takes {report['recurring_threshold']} games).")
