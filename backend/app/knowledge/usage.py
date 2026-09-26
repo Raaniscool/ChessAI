@@ -96,3 +96,22 @@ class UsageTracker:
     def last_used(self) -> dict[str, str]:
         with self._lock:
             return {k: v["last_used"] for k, v in self._load().items() if v.get("last_used")}
+
+
+_usage: UsageTracker | None = None
+_usage_lock = threading.Lock()
+
+
+def get_usage() -> UsageTracker:
+    """The learner's usage tracker (DATA_DIR/knowledge/usage.json)."""
+    global _usage
+    with _usage_lock:
+        if _usage is None:
+            _usage = UsageTracker()
+        return _usage
+
+
+def set_usage(tracker: UsageTracker | None) -> None:
+    global _usage
+    with _usage_lock:
+        _usage = tracker
