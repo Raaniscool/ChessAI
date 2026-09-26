@@ -270,51 +270,85 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
 
     names = _names(library, retrieval.concepts)
     subject = names[0] if len(names) == 1 else " & ".join(names[:2])
+    main_category = CATEGORY.get(library.concepts[retrieval.concepts[0]].category, "tactic")
+    opening = main_category == "opening"
     plan_id = uuid.uuid4().hex[:8]
     prefix = f"plan_{plan_id}_01"
-    lessons = [knowledge_lesson(
-        f"{prefix}a", f"{subject}: learn from examples", _intro(library, retrieval, names),
-        retrieval.sequence, f"Lesson complete — you've seen {subject.lower()} in action.", names)]
+    examples_lesson = knowledge_lesson(
+        f"{prefix}a", f"{subject}: see it in real lines" if opening else f"{subject}: understand the idea",
+        _intro(library, retrieval, names), retrieval.sequence,
+        f"Lesson complete — you've seen {subject.lower()} in action.", names)
+    review_lesson = None
     if retrieval.practice:
-        lessons.append(knowledge_lesson(
-            f"{prefix}b", f"{subject}: practice",
-            f"Time to practise {subject.lower()} on your own. These are a little harder. "
-            "Use hints if you get stuck.",
+        review_lesson = knowledge_lesson(
+            f"{prefix}b", f"{subject}: review",
+            f"Review time: solve these {subject.lower()} positions on your own, with no demonstration first. "
+            "They are a little harder. Use hints if you get stuck.",
             [(e, "practice") for e in retrieval.practice],
-            f"Practice complete — {subject} added to your toolkit.", names))
+            f"Review complete — {subject} added to your toolkit.", names)
 
-    main_category = library.concepts[retrieval.concepts[0]].category
-    units = [{
-        "topic_id": None,
-        "title": f"{subject}: verified examples",
-        "category": CATEGORY.get(main_category, "tactic"),
-        "reason": "Hand-picked from the verified example library: watch, try, then solve.",
-        "verified_by": KNOWLEDGE_VERIFIED_BY,
-        "lesson_ids": [lesson["id"] for lesson in lessons],
-        "concepts": retrieval.concepts,
-        "example_ids": [e.id for e in retrieval.examples],
-    }]
-
-    # More practice from the verified catalog, linked through the concept graph.
+    # Catalog lessons on the same subject (verified puzzles / opening drills), linked through the
+    # concept graph. Only what was asked for: a narrow request ("scholar's mate") doesn't pull in
+    # a neighbouring topic ("attacking f7") unless the catalog itself matches the goal; a broad
+    # one ("checkmates") covers its sub-patterns.
     catalog = catalog or get_catalog()
+    searched = {t.id for t in catalog.search(goal)}
     topic_ids: list[str] = []
     for cid in retrieval.concepts:
+        broad = len(library.descendants(cid)) > 1
         for tid in library.concepts[cid].topics:
-            if tid not in topic_ids and catalog.get(tid):
+            if tid not in topic_ids and catalog.get(tid) and (broad or tid in searched):
                 topic_ids.append(tid)
+    blocks = []
+    taken = [examples_lesson] + ([review_lesson] if review_lesson else [])
     for n, tid in enumerate(topic_ids[:MAX_TOPIC_UNITS], start=2):
         topic = catalog.topics[tid]
         new = topic_lessons(f"plan_{plan_id}_{n:02d}", topic)
-        _distinct_titles(new, lessons, topic.title)
-        units.append({"topic_id": tid, "title": topic.title, "category": topic.category,
-                      "reason": f"More practice: {topic.summary}", "verified_by": "catalog + Stockfish",
-                      "lesson_ids": [lesson["id"] for lesson in new]})
-        lessons += new
+        _distinct_titles(new, taken, topic.title)
+        taken += new
+        blocks.append((topic, new))
+
+    knowledge_unit = {"topic_id": None, "verified_by": KNOWLEDGE_VERIFIED_BY, "concepts": retrieval.concepts,
+                      "example_ids": [e.id for e in retrieval.examples]}
+    units: list[dict] = []
+
+    def unit(title, category, reason, new_lessons, base=None, **extra):
+        units.append({**(base or {}), "title": title, "category": category,
+                      "reason": f"Step {len(units) + 1}: {reason}",
+                      "lesson_ids": [lesson["id"] for lesson in new_lessons], **extra})
+
+    first_opening = next((b for b in blocks if b[0].category == "opening" and len(b[1]) == 2), None)
+    if opening and first_opening:
+        # Openings: the moves and ideas -> the verified lines and traps -> the whole line from memory.
+        topic, (ideas, whole_line) = first_opening
+        unit(f"{topic.title}: moves and ideas", "opening", f"learn how the {topic.title} starts and why.",
+             [ideas], topic_id=topic.id, verified_by="catalog + Stockfish")
+        unit(f"{subject}: verified lines", main_category,
+             "see the ideas in verified lines from the opening database, then find the key moves yourself.",
+             [examples_lesson], knowledge_unit)
+        unit(f"{topic.title}: the whole line", "opening", "play every move of the line from memory.",
+             [whole_line], topic_id=topic.id, verified_by="catalog + Stockfish")
+        blocks = [b for b in blocks if b is not first_opening]
+    else:
+        unit(f"{subject}: the idea", main_category,
+             "what the idea is: one verified example shown move by move, then you find the key move in the next.",
+             [examples_lesson], knowledge_unit)
+    for topic, new in blocks:
+        unit(topic.title, topic.category,
+             "spot it in easier positions first, then harder ones that take several moves."
+             if topic.category != "opening" else f"learn the moves and ideas of the {topic.title}.",
+             new, topic_id=topic.id, verified_by="catalog + Stockfish")
+    if review_lesson:
+        unit(f"{subject}: review", main_category,
+             "a mixed review: solve new positions on your own, with no demonstration first.",
+             [review_lesson], knowledge_unit)
+    by_id = {lesson["id"]: lesson for lesson in taken}
+    lessons = [by_id[lid] for u in units for lid in u["lesson_ids"]]
 
     count = len(retrieval.examples)
     title = f"Learn: {subject}"
-    summary = (f"{count} verified examples of {subject.lower()}: watch one, find the key move in the next, "
-               "then solve on your own. Every move is checked by the Stockfish chess engine.")
+    summary = (f"A step-by-step plan for {subject.lower()}: " + " → ".join(u["title"] for u in units) +
+               f". It uses {count} verified examples; every move is checked by the Stockfish chess engine.")
     plan = {
         "id": plan_id,
         "goal": goal,

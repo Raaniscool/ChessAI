@@ -772,7 +772,8 @@ function renderPlan(res) {
   const plan = res.plan
   const units = plan.units.map(u =>
     `<li><b>${escapeHtml(u.title)}</b>` +
-    ` <span class="muted">(${u.lesson_ids.length} lesson${u.lesson_ids.length === 1 ? "" : "s"})</span></li>`
+    ` <span class="muted">(${u.lesson_ids.length} lesson${u.lesson_ids.length === 1 ? "" : "s"})</span>` +
+    (u.reason ? `<div class="unit-reason muted">${escapeHtml(u.reason)}</div>` : "") + `</li>`
   ).join("")
   const skipped = (plan.skipped || []).map(s =>
     `<li>${escapeHtml(s.title)}: <span class="muted">${escapeHtml(s.reason)}</span></li>`).join("")
@@ -786,10 +787,20 @@ function renderPlan(res) {
   start.addEventListener("click", () => startLesson(res.first_lesson_id))
   div.appendChild(start)
   narrator.auto(div)
+  // Foundations the plan assumes (e.g. opening principles before the Sicilian): offered, never
+  // added — the plan contains only what was asked for.
+  if ((plan.prerequisites || []).length) {
+    const label = document.createElement("div")
+    label.className = "muted"
+    label.textContent = "Good to know first (optional, not in this plan):"
+    div.appendChild(label)
+    div.appendChild(suggestionChips(plan.prerequisites.map(p => `I want to learn ${p.title}`)))
+  }
   if ((plan.related || []).length) {
     const label = document.createElement("div")
     label.className = "muted"
-    label.textContent = "Related topics (not in this plan):"
+    label.textContent = plan.title.startsWith("Plan: play as") ? "Other good answers (not in this plan):"
+      : "Related topics (not in this plan):"
     div.appendChild(label)
     div.appendChild(suggestionChips(plan.related.map(t => `I want to learn ${t}`)))
   }

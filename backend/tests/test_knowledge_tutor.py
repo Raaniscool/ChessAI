@@ -315,8 +315,13 @@ def test_knowledge_plan_record(lib, usage):
     assert first["examples"] == plan["knowledge"]["example_ids"][:len(first["examples"])]
     types = [s["type"] for s in first["steps"]]
     assert types[0] == "teach" and "demonstrate" in types and "exercise" in types
-    # more practice from the catalog, linked through the concept graph (checkmate -> mate_in_1 ...)
-    assert [u["topic_id"] for u in plan["units"][1:]] == ["mate_in_1", "back_rank_mate"]
+    # staged: the idea -> the catalog patterns linked through the concept graph (checkmate ->
+    # mate_in_1 ...), easier then harder -> a mixed review from the library
+    assert [u["topic_id"] for u in plan["units"][1:-1]] == ["mate_in_1", "back_rank_mate"]
+    review = plan["units"][-1]
+    assert review["topic_id"] is None and review["verified_by"].startswith("Knowledge Library")
+    assert record["lessons"][-1]["id"] in review["lesson_ids"] and "review" in record["lessons"][-1]["title"]
+    assert [u["reason"].split(":")[0] for u in plan["units"]] == [f"Step {i}" for i in range(1, 5)]
     # the examples now count as seen
     assert set(usage.seen_counts()) == set(plan["knowledge"]["example_ids"])
 

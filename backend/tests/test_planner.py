@@ -166,10 +166,13 @@ def test_screen_line_cuts_at_illegal_or_bad_moves():
 def test_create_plan_from_catalog():
     record = create_plan("I want to learn the Sicilian Defense", use_qwen=False)
     plan = record["plan"]
-    assert [u["topic_id"] for u in plan["units"]] == ["opening_principles", "sicilian_defense"]
+    # Only what was asked for: the prerequisite is suggested next to the plan, not added to it.
+    assert [u["topic_id"] for u in plan["units"]] == ["sicilian_defense"]
+    assert plan["prerequisites"] == [{"topic_id": "opening_principles", "title": "Opening principles",
+                                      "for": "Sicilian Defense"}]
     assert plan["planner"] == "catalog"
     ids = [lesson["id"] for lesson in record["lessons"]]
-    assert len(ids) == len(set(ids)) == 3  # principles (1) + sicilian (2)
+    assert len(ids) == len(set(ids)) == 2  # sicilian: moves and ideas, then the whole line
     assert all(i.startswith(f"plan_{plan['id']}_") for i in ids)
     assert record["course"]["lessons"][0]["id"] == ids[0]
 

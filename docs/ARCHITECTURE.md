@@ -113,7 +113,7 @@ sends `reasoning_effort: "none"` (thinking off; ignored by models without a thin
 `POST /api/plans {"goal": "I want to learn the Sicilian"}` → a course of generated lessons.
 
 ```
-goal ─► Catalog.search (aliases, fuzzy tokens, categories, general curriculum)
+goal ─► Catalog.search (aliases → "as Black against e4" → categories → general curriculum, only for truly general goals)
      └► Qwen (optional): picks catalog topic ids + order + reasons; may propose
         SAN lines for openings NOT in the catalog
                          │
@@ -124,6 +124,8 @@ goal ─► Catalog.search (aliases, fuzzy tokens, categories, general curriculu
    store.py: data/plans/<id>.json  +  LessonLibrary.register_course(kind="plan")
 ```
 
+- **Only what was asked for.** Matched topics become units; their prerequisites (e.g. opening principles before the Sicilian, K+Q mate before rook endgames) are listed in `plan.prerequisites` and offered in the UI, never added as units. A repertoire request ("what do I play as Black against 1.e4") picks one main catalog opening for that side and move (beginner-friendly first) and offers the others under `related`. The general beginner curriculum is used only when the goal has no specific subject ("I want to get better at chess"); "how to play the Stonewall" gets an honest "not yet", not forks and pins. Qwen's new opening lines are considered only for opening requests.
+- **Staged library plans** (`knowledge_lessons.py`): *the idea* (a verified demonstration, then a guided example) → the catalog patterns on the same subject (easier puzzles, then harder several-move ones) → a mixed *review* on your own. Openings go *moves and ideas* → *verified lines* → *the whole line from memory*. Linked catalog topics are added only when the catalog also matches the goal, or the concept is broad ("checkmates" includes mate in one); "scholar's mate" doesn't pull in "attacking f7". Each unit's `reason` starts with its step ("Step 2: …") and the plan card shows it.
 - **Qwen organizes, it never supplies truth.** Unknown topic ids are dropped; custom lines must be legal and mistake-free per Stockfish (depth 10, ≥6 plies) or they're reported under `skipped`.
 - **Generated lessons use the same schema and validation** as hand-written ones, so sessions, hints, grading and the frontend need no special cases.
 - **Catalog audit:** `test_catalog_engine.py` asserts every exercise's accepted move is the engine's top choice (the best move is never rejected), every accepted alternative rates good/excellent, mate-in-one tasks have a mate, open-ended tasks have ≥2 good moves, and every opening line is mistake-free.

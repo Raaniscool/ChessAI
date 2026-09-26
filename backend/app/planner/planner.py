@@ -228,6 +228,9 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         raise PlanError("Tell me what you'd like to learn.", _suggestions(catalog))
 
     matched = catalog.search(goal)
+    repertoire = catalog.repertoire(goal)
+    if not (repertoire and repertoire.openings and matched == repertoire.openings):
+        repertoire = None  # a named topic ("the Sicilian against e4") wins over the move
     qwen = ask_qwen(goal, catalog) if use_qwen and _planner_wants_qwen(matched) else None
 
     # A plan only contains what the student asked for. Qwen may order the matched
@@ -239,7 +242,18 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     chosen_ids += [t.id for t in matched if t.id not in chosen_ids]
     related = [catalog.topics[tid] for tid in (qwen.topic_ids if qwen else []) if tid not in matched_ids]
     chosen = [catalog.topics[tid] for tid in chosen_ids]
-    ordered = catalog.with_prerequisites(chosen, limit=MAX_UNITS)
+    if repertoire:
+        # "What do I play as Black against e4?": one main opening to learn properly, the other
+        # verified answers are offered, not piled into the plan.
+        chosen, others = chosen[:1], chosen[1:]
+        related = others + [t for t in related if t not in others]
+    # Only what was asked for becomes a unit. Prerequisites ("Opening principles" before the
+    # Sicilian) are suggested next to the plan, never added to it.
+    ordered = [(t, None) for t in chosen][:MAX_UNITS]
+    chosen_set = {t.id for t in chosen}
+    prerequisites = [{"topic_id": t.id, "title": t.title, "for": required_by}
+                     for t, required_by in catalog.with_prerequisites(chosen, limit=50)
+                     if required_by and t.id not in chosen_set]
 
     plan_id = uuid.uuid4().hex[:8]
     units: list[dict] = []
@@ -257,16 +271,18 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         })
         lessons.extend(new_lessons)
 
-    for n, (topic, required_by) in enumerate(ordered, start=1):
+    for n, (topic, _) in enumerate(ordered, start=1):
         reason = (qwen.reasons.get(topic.id) if qwen else "") or (
-            f"Foundation for {required_by}." if required_by else _default_reason(topic)
-        )
+            f"Your answer {repertoire.description}: {topic.summary}" if repertoire else _default_reason(topic))
         add_unit(topic.title, topic.category, reason, "catalog + Stockfish",
                  topic_lessons(f"plan_{plan_id}_{n:02d}", topic), topic.id)
 
     # Qwen-proposed openings that aren't in the catalog: verify before teaching.
     known_titles = {t.title.lower() for t in catalog.topics.values()}
-    for extra in (qwen.new_openings if qwen else []):
+    # New openings only for opening requests: asked about a checkmate pattern, a small model
+    # likes to add an opening or two, which is a plan for something else.
+    wants_openings = _asks_for_openings(goal, matched, qwen)
+    for extra in (qwen.new_openings if qwen and wants_openings else []):
         if len(units) >= MAX_UNITS:
             break
         if extra["name"].lower() in known_titles:
@@ -292,8 +308,12 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         suggestions += [s for s in _suggestions(catalog) if s not in suggestions]
         raise PlanError(message, suggestions[:6])
 
-    title = (qwen.title if qwen and qwen.title else "") or _default_title(goal, ordered)
-    summary = (qwen.summary if qwen and qwen.summary else "") or _default_summary(units)
+    if repertoire:
+        title = f"Plan: play {repertoire.description}"
+        summary = _repertoire_summary(repertoire, chosen[0], units)
+    else:
+        title = (qwen.title if qwen and qwen.title else "") or _default_title(goal, ordered)
+        summary = (qwen.summary if qwen and qwen.summary else "") or _default_summary(units)
     plan = {
         "id": plan_id,
         "goal": goal,
@@ -304,6 +324,7 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         "units": units,
         "skipped": skipped,
         "related": [t.title for t in related if t.id not in {u["topic_id"] for u in units}][:4],
+        "prerequisites": prerequisites[:4],
     }
     course = {
         "id": f"plan_{plan_id}",
@@ -370,6 +391,33 @@ def _verified_custom_opening(plan_id: str, n: int, extra: dict, engine) -> list[
         ideas=[],
         verified_note=f"This line was suggested by the AI planner and checked by Stockfish ({note}).",
     )
+
+
+_OPENING_WORDS = {"opening", "openings", "defense", "defence", "defenses", "defences", "gambit", "gambits",
+                  "system", "variation", "repertoire", "attack", "game", "line", "lines", "against", "vs",
+                  "versus", "white", "black"}
+
+
+def _asks_for_openings(goal: str, matched: list[Topic], qwen) -> bool:
+    """Is this a request for an opening (so new, Stockfish-screened opening lines may be added)?"""
+    if any(t.category == "opening" for t in matched):
+        return True
+    words = set(re.findall(r"[a-z0-9]+", goal.lower().replace("'", "")))
+    if words & _OPENING_WORDS:
+        return True
+    names = [re.findall(r"[a-z0-9]+", o["name"].lower()) for o in (qwen.new_openings if qwen else [])]
+    return any(len(w) > 3 and w in words for name in names for w in name)
+
+
+def _repertoire_summary(repertoire, main: Topic, units: list[dict]) -> str:
+    level = {"beginner": "beginner-friendly", "intermediate": "a step up", "advanced": "advanced"}.get(main.level, "")
+    text = (f"Your main answer {repertoire.description}: the {main.title}"
+            + (f" ({level})" if level else "") + ". Learn its ideas first, then the moves, then play the whole "
+            "line from memory. Every move has been checked by Stockfish.")
+    others = [t.title for t in repertoire.openings if t.id != main.id]
+    if others:
+        text += f" Other good answers you can add later: {', '.join(others[:3])}."
+    return text
 
 
 def _default_reason(topic: Topic) -> str:

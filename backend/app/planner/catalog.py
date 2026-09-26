@@ -99,6 +99,47 @@ def _phrase_span(phrase: list[str], goal: list[str]) -> frozenset[int] | None:
     return frozenset(hits)
 
 
+# Words that carry no subject: "I want to get better at chess" asks for the general curriculum,
+# "how to play the Stonewall" does not (it asks for something specific we may not have).
+_FILLER = set("""
+i im id we me my you your can could would should will please help teach show tell explain want wanna like need
+to learn learning study studying practice practise improve improving master get getting become be better good
+great strong stronger more most much a an the of at in on for with about how what where why when and or so
+really just some any all lot lots quickly fast faster overall general generally whole entire start started
+beginning beginner beginners novice player players playing play games game chess basics basic fundamentals
+fundamental everything win winning more stop losing lose rating elo online again first new
+""".split())
+
+
+def _only_filler(tokens: list[str], alias: list[str]) -> bool:
+    return all(t in _FILLER or t in alias for t in tokens)
+
+
+# "as black against e4", "what do I play vs 1.d4", "how to answer 1.e4 as black", "as white against e5"
+_SAN = r"(?:[nbrqk][a-h]?[1-8]?x?[a-h][1-8]|[a-h][1-8]|o-o(?:-o)?)"
+_AGAINST = re.compile(r"\b(?:against|vs\.?|versus|facing|meet|meeting|answer(?:ing)?|respond(?:ing)?\s+to|"
+                      rf"reply(?:ing)?\s+to)\s+(?:the\s+move\s+)?(?:1\s*\.{{1,3}}\s*)?({_SAN})\b", re.I)
+
+
+def _san_token(raw: str) -> str:
+    raw = raw.strip()
+    if raw.lower().startswith("o-o"):
+        return raw.upper()
+    return raw[0].upper() + raw[1:].lower() if raw[0].lower() in "nbrqk" and len(raw) > 2 else raw.lower()
+
+
+@dataclass
+class Repertoire:
+    """A request for an opening to play as `side` after the opponent's `move`."""
+    side: str
+    move: str
+    openings: list[Topic]   # best first: beginner-friendly, then catalog order
+
+    @property
+    def description(self) -> str:
+        return f"as {self.side.capitalize()} against 1.{'..' if self.side == 'white' else ''}{self.move}"
+
+
 def _phrase_in(phrase: list[str], goal: list[str]) -> bool:
     """Every token of the alias phrase fuzzily appears, in order, in the goal."""
     return _phrase_span(phrase, goal) is not None
@@ -187,11 +228,42 @@ class Catalog:
     def by_category(self, category: str) -> list[Topic]:
         return [t for t in self.topics.values() if t.category == category]
 
+    def repertoire(self, goal: str) -> Repertoire | None:
+        """"I want to play as Black against e4" -> the catalog openings for Black that start 1.e4.
+
+        The side comes from the goal ("as black"), or from the move itself: a legal first move
+        for White (e4, d4, c4, Nf3…) means the learner is Black. White's answers to a Black
+        first move ("as white against e5") are openings whose second move is that move."""
+        m = _AGAINST.search(goal or "")
+        if not m:
+            return None
+        move = _san_token(m.group(1))
+        tokens = _normalize(goal)
+        wants_black, wants_white = "black" in tokens, "white" in tokens
+        start = chess.Board()
+        try:
+            white_first = start.san(start.parse_san(move)) == move
+        except ValueError:
+            white_first = False
+        side = "black" if wants_black and not wants_white else "white" if wants_white and not wants_black else (
+            "black" if white_first else "white")
+        rank = {"beginner": 0, "intermediate": 1, "advanced": 2}
+        found = []
+        for order, topic in enumerate(self.by_category("opening")):
+            line = topic.line or []
+            if side == "black" and topic.side == "black" and line[:1] == [move]:
+                found.append((rank.get(topic.level, 3), order, topic))
+            elif side == "white" and topic.side == "white" and len(line) > 1 and line[1] == move:
+                found.append((rank.get(topic.level, 3), order, topic))
+        return Repertoire(side, move, [t for _, _, t in sorted(found, key=lambda x: x[:2])])
+
     def search(self, goal: str) -> list[Topic]:
         """Topics the goal asks for, most specific first.
 
-        Order of precedence: explicit topic aliases → whole categories
-        ("tactics", "endgames") → the general beginner curriculum ("chess").
+        Order of precedence: explicit topic aliases → an opening repertoire request ("as
+        Black against e4") → whole categories ("tactics", "endgames") → the general beginner
+        curriculum, but only when the goal really is general ("I want to get better at
+        chess"): a specific subject we don't know is not a request for forks and pins.
         """
         tokens = _normalize(goal)
         if not tokens:
@@ -222,6 +294,10 @@ class Catalog:
                 found = preferred or found
             return found
 
+        rep = self.repertoire(goal)
+        if rep is not None:
+            return rep.openings  # possibly empty: never swap in something that wasn't asked for
+
         for category, meta in self.categories.items():
             for alias in meta.get("aliases", []):
                 if _phrase_in(_normalize(alias), tokens):
@@ -231,7 +307,8 @@ class Catalog:
                     return topics
 
         for alias in self.general.get("aliases", []):
-            if _phrase_in(_normalize(alias), tokens):
+            phrase = _normalize(alias)
+            if _phrase_in(phrase, tokens) and _only_filler(tokens, phrase):
                 return [self.topics[t] for t in self.general["topics"]]
         return []
 
