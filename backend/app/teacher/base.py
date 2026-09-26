@@ -37,6 +37,9 @@ class Teacher(Protocol):
 def _fmt_eval(score_dict: dict | None, for_white: bool = True) -> str:
     if not score_dict:
         return "unknown"
+    if score_dict["kind"] == "checkmate":
+        won = (score_dict["value"] > 0) == for_white
+        return f"checkmate - {'White' if for_white else 'Black'} {'wins' if won else 'is mated'}"
     if score_dict["kind"] == "mate":
         m = score_dict["value"]
         if (m > 0) == for_white:

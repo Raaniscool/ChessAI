@@ -191,7 +191,11 @@ class UciEngine:
             best_score, best_pv = self._analyse_score(board_before, depth)
             after = board_before.copy()
             after.push(move)
-            after_score, after_pv = self._analyse_score(after, depth)
+            if after.is_checkmate():
+                # Game over: nothing to search, and the result is certain.
+                after_score, after_pv = Score.checkmate(white_won=board_before.turn == chess.WHITE), []
+            else:
+                after_score, after_pv = self._analyse_score(after, depth)
 
         category, loss, notes = classify_move(board_before, move, best_score, after_score)
 

@@ -115,6 +115,42 @@ def test_black_perspective_loss():
     assert loss == 80 and cat == Classification.INACCURATE
 
 
+
+# --- checkmate on the board (regression: every mating move was graded a blunder) ---
+
+def test_engine_mate_zero_keeps_the_winner():
+    """Stockfish reports a mated position as "mate 0"; python-chess keeps who won
+    (MateGiven vs Mate(-0)) but both have .mate() == 0 — the sign must survive."""
+    import chess.engine as ce
+    white_mated_black = Score.from_pov_white(ce.PovScore(ce.Mate(0), chess.BLACK))
+    black_mated_white = Score.from_pov_white(ce.PovScore(ce.Mate(0), chess.WHITE))
+    assert white_mated_black == Score.checkmate(white_won=True)
+    assert black_mated_white == Score.checkmate(white_won=False)
+    assert white_mated_black.is_mate_for(True) and not white_mated_black.is_mate_for(False)
+    assert black_mated_white.is_mate_for(False) and not black_mated_white.is_mate_for(True)
+    assert white_mated_black.to_cp() > Score("mate", 1).to_cp()  # mating beats "mate in 1"
+
+
+@pytest.mark.parametrize("fen,uci", [
+    ("6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1", "d1d8"),  # White: back-rank mate
+    ("rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2", "d8h4"),  # Black: fool's mate
+])
+def test_delivering_checkmate_is_excellent(fen, uci):
+    board = chess.Board(fen)
+    move = chess.Move.from_uci(uci)
+    before = Score("mate", 1 if board.turn == chess.WHITE else -1)
+    after = Score.checkmate(white_won=board.turn == chess.WHITE)
+    cat, loss, notes = classify_move(board, move, before, after)
+    assert (cat, loss, notes) == (Classification.EXCELLENT, 0, [])
+
+
+def test_checkmate_formats_as_checkmate_not_mate_in_zero():
+    from app.teacher.base import _fmt_eval
+    won = Score.checkmate(white_won=False).as_dict()
+    assert _fmt_eval(won, for_white=False) == "checkmate - Black wins"
+    assert _fmt_eval(won, for_white=True) == "checkmate - White is mated"
+
+
 # --- lessons ---
 
 def test_italian_course_loads_and_validates():

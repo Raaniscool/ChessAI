@@ -73,13 +73,23 @@ _ORDER = [
 class Score:
     """Engine score from White's point of view (canonical in this codebase)."""
 
-    kind: str  # "cp" | "mate"
-    value: int
+    kind: str  # "cp" | "mate" | "checkmate"
+    value: int  # cp; moves to mate (+ = White mates); checkmate: +1 White has mated, -1 Black has
+
+    @classmethod
+    def checkmate(cls, white_won: bool) -> "Score":
+        """The game is over: checkmate is on the board."""
+        return cls("checkmate", 1 if white_won else -1)
 
     @classmethod
     def from_pov_white(cls, score: chess.engine.PovScore) -> "Score":
         white = score.white()
         mate = white.mate()
+        if mate == 0:
+            # "Mate in 0" means checkmate is already on the board. python-chess keeps
+            # the winner (MateGiven vs Mate(-0)) but both report mate() == 0, so the
+            # sign has to come from the comparison, never from the number.
+            return cls.checkmate(white_won=white > chess.engine.Cp(0))
         if mate is not None:
             return cls("mate", int(mate))
         cp = white.score()
@@ -89,6 +99,8 @@ class Score:
         """Convert to centipawns; mates become ±(MATE_CP - moves*MATE_STEP)."""
         if self.kind == "cp":
             cp = self.value
+        elif self.kind == "checkmate":
+            cp = MATE_CP if self.value > 0 else -MATE_CP
         elif self.value > 0:
             cp = MATE_CP - self.value * MATE_STEP_CP
         else:
@@ -99,7 +111,7 @@ class Score:
         return self.to_cp(white_pov=True) if is_white else self.to_cp(white_pov=False)
 
     def is_mate_for(self, is_white: bool) -> bool:
-        if self.kind != "mate":
+        if self.kind not in ("mate", "checkmate"):
             return False
         return (self.value > 0) if is_white else (self.value < 0)
 
