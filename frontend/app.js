@@ -5,7 +5,7 @@
 import {Chessboard, COLOR, INPUT_EVENT_TYPE, FEN, BORDER_TYPE} from "./vendor/cm-chessboard/src/Chessboard.js"
 import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/markers/Markers.js"
 import {Chess} from "./vendor/chess.mjs/Chess.js"
-import {Narrator, decorateMoves} from "./speech.js"
+import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 
 // ---------- stale page guard ----------
@@ -269,10 +269,32 @@ async function handleUserMove(from, to) {
 
 const SPEECH_MARKER = {class: "marker-speech", slice: "markerSquare"}
 
-// Squares for a spoken move: destination, plus the origin when the move is legal on the
-// board as shown (tried for both sides — the text may talk about either player's move).
-function squaresFor(mark) {
+const HOVER_MARKER = {class: "marker-speech", slice: "markerSquare"}
+
+// [from, to] when `san` is legal in `fen`, else null.
+function legalSquares(fen, san) {
+  try {
+    const move = new Chess(fen).move(san.replace(/[+#]$/, ""))
+    return move ? [move.from, move.to] : null
+  } catch (_) {
+    return null
+  }
+}
+
+// Squares for a spoken (or pointed-at) move: destination, plus the origin when the move is
+// legal. Text that talks about a line of moves (a game review) lists its positions in a
+// data-fens attribute; otherwise the board as shown is tried for both sides.
+function squaresFor(mark, element) {
   if (!mark) return []
+  const holder = element && element.closest ? element.closest("[data-fens]") : null
+  if (holder) {
+    let fens = []
+    try { fens = JSON.parse(holder.dataset.fens) } catch (_) { /* ignore */ }
+    for (const fen of fens) {
+      const squares = legalSquares(fen, mark.san)
+      if (squares) return squares
+    }
+  }
   const squares = mark.square ? [mark.square] : []
   const placement = (board.getPosition() || "").split(" ")[0]
   if (!placement) return squares
@@ -287,13 +309,25 @@ function squaresFor(mark) {
 }
 
 const narrator = new Narrator({
-  onMove(mark) {
+  onMove(mark, element) {
     board.removeMarkers(SPEECH_MARKER)
-    for (const sq of squaresFor(mark)) board.addMarker(SPEECH_MARKER, sq)
+    for (const sq of squaresFor(mark, element)) board.addMarker(SPEECH_MARKER, sq)
   },
   onState(speaking) {
     document.getElementById("btn-stop-speech").classList.toggle("hidden", !speaking)
   },
+})
+
+// Pointing at a move or square in any text lights it up on the board (no speech needed).
+let hoveredMove = null
+document.addEventListener("mouseover", ev => {
+  const mv = ev.target.closest ? ev.target.closest(".mv") : null
+  if (mv === hoveredMove) return
+  hoveredMove = mv
+  board.removeMarkers(HOVER_MARKER)
+  if (!mv) return
+  const san = mv.dataset.san
+  for (const sq of squaresFor({san, square: targetSquare(san)}, mv)) board.addMarker(HOVER_MARKER, sq)
 })
 
 function speakButton(target) {
@@ -336,8 +370,9 @@ function setupSpeechControls() {
     narrator.save()
     syncToggle()
     if (!narrator.enabled) narrator.stop()
-    else {  // start with the newest tutor message, so the learner hears it works
-      const last = [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
+    else {  // start with what's on screen, so the learner hears it works
+      const last = state.view === "games" ? gameAnalysis.readable()
+        : [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
       if (last) narrator.speak(last)
     }
   })

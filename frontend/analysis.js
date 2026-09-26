@@ -46,6 +46,13 @@ export function setupGameAnalysis(ctx) {
 
   el.username.value = store.get(USERNAME_KEY) || ""
 
+  // Once there are games, the import form folds into one button so the overview has room.
+  const importMore = button("＋ Import more games", "ga-more", () => {
+    el.importCard.classList.remove("collapsed")
+    el.pgn.focus()
+  }, "Paste more Chess.com games")
+  el.importCard.prepend(importMore)
+
   // ---------------------------------------------------------------- helpers
   const show = (node, on = true) => node.classList.toggle("hidden", !on)
 
@@ -169,7 +176,7 @@ export function setupGameAnalysis(ctx) {
     for (const g of view.games) {
       const row = document.createElement("button")
       row.className = "game-item" + (view.game && view.game.game.id === g.id ? " active" : "")
-      row.innerHTML = `<span class="game-vs">${escapeHtml(g.opponent || "?")} <span class="res ${g.learner_result}">${escapeHtml(resultLabel(g))}</span></span>` +
+      row.innerHTML = `<span class="game-vs">${escapeHtml(g.opponent || "?")} <span class="res ${g.learner_result || "unfinished"}">${escapeHtml(resultLabel(g))}</span></span>` +
         `<span class="muted">${escapeHtml([g.opening, g.date].filter(Boolean).join(" · "))}</span>` +
         `<span class="muted">${escapeHtml(analysisLine(g.analysis))}</span>`
       row.addEventListener("click", () => openGame(g.id))
@@ -185,6 +192,7 @@ export function setupGameAnalysis(ctx) {
     show(el.review, false)
     show(el.importCard, true)
     show(el.overview, true)
+    el.importCard.classList.toggle("collapsed", view.games.length > 0 && !el.pgn.value.trim())
     ;[el.back, el.prev, el.next].forEach(b => show(b, false))
     el.title.textContent = "Game Analysis"
     el.counter.textContent = ""
@@ -197,7 +205,7 @@ export function setupGameAnalysis(ctx) {
     if (!analyzed.length) return
     const w = view.weaknesses || {weaknesses: [], seen_once: [], total_games: analyzed.length, min_games: 2}
     const card = document.createElement("div")
-    card.className = "ga-card"
+    card.className = "ga-card ga-summary"
     const h = document.createElement("h3")
     h.textContent = `What I noticed in your ${w.total_games} analyzed game${w.total_games === 1 ? "" : "s"}`
     card.appendChild(h)
@@ -219,6 +227,7 @@ export function setupGameAnalysis(ctx) {
     }
     if (w.seen_once.length) {
       const details = document.createElement("details")
+      details.className = "no-speech"
       details.innerHTML = `<summary>Seen in only one game (${w.seen_once.length}) — not a pattern yet</summary>`
       for (const item of w.seen_once) details.appendChild(weaknessRow(item, false))
       card.appendChild(details)
@@ -228,6 +237,7 @@ export function setupGameAnalysis(ctx) {
     tip.textContent = "Pick a game on the left to step through its mistakes."
     card.appendChild(tip)
     el.overview.appendChild(card)
+    makeSpeakable(card)
 
   }
 
@@ -284,21 +294,41 @@ export function setupGameAnalysis(ctx) {
 
   function gameHeader(summary) {
     const div = document.createElement("div")
-    div.className = "ga-game-head muted"
-    div.textContent = gameMeta(summary)
+    div.className = "ga-game-head"
+    const meta = document.createElement("span")
+    meta.className = "muted"
+    meta.textContent = gameMeta(summary)
+    div.appendChild(meta)
     if (summary.url) {
       const a = document.createElement("a")
       a.href = summary.url
       a.target = "_blank"
       a.rel = "noopener"
       a.textContent = "View on Chess.com ↗"
-      div.append(" · ", a)
+      div.appendChild(a)
     }
     return div
   }
 
+  // Every position a moment's text can talk about (before, after, Stockfish's line, the
+  // reply line), so a spoken or pointed-at move lights up the right squares.
+  function positionsOf(m) {
+    const fens = [m.fen_before]
+    if (m.fen_after) fens.push(m.fen_after)
+    for (const [start, line] of [[m.fen_before, m.best_line], [m.fen_after, m.reply_line]]) {
+      if (!start || !line) continue
+      const chess = new Chess(start)
+      for (const san of line.slice(0, 8)) {
+        try { if (!chess.move(san)) break } catch (_) { break }
+        fens.push(chess.fen())
+      }
+    }
+    return JSON.stringify(fens)
+  }
+
   function renderMoment() {
     view.token++
+    view.readable = null
     stopStream()
     narrator.stop()
     const g = view.game
@@ -348,10 +378,15 @@ export function setupGameAnalysis(ctx) {
     card.className = `ga-card moment ${m.category}`
     const title = document.createElement("h3")
     title.textContent = m.review.title
+    card.appendChild(title)
+    // What gets read aloud: the headline and the explanation (with the 🔊 button).
+    const text = document.createElement("div")
+    text.className = "moment-text"
+    text.dataset.fens = positionsOf(m)
     const headline = document.createElement("div")
     headline.className = "moment-headline"
     headline.textContent = m.review.headline
-    card.append(title, headline)
+    text.appendChild(headline)
 
     const views = document.createElement("div")
     views.className = "moment-views"
@@ -367,16 +402,17 @@ export function setupGameAnalysis(ctx) {
       if (m.best_move) addView("Best move", () => showBest(m), "Stockfish's move")
       if ((m.best_line || []).length > 1) addView("▶ Best line", () => playLine(m), "Watch how Stockfish's line continues")
     }
-    card.appendChild(views)
-
     const why = document.createElement("div")
     why.className = "moment-why"
     why.textContent = m.review.why
-    card.appendChild(why)
-    makeSpeakable(why)
+    text.appendChild(why)
+    card.append(text, views)
+    makeSpeakable(text)
+    view.readable = text
 
     const explanation = document.createElement("div")
     explanation.className = "moment-ai hidden"
+    explanation.dataset.fens = text.dataset.fens
     if (m.category !== "habit") {
       const ask = document.createElement("div")
       ask.className = "moment-ask"
@@ -406,6 +442,7 @@ export function setupGameAnalysis(ctx) {
     setActive(before)
     showBefore(m)
     el.body.scrollTop = 0
+    narrator.auto(text)
   }
 
   function relatedWeakness(m) {
@@ -443,6 +480,7 @@ export function setupGameAnalysis(ctx) {
           if (ev.type === "replace") { text = ev.text; target.textContent = text }
           if (ev.type === "done") { text = ev.text; target.textContent = text }
         })
+      delete target.dataset.moves
       makeSpeakable(target)
       narrator.auto(target)
     } catch (err) {
@@ -520,6 +558,10 @@ export function setupGameAnalysis(ctx) {
     },
     leave() {
       view.token++  // stop board animations; a running analysis carries on in the background
+    },
+    // What "Read aloud" should start with: the open moment, or the overview.
+    readable() {
+      return view.game ? view.readable : el.overview.querySelector(".ga-summary")
     },
   }
 }
