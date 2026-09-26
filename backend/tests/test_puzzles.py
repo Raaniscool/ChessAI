@@ -144,6 +144,14 @@ def test_builder_parses_lichess_pgn_csv(tmp_path):
     assert builder.to_ucis(rec["fen"], rec["sans"]) == ["f8g8", "h6f7"]
 
 
+def test_builder_parses_windows_line_endings(tmp_path):
+    """Regression (seen on Windows): CRLF inside the quoted PGN hid the header/moves separator."""
+    path = tmp_path / "smotheredMate.csv"
+    path.write_bytes(SAMPLE_CSV.replace("\r\n", "\n").replace("\n", "\r\n").encode("utf-8"))
+    [rec] = builder.parse_pgn_csv(path)
+    assert rec["id"] == "Txysn" and rec["sans"] == ["Rxg8", "Nf7#"]
+
+
 class FakeEngine:
     """analyse() returns scripted multipv infos (learner-POV scores given as White POV)."""
 

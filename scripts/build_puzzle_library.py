@@ -49,7 +49,9 @@ def parse_pgn_csv(path: Path) -> list[dict]:
         for row in csv.reader(fh):
             if len(row) < 2:
                 continue
-            pgn, themes = row[0], row[1].split()
+            # Files saved on Windows have \r\n inside the quoted PGN field too.
+            pgn = row[0].replace("\r\n", "\n").replace("\r", "\n")
+            themes = row[1].split()
             site, fen = _SITE.search(pgn), _FEN.search(pgn)
             if not (site and fen):
                 continue
