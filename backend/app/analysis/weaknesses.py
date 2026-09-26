@@ -29,7 +29,7 @@ def _evidence(item: dict, finding: dict) -> dict:
     return {
         "game_id": item["game_id"], "moment_id": item.get("id"), "ply": item["ply"],
         "move_number": item["move_number"], "side": item.get("side"), "san": item.get("san"),
-        "fen": item.get("fen_before"), "severity": item["severity"],
+        "fen": item.get("fen_before"), "severity": item["severity"], "loss_cp": item.get("loss_cp"),
         "severity_weight": item["severity_weight"], "motif": finding["motif"],
         "concept": finding.get("concept"), "family": finding.get("family"),
         "best_move": item.get("best_move"), "opponent": src.get("opponent"), "date": src.get("date"),
@@ -76,7 +76,8 @@ def _describe(title: str, games: int, total: int, occurrences: int) -> str:
     return f"{title}: in {where}{times}."
 
 
-def summarize(key: str, evidence: list[dict], total_games: int, library=None) -> dict:
+def summarize(key: str, evidence: list[dict], total_games: int, library=None,
+              max_evidence: int | None = MAX_EVIDENCE) -> dict:
     games = sorted({e["game_id"] for e in evidence})
     evidence = sorted(evidence, key=lambda e: (-e["severity_weight"], e["game_id"], e["ply"]))
     concept = library.concepts.get(key) if library is not None else None
@@ -98,14 +99,20 @@ def summarize(key: str, evidence: list[dict], total_games: int, library=None) ->
         "frequency": round(len(games) / total_games, 2) if total_games else 0,
         "severity_score": sum(e["severity_weight"] for e in evidence),
         "max_severity": evidence[0]["severity"] if evidence else None,
-        "evidence": evidence[:MAX_EVIDENCE],
+        "evidence": evidence[:max_evidence] if max_evidence else evidence,
         "library_examples": library.count_for(key) if (library is not None and concept) else 0,
         "topics": topics,
     }
 
 
-def recurring_weaknesses(analyses: list[dict], library=None, min_games: int = MIN_GAMES) -> dict:
-    """{"total_games", "weaknesses": [...recurring...], "seen_once": [...single-game patterns...]}."""
+def recurring_weaknesses(analyses: list[dict], library=None, min_games: int = MIN_GAMES,
+                         max_evidence: int | None = MAX_EVIDENCE, rank=None) -> dict:
+    """{"total_games", "weaknesses": [...recurring...], "seen_once": [...single-game patterns...]}.
+
+    `max_evidence=None` keeps every occurrence (the history report scores all of them).
+    `rank(game_count)` (optional) grades patterns; a parent concept is then only explained
+    away by children of the same grade (two "occasional" child concepts don't hide a
+    parent that is "recurring" once they're added up)."""
     total = len(analyses)
     groups = collect(analyses)
     # Roll specific concepts up one level (knight fork + pawn fork -> fork).
@@ -124,14 +131,15 @@ def recurring_weaknesses(analyses: list[dict], library=None, min_games: int = MI
     # recurring children (and don't list a child next to a parent that says more).
     report = set(recurring)
     for key in recurring:
-        children = [c for c in recurring if key in _parents(library, c)]
+        children = [c for c in recurring if key in _parents(library, c)
+                    and (rank is None or rank(len(game_set(c))) == rank(len(game_set(key))))]
         if children and set().union(*(game_set(c) for c in children)) >= game_set(key):
             report.discard(key)
-    weaknesses = [summarize(k, rolled[k], total, library) for k in report]
+    weaknesses = [summarize(k, rolled[k], total, library, max_evidence) for k in report]
     weaknesses.sort(key=lambda w: (-w["game_count"], -w["severity_score"], w["title"]))
 
-    covered = {e["moment_id"] for w in weaknesses for e in w["evidence"]}
-    seen_once = [summarize(k, v, total, library) for k, v in groups.items()
+    covered = {e["moment_id"] for k in report for e in rolled[k]}
+    seen_once = [summarize(k, v, total, library, max_evidence) for k, v in groups.items()
                  if len({e["game_id"] for e in v}) < min_games and k not in report
                  and not all(e["moment_id"] in covered for e in v)]
     seen_once.sort(key=lambda w: (-w["severity_score"], w["title"]))
