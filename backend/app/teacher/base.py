@@ -7,7 +7,7 @@ than making something up.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from ..engine import MoveFeedback
@@ -20,6 +20,10 @@ class LessonContext:
     concepts: list[str]
     exercise_prompt: str = ""
     accepted_moves: list[str] | None = None
+    # Ground truth about the verified Knowledge Library example being taught (FEN, moves,
+    # legal moves, Stockfish verdicts, motif facts, explanation). Empty for other lessons.
+    facts: list[str] = field(default_factory=list)
+    example_id: str | None = None
 
 
 class Teacher(Protocol):

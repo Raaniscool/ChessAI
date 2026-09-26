@@ -45,7 +45,7 @@ def chat_or_fallback(teacher, message: str, context: LessonContext, transcript: 
         return fallback.chat(message, context, transcript), fallback.name
 
 
-def stream_events(make_messages, fallback_text):
+def stream_events(make_messages, fallback_text, validate=None):
     """Stream a teacher reply as events for the browser (one JSON object per line).
 
     Events: {"type": "start", "teacher": ...}, {"type": "delta", "text": ...},
@@ -53,6 +53,8 @@ def stream_events(make_messages, fallback_text):
     `make_messages()` builds the Qwen prompt; `fallback_text()` is the
     deterministic answer used when Qwen is off, fails, or says nothing.
     If Qwen dies mid-answer, the partial answer is kept and marked.
+    `validate(text)` (optional) returns problems where the finished reply contradicts
+    verified facts; a reply with problems is replaced by the fallback text.
     """
     teacher = get_teacher()
     if not isinstance(teacher, QwenTeacher):
@@ -82,5 +84,10 @@ def stream_events(make_messages, fallback_text):
         text = fallback_text()
         yield {"type": "replace", "text": text}
         yield {"type": "done", "teacher": "fallback", "text": text}
+        return
+    if validate is not None and validate(text):
+        text = fallback_text()
+        yield {"type": "replace", "text": text}
+        yield {"type": "done", "teacher": "fallback", "text": text, "corrected": True}
         return
     yield {"type": "done", "teacher": "qwen", "text": text}

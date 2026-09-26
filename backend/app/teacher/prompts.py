@@ -22,6 +22,9 @@ Rules:
 - Be brief: 2-3 short sentences for move feedback unless asked for more.
 - Reply in the student's language."""
 
+# Verified example facts sent per request (a few hundred tokens at most).
+MAX_FACT_LINES = 40
+
 # Recent chat turns sent with each question (each costs prompt-reading time on a CPU).
 CHAT_HISTORY = 6
 
@@ -36,6 +39,14 @@ def _line(moves: list[str]) -> str:
 
 def _eval(score, student_is_white: bool) -> str:
     return _fmt_eval(score.as_dict() if score else None, for_white=student_is_white)
+
+
+def _facts_block(context: LessonContext) -> str:
+    if not context.facts:
+        return ""
+    lines = context.facts[:MAX_FACT_LINES]
+    return ("\nVerified example from the lesson library (checked by python-chess and Stockfish; "
+            "these facts are true):\n" + "\n".join(f"- {line}" for line in lines))
 
 
 def build_move_feedback_messages(
@@ -74,6 +85,7 @@ def build_move_feedback_messages(
         f"Lesson: {context.lesson_title} ({', '.join(context.concepts) or 'general play'}). "
         f"Goal: {(context.exercise_prompt or 'find the best move').rstrip(' .')}. Level: {level}.\n"
         + "\n".join(facts)
+        + _facts_block(context)
         + f"\nTask: {task} 2-3 sentences, under 60 words."
     )
     return [
@@ -89,6 +101,7 @@ def build_chat_messages(
     intro = (
         f"Lesson context — course: {context.course_title}, lesson: {context.lesson_title}, "
         f"concepts: {', '.join(context.concepts) or 'none'}. Student level: {level}."
+        + _facts_block(context)
     )
     messages.append({"role": "user", "content": intro})
     messages.append({"role": "assistant", "content": "Understood. I will teach from these facts."})
@@ -96,3 +109,23 @@ def build_chat_messages(
         messages.append({"role": entry["role"], "content": entry["content"]})
     messages.append({"role": "user", "content": message})
     return messages
+
+
+def build_example_messages(context: LessonContext, level: str = "beginner",
+                           question: str | None = None) -> list[dict]:
+    """Explain a verified library example. Correctness is settled; Qwen only explains."""
+    task = (f"The student asks: {question.strip()}\nAnswer using only the facts."
+            if question else
+            "Explain what happens in this example and the idea behind the key move, "
+            "so the student can recognise the pattern in their own games.")
+    user = (
+        f"Lesson: {context.lesson_title} ({', '.join(context.concepts) or 'general play'}). Level: {level}."
+        + _facts_block(context)
+        + f"\nTask: {task} Every move and evaluation above is already verified: do not judge "
+          "whether moves are correct, and do not add moves, variations or evaluations that are "
+          "not in the facts. Plain language, 3-5 sentences, under 110 words."
+    )
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user},
+    ]
