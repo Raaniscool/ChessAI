@@ -229,11 +229,14 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     matched = catalog.search(goal)
     qwen = ask_qwen(goal, catalog) if use_qwen and _planner_wants_qwen(matched) else None
 
-    # Topic selection: Qwen's ordering first, then any direct match it missed.
-    chosen_ids: list[str] = list(qwen.topic_ids) if qwen else []
-    for t in matched:
-        if t.id not in chosen_ids:
-            chosen_ids.append(t.id)
+    # A plan only contains what the student asked for. Qwen may order the matched
+    # topics, but topics it adds on its own are "related" suggestions, never units:
+    # a small model asked about an unknown subject (e.g. "smothered mate") happily
+    # picks forks and pins, which is a plan for something else.
+    matched_ids = {t.id for t in matched}
+    chosen_ids = [tid for tid in (qwen.topic_ids if qwen else []) if tid in matched_ids]
+    chosen_ids += [t.id for t in matched if t.id not in chosen_ids]
+    related = [catalog.topics[tid] for tid in (qwen.topic_ids if qwen else []) if tid not in matched_ids]
     chosen = [catalog.topics[tid] for tid in chosen_ids]
     ordered = catalog.with_prerequisites(chosen, limit=MAX_UNITS)
 
@@ -276,12 +279,17 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
 
     if not units:
         from ..config import get_settings
-        hint = "" if get_settings().qwen_configured() else (
-            " With Qwen connected I can also build lessons for openings that aren't in my library."
-        )
-        raise PlanError(
-            f"I don't have verified lessons for “{goal}” yet.{hint}", _suggestions(catalog)
-        )
+        subject = _subject(goal)
+        if related:
+            message = (f"I don't have verified lessons on “{subject}” yet, and I won't give you a plan "
+                       "for something else. Related topics I can teach:")
+        else:
+            message = f"I don't have verified lessons on “{subject}” yet. Here's what I can teach:"
+        if not get_settings().qwen_configured():
+            message += " (With Qwen connected I can also build lessons for openings that aren't in my library.)"
+        suggestions = [f"I want to learn {t.title}" for t in related[:4]]
+        suggestions += [s for s in _suggestions(catalog) if s not in suggestions]
+        raise PlanError(message, suggestions[:6])
 
     title = (qwen.title if qwen and qwen.title else "") or _default_title(goal, ordered)
     summary = (qwen.summary if qwen and qwen.summary else "") or _default_summary(units)
@@ -294,6 +302,7 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         "planner": "qwen" if qwen else "catalog",
         "units": units,
         "skipped": skipped,
+        "related": [t.title for t in related if t.id not in {u["topic_id"] for u in units}][:4],
     }
     course = {
         "id": f"plan_{plan_id}",
@@ -349,13 +358,22 @@ def _default_reason(topic: Topic) -> str:
     }.get(topic.category, topic.summary)
 
 
+_REQUEST_PREFIX = re.compile(
+    r"^(i\s+(really\s+)?(want|would like|'d like|wanna|need)\s+(to\s+)?(learn|study|practice|improve|master|get better at)"
+    r"\s*(about|how to)?\s*|(can you\s+)?teach me\s*(about|how to)?\s*|learn\s+)", re.I)
+
+
+def _subject(goal: str) -> str:
+    """'I want to learn the smothered mate' -> 'the smothered mate' (for messages/titles)."""
+    cleaned = _REQUEST_PREFIX.sub("", goal).strip(" .!?")
+    return cleaned[:60] or goal[:60]
+
+
 def _default_title(goal: str, ordered: list[tuple[Topic, str | None]]) -> str:
     main = [t for t, required_by in ordered if required_by is None]
     if len(main) == 1:
         return f"Learn: {main[0].title}"
-    cleaned = re.sub(r"^(i\s+(want|would like|'d like|wanna)\s+(to\s+)?(learn|study|improve)\s*(about)?\s*|teach me\s*(about)?\s*|learn\s+)",
-                     "", goal, flags=re.I).strip(" .!?")
-    return f"Plan: {cleaned[:60] or goal[:60]}"
+    return f"Plan: {_subject(goal)}"
 
 
 def _default_summary(units: list[dict]) -> str:

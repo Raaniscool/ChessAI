@@ -524,18 +524,7 @@ async function requestPlan(goal) {
     pending.remove()
     const suggestions = (err.data && err.data.suggestions) || []
     const div = addMsg(escapeHtml(err.message), "assistant", true)
-    if (suggestions.length) {
-      const row = document.createElement("div")
-      row.className = "suggestions"
-      for (const s of suggestions) {
-        const chip = document.createElement("button")
-        chip.className = "chip"
-        chip.textContent = s
-        chip.addEventListener("click", () => requestPlan(s))
-        row.appendChild(chip)
-      }
-      div.appendChild(row)
-    }
+    if (suggestions.length) div.appendChild(suggestionChips(suggestions))
   } finally {
     btn.disabled = false
   }
@@ -561,6 +550,26 @@ function renderPlan(res) {
   start.textContent = "▶ Start the first lesson"
   start.addEventListener("click", () => startLesson(res.first_lesson_id))
   div.appendChild(start)
+  if ((plan.related || []).length) {
+    const label = document.createElement("div")
+    label.className = "muted"
+    label.textContent = "Related topics (not in this plan):"
+    div.appendChild(label)
+    div.appendChild(suggestionChips(plan.related.map(t => `I want to learn ${t}`)))
+  }
+}
+
+function suggestionChips(suggestions) {
+  const row = document.createElement("div")
+  row.className = "suggestions"
+  for (const s of suggestions) {
+    const chip = document.createElement("button")
+    chip.className = "chip"
+    chip.textContent = s
+    chip.addEventListener("click", () => requestPlan(s))
+    row.appendChild(chip)
+  }
+  return row
 }
 
 async function deletePlan(planId, title) {

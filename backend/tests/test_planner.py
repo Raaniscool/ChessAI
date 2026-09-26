@@ -190,10 +190,36 @@ def test_create_plan_with_qwen_custom_opening_is_engine_screened(monkeypatch):
     plan = record["plan"]
     assert plan["planner"] == "qwen" and plan["title"] == "Vienna fan"
     titles = [u["title"] for u in plan["units"]]
-    assert titles == ["Forks", "Vienna Game"]
-    assert plan["units"][0]["reason"] == "because"
-    assert plan["units"][1]["verified_by"].startswith("Stockfish")
+    assert titles == ["Vienna Game"]          # Qwen's extra "Forks" is not what was asked for...
+    assert plan["related"] == ["Forks"]        # ...so it's only offered as a related topic
+    assert plan["units"][0]["verified_by"].startswith("Stockfish")
     assert [s["title"] for s in plan["skipped"]] == ["Nonsense Attack"]
+
+
+def test_unknown_subject_is_never_replaced_by_other_topics(monkeypatch):
+    """Regression: "I want to learn <something not in the library>" used to produce a plan
+    of whatever Qwen picked (forks, pins, skewers) — a plan for something else."""
+    catalog = get_catalog()
+    missing = "the zorblax gambit mate"
+    qwen = QwenPlan(title="Tactics basics", summary="x", topic_ids=["forks", "pins", "skewers"])
+    monkeypatch.setattr(planner_mod, "ask_qwen", lambda goal, catalog: qwen)
+    assert catalog.search(f"I want to learn {missing}") == []
+    with pytest.raises(PlanError) as err:
+        create_plan(f"I want to learn {missing}")
+    message = str(err.value)
+    assert f"“{missing}”" in message and "won't give you a plan for something else" in message
+    assert err.value.suggestions[:3] == ["I want to learn Forks", "I want to learn Pins", "I want to learn Skewers"]
+
+
+def test_qwen_can_reorder_but_not_add_units(monkeypatch):
+    qwen = QwenPlan(title="t", summary="s", topic_ids=["back_rank_mate", "forks"],
+                    reasons={"back_rank_mate": "Qwen's reason"})
+    monkeypatch.setattr(planner_mod, "ask_qwen", lambda goal, catalog: qwen)
+    monkeypatch.setattr(planner_mod, "_planner_wants_qwen", lambda matched: True)
+    plan = create_plan("I want to learn the back rank mate")["plan"]
+    assert [u["topic_id"] for u in plan["units"]] == ["back_rank_mate"]
+    assert plan["units"][0]["reason"] == "Qwen's reason"
+    assert plan["related"] == ["Forks"]
 
 
 # ---- storage ---------------------------------------------------------------
