@@ -28,6 +28,7 @@ class LessonError(ValueError):
 class TeachStep:
     text: str
     board: dict | None = None  # validated board spec (fen/highlights/lock)
+    example: str | None = None  # Knowledge Library entry this step presents
 
     type = "teach"
 
@@ -39,6 +40,7 @@ class DemonstrateStep:
     moves: list[str]  # UCI, validated legal in sequence
     comments: list[str] = field(default_factory=list)
     board: dict | None = None  # highlights/lock applied after the moves
+    example: str | None = None
 
     type = "demonstrate"
 
@@ -54,6 +56,7 @@ class ExerciseStep:
     min_category: str | None = None  # required when advance_on == min_classification
     continue_text: str = ""
     concepts: list[str] = field(default_factory=list)  # exercise-level concept tags
+    example: str | None = None
 
     type = "exercise"
 
@@ -95,12 +98,19 @@ def _require(condition: bool, message: str) -> None:
         raise LessonError(message)
 
 
+def _example_ref(data: dict) -> str | None:
+    """Optional link to a verified Knowledge Library entry (ids only, never content)."""
+    ref = data.get("example")
+    _require(ref is None or (isinstance(ref, str) and ref.strip()), "example must be a library entry id")
+    return ref
+
+
 def _parse_teach(data: dict) -> TeachStep:
     _require(isinstance(data.get("text"), str) and data["text"].strip(), "teach step needs text")
     board = None
     if "board" in data:
         board = chess_system.validate_board_spec(data["board"])
-    return TeachStep(text=data["text"], board=board)
+    return TeachStep(text=data["text"], board=board, example=_example_ref(data))
 
 
 def _parse_demonstrate(data: dict) -> DemonstrateStep:
@@ -123,7 +133,8 @@ def _parse_demonstrate(data: dict) -> DemonstrateStep:
     for c in comments:
         _require(isinstance(c, str), "comments must be strings")
     board_spec = chess_system.validate_board_spec(data["board"], board=replay) if "board" in data else None
-    return DemonstrateStep(text=data["text"], fen=fen, moves=[m for m in moves], comments=comments, board=board_spec)
+    return DemonstrateStep(text=data["text"], fen=fen, moves=[m for m in moves], comments=comments, board=board_spec,
+                           example=_example_ref(data))
 
 
 def _parse_exercise(data: dict) -> ExerciseStep:
@@ -179,6 +190,7 @@ def _parse_exercise(data: dict) -> ExerciseStep:
         min_category=min_category,
         continue_text=continue_text,
         concepts=list(concepts_raw),
+        example=_example_ref(data),
     )
 
 
