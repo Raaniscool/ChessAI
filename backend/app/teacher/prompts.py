@@ -160,3 +160,27 @@ def build_game_moment_messages(facts: list[str], level: str = "beginner",
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user},
     ]
+
+
+MAX_HISTORY_FACT_LINES = 30
+
+
+def build_history_messages(facts: list[str], level: str = "beginner") -> list[dict]:
+    """Explain the patterns found across the student's recent games.
+
+    The analysis already decided which patterns exist (and how often, and how costly):
+    Qwen explains them. It must not add, rename or promote any weakness."""
+    user = (
+        "The student's recent games were analyzed together by Stockfish and a pattern detector. "
+        "These findings are verified:\n"
+        + "\n".join(f"- {line}" for line in facts[:MAX_HISTORY_FACT_LINES])
+        + "\nTask: explain these findings to the student in friendly, plain language: which patterns keep "
+          "showing up, why they matter, and what to practise first. Only call something a recurring pattern "
+          "if the facts say RECURRING PATTERN; one-off mistakes are not patterns. Do not add weaknesses, "
+          "numbers, moves or evaluations that are not in the facts, and do not judge the student as a player. "
+          f"Level: {level}. Under 150 words."
+    )
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user},
+    ]

@@ -5,7 +5,10 @@
     GET    /api/games/{id}                       -> game + full analysis with review cards
     DELETE /api/games/{id}
     POST   /api/games/analyze                    {game_ids?, reanalyze?} -> NDJSON progress, then weaknesses
-    GET    /api/games/weaknesses?ids=a,b         -> recurring weaknesses (>= 2 games) + seen-once patterns
+    GET    /api/games/weaknesses?ids=a,b         -> patterns in >= 2 games + seen-once patterns (low level)
+    GET    /api/games/history?count=10           -> history report for the last N games (no engine work)
+    POST   /api/games/history/analyze            {count, reanalyze?} -> NDJSON: analyze what's missing, then report
+    POST   /api/games/history/explain            {count, level?} -> NDJSON: Qwen explains the report's findings
     POST   /api/games/{id}/moments/{ply}/explain {question?} -> NDJSON: Qwen explains verified facts
     POST   /api/games/training                   {keys, game_ids?, level?} -> personal plan (like /api/plans)
 """
@@ -18,7 +21,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from .analysis import GameAnalyzer, recurring_weaknesses
-from .analysis import review
+from .analysis import history, review
+from .analysis.analyzer import SCHEMA_VERSION as ANALYSIS_VERSION
 from .analysis.training import TrainingError, create_training_plan
 from .engine import EngineUnavailable, get_engine
 from .games import store
@@ -42,6 +46,12 @@ class AnalyzeRequest(BaseModel):
 
 class ExplainRequest(BaseModel):
     question: str | None = None
+    level: str | None = None
+
+
+class HistoryRequest(BaseModel):
+    count: int = history.DEFAULT_COUNT
+    reanalyze: bool = False
     level: str | None = None
 
 
@@ -85,6 +95,11 @@ def _analyzed(game_ids: list[str] | None = None) -> list[dict]:
     return [d for d in docs if d.get("analysis")]
 
 
+def _current(analysis: dict | None) -> bool:
+    """A cached analysis is reused unless it was made by an older version of the analyzer."""
+    return bool(analysis) and analysis.get("schema_version") == ANALYSIS_VERSION
+
+
 def _weaknesses(game_ids: list[str] | None = None) -> dict:
     return recurring_weaknesses([d["analysis"] for d in _analyzed(game_ids)], _knowledge())
 
@@ -118,6 +133,79 @@ def list_games() -> dict:
 
 def _summary(doc: dict) -> dict:
     return GameRecord.from_dict(doc["game"]).summary()
+
+
+# --- game history: the last N games, analyzed together ----------------------------------------
+def _history_selection(count) -> tuple[int, list[dict], int]:
+    n = history.validate_count(count)
+    docs = store.list_docs()
+    selected = history.select_recent(docs, n)
+    return n, selected, sum(1 for d in docs if d["game"].get("player_color"))
+
+
+def _history_report(count, failed: list[dict] | None = None) -> dict:
+    n, selected, available = _history_selection(count)
+    for d in selected:  # a stale analysis doesn't count until it's redone
+        if not _current(d.get("analysis")):
+            d["analysis"] = None
+    return history.build_report(selected, _knowledge(), requested=n, available=available, failed=failed)
+
+
+@router.get("/history")
+def history_report(count: int = history.DEFAULT_COUNT):
+    try:
+        return _history_report(count)
+    except history.HistoryError as exc:
+        return _error(422, str(exc))
+
+
+@router.post("/history/analyze")
+def history_analyze(body: HistoryRequest):
+    """Analyze the last N games: cached analyses are reused, so only new games cost engine time."""
+    try:
+        n, selected, available = _history_selection(body.count)
+    except history.HistoryError as exc:
+        return _error(422, str(exc))
+    todo = [d for d in selected if body.reanalyze or not _current(d.get("analysis"))]
+    engine = None
+    if todo:
+        try:
+            engine = get_engine()
+        except EngineUnavailable as exc:
+            return _error(503, str(exc))
+
+    def events():
+        yield {"type": "select", "requested": n, "available": available,
+               "selected": [d["game"]["id"] for d in selected], "cached": len(selected) - len(todo),
+               "to_analyze": len(todo)}
+        failed = []
+        for event in _analysis_events(todo, engine):
+            if event["type"] == "error":
+                failed.append({"game_id": event["game_id"], "error": event["error"]})
+            yield event
+        yield {"type": "done", "report": _history_report(n, failed)}
+
+    return _ndjson(events())
+
+
+@router.post("/history/explain")
+def history_explain(body: HistoryRequest):
+    try:
+        report = _history_report(body.count)
+    except history.HistoryError as exc:
+        return _error(422, str(exc))
+    if not report["games_analyzed"]:
+        return _error(422, "analyze some games first")
+    from .teacher import stream_events
+    from .teacher.prompts import build_history_messages
+    level = body.level if body.level in ("beginner", "intermediate", "advanced") else "beginner"
+    library = _knowledge()
+    facts = history.history_facts(report, library, level)
+    return _ndjson(stream_events(
+        lambda: build_history_messages(facts, level),
+        lambda: history.fallback_explanation(report),
+        validate=lambda text: history.conflicts(text, report, library),
+    ))
 
 
 @router.get("/weaknesses")
@@ -160,35 +248,42 @@ def analyze(body: AnalyzeRequest):
     if body.game_ids:
         wanted = set(body.game_ids)
         docs = [d for d in docs if d["game"]["id"] in wanted]
-    todo = [d for d in docs if body.reanalyze or not d.get("analysis")]
+    todo = [d for d in docs if body.reanalyze or not _current(d.get("analysis"))]
     try:
         engine = get_engine()
     except EngineUnavailable as exc:
         return _error(503, str(exc))
 
     def events():
-        analyzer = GameAnalyzer(engine)
-        yield {"type": "start", "count": len(todo), "games": [d["game"]["id"] for d in todo]}
-        for index, doc in enumerate(todo, start=1):
-            game = GameRecord.from_dict(doc["game"])
-            try:
-                for event in analyzer.iter_analysis(game):
-                    if event["type"] == "progress":
-                        yield {**event, "index": index, "count": len(todo)}
-                    else:
-                        store.save_analysis(game.id, event["analysis"])
-                        yield {"type": "game_done", "index": index, "count": len(todo), "game_id": game.id,
-                               "summary": _analysis_summary(event["analysis"])}
-            except EngineUnavailable as exc:
-                yield {"type": "error", "game_id": game.id, "error": str(exc)}
-                return
-            except Exception as exc:  # one broken game must not stop the batch
-                yield {"type": "error", "game_id": game.id, "error": f"{type(exc).__name__}: {exc}"}
+        yield from _analysis_events(todo, engine)
         # Patterns are judged across all of the learner's analyzed games, not just this batch:
         # a mistake in today's game may repeat one from last week.
         yield {"type": "done", "weaknesses": _weaknesses()}
 
     return _ndjson(events())
+
+
+def _analysis_events(todo: list[dict], engine):
+    """Analyze games one by one (each saved as soon as it's done, so an interrupted batch
+    keeps its finished games). One broken game never stops the others."""
+    analyzer = GameAnalyzer(engine) if todo else None
+    yield {"type": "start", "count": len(todo), "games": [d["game"]["id"] for d in todo]}
+    for index, doc in enumerate(todo, start=1):
+        game = GameRecord.from_dict(doc["game"])
+        try:
+            for event in analyzer.iter_analysis(game):
+                if event["type"] == "progress":
+                    yield {**event, "index": index, "count": len(todo)}
+                else:
+                    store.save_analysis(game.id, event["analysis"])
+                    yield {"type": "game_done", "index": index, "count": len(todo), "game_id": game.id,
+                           "summary": _analysis_summary(event["analysis"])}
+        except EngineUnavailable as exc:  # the engine itself is gone: the rest would fail too
+            for rest in todo[index - 1:]:
+                yield {"type": "error", "game_id": rest["game"]["id"], "error": str(exc)}
+            return
+        except Exception as exc:  # one broken game must not stop the batch
+            yield {"type": "error", "game_id": game.id, "error": f"{type(exc).__name__}: {exc}"}
 
 
 @router.post("/{game_id}/moments/{ply}/explain")
@@ -222,8 +317,14 @@ def training(body: TrainingRequest):
     docs = _analyzed(body.game_ids)
     if not docs:
         return _error(422, "analyze some games first")
-    found = recurring_weaknesses([d["analysis"] for d in docs], _knowledge())
+    analyses = [d["analysis"] for d in docs]
+    found = recurring_weaknesses(analyses, _knowledge())
     by_key = {w["key"]: w for w in found["weaknesses"] + found["seen_once"]}
+    # the history report may group concepts differently (a parent that only recurs when its
+    # children are added up): accept its keys too
+    grouped = recurring_weaknesses(analyses, _knowledge(), rank=lambda games: history.tier_for(games, len(docs)))
+    for w in grouped["weaknesses"] + grouped["seen_once"]:
+        by_key.setdefault(w["key"], w)
     chosen = [by_key[k] for k in body.keys if k in by_key]
     if not chosen:
         return _error(422, "none of those weaknesses were found in the analyzed games")
