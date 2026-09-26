@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -42,6 +44,20 @@ async def chess_error_handler(request: Request, exc: ChessError):
 @app.exception_handler(LessonNotFound)
 async def lesson_not_found_handler(request: Request, exc: LessonNotFound):
     return JSONResponse(status_code=404, content={"error": str(exc)})
+
+
+log = logging.getLogger("chessai")
+
+
+@app.exception_handler(Exception)
+async def unexpected_error_handler(request: Request, exc: Exception):
+    # Never leave the learner with a bare "500": log the traceback for the
+    # console and send a readable message to the UI.
+    log.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"error": f"Server error ({type(exc).__name__}): {exc}. See the server console for details."},
+    )
 
 
 @app.exception_handler(PlanError)
@@ -84,8 +100,16 @@ def health() -> dict:
         "teacher": get_teacher().name,
         "teacher_model": get_settings().qwen_model or None,
         "courses": len(library.courses()),
+        "catalog_topics": _catalog_size(),
         "lessons": len(library.lesson_ids()),
     }
+
+
+def _catalog_size() -> int | str:
+    try:
+        return len(get_catalog().topics)
+    except Exception as exc:  # surfaced in /api/health instead of crashing it
+        return f"error: {exc}"
 
 
 @app.get("/api/courses")

@@ -1,0 +1,576 @@
+{
+  "version": 1,
+  "categories": {
+    "opening": {
+      "title": "Openings",
+      "aliases": ["openings", "opening", "opening repertoire", "repertoire"]
+    },
+    "tactic": {
+      "title": "Tactics",
+      "aliases": ["tactics", "tactic", "tactical", "combinations", "puzzles", "winning material"]
+    },
+    "endgame": {
+      "title": "Endgames",
+      "aliases": ["endgames", "endgame", "endings", "ending", "checkmating", "mating technique"]
+    },
+    "strategy": {
+      "title": "Strategy",
+      "aliases": ["strategy", "strategic", "positional", "planning", "fundamentals", "principles"]
+    }
+  },
+  "general_curriculum": {
+    "aliases": ["chess", "basics", "the basics", "beginner", "how to play", "get better", "improve", "everything", "fundamentals", "win more", "stop losing"],
+    "topics": ["opening_principles", "forks", "pins", "back_rank_mate", "kq_vs_k"]
+  },
+  "topics": [
+    {
+      "id": "opening_principles",
+      "title": "Opening principles",
+      "category": "strategy",
+      "level": "beginner",
+      "aliases": ["opening principles", "development", "develop", "developing", "center", "centre", "center control", "castling", "castle", "king safety"],
+      "summary": "The first moves of a game follow a few simple rules: fight for the center, develop your knights and bishops, and get your king safe by castling.",
+      "ideas": [
+        "Pawns on e4/d4 (or e5/d5) claim the center and open lines for your pieces.",
+        "Develop knights and bishops toward the center before moving the same piece twice.",
+        "Castle early so your king is safe and your rooks can join the game.",
+        "Don't bring the queen out too early; she can be chased around, losing time."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+          "side": "white",
+          "prompt": "Both sides have claimed the center. Make a good developing move.",
+          "advance_on": "min_classification",
+          "min_category": "good",
+          "hints": [
+            "Knights and bishops are still on their starting squares.",
+            "A knight on f3 develops and attacks the e5 pawn at the same time."
+          ],
+          "continue_text": "Good — every developing move brings another piece into the fight."
+        },
+        {
+          "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 1 5",
+          "side": "white",
+          "prompt": "Your minor pieces are active. Make a solid move — castling is a great habit here.",
+          "advance_on": "min_classification",
+          "min_category": "good",
+          "hints": [
+            "The squares between your king and the h1 rook are empty.",
+            "Castle kingside: the king tucks away on g1 and the rook comes to f1."
+          ],
+          "continue_text": "Nice — a safe king lets you focus on the rest of the board."
+        }
+      ]
+    },
+    {
+      "id": "italian_game",
+      "title": "Italian Game",
+      "category": "opening",
+      "side": "white",
+      "level": "beginner",
+      "aliases": ["italian", "italian game", "giuoco piano", "giuoco", "bc4"],
+      "summary": "After 1.e4 e5 2.Nf3 Nc6, White plays 3.Bc4, aiming the bishop at Black's weakest square, f7, then builds a strong center with c3 and d3 (or d4).",
+      "ideas": [
+        "The bishop on c4 targets f7, the square only the black king defends.",
+        "c3 prepares d4, so White can build a big pawn center.",
+        "Castle quickly and bring the rook to e1 to support the center."
+      ],
+      "line": "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "ruy_lopez",
+      "title": "Ruy Lopez",
+      "category": "opening",
+      "side": "white",
+      "level": "intermediate",
+      "aliases": ["ruy lopez", "ruy", "spanish", "spanish opening", "lopez", "bb5"],
+      "summary": "After 1.e4 e5 2.Nf3 Nc6, White plays 3.Bb5, pressuring the knight that defends e5. It is one of the oldest and most respected openings.",
+      "ideas": [
+        "Bb5 pressures the c6 knight, the defender of the e5 pawn.",
+        "White usually keeps the bishop with Ba4 and Bb3, where it eyes f7.",
+        "c3 and later d4 build a strong center; Re1 supports the e4 pawn."
+      ],
+      "line": "e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "scotch_game",
+      "title": "Scotch Game",
+      "category": "opening",
+      "side": "white",
+      "level": "beginner",
+      "aliases": ["scotch", "scotch game", "scotch opening"],
+      "summary": "After 1.e4 e5 2.Nf3 Nc6, White strikes immediately with 3.d4, opening the center and getting quick piece activity.",
+      "ideas": [
+        "3.d4 challenges the center right away instead of preparing it.",
+        "After the pawn trade White's knight lands on the strong d4 square.",
+        "White often gains space with e5, chasing Black's knight from f6."
+      ],
+      "line": "e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 bxc6 e5 Qe7 Qe2 Nd5 c4",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "queens_gambit",
+      "title": "Queen's Gambit",
+      "category": "opening",
+      "side": "white",
+      "level": "beginner",
+      "aliases": ["queens gambit", "queen's gambit", "qgd", "queens gambit declined", "queen's gambit declined", "d4 c4", "queen gambit"],
+      "summary": "White plays 1.d4 d5 2.c4, offering a wing pawn to pull Black's d5 pawn away from the center. Here Black declines with 2...e6, the solid Queen's Gambit Declined.",
+      "ideas": [
+        "c4 attacks d5; if Black ever gives up the center, White takes it with e4.",
+        "Nc3 and Bg5 increase pressure on d5 by attacking its defender, the f6 knight.",
+        "White develops calmly with e3 and Nf3, then uses the c-file with Rc1."
+      ],
+      "line": "d4 d5 c4 e6 Nc3 Nf6 Bg5 Be7 e3 O-O Nf3 Nbd7 Rc1 c6",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "london_system",
+      "title": "London System",
+      "category": "opening",
+      "side": "white",
+      "level": "beginner",
+      "aliases": ["london", "london system", "bf4"],
+      "summary": "A reliable system for White: 1.d4, an early Bf4, and a solid pawn triangle on c3-d4-e3. The same setup works against almost anything Black plays.",
+      "ideas": [
+        "Develop the dark-squared bishop to f4 before playing e3, so it is not locked in.",
+        "The pawns on c3, d4 and e3 form a solid wall in the center.",
+        "Knights go to f3 and d2, the bishop to d3, then castle."
+      ],
+      "line": "d4 d5 Bf4 Nf6 e3 e6 Nf3 c5 c3 Nc6 Nbd2 Bd6 Bg3 O-O Bd3",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "english_opening",
+      "title": "English Opening",
+      "category": "opening",
+      "side": "white",
+      "level": "intermediate",
+      "aliases": ["english", "english opening", "c4 opening"],
+      "summary": "White opens 1.c4, controlling d5 from the side. Against 1...e5 White often fianchettoes the bishop on g2, like a Sicilian with an extra move.",
+      "ideas": [
+        "1.c4 controls the d5 square without committing the central pawns.",
+        "The fianchettoed bishop on g2 pressures the long diagonal toward b7.",
+        "White develops smoothly and castles, keeping many options open."
+      ],
+      "line": "c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6 Nf3 Nc6 O-O Be7",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "sicilian_defense",
+      "title": "Sicilian Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "intermediate",
+      "aliases": ["sicilian", "sicilian defense", "sicilian defence", "najdorf", "c5"],
+      "summary": "Black answers 1.e4 with 1...c5, fighting for d4 from the side and creating an unbalanced game. This line is the Najdorf (5...a6), a favorite of world champions.",
+      "ideas": [
+        "1...c5 stops White from easily building a pawn center with d4.",
+        "After ...cxd4 Black has an extra central pawn and a half-open c-file.",
+        "...a6 (the Najdorf) prevents White's pieces from using b5 and prepares ...e5 or ...b5."
+      ],
+      "line": "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be2 e5 Nb3 Be7 O-O O-O",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "french_defense",
+      "title": "French Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "beginner",
+      "aliases": ["french", "french defense", "french defence", "e6 defense"],
+      "summary": "Black meets 1.e4 with 1...e6 and 2...d5, building a solid pawn chain and challenging White's center, then counterattacking it with ...c5.",
+      "ideas": [
+        "...e6 and ...d5 challenge e4 while keeping a solid structure.",
+        "When White pushes e5, Black attacks the base of White's pawn chain with ...c5.",
+        "The light-squared bishop can be passive; Black plans pawn breaks to free the position."
+      ],
+      "line": "e4 e6 d4 d5 Nc3 Nf6 Bg5 Be7 e5 Nfd7 Bxe7 Qxe7 f4 O-O Nf3 c5",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "caro_kann",
+      "title": "Caro-Kann Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "beginner",
+      "aliases": ["caro kann", "caro-kann", "caro", "carokann", "caro kann defense", "caro-kann defence"],
+      "summary": "Black answers 1.e4 with 1...c6 and 2...d5, a very solid defense. In this classical line Black develops the light-squared bishop to f5 before playing ...e6.",
+      "ideas": [
+        "...c6 supports ...d5 so Black can challenge the center immediately.",
+        "The bishop comes out to f5 (and g6) before ...e6 locks it in.",
+        "Black aims for a healthy pawn structure and a safe, comfortable game."
+      ],
+      "line": "e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5 Ng3 Bg6 h4 h6 Nf3 Nd7 h5 Bh7",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "scandinavian_defense",
+      "title": "Scandinavian Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "beginner",
+      "aliases": ["scandinavian", "scandinavian defense", "scandinavian defence", "center counter", "centre counter", "qa5"],
+      "summary": "Black hits back at once with 1...d5, and after 2.exd5 Qxd5 3.Nc3 the queen retreats to a5, where she pins and pressures from the side.",
+      "ideas": [
+        "1...d5 challenges e4 immediately, giving the game a clear shape from move one.",
+        "The queen on a5 is out of the way of Black's pieces yet still active.",
+        "Black follows up with ...Nf6, ...c6, ...Bf5 and ...e6 for a solid setup."
+      ],
+      "line": "e4 d5 exd5 Qxd5 Nc3 Qa5 d4 Nf6 Nf3 c6 Bc4 Bf5 Bd2 e6",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "kings_indian",
+      "title": "King's Indian Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "intermediate",
+      "aliases": ["kings indian", "king's indian", "kid", "kings indian defense", "king's indian defence"],
+      "summary": "Against 1.d4 and 2.c4, Black fianchettoes the bishop on g7, castles, and lets White build a big center — then strikes at it with ...e5.",
+      "ideas": [
+        "Black lets White take the center, planning to attack it later.",
+        "The g7 bishop is a powerhouse on the long diagonal.",
+        "...e5 is the key counterpunch against White's d4 pawn."
+      ],
+      "line": "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5 O-O Nc6",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "slav_defense",
+      "title": "Slav Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "intermediate",
+      "aliases": ["slav", "slav defense", "slav defence"],
+      "summary": "Black defends d5 against the Queen's Gambit with 2...c6, keeping the light-squared bishop free to develop to f5.",
+      "ideas": [
+        "...c6 supports d5 without blocking the c8 bishop.",
+        "After ...dxc4 Black develops with tempo: ...Bf5, ...e6, ...Bb4.",
+        "Black gets a solid position with active pieces."
+      ],
+      "line": "d4 d5 c4 c6 Nf3 Nf6 Nc3 dxc4 a4 Bf5 e3 e6 Bxc4 Bb4 O-O O-O",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "nimzo_indian",
+      "title": "Nimzo-Indian Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "advanced",
+      "aliases": ["nimzo", "nimzo indian", "nimzo-indian", "nimzoindian"],
+      "summary": "Against 1.d4 Nf6 2.c4 e6 3.Nc3, Black pins the knight with 3...Bb4, fighting for the e4 square with pieces rather than pawns.",
+      "ideas": [
+        "Bb4 pins the c3 knight, which stops it from supporting e4.",
+        "Black is often willing to trade the bishop for the knight to damage White's pawns.",
+        "...d5 and ...c5 strike at White's center once Black is castled."
+      ],
+      "line": "d4 Nf6 c4 e6 Nc3 Bb4 e3 O-O Bd3 d5 Nf3 c5 O-O Nc6",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "two_knights_defense",
+      "title": "Two Knights Defense",
+      "category": "opening",
+      "side": "black",
+      "level": "intermediate",
+      "aliases": ["two knights", "two knights defense", "two knights defence", "italian as black", "vs italian", "against the italian"],
+      "summary": "Black meets the Italian Game (3.Bc4) with 3...Nf6, counterattacking e4 instead of copying White. Against quiet d3, Black develops and later gains space.",
+      "ideas": [
+        "3...Nf6 attacks e4 right away, making White commit.",
+        "Black castles quickly and supports the e5 pawn with ...d6.",
+        "...Na5 can chase White's strong light-squared bishop."
+      ],
+      "line": "e4 e5 Nf3 Nc6 Bc4 Nf6 d3 Be7 O-O O-O Re1 d6 c3 Na5 Bb5 a6",
+      "prerequisites": ["opening_principles"]
+    },
+    {
+      "id": "forks",
+      "title": "Forks",
+      "category": "tactic",
+      "level": "beginner",
+      "aliases": ["fork", "forks", "forking", "knight fork", "double attack", "family fork"],
+      "summary": "A fork is one piece attacking two (or more) enemy pieces at once. The opponent can only save one of them. Knights are the best forkers because they jump.",
+      "ideas": [
+        "Look for enemy pieces a knight's jump apart from the same square.",
+        "Forks with check are the strongest: the king must move, then you take.",
+        "Undefended pieces and a king in the open are the usual fork targets."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "q3k3/8/8/3N4/8/8/5PPP/6K1 w - - 0 1",
+          "side": "white",
+          "prompt": "Win Black's queen with a knight fork.",
+          "advance_on": "accepted_move",
+          "accepted": ["Nc7+"],
+          "hints": [
+            "Find a square where your knight attacks the king AND the queen.",
+            "The king is on e8 and the queen on a8.",
+            "The knight jumps to c7."
+          ],
+          "continue_text": "Fork! After the king moves, Nxa8 wins the queen."
+        },
+        {
+          "fen": "r3k3/ppp2ppp/8/8/1n6/8/PPP2PPP/R3K2R b KQq - 0 1",
+          "side": "black",
+          "prompt": "You are Black. Use your knight to win material.",
+          "advance_on": "accepted_move",
+          "accepted": ["Nxc2+"],
+          "hints": [
+            "White's king and the a1 rook can be hit by one knight jump.",
+            "The knight captures a pawn and gives check.",
+            "Nxc2+ attacks the king on e1 and the rook on a1."
+          ],
+          "continue_text": "Great — the king must move, and then ...Nxa1 wins the rook."
+        }
+      ]
+    },
+    {
+      "id": "pins",
+      "title": "Pins",
+      "category": "tactic",
+      "level": "beginner",
+      "aliases": ["pin", "pins", "pinned", "pinning", "absolute pin"],
+      "summary": "A pin is when a piece can't move because a more valuable piece (often the king) is behind it on the same line. Pinned pieces are easy targets.",
+      "ideas": [
+        "Bishops, rooks and queens create pins along lines.",
+        "When the king is behind, the pinned piece legally cannot move.",
+        "Attack a pinned piece with something cheaper, like a pawn — it can't run away."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "4k3/8/2q5/8/P7/8/5PPP/5BK1 w - - 0 1",
+          "side": "white",
+          "prompt": "Pin Black's queen to the king and win it.",
+          "advance_on": "accepted_move",
+          "accepted": ["Bb5"],
+          "hints": [
+            "The queen and king are on the same diagonal.",
+            "Your bishop can reach that diagonal — and your a4 pawn protects the square.",
+            "Play Bb5: the queen can't move off the line without exposing the king."
+          ],
+          "continue_text": "The queen is pinned; whatever Black does, you win it for your bishop."
+        },
+        {
+          "fen": "4k3/1p3ppp/2n5/1B6/3P4/8/5PPP/4K3 w - - 0 1",
+          "side": "white",
+          "prompt": "The c6 knight is pinned. Attack it with something cheap to win it.",
+          "advance_on": "accepted_move",
+          "accepted": ["d5"],
+          "hints": [
+            "A pinned piece can't escape when you attack it.",
+            "Your cheapest piece is a pawn.",
+            "Push d5 and the pinned knight is lost."
+          ],
+          "continue_text": "The knight can't move because the king is behind it — you win it next move."
+        }
+      ]
+    },
+    {
+      "id": "skewers",
+      "title": "Skewers",
+      "category": "tactic",
+      "level": "beginner",
+      "aliases": ["skewer", "skewers", "skewering", "x-ray"],
+      "summary": "A skewer is a reverse pin: you attack a valuable piece (often the king), it moves out of the way, and you capture the piece standing behind it.",
+      "ideas": [
+        "Line up the enemy king and another piece on one line.",
+        "Check the king first — it must step aside.",
+        "Then capture the piece that was behind it."
+      ],
+      "prerequisites": ["pins"],
+      "positions": [
+        {
+          "fen": "8/1q6/8/3k4/8/8/5PP1/K2B4 w - - 0 1",
+          "side": "white",
+          "prompt": "Black's king and queen are on the same diagonal. Skewer them!",
+          "advance_on": "accepted_move",
+          "accepted": ["Bf3+"],
+          "hints": [
+            "Look at the long light-squared diagonal through d5 and b7.",
+            "Check the king from behind — with the queen lined up behind it.",
+            "Bf3+ — the king moves and Bxb7 wins the queen."
+          ],
+          "continue_text": "Skewered! The king steps aside and your bishop takes the queen."
+        },
+        {
+          "fen": "8/8/8/r3k3/8/7R/6PP/6K1 w - - 0 1",
+          "side": "white",
+          "prompt": "Win Black's rook with a skewer along the 5th rank.",
+          "advance_on": "accepted_move",
+          "accepted": ["Rh5+"],
+          "hints": [
+            "The black king and rook share the 5th rank.",
+            "Give check along that rank.",
+            "Rh5+ — once the king moves, Rxa5."
+          ],
+          "continue_text": "The king must leave the rank, and the rook on a5 falls."
+        }
+      ]
+    },
+    {
+      "id": "discovered_attacks",
+      "title": "Discovered attacks",
+      "category": "tactic",
+      "level": "intermediate",
+      "aliases": ["discovered attack", "discovered attacks", "discovered check", "discovery", "double check"],
+      "summary": "A discovered attack happens when one piece moves out of the way and uncovers an attack by the piece behind it. If the moving piece also attacks something, you get two threats at once.",
+      "ideas": [
+        "Look for your own piece blocking a rook, bishop or queen line.",
+        "Move the blocker with a threat of its own — the opponent can't answer both.",
+        "A discovered check is the strongest version: the king must respond first."
+      ],
+      "prerequisites": ["forks"],
+      "positions": [
+        {
+          "fen": "4k3/8/8/1q6/4B3/8/5PPP/4R1K1 w - - 0 1",
+          "side": "white",
+          "prompt": "Your bishop blocks the rook's line to the king. Move it with a discovered check that also attacks the queen.",
+          "advance_on": "accepted_move",
+          "accepted": ["Bc6+", "Bd3+"],
+          "hints": [
+            "When the bishop leaves the e-file, the rook gives check.",
+            "Choose a bishop square that also attacks the queen on b5.",
+            "Bc6+ (double check!) or Bd3+ both win the queen."
+          ],
+          "continue_text": "Black must deal with the check, and the queen falls next move."
+        }
+      ]
+    },
+    {
+      "id": "back_rank_mate",
+      "title": "Back-rank mate",
+      "category": "tactic",
+      "level": "beginner",
+      "aliases": ["back rank", "back-rank", "back rank mate", "back-rank mate", "back rank checkmate", "checkmate patterns", "mating patterns", "checkmate"],
+      "summary": "When a castled king is trapped behind its own pawns, a rook or queen landing on the back rank can deliver checkmate.",
+      "ideas": [
+        "A king boxed in by its own pawns has no escape squares.",
+        "Check along the back rank with a rook or queen when nothing can block or capture.",
+        "Prevent it in your own games by making 'luft' (h3 or g3) when needed."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+          "side": "white",
+          "prompt": "Checkmate in one move.",
+          "advance_on": "min_classification",
+          "min_category": "excellent",
+          "hints": [
+            "Black's king is trapped by its own pawns.",
+            "Your rook can reach the 8th rank.",
+            "Rd8 is checkmate."
+          ],
+          "continue_text": "Checkmate! The pawns on f7, g7 and h7 trap their own king."
+        },
+        {
+          "fen": "3q2k1/5ppp/8/8/8/8/R4PPP/6K1 b - - 0 1",
+          "side": "black",
+          "prompt": "You are Black. White forgot about the back rank — checkmate in one.",
+          "advance_on": "min_classification",
+          "min_category": "excellent",
+          "hints": [
+            "White's king has no escape squares.",
+            "Your queen can reach the 1st rank.",
+            "...Qd1 is checkmate."
+          ],
+          "continue_text": "Checkmate — White's rook on a2 can't guard the back rank."
+        }
+      ]
+    },
+    {
+      "id": "kq_vs_k",
+      "title": "Checkmate with king and queen",
+      "category": "endgame",
+      "level": "beginner",
+      "aliases": ["king and queen", "queen checkmate", "queen mate", "kq vs k", "kqk", "mate with queen", "checkmate with queen", "stalemate"],
+      "summary": "King and queen against a lone king is a forced win. Use the queen to shrink the king's box, bring your own king closer, and watch out for stalemate.",
+      "ideas": [
+        "Push the enemy king to the edge of the board.",
+        "Your king must help: the queen alone can't mate.",
+        "Stalemate (no legal moves, not in check) is a draw — always leave the king a square until you can mate."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "k7/8/2K5/8/8/8/8/1Q6 w - - 0 1",
+          "side": "white",
+          "prompt": "Deliver checkmate — but careful, one natural queen move is stalemate!",
+          "advance_on": "min_classification",
+          "min_category": "excellent",
+          "hints": [
+            "Qb6 would take away every square without giving check: stalemate.",
+            "Give check on a square your king protects.",
+            "Qb7 is checkmate — the king on c6 defends the queen."
+          ],
+          "continue_text": "Checkmate! Your king protects the queen, so Black can't capture."
+        }
+      ]
+    },
+    {
+      "id": "kr_vs_k",
+      "title": "Checkmate with king and rook",
+      "category": "endgame",
+      "level": "beginner",
+      "aliases": ["king and rook", "rook checkmate", "rook mate", "kr vs k", "krk", "mate with rook", "checkmate with rook"],
+      "summary": "King and rook win against a lone king. The rook cuts the king off along a rank or file while your king approaches; mate happens on the edge.",
+      "ideas": [
+        "The rook builds a wall the enemy king can't cross.",
+        "Kings in opposition: the rook checks when your king faces the enemy king.",
+        "Keep the rook far from the enemy king so it can't be attacked."
+      ],
+      "prerequisites": ["kq_vs_k"],
+      "positions": [
+        {
+          "fen": "k7/8/1K6/8/8/8/8/7R w - - 0 1",
+          "side": "white",
+          "prompt": "Checkmate in one move.",
+          "advance_on": "min_classification",
+          "min_category": "excellent",
+          "hints": [
+            "Your king already covers a7 and b7.",
+            "Check along the 8th rank to cover b8 too.",
+            "Rh8 is checkmate."
+          ],
+          "continue_text": "Checkmate — the rook covers the whole back rank, your king the rest."
+        }
+      ]
+    },
+    {
+      "id": "king_pawn_opposition",
+      "title": "King and pawn endings: the opposition",
+      "category": "endgame",
+      "level": "intermediate",
+      "aliases": ["opposition", "king and pawn", "pawn endgame", "pawn endings", "king pawn", "kp vs k", "promote", "promotion"],
+      "summary": "In king-and-pawn endings the kings fight for key squares. Taking the opposition — kings facing each other with the opponent to move — forces the enemy king to give way.",
+      "ideas": [
+        "Lead with your king, not the pawn.",
+        "The king in front of its pawn is what wins these endings.",
+        "Opposition: stand directly (or diagonally) facing the enemy king with an odd number of squares between, making the opponent move."
+      ],
+      "prerequisites": [],
+      "positions": [
+        {
+          "fen": "8/8/4k3/8/8/4K3/4P3/8 w - - 0 1",
+          "side": "white",
+          "prompt": "Win this ending: step your king forward to take the opposition (don't push the pawn yet).",
+          "advance_on": "accepted_move",
+          "accepted": ["Ke4", "Kd4", "Kf4"],
+          "hints": [
+            "Pushing the pawn first lets Black's king block it — a draw.",
+            "Advance your king to the 4th rank, facing Black's king.",
+            "Ke4 (or Kd4/Kf4) — now Black must give ground."
+          ],
+          "continue_text": "Right — with the opposition, your king marches forward in front of the pawn."
+        }
+      ]
+    }
+  ]
+}
