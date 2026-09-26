@@ -34,6 +34,14 @@ def test_illegal_move_rejected():
         parse_move(board, "Qh5")  # queen can't reach h5 yet
 
 
+def test_same_square_uci_is_rejected_not_crashing():
+    """Regression: "a1a1" matched the UCI pattern and raised InvalidMoveError (HTTP 500)."""
+    board = parse_fen(chess.STARTING_FEN)
+    for bad in ("a1a1", "e2e2", "e7e7q"):
+        with pytest.raises(ChessError):
+            parse_move(board, bad)
+
+
 def test_invalid_fen_rejected():
     with pytest.raises(ChessError):
         parse_fen("not a fen")

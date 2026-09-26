@@ -39,8 +39,11 @@ def parse_move(board: chess.Board, move_str: str) -> chess.Move:
     move_str = move_str.strip()
     move: chess.Move | None = None
     if UCI_RE.match(move_str):
-        move = chess.Move.from_uci(move_str)
-        if move not in board.legal_moves:
+        try:
+            move = chess.Move.from_uci(move_str)
+        except ValueError:  # e.g. "a1a1": well-formed but not a move
+            move = None
+        if move is not None and move not in board.legal_moves:
             move = None
     if move is None:
         try:
