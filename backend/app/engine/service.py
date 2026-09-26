@@ -197,9 +197,9 @@ class UciEngine:
             else:
                 after_score, after_pv = self._analyse_score(after, depth)
 
-        category, loss, notes = classify_move(board_before, move, best_score, after_score)
-
         best = best_pv[0] if best_pv else None
+        category, loss, notes = classify_move(board_before, move, best_score, after_score, engine_best=best)
+
         reply_san = []
         display = after.copy()
         for m in after_pv[:6]:

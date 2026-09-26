@@ -151,6 +151,17 @@ def test_checkmate_formats_as_checkmate_not_mate_in_zero():
     assert _fmt_eval(won, for_white=True) == "checkmate - White is mated"
 
 
+def test_engine_best_move_never_loses():
+    """Two separate searches disagree a little; the engine's own move still loses 0."""
+    board = chess.Board()
+    move = chess.Move.from_uci("e2e4")
+    cat, loss, notes = classify_move(board, move, _score_cp(1116), _score_cp(858), engine_best=move)
+    assert (cat, loss, notes) == (Classification.EXCELLENT, 0, [])
+    cat, _, _ = classify_move(board, move, _score_cp(1116), _score_cp(858),
+                              engine_best=chess.Move.from_uci("d2d4"))
+    assert cat == Classification.MISTAKE  # another move is still judged by its loss
+
+
 # --- lessons ---
 
 def test_italian_course_loads_and_validates():

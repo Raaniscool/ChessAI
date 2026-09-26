@@ -146,6 +146,7 @@ def classify_move(
     user_move: chess.Move,
     eval_before: Score,
     eval_after: Score,
+    engine_best: chess.Move | None = None,
 ) -> tuple[Classification, int, list[str]]:
     """Classify the user's move.
 
@@ -155,6 +156,10 @@ def classify_move(
         eval_before: engine score of the position (White POV), best play.
         eval_after: engine score after the user's move (White POV), opponent
             best play — i.e. what the user's move actually achieves.
+        engine_best: the engine's best move in `board_before`, if known. Playing it
+            loses nothing by definition: the two scores come from two separate
+            searches, and their noise must never turn the engine's own move into a
+            "mistake".
 
     Returns:
         (category, loss_cp, notes) — notes are machine-readable modifier flags
@@ -165,6 +170,8 @@ def classify_move(
     after_cp = eval_after.for_side(user_is_white)
     loss = max(0, before_cp - after_cp)
     notes: list[str] = []
+    if engine_best is not None and user_move == engine_best:
+        return Classification.EXCELLENT, 0, notes
 
     category = classify_loss(loss)
 
