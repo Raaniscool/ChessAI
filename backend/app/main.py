@@ -52,6 +52,20 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI Chess Tutor", version="0.1.0", lifespan=lifespan)
 
 
+@app.middleware("http")
+async def revalidate_frontend(request: Request, call_next):
+    """Make the browser re-check the page files on every load.
+
+    Without this a browser may keep a cached index.html from an older version while
+    fetching a newer app.js (or the other way round), and the page breaks with errors
+    like "Cannot read properties of null". Static files carry an ETag, so the re-check
+    is a cheap 304 when nothing changed."""
+    response = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 # --- error handling -------------------------------------------------------
 
 @app.exception_handler(SessionError)
@@ -181,7 +195,8 @@ def courses() -> dict:
             entry["plan"] = course.meta.get("plan", {})
         out.append(entry)
     # Learner's own plans first (newest first), then the curated courses.
-    plans = [c for c in out if c["kind"] == "plan"]
+    # Reversed first so plans created within the same second stay newest-first (stable sort).
+    plans = [c for c in out if c["kind"] == "plan"][::-1]
     plans.sort(key=lambda c: c["plan"].get("created", ""), reverse=True)
     return {"courses": plans + [c for c in out if c["kind"] != "plan"]}
 
@@ -224,7 +239,7 @@ def knowledge_intent(body: IntentRequest) -> dict:
 
 @app.get("/api/plans")
 def list_plans() -> dict:
-    plans = [c.meta.get("plan", {}) for c in get_library().courses() if c.kind == "plan"]
+    plans = [c.meta.get("plan", {}) for c in get_library().courses() if c.kind == "plan"][::-1]
     plans.sort(key=lambda p: p.get("created", ""), reverse=True)
     return {"plans": plans}
 

@@ -66,3 +66,17 @@ def test_unknown_goal_returns_422_with_suggestions(client):
     res = client.post("/api/plans", json={"goal": "underwater basket weaving"})
     assert res.status_code == 422
     assert res.json()["suggestions"]
+
+
+def test_plans_created_in_the_same_second_list_newest_first(client):
+    """Plans carry a created time in whole seconds; ties must still put the newest first."""
+    first = client.post("/api/plans", json={"goal": "I want to learn forks"}).json()
+    second = client.post("/api/plans", json={"goal": "I want to learn pins"}).json()
+    from app.lessons import get_library
+    lib = get_library()
+    for cid in (first["course_id"], second["course_id"]):
+        lib.course(cid).meta["plan"]["created"] = "2026-01-01T00:00:00+00:00"
+    courses = [c["id"] for c in client.get("/api/courses").json()["courses"] if c["kind"] == "plan"]
+    assert courses.index(second["course_id"]) < courses.index(first["course_id"])
+    plans = [p["id"] for p in client.get("/api/plans").json()["plans"]]
+    assert plans.index(second["plan"]["id"]) < plans.index(first["plan"]["id"])

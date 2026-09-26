@@ -7,6 +7,24 @@ import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/marker
 import {Chess} from "./vendor/chess.mjs/Chess.js"
 import {Narrator, decorateMoves} from "./speech.js"
 
+// ---------- stale page guard ----------
+// A browser can combine a cached old index.html with a newer app.js. Instead of
+// failing with "Cannot read properties of null", say what to do.
+const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "lesson-title", "step-indicator",
+  "course-list", "health", "chat-input", "btn-chat", "btn-continue", "btn-hint", "btn-reveal", "btn-play",
+  "btn-explain-example", "speech-controls", "btn-read-aloud", "speech-rate", "speech-voice", "btn-stop-speech",
+  "welcome"]
+const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))
+if (missingIds.length) {
+  const bar = document.createElement("div")
+  bar.className = "stale-page"
+  bar.innerHTML = "This page was updated, but your browser is showing an old copy. " +
+    "Press <b>Ctrl+F5</b> (or click here) to load the new version."
+  bar.addEventListener("click", () => location.reload())
+  document.body.prepend(bar)
+  throw new Error(`Outdated page (missing: ${missingIds.join(", ")}) — press Ctrl+F5`)
+}
+
 // ---------- state ----------
 
 const state = {

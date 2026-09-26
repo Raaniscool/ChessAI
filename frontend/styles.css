@@ -259,3 +259,4 @@ header h1 { margin: 0; font-size: 20px; }
 @keyframes nudge { 50% { box-shadow: 0 0 0 6px rgba(99, 179, 124, .45); transform: scale(1.04); } }
 
 .course-list .empty { margin: 0 0 6px; line-height: 1.5; }
+.stale-page { background: #b8860b; color: #111; padding: 10px 16px; font-size: 15px; cursor: pointer; text-align: center; }
