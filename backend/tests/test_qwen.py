@@ -57,6 +57,10 @@ def test_no_think_added_to_last_user_message_only_and_does_not_mutate():
         ("qwen2.5:7b", "auto", False),
         ("qwen3:4b", "on", False),
         ("qwen2.5:7b", "off", True),
+        # 2507 split models ignore the switch: don't pollute their prompt with it.
+        ("qwen3:4b-instruct", "auto", False),
+        ("qwen3:4b-thinking", "auto", False),
+        ("qwen3:4b-instruct-2507-q4_K_M", "auto", False),
     ],
 )
 def test_thinking_switch(model, thinking, disabled):

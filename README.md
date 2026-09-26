@@ -95,24 +95,22 @@ The teacher speaks the OpenAI protocol, so Ollama, LM Studio, vLLM, or llama.cpp
 **Windows / PowerShell (Ollama):**
 
 ```powershell
-ollama list                                   # copy the exact NAME, e.g. qwen3:4b
-$env:QWEN_MODEL = "qwen3:4b"                  # same window you start the server from
-.\.venv\Scripts\python -m backend.app.check_qwen   # diagnoses the connection step by step
+ollama pull qwen3:4b-instruct                 # recommended: answers directly, no thinking phase
+Set-Content .env "QWEN_MODEL=qwen3:4b-instruct"
+.\.venv\Scripts\python -m backend.app.check_qwen   # diagnoses the connection + speed step by step
 .\.venv\Scripts\uvicorn backend.app.main:app --port 8000
 ```
 
-`$env:` lasts for that window only. To make it stick, save it once in a **`.env` file** in the project folder (git-ignored, read at every start; see `.env.example`):
+The **`.env` file** in the project folder is git-ignored and read at every start (see `.env.example`), so the setting survives new windows. Variables set in the shell (`$env:QWEN_MODEL = "..."`) override it.
 
-```powershell
-Set-Content .env "QWEN_MODEL=qwen3:4b"
-```
-
-Settings typed in the shell still override `.env`.
+> **Use `qwen3:4b-instruct`, not `qwen3:4b`.** Ollama's `qwen3:4b` is now *Qwen3-4B-Thinking-2507*: it
+> reasons silently before every answer (tens of seconds on a CPU) and ignores `/no_think`, so the
+> tutor feels frozen. `check_qwen` and the server log both detect this and say so.
 
 **macOS / Linux:**
 
 ```bash
-export QWEN_MODEL=qwen3:4b
+echo "QWEN_MODEL=qwen3:4b-instruct" > .env
 .venv/bin/python -m backend.app.check_qwen
 ```
 
@@ -122,7 +120,7 @@ export QWEN_MODEL=qwen3:4b
 | `QWEN_BASE_URL` | `http://localhost:11434/v1` | LM Studio: `http://localhost:1234/v1` |
 | `QWEN_API_KEY` | `ollama` | ignored by local servers |
 | `QWEN_TIMEOUT` | `120` | seconds; first reply is slow while the model loads |
-| `QWEN_THINKING` | `auto` | `auto` = off for Qwen3 (sends `/no_think`; much faster). `on` / `off` to force |
+| `QWEN_THINKING` | `auto` | `auto` = sends `/no_think` to hybrid Qwen3 builds (not to `-instruct`, which never thinks, or `-thinking`, which ignores it). `on` / `off` to force |
 | `QWEN_MAX_TOKENS` | `300` | cap on explanation length (shorter = faster on local hardware) |
 | `QWEN_PLANNER` | `auto` | `auto` = ask Qwen only when the catalog can't answer (instant plans), `always`, `never` |
 | `QWEN_WARMUP` | `1` | load the model when the server starts so the first reply isn't the slowest |
@@ -138,7 +136,8 @@ The app never makes you wait for the language model to see a result:
 - `python -m backend.app.check_qwen` runs a **speed test** (time to first word, tokens/s) and tells you what to change. Typical fixes, all free and unlimited:
   - Keep the model loaded: `setx OLLAMA_KEEP_ALIVE "2h"`, then restart Ollama (otherwise it unloads after 5 idle minutes and the next reply has to reload it).
   - Check `ollama ps`: `100% GPU` is fast; `CPU` is slow.
-  - Use a smaller model: `ollama pull qwen3:1.7b` (about 2× faster than 4b). The chess facts come from Stockfish either way. The status bar shows `teacher: qwen (model)` when connected.
+  - Make sure it isn't a thinking model (see above); `check_qwen` flags it.
+  - Still slow on a CPU? Try a smaller model: `ollama pull qwen3:1.7b` (about 2× faster than 4b), then re-run `check_qwen`. The chess facts come from Stockfish either way. The status bar shows `teacher: qwen (model)` when connected.
 
 ## Status
 

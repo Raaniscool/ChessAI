@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 
 import httpx
 
@@ -189,11 +189,15 @@ class QwenTeacher:
         """Send arbitrary messages (used by the planner); raises TeacherUnavailable."""
         return self._complete(messages, max_tokens=max_tokens)
 
-    def stream(self, messages: list[dict], max_tokens: int | None = None) -> Iterator[str]:
+    def stream(self, messages: list[dict], max_tokens: int | None = None,
+               on_reasoning: Callable[[], None] | None = None) -> Iterator[str]:
         """Yield visible reply text as the model generates it (OpenAI SSE protocol).
 
         Raises TeacherUnavailable if the request fails; callers decide how to
         degrade depending on whether any text was already shown.
+        `on_reasoning` is called for every chunk of hidden reasoning (separate
+        "reasoning" fields or inline <think> text), so diagnostics can tell a
+        thinking model apart from a slow one.
         """
         payload = self.build_payload(messages, stream=True, max_tokens=max_tokens)
         think = ThinkFilter()
@@ -215,8 +219,12 @@ class QwenTeacher:
                     except (ValueError, KeyError, IndexError, TypeError):
                         continue
                     # Only "content" is shown; "reasoning"/"reasoning_content" never is.
-                    delta = (choice.get("delta") or {}).get("content") or ""
+                    fields = choice.get("delta") or {}
+                    delta = fields.get("content") or ""
                     visible = think.feed(delta) if delta else ""
+                    if on_reasoning and (fields.get("reasoning") or fields.get("reasoning_content")
+                                         or (delta and not visible and think.in_think)):
+                        on_reasoning()
                     if think.consume_reset():
                         yield RESET
                     if visible:
@@ -231,13 +239,29 @@ class QwenTeacher:
     def warm_up(self) -> bool:
         """Ask for a single token so the server loads the model into memory."""
         try:
-            httpx.post(self.url, headers=self.headers, timeout=self.settings.qwen_timeout,
-                       json=self.build_payload([{"role": "user", "content": "Say OK."}], max_tokens=1),
-                       ).raise_for_status()
-            return True
+            response = httpx.post(self.url, headers=self.headers, timeout=self.settings.qwen_timeout,
+                                  json=self.build_payload([{"role": "user", "content": "Say OK."}], max_tokens=1))
+            response.raise_for_status()
         except httpx.HTTPError as exc:
             log.warning("Qwen warm-up failed: %s", exc)
             return False
+        if self.reply_shows_thinking(response):
+            log.warning(
+                "Model '%s' thinks silently before every answer, which makes the tutor slow "
+                "(Ollama's qwen3:4b is now the thinking-only version). Use qwen3:4b-instruct: "
+                "`ollama pull qwen3:4b-instruct`, then set QWEN_MODEL=qwen3:4b-instruct in .env",
+                self.settings.qwen_model)
+        return True
+
+    @staticmethod
+    def reply_shows_thinking(response) -> bool:
+        try:
+            message = response.json()["choices"][0]["message"]
+        except (ValueError, KeyError, IndexError, TypeError):
+            return False
+        content = message.get("content") or ""
+        return bool(message.get("reasoning") or message.get("reasoning_content")
+                    or "<think>" in content.lower())
 
     def explain_move(self, feedback, context: LessonContext) -> str:
         return self._complete(build_move_feedback_messages(feedback, context))

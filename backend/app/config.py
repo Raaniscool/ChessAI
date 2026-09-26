@@ -153,7 +153,10 @@ class Settings:
             return False
         if self.qwen_thinking in ("off", "false", "0", "no"):
             return True
-        return "qwen3" in self.qwen_model.lower()
+        name = self.qwen_model.lower()
+        # Only hybrid Qwen3 builds obey the switch. The 2507 split models don't:
+        # "-instruct" never thinks, "-thinking" always does.
+        return "qwen3" in name and "instruct" not in name and "thinking" not in name
 
 
 _settings: Settings | None = None

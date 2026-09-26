@@ -13,7 +13,7 @@ import time
 import httpx
 
 from .config import DOTENV_APPLIED, DOTENV_PATH, get_settings
-from .teacher.qwen import QwenTeacher, TeacherUnavailable
+from .teacher.qwen import RESET, QwenTeacher, TeacherUnavailable
 
 
 def _list_models(base_url: str, api_key: str) -> list[str]:
@@ -32,28 +32,66 @@ SPEED_PROMPT = [
 ]
 
 
-def measure(teacher) -> tuple[float, float, int]:
-    """(seconds to first visible word, total seconds, streamed chunks ~ tokens)."""
+RECOMMENDED_MODEL = "qwen3:4b-instruct"
+
+
+def measure(teacher) -> tuple[float, float, int, int]:
+    """(seconds to first visible word, total seconds, visible chunks ~ tokens,
+    hidden reasoning chunks)."""
     started = time.monotonic()
     first = None
     chunks = 0
-    for _ in teacher.stream(SPEED_PROMPT, max_tokens=120):
+    reasoning = 0
+
+    def count_reasoning():
+        nonlocal reasoning
+        reasoning += 1
+
+    for piece in teacher.stream(SPEED_PROMPT, max_tokens=120, on_reasoning=count_reasoning):
+        if piece == RESET:
+            continue
         chunks += 1
         if first is None:
             first = time.monotonic() - started
     total = time.monotonic() - started
-    return (first if first is not None else total), total, chunks
+    return (first if first is not None else total), total, chunks, reasoning
 
 
-def speed_test(teacher) -> None:
+def instruct_alternative(model: str) -> str:
+    """Same-size Qwen3 build that answers without a thinking phase."""
+    if model.startswith("qwen3:"):
+        size = model.split(":", 1)[1].split("-", 1)[0]
+        if size in ("4b", "30b", "235b"):  # sizes that have a 2507 instruct build
+            return f"qwen3:{size}-instruct"
+    return RECOMMENDED_MODEL
+
+
+def thinking_model_advice(model: str) -> list[str]:
+    alt = instruct_alternative(model)
+    return [
+        f"[FAIL] '{model}' thinks silently before every answer: you wait for text that is never shown,",
+        "       and the thinking can use up the whole reply budget.",
+        "       (Ollama's 'qwen3:4b' is now the thinking-only version, so /no_think no longer works.)",
+        "       Use the same-size model that answers directly:",
+        f"         ollama pull {alt}",
+        f'         Set-Content .env "QWEN_MODEL={alt}"',
+        "       then run this check again.",
+    ]
+
+
+def speed_test(teacher) -> int:
     print("Speed test (a typical explanation, streamed):")
     try:
-        first, total, chunks = measure(teacher)
+        first, total, chunks, reasoning = measure(teacher)
     except TeacherUnavailable as exc:
         print(f"[WARN] streaming failed: {exc}")
-        return
+        return 0
     rate = chunks / max(total - first, 0.01) if chunks > 1 else 0.0
     print(f"       first words after {first:.1f}s, finished in {total:.1f}s, ~{rate:.0f} tokens/s")
+    if reasoning:
+        for line in thinking_model_advice(teacher.settings.qwen_model):
+            print(line)
+        return 1
     if first > 8:
         print("[TIP ] Slow first words: the model may be (re)loading each time. Keep it in memory:")
         print('         setx OLLAMA_KEEP_ALIVE "2h"   then quit Ollama from the tray icon and start it again.')
@@ -62,10 +100,11 @@ def speed_test(teacher) -> None:
         print("[TIP ] Under ~12 tokens/s usually means the model runs on the CPU. Check with:  ollama ps")
         print("         (PROCESSOR column: '100% GPU' is fast, 'CPU' is slow.)")
         print("         Faster options, still free and unlimited:  ollama pull qwen3:1.7b")
-        print('         then  $env:QWEN_MODEL = "qwen3:1.7b"   (about 2x faster than 4b, slightly less smart;')
+        print('         then  Set-Content .env "QWEN_MODEL=qwen3:1.7b"   (about 2x faster than 4b, slightly less smart;')
         print("         the chess facts always come from Stockfish either way).")
     elif rate:
         print("[ OK ] That's a healthy speed for a local model.")
+    return 0
 
 
 def main() -> int:
@@ -88,7 +127,8 @@ def main() -> int:
     if not s.qwen_model:
         print("[FAIL] QWEN_MODEL is not set, so the app uses the offline fallback teacher.")
         if models:
-            pick = next((m for m in models if "coder" not in m), models[0])
+            pick = (next((m for m in models if "instruct" in m), None)
+                    or next((m for m in models if "coder" not in m), models[0]))
             print("       Save it once in the project's .env file (remembered in every new window):")
             print(f"         Set-Content .env \"QWEN_MODEL={pick}\"")
             print(f"       ({DOTENV_PATH}) — then run this check again.")
@@ -96,6 +136,7 @@ def main() -> int:
 
     if models and s.qwen_model not in models:
         print(f"[FAIL] Model '{s.qwen_model}' isn't on the server. Use one of: {', '.join(models)}")
+        print(f"       or download it:  ollama pull {s.qwen_model}")
         return 1
     print(f"[ OK ] Model '{s.qwen_model}' found.")
 
@@ -111,13 +152,14 @@ def main() -> int:
         )
     except TeacherUnavailable as exc:
         print(f"[FAIL] {exc}")
-        print("       If it timed out, raise the limit: $env:QWEN_TIMEOUT = \"300\"")
+        print('       If it timed out, raise the limit: add a line  QWEN_TIMEOUT=300  to .env')
         return 1
     print(f"[ OK ] Reply in {time.monotonic() - started:.1f}s: {reply}")
     print()
-    speed_test(teacher)
+    if speed_test(teacher):
+        return 1
     print()
-    print("Qwen is connected. Start the app from THIS same window so it sees these settings.")
+    print("Qwen is connected. Restart the app so it picks up these settings.")
     return 0
 
 
