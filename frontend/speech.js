@@ -9,8 +9,13 @@
 // tested with `node --test frontend/tests`.
 
 // A move (SAN) or a bare square, optionally with a move number: "Kf5", "4...Nxg5", "exd5",
-// "e8=Q#", "O-O", "e4". Not inside words or coordinates ("Qwen3", "h2h3").
-const MOVE_RE = /(?<![\w\-./])(?:(\d+)\.(?:\.\.)?\s?)?(O-O-O|O-O|[KQRBN][a-h]?[1-8]?x?[a-h][1-8]|[a-h]x[a-h][1-8](?:=[QRBN])?|[a-h][1-8](?:=[QRBN])?)([+#])?(?![\w-])/g
+// "e8=Q#", "O-O", "e4", and Black's moves written "...e6". Squares chained with a dash or a
+// slash ("the h4-e1 diagonal", "Nbd2-f1-g3", "e4/d4") are found one by one. Not inside
+// words or coordinates ("Qwen3", "h2h3", "a1-level").
+const MOVE_RE = /(?:(?<![\w\-–./])|(?<=[a-h][1-8][+#]?[\-–/]))(?:(\d+)\.(?:\.\.)?\s?|\.\.\.)?(O-O-O|O-O|[KQRBN][a-h]?[1-8]?x?[a-h][1-8]|[a-h]x[a-h][1-8](?:=[QRBN])?|[a-h][1-8](?:=[QRBN])?)([+#])?(?!\w|[\-–/](?![KQRBN]?[a-h]?x?[a-h][1-8]))/g
+
+// What a joiner between two moves/squares sounds like: "h4-e1" → "H4 to E1", "e4/d4" → "E4 or D4".
+const JOINERS = {"-": " to ", "–": " to ", "/": " or "}
 
 const PIECES = {K: "king", Q: "queen", R: "rook", B: "bishop", N: "knight"}
 
@@ -77,7 +82,12 @@ export function buildSpeech(segments) {
   let spoken = ""
   const marks = []
   segments.forEach((seg, i) => {
-    if (seg.san) {
+    const between = !seg.san && segments[i - 1]?.san && segments[i + 1]?.san
+    // "Bxf7+ Ke7 O-O": a short pause between the moves of a line, not one long word salad.
+    const joiner = between && (JOINERS[seg.text] || (/^\s+$/.test(seg.text) ? ", " : null))
+    if (joiner) {
+      spoken += joiner
+    } else if (seg.san) {
       if (spoken && !/\s$/.test(spoken)) spoken += " "
       const words = sanToSpeech(seg.san)
       marks.push({start: spoken.length, end: spoken.length + words.length, san: seg.san,

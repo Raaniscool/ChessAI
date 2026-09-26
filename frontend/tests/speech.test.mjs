@@ -55,3 +55,31 @@ test("links are not read out letter by letter", () => {
   assert.equal(spoken, "From a real game: Lichess puzzle (public domain).")
   assert.equal(marks.length, 0)
 })
+
+test("Black's moves written '...e6' are found (the lessons use them a lot)", () => {
+  const moves = text => tokenize(text).filter(s => s.san).map(s => s.san)
+  assert.deepEqual(moves("Black follows up with ...Nf6, ...c6, ...Bf5 and ...e6 for a solid setup."),
+    ["Nf6", "c6", "Bf5", "e6"])
+  assert.deepEqual(moves("After ...cxd4 Black has an extra centre pawn; then ...Nxa1 wins the rook."), ["cxd4", "Nxa1"])
+  const {spoken, marks} = buildSpeech(tokenize("Black prepares ...d5."))
+  assert.equal(spoken, "Black prepares D5.")
+  assert.deepEqual(marks.map(m => m.square), ["d5"])
+})
+
+test("squares chained with a dash or slash are each found, and read naturally", () => {
+  const moves = text => tokenize(text).filter(s => s.san).map(s => s.san)
+  assert.deepEqual(moves("the queen attacks along h4-e1, and mate on the e8-h5 diagonal"), ["h4", "e1", "e8", "h5"])
+  assert.deepEqual(moves("the knight went f6-g4-f6-g8 (b6-b8-d8-d6)"), ["f6", "g4", "f6", "g8", "b6", "b8", "d8", "d6"])
+  assert.deepEqual(moves("a knight trip Nbd2-f1-g3."), ["Nbd2", "f1", "g3"])
+  assert.deepEqual(moves("Pawns on e4/d4 (or e5/d5); Ke4 (or Kd4/Kf4)"), ["e4", "d4", "e5", "d5", "Ke4", "Kd4", "Kf4"])
+  assert.equal(buildSpeech(tokenize("along h4-e1.")).spoken, "along H4 to E1.")
+  assert.equal(buildSpeech(tokenize("on e4/d4")).spoken, "on E4 or D4")
+  // still not inside words, links or coordinates
+  assert.deepEqual(moves("Qwen3 at a1-level, h2h3, https://x.org/a/e4Qa5, Giuoco-Piano-4.c3"), [])
+})
+
+test("the moves of a line are read with short pauses", () => {
+  assert.equal(buildSpeech(tokenize("the line goes Bxf7+ Ke7 O-O Qxe5.")).spoken,
+    "the line goes bishop takes F7, check, king E7, castles kingside, queen takes E5.")
+  assert.equal(buildSpeech(tokenize("1.e4 e5 2.Nf3")).spoken, "E4, E5, knight F3")
+})
