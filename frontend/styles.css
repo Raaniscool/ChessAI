@@ -343,6 +343,48 @@ header h1 { margin: 0; font-size: 20px; }
 .weakness-actions .btn { padding: 6px 11px; font-size: 12.5px; }
 details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-top: 8px; }
 
+/* game history: the last N games analyzed together */
+.history-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px;
+  font-size: 13.5px; }
+.history-controls select, .history-custom {
+  background: var(--bg); color: var(--text); border: 1px solid #3c4550; border-radius: 8px;
+  padding: 6px 8px; font-size: 13.5px; margin-left: 4px;
+}
+.history-custom { width: 88px; margin-left: 0; }
+.history-controls .btn { padding: 6px 14px; font-size: 13px; margin: 0; }
+.history-error { color: #f1b7b5; font-size: 12.5px; }
+.history-status:empty { display: none; }
+.history-status { margin-bottom: 8px; }
+.history-notice { background: #3a3322; border-radius: 8px; padding: 8px 11px; font-size: 13.5px; }
+.history-summary p { margin: 0 0 4px; }
+.history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; margin: 10px 0; }
+.history-stats .stat { background: var(--bg); border-radius: 8px; padding: 7px 10px; display: flex;
+  flex-direction: column; }
+.history-stats .stat b { font-size: 15px; }
+.history-stats .stat .muted { font-size: 12px; }
+.history-explain-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+.history-explain-row .btn { padding: 6px 12px; font-size: 13px; margin: 0; }
+.history-explain { position: relative; white-space: pre-line; margin: 6px 0 4px; padding: 9px 30px 9px 11px;
+  background: var(--bg); border-radius: 8px; }
+.history-section { margin-top: 12px; }
+.history-section h4 { margin: 0 0 2px; font-size: 14px; color: #c3cad2; }
+.weakness.pattern { flex-wrap: wrap; }
+.weakness.tier-occasional { border-left-color: #6c7885; }
+.pattern-main { display: flex; gap: 10px; align-items: flex-start; flex: 1; min-width: 220px; }
+.pattern-icon { font-size: 20px; line-height: 1.2; width: 24px; text-align: center; color: var(--warn); }
+.tier-occasional .pattern-icon, .tier-one_time .pattern-icon { color: var(--muted); }
+.found-in { color: var(--warn); font-weight: 600; }
+.tier-occasional .found-in, .tier-one_time .found-in { color: #c3cad2; font-weight: 500; }
+.pattern-evidence { list-style: none; margin: 4px 0 0; padding: 0; width: 100%; display: flex;
+  flex-direction: column; gap: 4px; }
+.evidence-row { width: 100%; text-align: left; font-size: 12.5px; padding: 6px 10px; margin: 0;
+  border-left: 3px solid #3c4550; }
+.evidence-row.blunder { border-left-color: var(--danger); }
+.evidence-row.mistake { border-left-color: #d97b3f; }
+.evidence-row.habit { border-left-color: var(--muted); }
+.history-observations { margin: 2px 0 0; padding-left: 20px; }
+.history-scoring p { font-size: 12.5px; margin: 4px 0; }
+
 #ga-review { display: flex; flex-direction: column; gap: 10px; }
 .ga-game-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
   gap: 2px 12px; font-size: 12.5px; }

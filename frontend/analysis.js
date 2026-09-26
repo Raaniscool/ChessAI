@@ -2,10 +2,13 @@
 // step through the moments that matter, and turn recurring weaknesses into
 // training. The server decides everything about the chess; this file only shows it.
 
-import {analysisLine, evalForLearner, gameMeta, matchup, progressText, resultLabel, reviewItems, uciSquares,
-  weaknessLine} from "./game-format.js"
+import {analysisLine, evalForLearner, gameMeta, matchup, progressText, resultLabel, reviewItems, uciSquares}
+  from "./game-format.js"
+import {PRESET_COUNTS, TIER_HEADINGS, evidenceLine, foundIn, historyProgress, parseCount, patternDetail, patternIcon,
+  practiceLabel, resultsLine, selectionText, MAX_COUNT, MIN_COUNT} from "./history-view.js"
 
 const USERNAME_KEY = "chessai.chesscomUsername"
+const COUNT_KEY = "chessai.historyCount"
 
 // Storage can be missing or throw (private browsing): remembering the name is a nicety.
 const store = {
@@ -36,7 +39,10 @@ export function setupGameAnalysis(ctx) {
 
   const view = {
     games: [],          // summaries from GET /api/games
-    weaknesses: null,   // GET /api/games/weaknesses
+    history: null,      // GET /api/games/history: the last N games analyzed together
+    historyCount: Number(store.get(COUNT_KEY)) || 10,
+    historyBusy: false,
+    historyStatus: null,  // progress of a history batch; survives re-rendering the overview
     game: null,         // GET /api/games/{id}
     items: [],          // moments + habits of the open game
     index: 0,
@@ -140,7 +146,7 @@ export function setupGameAnalysis(ctx) {
         if (ev.type === "game_done") loadGames()
         if (ev.type === "error") failures.push(ev.error)
         if (ev.type === "done") {
-          view.weaknesses = ev.weaknesses
+          view.history = null  // new analyses: the history report is rebuilt
           text.textContent = failures.length ? `Done, but ${failures.length} game(s) failed: ${failures[0]}` : "Analysis done."
           fill.style.width = "100%"
         }
@@ -197,73 +203,303 @@ export function setupGameAnalysis(ctx) {
     el.title.textContent = "Game Analysis"
     el.counter.textContent = ""
     renderGameList()
-    if (!view.weaknesses && view.games.some(g => g.analysis)) {
-      try { view.weaknesses = await api("/api/games/weaknesses") } catch (_) { /* shown as empty */ }
-    }
     el.overview.innerHTML = ""
-    const analyzed = view.games.filter(g => g.analysis)
-    if (!analyzed.length) return
-    const w = view.weaknesses || {weaknesses: [], seen_once: [], total_games: analyzed.length, min_games: 2}
-    const card = document.createElement("div")
-    card.className = "ga-card ga-summary"
-    const h = document.createElement("h3")
-    h.textContent = `What I noticed in your ${w.total_games} analyzed game${w.total_games === 1 ? "" : "s"}`
-    card.appendChild(h)
-    if (w.weaknesses.length) {
-      const list = document.createElement("div")
-      list.className = "weakness-list"
-      for (const item of w.weaknesses) list.appendChild(weaknessRow(item, true))
-      card.appendChild(list)
-      if (w.weaknesses.length > 1) {
-        card.appendChild(button("▶ Train all of these", "primary", () => startTraining(w.weaknesses.map(x => x.key))))
-      }
-    } else {
-      const p = document.createElement("p")
-      p.className = "muted"
-      p.textContent = w.total_games < w.min_games
-        ? `A weakness only counts when it shows up in at least ${w.min_games} different games — import a few more games.`
-        : "No mistake repeats across your games yet — nice. Review the games below."
-      card.appendChild(p)
-    }
-    if (w.seen_once.length) {
-      const details = document.createElement("details")
-      details.className = "no-speech"
-      details.innerHTML = `<summary>Seen in only one game (${w.seen_once.length}) — not a pattern yet</summary>`
-      for (const item of w.seen_once) details.appendChild(weaknessRow(item, false))
-      card.appendChild(details)
-    }
-    const tip = document.createElement("p")
-    tip.className = "muted"
-    tip.textContent = "Pick a game on the left to step through its mistakes."
-    card.appendChild(tip)
+    if (!view.games.length) return
+    await loadHistory()
+    if (view.game) return  // the learner opened a game meanwhile
+    el.overview.innerHTML = ""
+    const card = historyCard()
     el.overview.appendChild(card)
     makeSpeakable(card)
-
   }
 
-  function weaknessRow(w, recurring) {
-    const row = document.createElement("div")
-    row.className = "weakness" + (recurring ? " recurring" : "")
-    const text = document.createElement("div")
-    text.innerHTML = `<b>${escapeHtml(w.title)}</b><div class="muted">${escapeHtml(weaknessLine(w))}` +
-      (w.library_examples ? ` · ${w.library_examples} verified example${w.library_examples === 1 ? "" : "s"} to practise` : "") +
-      `</div>`
-    row.appendChild(text)
-    const actions = document.createElement("div")
-    actions.className = "weakness-actions"
-    const first = w.evidence && w.evidence[0]
-    if (first) {
-      actions.appendChild(button("See it", "", () => openGame(first.game_id, first.moment_id),
-        "Jump to where it happened"))
+  // ---------------------------------------------------------------- game history (the last N games together)
+  async function loadHistory(force = false) {
+    if (view.history && !force && view.history.requested === view.historyCount) return
+    try {
+      view.history = await api(`/api/games/history?count=${view.historyCount}`)
+    } catch (_) {
+      view.history = null
     }
-    actions.appendChild(button("▶ Start training", recurring ? "primary" : "", () => startTraining([w.key])))
-    row.appendChild(actions)
+  }
+
+  function el_(tag, cls, text) {
+    const node = document.createElement(tag)
+    if (cls) node.className = cls
+    if (text !== undefined) node.textContent = text
+    return node
+  }
+
+  function historyCard() {
+    const r = view.history
+    const card = el_("div", "ga-card ga-summary ga-history")
+    card.appendChild(el_("h3", "", r && r.games_analyzed
+      ? `Your last ${r.games_analyzed} game${r.games_analyzed === 1 ? "" : "s"}, analyzed together`
+      : "Your game history"))
+    card.appendChild(historyControls())
+    if (!view.historyStatus) view.historyStatus = el_("div", "history-status no-speech")
+    card.appendChild(view.historyStatus)
+    if (!r) return card
+    if (r.notice) card.appendChild(el_("p", "history-notice", r.notice))
+    if (!r.games_analyzed) {
+      card.appendChild(el_("p", "muted", "Press Analyze: Stockfish checks each game once, then looks for the " +
+        "mistakes that keep coming back across them."))
+      return card
+    }
+    const pending = r.not_analyzed.length
+    if (pending && !view.historyBusy) {
+      card.appendChild(el_("p", "muted no-speech", `${pending} of the selected games ${pending === 1 ? "isn't" : "aren't"} ` +
+        "analyzed yet. Press Analyze to include them."))
+    }
+    const summary = el_("div", "history-summary")
+    for (const line of r.summary) summary.appendChild(el_("p", "", line))
+    card.appendChild(summary)
+    card.appendChild(historyStats(r))
+
+    const explainRow = el_("div", "history-explain-row no-speech")
+    const out = el_("div", "history-explain hidden")
+    explainRow.appendChild(button("💬 Explain my patterns", "", ev => explainHistory(out, ev.currentTarget),
+      "The AI tutor explains what the analysis found, in plain words"))
+    const recurring = r.patterns.filter(p => p.tier === "recurring")
+    if (recurring.length > 1) {
+      explainRow.appendChild(button("▶ Practice all recurring patterns", "primary",
+        () => startTraining(recurring.map(p => p.key), r.game_ids)))
+    }
+    card.appendChild(explainRow)
+    card.appendChild(out)
+
+    for (const tier of ["recurring", "occasional"]) {
+      const items = r.patterns.filter(p => p.tier === tier)
+      if (!items.length) continue
+      const section = el_("div", `history-section tier-${tier}`)
+      section.appendChild(el_("h4", "", TIER_HEADINGS[tier]))
+      const list = el_("div", "weakness-list")
+      for (const p of items) list.appendChild(patternRow(p, r))
+      section.appendChild(list)
+      card.appendChild(section)
+    }
+    const once = r.patterns.filter(p => p.tier === "one_time")
+    if (once.length) {
+      const details = el_("details", "history-section tier-one_time no-speech")
+      details.appendChild(el_("summary", "", `${TIER_HEADINGS.one_time}: ${once.length}`))
+      const list = el_("div", "weakness-list")
+      for (const p of once) list.appendChild(patternRow(p, r))
+      details.appendChild(list)
+      card.appendChild(details)
+    }
+    if (r.important_mistakes.length) card.appendChild(importantMistakes(r))
+    if (r.observations.length) {
+      const section = el_("div", "history-section")
+      section.appendChild(el_("h4", "", "Openings and endgames"))
+      const ul = el_("ul", "history-observations")
+      for (const o of r.observations) ul.appendChild(el_("li", "", o))
+      section.appendChild(ul)
+      card.appendChild(section)
+    }
+    card.appendChild(scoringNote(r))
+    card.appendChild(el_("p", "muted no-speech", "Pick a game on the left to step through all of its mistakes."))
+    return card
+  }
+
+  function historyControls() {
+    const row = el_("div", "history-controls no-speech")
+    const label = el_("label", "", "Analyze my last ")
+    const select = el_("select", "history-count")
+    select.setAttribute("aria-label", "How many recent games")
+    const option = (label, value) => {
+      const o = el_("option", "", label)
+      o.value = value
+      select.appendChild(o)
+    }
+    for (const n of PRESET_COUNTS) option(`${n} games`, String(n))
+    option("Custom…", "custom")
+    const custom = el_("input", "history-custom")
+    Object.assign(custom, {type: "number", min: MIN_COUNT, max: MAX_COUNT, step: 1, placeholder: `${MIN_COUNT}–${MAX_COUNT}`})
+    custom.setAttribute("aria-label", "Number of games")
+    const preset = PRESET_COUNTS.includes(view.historyCount)
+    select.value = preset ? String(view.historyCount) : "custom"
+    custom.value = preset ? "" : String(view.historyCount)
+    show(custom, !preset)
+    const run = button("▶ Analyze", "primary history-run", () => runHistory(select.value, custom.value),
+      "Analyze these games (games already analyzed are reused)")
+    run.disabled = view.historyBusy
+    const error = el_("span", "history-error")
+    select.addEventListener("change", async () => {
+      show(custom, select.value === "custom")
+      error.textContent = ""
+      if (select.value === "custom") { custom.focus(); return }
+      await chooseCount(Number(select.value))
+    })
+    custom.addEventListener("keydown", ev => { if (ev.key === "Enter") runHistory("custom", custom.value) })
+    label.appendChild(select)
+    row.append(label, custom, run, error)
     return row
   }
 
-  async function startTraining(keys) {
+  async function chooseCount(count) {
+    view.historyCount = count
+    store.set(COUNT_KEY, String(count))
+    await loadHistory(true)
+    if (!view.game) renderOverview()
+  }
+
+  function historyStats(r) {
+    const stats = el_("div", "history-stats")
+    const tile = (value, label) => {
+      const t = el_("div", "stat")
+      t.append(el_("b", "", value), el_("span", "muted", label))
+      stats.appendChild(t)
+    }
+    tile(String(r.games_analyzed), `game${r.games_analyzed === 1 ? "" : "s"} analyzed`)
+    tile(resultsLine(r.results), "results")
+    const big = r.mistakes.blunders + r.mistakes.mistakes
+    tile(`${big}`, `big mistake${big === 1 ? "" : "s"} (${r.mistakes.per_game} per game)`)
+    const patterns = r.patterns.filter(p => p.tier === "recurring").length
+    tile(String(patterns), `recurring pattern${patterns === 1 ? "" : "s"}`)
+    return stats
+  }
+
+  function patternRow(p, r) {
+    const row = el_("div", `weakness pattern tier-${p.tier}` + (p.tier === "recurring" ? " recurring" : ""))
+    row.dataset.key = p.key
+    const main = el_("div", "pattern-main")
+    const icon = el_("span", "pattern-icon", patternIcon(p))
+    icon.setAttribute("aria-hidden", "true")
+    const text = el_("div", "pattern-text")
+    const title = el_("div", "pattern-title")
+    title.append(el_("b", "", p.title), document.createTextNode(" — "), el_("span", "found-in", foundIn(p)))
+    const detail = [patternDetail(p)]
+    if (p.includes) detail.push(`includes ${p.includes.join(" and ").toLowerCase()}`)
+    if (p.library_examples) {
+      detail.push(`${p.library_examples} verified example${p.library_examples === 1 ? "" : "s"} to practise`)
+    }
+    text.append(title, el_("div", "muted", detail.filter(Boolean).join(" · ")))
+    main.append(icon, text)
+    const actions = el_("div", "weakness-actions no-speech")
+    const evidence = el_("ul", "pattern-evidence hidden no-speech")
+    const toggle = button(p.game_count === 1 ? "Show the game" : "Show the games", "", () => {
+      const open = evidence.classList.toggle("hidden")
+      toggle.textContent = open ? (p.game_count === 1 ? "Show the game" : "Show the games") : "Hide"
+    }, "The games and positions where this happened")
+    actions.appendChild(toggle)
+    actions.appendChild(button(practiceLabel(p), p.tier === "recurring" ? "primary" : "",
+      () => startTraining([p.key], r.game_ids), "Verified examples first, then positions from your own games"))
+    for (const e of p.evidence) {
+      const li = el_("li")
+      const b = button("", `evidence-row ${e.severity}`, () => openGame(e.game_id, e.moment_id),
+        "Open this position in the game review")
+      b.textContent = evidenceLine(e)
+      li.appendChild(b)
+      evidence.appendChild(li)
+    }
+    if (p.occurrences > p.evidence.length) {
+      evidence.appendChild(el_("li", "muted", `…and ${p.occurrences - p.evidence.length} more`))
+    }
+    row.append(main, actions, evidence)
+    return row
+  }
+
+  function importantMistakes(r) {
+    const section = el_("div", "history-section no-speech")
+    section.appendChild(el_("h4", "", "Biggest mistakes"))
+    const ul = el_("ul", "pattern-evidence")
+    for (const m of r.important_mistakes) {
+      const li = el_("li")
+      const b = button("", `evidence-row ${m.severity}`, () => openGame(m.game_id, m.moment_id))
+      b.textContent = evidenceLine(m)
+      li.appendChild(b)
+      ul.appendChild(li)
+    }
+    section.appendChild(ul)
+    return section
+  }
+
+  function scoringNote(r) {
+    const d = el_("details", "history-scoring no-speech")
+    d.appendChild(el_("summary", "", "How patterns are found and ranked"))
+    const threshold = r.enough_history
+      ? `In ${r.games_analyzed} games, a mistake is a recurring pattern once it shows up in ${r.recurring_threshold} different games.`
+      : `Recurring patterns need at least ${r.min_games} analyzed games.`
+    for (const text of [
+      "Every mistake here was found by Stockfish and checked on the board; the AI tutor only explains them.",
+      threshold,
+      "A mistake in only one game is never called a pattern.",
+      "Patterns are ranked by how often they happened and how much they cost: a blunder counts 3, " +
+        "a mistake 2, an inaccuracy or habit 1, more when it lost more material; a repeat inside the same game " +
+        "counts a quarter, and reaching the exact same position again counts half.",
+    ]) d.appendChild(el_("p", "muted", text))
+    return d
+  }
+
+  async function runHistory(choice, custom) {
+    const parsed = parseCount(choice, custom)
+    const status = view.historyStatus
+    if (parsed.error) {
+      const err = el.overview.querySelector(".history-error")
+      if (err) err.textContent = parsed.error
+      return
+    }
+    view.historyCount = parsed.count
+    store.set(COUNT_KEY, String(parsed.count))
+    view.historyBusy = true
+    el.overview.querySelectorAll(".history-run").forEach(b => { b.disabled = true })
+    status.innerHTML = `<div class="ga-progress"><div class="ga-progress-text">Choosing your games…</div>` +
+      `<div class="ga-bar"><span></span></div></div>`
+    const text = status.querySelector(".ga-progress-text")
+    const fill = status.querySelector(".ga-bar span")
+    let intro = ""
+    const failures = []
     try {
-      const res = await api("/api/games/training", "POST", {keys})
+      await streamEvents("/api/games/history/analyze", {count: parsed.count}, ev => {
+        if (ev.type === "select") { intro = selectionText(ev); text.textContent = intro }
+        if (ev.type === "progress") {
+          const p = historyProgress(ev)
+          text.textContent = p.text
+          fill.style.width = `${p.pct}%`
+        }
+        if (ev.type === "game_done") loadGames()
+        if (ev.type === "error") failures.push(ev)
+        if (ev.type === "done") {
+          view.history = ev.report
+          fill.style.width = "100%"
+          text.textContent = failures.length
+            ? `Done. ${failures.length} game${failures.length === 1 ? "" : "s"} couldn't be analyzed and ` +
+              `${failures.length === 1 ? "was" : "were"} left out: ${failures[0].error}`
+            : `Done: ${ev.report.games_analyzed} games analyzed together.`
+        }
+      }, {exclusive: false})
+    } catch (err) {
+      text.textContent = err.message
+      status.querySelector(".ga-progress").classList.add("error")
+    } finally {
+      view.historyBusy = false
+    }
+    await loadGames()
+    if (!view.game) renderOverview()
+  }
+
+  async function explainHistory(target, btn) {
+    target.classList.remove("hidden")
+    target.textContent = "…"
+    btn.disabled = true
+    let text = ""
+    try {
+      await streamEvents("/api/games/history/explain", {count: view.historyCount, level: "beginner"}, ev => {
+        if (ev.type === "delta") { text += ev.text; target.textContent = text }
+        if (ev.type === "replace" || ev.type === "done") { text = ev.text; target.textContent = text }
+      })
+      makeSpeakable(target)
+      narrator.auto(target)
+    } catch (err) {
+      target.textContent = `Couldn't get an explanation: ${err.message}`
+    } finally {
+      btn.disabled = false
+    }
+  }
+
+  async function startTraining(keys, gameIds = null) {
+    try {
+      const res = await api("/api/games/training", "POST", {keys, game_ids: gameIds})
       onTraining(res)
     } catch (err) {
       setImportStatus(escapeHtml(err.message), "error")
@@ -279,6 +515,7 @@ export function setupGameAnalysis(ctx) {
       setImportStatus(escapeHtml(err.message), "error")
       return
     }
+    if (!view.history) await loadHistory()
     view.game = game
     view.items = reviewItems(game.analysis)
     const at = momentId ? view.items.findIndex(m => m.id === momentId) : 0
@@ -427,13 +664,16 @@ export function setupGameAnalysis(ctx) {
     }
     card.appendChild(explanation)
 
-    const related = relatedWeakness(m)
+    const related = relatedPattern(m)
     if (related) {
       const note = document.createElement("div")
       note.className = "moment-related"
-      note.innerHTML = `<span><b>${escapeHtml(related.title)}</b> happened in ${related.game_count} of your games — ` +
-        `it's one of your recurring weaknesses.</span>`
-      note.appendChild(button("▶ Practise it", "primary", () => startTraining([related.key])))
+      const where = `${related.game_count} of your last ${related.total_games} games`
+      note.innerHTML = `<span><b>${escapeHtml(related.title)}</b> happened in ${where} — ` +
+        (related.tier === "recurring" ? "it's one of your recurring patterns." : "not a pattern yet, but worth a look.") +
+        `</span>`
+      note.appendChild(button(practiceLabel(related), related.tier === "recurring" ? "primary" : "",
+        () => startTraining([related.key], view.history.game_ids)))
       card.appendChild(note)
     }
 
@@ -445,10 +685,11 @@ export function setupGameAnalysis(ctx) {
     narrator.auto(text)
   }
 
-  function relatedWeakness(m) {
-    const w = view.weaknesses
-    if (!w) return null
-    return w.weaknesses.find(x => (x.evidence || []).some(e => e.moment_id === m.id)) || null
+  // The history pattern (seen in 2+ games) this moment is part of, if any.
+  function relatedPattern(m) {
+    const r = view.history
+    if (!r) return null
+    return r.patterns.find(p => p.tier !== "one_time" && p.evidence.some(e => e.moment_id === m.id)) || null
   }
 
   // Engine numbers exist, but stay folded away: beginners get words first.
