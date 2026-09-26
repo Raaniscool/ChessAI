@@ -73,6 +73,19 @@ def validate_count(count) -> int:
     return n
 
 
+def validate_fetch_count(count) -> int:
+    """How many games to download: the same bounds as a history analysis."""
+    return validate_count(count)
+
+
+def games_of(docs: list[dict], username: str | None) -> list[dict]:
+    """Only the games `username` played (case-insensitive); every game when no name is given."""
+    name = (username or "").strip().lower()
+    if not name:
+        return docs
+    return [d for d in docs if (d.get("game", {}).get("player") or "").lower() == name]
+
+
 def _norm_date(value: str | None) -> str:
     return (value or "").replace(".", "-").strip() if value and "?" not in value else ""
 

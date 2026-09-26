@@ -6,7 +6,8 @@
     DELETE /api/games/{id}
     POST   /api/games/analyze                    {game_ids?, reanalyze?} -> NDJSON progress, then weaknesses
     GET    /api/games/weaknesses?ids=a,b         -> patterns in >= 2 games + seen-once patterns (low level)
-    GET    /api/games/history?count=10           -> history report for the last N games (no engine work)
+    POST   /api/games/fetch                      {username, count} -> fetch recent games from Chess.com's public API
+    GET    /api/games/history?count=10&username= -> history report for the last N games (no engine work)
     POST   /api/games/history/analyze            {count, reanalyze?} -> NDJSON: analyze what's missing, then report
     POST   /api/games/history/explain            {count, level?} -> NDJSON: Qwen explains the report's findings
     POST   /api/games/{id}/moments/{ply}/explain {question?} -> NDJSON: Qwen explains verified facts
@@ -26,7 +27,7 @@ from .analysis.analyzer import SCHEMA_VERSION as ANALYSIS_VERSION
 from .analysis.training import TrainingError, create_training_plan
 from .engine import EngineUnavailable, get_engine
 from .games import store
-from .games.importers import PlayerNeeded, get_importer
+from .games.importers import PlayerNeeded, chesscom_api, get_importer
 from .games.model import GameRecord
 from .games.pgn import PgnError
 
@@ -53,6 +54,12 @@ class HistoryRequest(BaseModel):
     count: int = history.DEFAULT_COUNT
     reanalyze: bool = False
     level: str | None = None
+    username: str | None = None
+
+
+class FetchRequest(BaseModel):
+    username: str
+    count: int = history.DEFAULT_COUNT
 
 
 class TrainingRequest(BaseModel):
@@ -107,12 +114,16 @@ def _weaknesses(game_ids: list[str] | None = None) -> dict:
 @router.post("/import")
 def import_games(body: ImportRequest):
     try:
-        importer = get_importer(body.source)
-        result = importer.parse(body.pgn, body.username)
+        return _import(body.pgn, body.username, body.source)
     except PlayerNeeded as exc:
         return _error(422, str(exc), needs_player=True, players=exc.players)
     except (PgnError, ValueError) as exc:
         return _error(422, str(exc))
+
+
+def _import(pgn: str, username: str | None, source: str = "chesscom") -> dict:
+    importer = get_importer(source)
+    result = importer.parse(pgn, username)
     new = 0
     for game in result.games:
         new += store.save_game(game)
@@ -123,6 +134,28 @@ def import_games(body: ImportRequest):
         "errors": [{"index": e.index, "error": e.error, "white": e.white, "black": e.black}
                    for e in result.errors],
     }
+
+
+@router.post("/fetch")
+def fetch_games(body: FetchRequest):
+    """Download the player's most recent games from Chess.com (official public API) and import
+    them like pasted PGNs. Games already imported are recognized and not duplicated."""
+    try:
+        count = history.validate_fetch_count(body.count)
+        fetched = chesscom_api.fetch_recent_games(body.username, count)
+    except history.HistoryError as exc:
+        return _error(422, str(exc))
+    except chesscom_api.ChessComFetchError as exc:
+        return _error(exc.status, str(exc))
+    if not fetched.pgns:
+        return _error(404, f"No finished standard chess games found for “{fetched.username}” in the last "
+                           f"{fetched.months_checked or chesscom_api.MAX_MONTHS} months on Chess.com.")
+    try:
+        result = _import("\n\n".join(fetched.pgns), fetched.username)
+    except (PlayerNeeded, PgnError, ValueError) as exc:
+        return _error(422, str(exc))
+    return {**result, "username": fetched.username, "fetched": len(fetched.pgns),
+            "skipped_variants": fetched.skipped_variants}
 
 
 @router.get("")
@@ -136,15 +169,15 @@ def _summary(doc: dict) -> dict:
 
 
 # --- game history: the last N games, analyzed together ----------------------------------------
-def _history_selection(count) -> tuple[int, list[dict], int]:
+def _history_selection(count, username: str | None = None) -> tuple[int, list[dict], int]:
     n = history.validate_count(count)
-    docs = store.list_docs()
+    docs = history.games_of(store.list_docs(), username)
     selected = history.select_recent(docs, n)
     return n, selected, sum(1 for d in docs if d["game"].get("player_color"))
 
 
-def _history_report(count, failed: list[dict] | None = None) -> dict:
-    n, selected, available = _history_selection(count)
+def _history_report(count, failed: list[dict] | None = None, username: str | None = None) -> dict:
+    n, selected, available = _history_selection(count, username)
     for d in selected:  # a stale analysis doesn't count until it's redone
         if not _current(d.get("analysis")):
             d["analysis"] = None
@@ -152,9 +185,9 @@ def _history_report(count, failed: list[dict] | None = None) -> dict:
 
 
 @router.get("/history")
-def history_report(count: int = history.DEFAULT_COUNT):
+def history_report(count: int = history.DEFAULT_COUNT, username: str | None = None):
     try:
-        return _history_report(count)
+        return _history_report(count, username=username)
     except history.HistoryError as exc:
         return _error(422, str(exc))
 
@@ -163,7 +196,7 @@ def history_report(count: int = history.DEFAULT_COUNT):
 def history_analyze(body: HistoryRequest):
     """Analyze the last N games: cached analyses are reused, so only new games cost engine time."""
     try:
-        n, selected, available = _history_selection(body.count)
+        n, selected, available = _history_selection(body.count, body.username)
     except history.HistoryError as exc:
         return _error(422, str(exc))
     todo = [d for d in selected if body.reanalyze or not _current(d.get("analysis"))]
@@ -183,7 +216,7 @@ def history_analyze(body: HistoryRequest):
             if event["type"] == "error":
                 failed.append({"game_id": event["game_id"], "error": event["error"]})
             yield event
-        yield {"type": "done", "report": _history_report(n, failed)}
+        yield {"type": "done", "report": _history_report(n, failed, body.username)}
 
     return _ndjson(events())
 
@@ -191,7 +224,7 @@ def history_analyze(body: HistoryRequest):
 @router.post("/history/explain")
 def history_explain(body: HistoryRequest):
     try:
-        report = _history_report(body.count)
+        report = _history_report(body.count, username=body.username)
     except history.HistoryError as exc:
         return _error(422, str(exc))
     if not report["games_analyzed"]:

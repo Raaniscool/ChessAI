@@ -83,14 +83,23 @@
         </div>
         <div id="ga-body" class="messages ga-body">
           <div id="ga-import" class="ga-card">
-            <p>Paste your games from <b>Chess.com</b>: open a game, click <b>Share → PGN</b>, and copy the text.
-              You can paste several games at once. Your games stay private to you.</p>
-            <textarea id="ga-pgn" rows="6" spellcheck="false"
-                      placeholder='[Event "Live Chess"]&#10;[Site "Chess.com"]&#10;…&#10;&#10;1. e4 e5 2. Nf3 …'></textarea>
+            <p>Type your <b>Chess.com</b> username: your most recent games are fetched automatically from
+              Chess.com's public game archive and checked by Stockfish. Your games stay private to you.</p>
             <div class="ga-row">
-              <input id="ga-username" type="text" placeholder="Your Chess.com username" autocomplete="off">
-              <button id="ga-import-btn" class="btn primary">Import &amp; analyze</button>
+              <input id="ga-username" type="text" placeholder="Your Chess.com username" autocomplete="off"
+                     aria-label="Chess.com username">
+              <button id="ga-fetch-btn" class="btn primary">Fetch my last 10 games</button>
             </div>
+            <details id="ga-paste" class="ga-paste">
+              <summary>Or paste games yourself (PGN)</summary>
+              <p class="muted">Open a game on Chess.com, click <b>Share → PGN</b>, and copy the text.
+                You can paste several games at once.</p>
+              <textarea id="ga-pgn" rows="6" spellcheck="false"
+                        placeholder='[Event "Live Chess"]&#10;[Site "Chess.com"]&#10;…&#10;&#10;1. e4 e5 2. Nf3 …'></textarea>
+              <div class="ga-row">
+                <button id="ga-import-btn" class="btn">Import &amp; analyze</button>
+              </div>
+            </details>
             <div id="ga-status" class="ga-status"></div>
           </div>
           <div id="ga-overview"></div>

@@ -305,6 +305,9 @@ header h1 { margin: 0; font-size: 20px; }
   border-radius: 8px; padding: 9px 12px; font-size: 13.5px;
 }
 .ga-status { margin-top: 8px; font-size: 13.5px; }
+.ga-paste { margin-top: 10px; }
+.ga-paste > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.ga-paste[open] > summary { margin-bottom: 6px; }
 .ga-more { display: none; }
 #ga-import.collapsed { padding: 8px 10px; }
 #ga-import.collapsed > :not(.ga-more):not(.ga-status) { display: none; }

@@ -15,7 +15,7 @@ const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "les
   "course-list", "health", "chat-input", "btn-chat", "btn-continue", "btn-hint", "btn-reveal", "btn-play",
   "btn-explain-example", "speech-controls", "btn-read-aloud", "speech-rate", "speech-voice", "btn-stop-speech",
   "welcome", "tab-lessons", "tab-games", "lessons-side", "games-side", "analysis-pane", "ga-games", "ga-pgn",
-  "ga-username", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
+  "ga-username", "ga-fetch-btn", "ga-paste", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
   "ga-back", "ga-prev", "ga-next", "ga-body"]
 const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))
 if (missingIds.length) {

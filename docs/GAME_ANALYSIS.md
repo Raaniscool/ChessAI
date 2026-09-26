@@ -16,12 +16,17 @@ The rules are the same as everywhere else in the tutor:
 ## Using it
 
 1. Click **🔍 Game Analysis** in the header.
-2. On Chess.com open a game, click **Share → PGN** and copy the text. Paste one
-   or several games (blank lines between games are optional).
-3. Type your Chess.com username, or leave it empty. If it's empty and the app
-   can't tell which player you are, it asks you to pick one.
-4. **Import & analyze.** Stockfish's progress is shown game by game. A
-   40-move game takes roughly 30–60 s on a laptop.
+2. Type your Chess.com username and press **Fetch my last 10 games** (or Enter).
+   The app downloads your most recent finished games from Chess.com's official
+   public API, imports them and analyzes them together (the number follows the
+   history count, 10 by default). The username is remembered. Fetching again later
+   picks up new games; games you already have aren't imported twice.
+3. No internet, or want a specific game? Open **Or paste games yourself (PGN)**:
+   on Chess.com open a game, click **Share → PGN**, copy the text and paste one or
+   several games, then **Import & analyze**. If the app can't tell which player you
+   are, it asks you to pick one.
+4. Stockfish's progress is shown game by game. A 40-move game takes roughly
+   30–60 s on a laptop; games analyzed before are reused.
 5. The overview is your **game history**: your last N games analyzed together
    (see [Game history](#game-history-your-last-n-games-together) below). Pick
    10 (default), 20, 30, 50 or a custom number (10–100) and press **▶ Analyze**.
@@ -189,6 +194,8 @@ each chosen pattern (from the history report, using the same games):
 ## Architecture
 
 ```
+Chess.com PubAPI ─► games/importers/chesscom_api.py (username → recent PGNs)
+                              │
 Chess.com PGN ─► games/importers/chesscom.py ─► games/model.GameRecord (platform-neutral)
                        (games/pgn.py validates)            │
                                                            ▼
@@ -213,14 +220,15 @@ Everything after `GameRecord` is platform-neutral.
 
 | Endpoint | What it does |
 |---|---|
+| `POST /api/games/fetch {username, count}` | Download the player's last `count` (10–100) standard games from Chess.com's public API and import them. Returns `fetched`, `new`, `imported`, `errors`. `404` unknown player / no games, `429` rate limited, `502/504` Chess.com unreachable |
 | `POST /api/games/import {pgn, username?}` | Validate and store games. Returns `imported`, `new`, and per-game `errors`. `422 {needs_player, players}` when the side can't be told |
 | `GET /api/games` | Your games, with a summary of each analysis |
 | `POST /api/games/analyze {game_ids?, reanalyze?}` | NDJSON stream: `start`, `progress`, `game_done`, `error`, then `done {weaknesses}` (across all analyzed games) |
 | `GET /api/games/{id}` | Game plus analysis, with a review card per moment |
 | `POST /api/games/{id}/moments/{ply}/explain {question?, level?}` | Streamed explanation (Qwen, checked against the facts; template fallback) |
-| `GET /api/games/history?count=10` | The history report for the last `count` games (10–100), from cached analyses. No engine needed |
-| `POST /api/games/history/analyze {count, reanalyze?}` | NDJSON: `select {requested, available, selected, cached, to_analyze}`, `start`, `progress`, `game_done`, `error` (per game), then `done {report}` |
-| `POST /api/games/history/explain {count, level?}` | Streamed explanation of the report (Qwen, checked; template fallback) |
+| `GET /api/games/history?count=10&username=` | The history report for the last `count` games (10–100), from cached analyses. No engine needed. `username` limits it to that player's games |
+| `POST /api/games/history/analyze {count, reanalyze?, username?}` | NDJSON: `select {requested, available, selected, cached, to_analyze}`, `start`, `progress`, `game_done`, `error` (per game), then `done {report}` |
+| `POST /api/games/history/explain {count, level?, username?}` | Streamed explanation of the report (Qwen, checked; template fallback) |
 | `GET /api/games/weaknesses?ids=` | Concepts seen in 2+ games (low-level; the history report builds on it) |
 | `POST /api/games/training {keys, game_ids?, level?}` | Build a training plan; returns `course_id` and `first_lesson_id` |
 | `DELETE /api/games/{id}` | Delete a game and its analysis |
@@ -234,6 +242,9 @@ position. Candidate mistakes are re-checked at `ENGINE_DEPTH` (default 14).
 
 `backend/tests/test_game_*.py`:
 - **Import**: parsing, metadata, malformed and illegal PGNs, several games at once.
+- **Fetch** (`test_chesscom_fetch.py`, mocked HTTP): newest games first, only the months
+  needed, variants skipped, missing `[Link]` added, unknown player / rate limit / network
+  errors, bad usernames, then fetch → history for that player only.
 - **Analysis**: engine use, false alarms, motifs, edge cases.
 - **Review**: Qwen gets the verified facts, and contradictions are caught.
 - **Training and privacy**.

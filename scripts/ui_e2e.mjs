@@ -256,6 +256,18 @@ await waitFor(() => !$("analysis-pane").classList.contains("hidden"), "Game Anal
 check($("lessons-side").classList.contains("hidden") && !$("games-side").classList.contains("hidden"), "sidebar shows your games")
 check(document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden"), "lesson pane hidden while analyzing games")
 check(!board || !board.isMoveInputEnabled(), "board is locked in Game Analysis")
+// fetch by username: the sandbox can't reach api.chess.com, so this checks the flow reports it clearly
+check(/Fetch my last \d+ games/.test($("ga-fetch-btn").textContent), "fetch button names the game count: " + $("ga-fetch-btn").textContent)
+check(!$("ga-paste").open, "pasting PGN is the fallback, folded away")
+$("ga-username").value = ""
+$("ga-fetch-btn").click()
+await waitFor(() => /username first/.test($("ga-status").textContent), "asks for a username")
+$("ga-username").value = "RaanTest"
+$("ga-fetch-btn").click()
+await waitFor(() => $("ga-status").classList.contains("error") && /Chess\.com/.test($("ga-status").textContent) &&
+  !$("ga-fetch-btn").disabled, "fetch error shown", 60000)
+check(/Couldn't reach Chess\.com|didn't answer|no Chess\.com player|rate-limiting/.test($("ga-status").textContent),
+  "a failed fetch explains why: " + $("ga-status").textContent.slice(0, 90))
 try { w.localStorage.removeItem("chessai.chesscomUsername") } catch (_) { /* none */ }
 $("ga-username").value = ""
 $("ga-pgn").value = GAME1
@@ -278,7 +290,7 @@ check(!document.querySelector(".weakness.recurring") && /not a pattern yet/i.tes
   /isn't enough game history/.test($("ga-overview").textContent), "2 games: seen twice, but not called a recurring pattern")
 check(/verified example/.test(weakness.textContent), "pattern links to verified library examples")
 check(document.querySelectorAll("#ga-games .game-item").length >= 2, "both games listed")
-check($("ga-import").classList.contains("collapsed") && /Import more games/.test($("ga-import").textContent),
+check($("ga-import").classList.contains("collapsed") && /Fetch or import games/.test($("ga-import").textContent),
   "the import form folds into one button once there are games")
 // jump to where it happened
 ;[...weakness.querySelectorAll("button")].find(b => /Show the games/.test(b.textContent)).click()

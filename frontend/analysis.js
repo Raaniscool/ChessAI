@@ -24,6 +24,8 @@ export function setupGameAnalysis(ctx) {
     pgn: document.getElementById("ga-pgn"),
     username: document.getElementById("ga-username"),
     importBtn: document.getElementById("ga-import-btn"),
+    fetchBtn: document.getElementById("ga-fetch-btn"),
+    paste: document.getElementById("ga-paste"),
     status: document.getElementById("ga-status"),
     importCard: document.getElementById("ga-import"),
     overview: document.getElementById("ga-overview"),
@@ -51,12 +53,13 @@ export function setupGameAnalysis(ctx) {
   }
 
   el.username.value = store.get(USERNAME_KEY) || ""
+  updateFetchLabel()
 
   // Once there are games, the import form folds into one button so the overview has room.
-  const importMore = button("＋ Import more games", "ga-more", () => {
+  const importMore = button("＋ Fetch or import games", "ga-more", () => {
     el.importCard.classList.remove("collapsed")
-    el.pgn.focus()
-  }, "Paste more Chess.com games")
+    el.username.focus()
+  }, "Fetch your latest Chess.com games, or paste PGNs")
   el.importCard.prepend(importMore)
 
   // ---------------------------------------------------------------- helpers
@@ -76,8 +79,61 @@ export function setupGameAnalysis(ctx) {
     return b
   }
 
+  // The learner the history report is about: the Chess.com name they fetched or imported as.
+  // Games of other players (pasted for a friend, say) stay out of their patterns.
+  function historyUser() {
+    return (store.get(USERNAME_KEY) || "").trim() || null
+  }
+
+  function historyQuery() {
+    const user = historyUser()
+    return `count=${view.historyCount}` + (user ? `&username=${encodeURIComponent(user)}` : "")
+  }
+
+  function updateFetchLabel() {
+    el.fetchBtn.textContent = `Fetch my last ${view.historyCount} games`
+  }
+
   function orientation() {
     return view.game && view.game.game.player_color === "black" ? COLOR.black : COLOR.white
+  }
+
+  // ---------------------------------------------------------------- fetch from Chess.com
+  // The server downloads the games from Chess.com's public API and imports them like pasted
+  // PGNs; then the last N games are analyzed together (games analyzed before are reused).
+  async function fetchGames() {
+    const name = el.username.value.trim()
+    if (!name) {
+      setImportStatus("Type your Chess.com username first.", "error")
+      el.username.focus()
+      return
+    }
+    store.set(USERNAME_KEY, name)
+    const count = view.historyCount
+    view.busy = true
+    el.fetchBtn.disabled = el.importBtn.disabled = true
+    setImportStatus(`Fetching ${escapeHtml(name)}'s last ${count} games from Chess.com…`)
+    let res
+    try {
+      res = await api("/api/games/fetch", "POST", {username: name, count})
+    } catch (err) {
+      setImportStatus(escapeHtml(err.message), "error")
+      return
+    } finally {
+      view.busy = false
+      el.fetchBtn.disabled = el.importBtn.disabled = false
+    }
+    store.set(USERNAME_KEY, res.username)
+    const skipped = res.errors.length
+    setImportStatus(`Found ${res.fetched} game${res.fetched === 1 ? "" : "s"} ` +
+      `(${res.new ? `${res.new} new` : "all already imported"}).` +
+      (skipped ? ` ${skipped} couldn't be read and ${skipped === 1 ? "was" : "were"} skipped.` : ""),
+      skipped ? "warn" : "")
+    view.history = null
+    await loadGames()
+    await renderOverview()
+    const preset = PRESET_COUNTS.includes(count)
+    await runHistory(preset ? String(count) : "custom", String(count))
   }
 
   // ---------------------------------------------------------------- import + analyze
@@ -95,6 +151,8 @@ export function setupGameAnalysis(ctx) {
     setImportStatus("Checking the games…")
     try {
       const res = await api("/api/games/import", "POST", {pgn, username: name || null})
+      const player = name || (res.imported[0] && res.imported[0].player)
+      if (player) store.set(USERNAME_KEY, player)
       const skipped = res.errors.map(e => `<li>Game ${e.index}${e.white ? ` (${escapeHtml(e.white)} vs ${escapeHtml(e.black || "?")})` : ""}: ${escapeHtml(e.error)}</li>`).join("")
       const got = res.imported.length
       setImportStatus(`Imported ${got} game${got === 1 ? "" : "s"}.` +
@@ -217,7 +275,7 @@ export function setupGameAnalysis(ctx) {
   async function loadHistory(force = false) {
     if (view.history && !force && view.history.requested === view.historyCount) return
     try {
-      view.history = await api(`/api/games/history?count=${view.historyCount}`)
+      view.history = await api(`/api/games/history?${historyQuery()}`)
     } catch (_) {
       view.history = null
     }
@@ -339,6 +397,7 @@ export function setupGameAnalysis(ctx) {
   async function chooseCount(count) {
     view.historyCount = count
     store.set(COUNT_KEY, String(count))
+    updateFetchLabel()
     await loadHistory(true)
     if (!view.game) renderOverview()
   }
@@ -441,6 +500,7 @@ export function setupGameAnalysis(ctx) {
     }
     view.historyCount = parsed.count
     store.set(COUNT_KEY, String(parsed.count))
+    updateFetchLabel()
     view.historyBusy = true
     el.overview.querySelectorAll(".history-run").forEach(b => { b.disabled = true })
     status.innerHTML = `<div class="ga-progress"><div class="ga-progress-text">Choosing your games…</div>` +
@@ -450,7 +510,7 @@ export function setupGameAnalysis(ctx) {
     let intro = ""
     const failures = []
     try {
-      await streamEvents("/api/games/history/analyze", {count: parsed.count}, ev => {
+      await streamEvents("/api/games/history/analyze", {count: parsed.count, username: historyUser()}, ev => {
         if (ev.type === "select") { intro = selectionText(ev); text.textContent = intro }
         if (ev.type === "progress") {
           const p = historyProgress(ev)
@@ -484,7 +544,8 @@ export function setupGameAnalysis(ctx) {
     btn.disabled = true
     let text = ""
     try {
-      await streamEvents("/api/games/history/explain", {count: view.historyCount, level: "beginner"}, ev => {
+      await streamEvents("/api/games/history/explain",
+        {count: view.historyCount, level: "beginner", username: historyUser()}, ev => {
         if (ev.type === "delta") { text += ev.text; target.textContent = text }
         if (ev.type === "replace" || ev.type === "done") { text = ev.text; target.textContent = text }
       })
@@ -785,6 +846,8 @@ export function setupGameAnalysis(ctx) {
 
   // ---------------------------------------------------------------- wiring
   el.importBtn.addEventListener("click", () => importGames())
+  el.fetchBtn.addEventListener("click", () => fetchGames())
+  el.username.addEventListener("keydown", ev => { if (ev.key === "Enter") fetchGames() })
   el.back.addEventListener("click", () => renderOverview())
   el.prev.addEventListener("click", () => { if (view.index > 0) { view.index--; renderMoment() } })
   el.next.addEventListener("click", () => { if (view.index < view.items.length - 1) { view.index++; renderMoment() } })
