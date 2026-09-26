@@ -226,10 +226,83 @@ await waitFor(() => /Solution/.test(lastMsgs(1)[0]), "solution shown")
 check(/Solution: \S+/.test(lastMsgs(1)[0]), "exercise solution comes from the verified example: " + lastMsgs(1)[0])
 // a question starting with "show me" stays in the chat
 const before = (await planIds()).length
+const assistantBefore = document.querySelectorAll("#messages .msg.assistant").length
 $("chat-input").value = "show me why this move is bad"
 $("btn-chat").click()
-await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && !m.classList.contains("typing") && m.textContent.length > 10 }, "chat reply", 90000)
+await waitFor(() => { const all = [...document.querySelectorAll("#messages .msg.assistant")]; const m = all.pop(); return all.length >= assistantBefore && m && !m.classList.contains("typing") && m.textContent.length > 10 }, "chat reply", 90000)
 check((await planIds()).length === before, "'show me why…' is answered in the chat, not turned into a plan")
+
+// 10) Game Analysis: import Chess.com games, analyze with Stockfish, review, explain, train
+const pgnHead = (white, link, fen) => `[Event "Live Chess"]\n[Site "Chess.com"]\n[Date "2026.09.20"]\n[White "${white}"]\n` +
+  `[Black "RaanTest"]\n[Result "*"]\n[SetUp "1"]\n[FEN "${fen}"]\n[TimeControl "600"]\n[Link "https://www.chess.com/game/live/${link}"]\n\n`
+const GAME1 = pgnHead("endgamer", 900000001, "8/8/8/3n3R/1pk3p1/6K1/8/8 w - - 0 53") + "53. Kxg4 b3 54. Rh1 b2 55. Rb1 Kc3 56. Kf3 Nc7 *\n"
+const GAME2 = pgnHead("rookie", 900000002, "8/4R3/4p3/2kpP3/3n1K2/8/8/8 w - - 4 69") + "69. Ke3 Nc6 70. Rc7+ Kb6 71. Rxc6+ Kxc6 72. Kd4 *\n"
+const gameIds = async () => (await (await realFetch(new URL("api/games", BASE))).json()).games.map(g => g.id)
+const gamesBefore = new Set(await gameIds())
+for (const id of ["chesscom-900000001", "chesscom-900000002"]) {
+  if (gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
+}
+const lessonMsgsBefore = document.querySelectorAll("#messages .msg").length
+$("tab-games").click()
+await waitFor(() => !$("analysis-pane").classList.contains("hidden"), "Game Analysis tab")
+check($("lessons-side").classList.contains("hidden") && !$("games-side").classList.contains("hidden"), "sidebar shows your games")
+check(document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden"), "lesson pane hidden while analyzing games")
+check(!board || !board.isMoveInputEnabled(), "board is locked in Game Analysis")
+try { w.localStorage.removeItem("chessai.chesscomUsername") } catch (_) { /* none */ }
+$("ga-username").value = ""
+$("ga-pgn").value = GAME1
+$("ga-import-btn").click()
+await waitFor(() => $("ga-status").querySelector(".chip"), "which-player question")
+const chips = [...$("ga-status").querySelectorAll(".chip")].map(c => c.textContent)
+check(chips.includes("RaanTest") && chips.includes("endgamer"), "one game without a username: asks which player you are")
+$("ga-status").querySelectorAll(".chip")[chips.indexOf("RaanTest")].click()
+await waitFor(() => /Analysis done/.test($("ga-status").textContent), "first game analyzed", 120000)
+check($("ga-username").value === "RaanTest", "the chosen player is remembered")
+check(/import a few more games|only one game/i.test($("ga-overview").textContent), "one game: no recurring weakness claimed yet")
+$("ga-pgn").value = GAME2
+$("ga-import-btn").click()
+await waitFor(() => /Analysis done/.test($("ga-status").textContent) && document.querySelector(".weakness.recurring"), "second game analyzed", 120000)
+const weakness = document.querySelector(".weakness.recurring")
+check(/Missed knight fork/.test(weakness.textContent) && /2 of your|both games/.test(weakness.textContent), "recurring weakness across 2 games: " + weakness.textContent.slice(0, 80))
+check(/verified example/.test(weakness.textContent), "weakness links to verified library examples")
+check(document.querySelectorAll("#ga-games .game-item").length >= 2, "both games listed")
+// jump to where it happened
+;[...weakness.querySelectorAll("button")].find(b => /See it/.test(b.textContent)).click()
+await waitFor(() => !$("ga-review").classList.contains("hidden") && document.querySelector(".moment-headline"), "moment review")
+check(/You missed a knight fork/.test(document.querySelector(".moment-headline").textContent), "moment headline names the tactic")
+check(/^Move \d+\.\.\./.test(document.querySelector(".ga-card.moment h3").textContent), "Black's move titled 'Move N...': " + document.querySelector(".ga-card.moment h3").textContent)
+check(document.querySelector(".engine-details") && !document.querySelector(".engine-details").open, "engine numbers folded away by default")
+const fenBefore = board.getPosition()
+;[...document.querySelectorAll(".moment-views .btn")].find(b => b.textContent === "Best move").click()
+await waitFor(() => /Stockfish's move/.test($("board-status").textContent), "best move shown")
+check(board.getPosition() !== fenBefore, "best move is played on the board")
+;[...document.querySelectorAll(".moment-views .btn")].find(b => b.textContent === "Your move").click()
+await waitFor(() => /You played/.test($("board-status").textContent), "my move shown")
+document.querySelector(".moment-ask .btn").click()
+await waitFor(() => { const a = document.querySelector(".moment-ai"); return a && !a.classList.contains("hidden") && a.textContent.length > 20 && !document.querySelector(".moment-ask .btn").disabled }, "moment explanation", 120000)
+check(/fork|knight/i.test(document.querySelector(".moment-ai").textContent), "explanation: " + document.querySelector(".moment-ai").textContent.slice(0, 70))
+// the recurring note offers practice; start training from it
+const practise = [...document.querySelectorAll(".moment-related .btn")].find(b => /Practise/.test(b.textContent))
+check(!!practise, "moment says it's a recurring weakness and offers practice")
+practise.click()
+await waitFor(() => !document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden") &&
+  /From your games/.test(lastMsgs(1)[0] || ""), "training plan in lessons view")
+check(/From your games/.test(lastMsgs(1)[0]), "training plan built from your games: " + lastMsgs(1)[0].slice(0, 60))
+check(document.querySelectorAll("#messages .msg").length > lessonMsgsBefore, "lesson conversation kept when switching tabs")
+await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /From your games/.test(h.textContent)), "training plan in the sidebar")
+const own = lessonIn(/From your games/, /your own games/i)
+check(!!own, "plan has a lesson with positions from your own games")
+own.click()
+for (let i = 0; i < 4 && !/Your move/.test($("board-status").textContent); i++) {
+  const at = $("step-indicator").textContent
+  await waitFor(() => continueShown() || /Your move/.test($("board-status").textContent), "continue (own games)", 40000)
+  if (/Your move/.test($("board-status").textContent)) break
+  $("btn-continue").click()
+  await waitFor(() => $("step-indicator").textContent !== at, "next step (own games)")
+  await sleep(300)
+}
+check(/Your game against/.test(lastMsgs(1)[0]) && board.isMoveInputEnabled(), "exercise from your own game: " + lastMsgs(1)[0].slice(0, 70))
+for (const id of await gameIds()) if (!gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
 
 check(errors.length === 0, "no unhandled errors " + errors.join("\n"))
 for (const id of await planIds()) {
