@@ -57,6 +57,22 @@ thresholds excellent ≤15cp, good ≤50, inaccurate ≤120, mistake ≤300, blu
 - **missed_mate** — losing a forced mate is always at least a mistake (usually a blunder via the loss itself).
 - **decided_position** — in a completely decided position (|eval| ≥ 700 before and after, same sign), a blunder is dampened to a mistake.
 
+Three consistency rules keep the verdict, the lesson and the explanation in agreement:
+
+- **Checkmate on the board** is its own score (`Score.checkmate`, worth the full 10000):
+  a delivered mate is never a "mate in 0" of unknown sign, so it's always graded Excellent.
+- **The engine's own best move loses 0** — the before/after scores come from two
+  searches whose noise must never turn Stockfish's choice into a "mistake".
+- **A move the lesson accepts is shown as at worst Good** (`session.agree_with_lesson`,
+  note `engine_prefers`): lesson solutions were verified under the teaching policy
+  (within 120 cp, or still clearly winning), so the card never says "Blunder" next to
+  "Correct!"; the explanation names the engine's stronger move instead.
+
+The move prompt states the lesson result ("CORRECT" / "NOT SOLVED"), and
+`teacher/consistency.py` checks Qwen's finished reply: praise for a rejected or bad
+move, or blame for an accepted good one, is replaced by the fallback explanation of
+the same facts (NDJSON `replace` + `done.corrected`).
+
 Thresholds live in exactly one place and are unit-tested. Further refinements
 (tactical SEE checks, phase scaling, borderline re-search at higher depth) are
 planned Phase 3 work.

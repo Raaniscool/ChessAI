@@ -302,7 +302,9 @@ async function streamExplanation(card) {
         text = ev.text
         textEl.textContent = text
       } else if (ev.type === "done") {
-        label.textContent = `teacher: ${ev.teacher}`
+        // corrected: Qwen's reply contradicted the engine verdict or the lesson result,
+        // so the server swapped in the explanation built directly from the engine facts.
+        label.textContent = ev.corrected ? "teacher: engine facts (AI reply corrected)" : `teacher: ${ev.teacher}`
       }
     })
   } catch (err) {

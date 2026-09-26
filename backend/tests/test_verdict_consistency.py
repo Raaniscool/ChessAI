@@ -124,3 +124,112 @@ def test_rejected_move_keeps_the_engine_verdict(client):
     assert body["accepted"] is False
     assert body["feedback"]["category"] == "blunder"
     assert "blunder" in body["explanation"].lower()
+
+
+# --- the deterministic backstop on Qwen's move explanation ---
+
+from app.teacher.consistency import verdict_conflicts  # noqa: E402
+
+BLUNDER_H3 = feedback(san="h3", uci="h2h3", category=Classification.BLUNDER)
+GOOD_BC4 = feedback(category=Classification.EXCELLENT, best_san="Bc4", best_uci="f1c4", before=30, after=30)
+PLAYABLE_D4 = feedback(san="d4", uci="d2d4", category=Classification.GOOD, before=30, after=10)
+
+
+@pytest.mark.parametrize("text", [
+    "That's the right move! h3 stops any pin on your knight.",
+    "Great move! You keep your king safe.",
+    "Well done. This keeps the position under control.",
+    "h3 is a solid choice that prevents Bg4.",
+    "Your move is the best way to fight for the center.",
+    "You found it: h3 is exactly the idea of the lesson.",
+])
+def test_praise_for_a_blunder_is_caught(text):
+    assert verdict_conflicts(text, BLUNDER_H3, move_accepted=False)
+
+
+@pytest.mark.parametrize("text", [
+    "h3 is too slow: it allows Ng5 and the attack on f7. The best move was d4, fighting for the center.",
+    "Your move is not the right idea here, because it ignores development.",
+    "You missed the best move, d4, which opens the center while you are ahead in development.",
+    "Instead of h3, the engine prefers d4. Development and the center come first.",
+    "This is a blunder: after h3 White loses the initiative. d4 was stronger.",
+])
+def test_honest_criticism_of_a_blunder_passes(text):
+    assert verdict_conflicts(text, BLUNDER_H3, move_accepted=False) == []
+
+
+@pytest.mark.parametrize("text", [
+    "That's a mistake: Bc4 leaves the e4 pawn loose.",
+    "Your move is a blunder because Black wins a piece.",
+    "You made an error by moving the bishop twice.",
+])
+def test_calling_the_accepted_best_move_bad_is_caught(text):
+    assert verdict_conflicts(text, GOOD_BC4, move_accepted=True)
+
+
+@pytest.mark.parametrize("text", [
+    "Excellent! Bc4 aims at f7, the weakest square near Black's king.",
+    "Bc4 is the right move: it develops a piece and eyes f7. You avoid the common mistake of moving the queen early.",
+    "You punished Black's blunder by developing with tempo.",
+    "Good job, this is exactly what strong players do in the Italian.",
+])
+def test_praise_for_the_accepted_move_passes(text):
+    assert verdict_conflicts(text, GOOD_BC4, move_accepted=True) == []
+
+
+def test_playable_but_not_the_lesson_move_may_be_good_but_not_correct():
+    assert verdict_conflicts("d4 is a good move that grabs the center, but the lesson wants Bc4.",
+                             PLAYABLE_D4, move_accepted=False) == []
+    assert verdict_conflicts("d4 is the correct move here!", PLAYABLE_D4, move_accepted=False)
+    assert verdict_conflicts("You found it! d4 takes the center.", PLAYABLE_D4, move_accepted=False)
+
+
+def test_checkmate_explained_as_right_is_consistent():
+    """The original report: a mating move was graded Blunder and Qwen (rightly) praised it.
+    Now the verdict is Excellent, so the same praise is consistent."""
+    mate = feedback(san="Rd8#", uci="d1d8", category=Classification.EXCELLENT, best_san="Rd8#",
+                    best_uci="d1d8", before=0, after=0)
+    assert verdict_conflicts("Rd8# is the right move: it is checkmate on the back rank!",
+                             mate, move_accepted=True) == []
+
+
+class _Stream:
+    """Stand-in Qwen teacher streaming a fixed reply."""
+
+    def __init__(self, reply):
+        self.reply = reply
+
+    def stream(self, messages, **_):
+        yield from self.reply
+
+
+def test_contradicting_qwen_reply_is_replaced_with_the_fallback(client, monkeypatch):
+    import json
+    import app.teacher as teacher_mod
+    from app.teacher.qwen import QwenTeacher
+
+    fake = QwenTeacher.__new__(QwenTeacher)
+    fake.stream = _Stream(["That's the right ", "move! h3 is great."]).stream
+    monkeypatch.setattr(teacher_mod, "get_teacher", lambda: fake)
+    sid = _to_first_exercise(client)
+    assert client.post(f"/api/sessions/{sid}/move", json={"uci": "h2h3"}).json()["accepted"] is False
+    events = [json.loads(e) for e in client.post(f"/api/sessions/{sid}/explain").iter_lines() if e]
+    done = events[-1]
+    assert done["type"] == "done" and done["teacher"] == "fallback" and done.get("corrected") is True
+    assert "right move" not in done["text"] and "blunder" in done["text"].lower()
+    assert any(e["type"] == "replace" for e in events)
+
+
+def test_consistent_qwen_reply_is_kept(client, monkeypatch):
+    import json
+    import app.teacher as teacher_mod
+    from app.teacher.qwen import QwenTeacher
+
+    reply = "h3 is too slow: it lets Black develop freely. The engine prefers d4 to open the center."
+    fake = QwenTeacher.__new__(QwenTeacher)
+    fake.stream = _Stream([reply]).stream
+    monkeypatch.setattr(teacher_mod, "get_teacher", lambda: fake)
+    sid = _to_first_exercise(client)
+    client.post(f"/api/sessions/{sid}/move", json={"uci": "h2h3"})
+    events = [json.loads(e) for e in client.post(f"/api/sessions/{sid}/explain").iter_lines() if e]
+    assert events[-1] == {"type": "done", "teacher": "qwen", "text": reply}

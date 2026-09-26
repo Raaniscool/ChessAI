@@ -372,14 +372,18 @@ class SessionManager:
     def explain_stream(self, session: Session):
         """Event generator explaining the latest graded move. Validates before streaming."""
         from .teacher import FallbackTeacher, stream_events
+        from .teacher.consistency import verdict_conflicts
         from .teacher.prompts import build_move_feedback_messages
 
         feedback, context = session.last_feedback, session.last_context
         if feedback is None:
             raise ExerciseConflict("No move to explain yet")
+        # A reply contradicting the verdict or the lesson result ("Blunder" + "the
+        # right move!") is replaced by the deterministic explanation of the same facts.
         return stream_events(
             lambda: build_move_feedback_messages(feedback, context),
             lambda: FallbackTeacher().explain_move(feedback, context),
+            validate=lambda text: verdict_conflicts(text, feedback, context.move_accepted),
         )
 
     def explain_example_stream(self, session: Session):
