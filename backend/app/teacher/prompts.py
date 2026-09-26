@@ -5,65 +5,77 @@ lesson data — plus strict instructions against hallucinating analysis.
 """
 from __future__ import annotations
 
-import json
-
 from ..engine import MoveFeedback
+from ..engine.classification import Classification
 from .base import LessonContext, _fmt_eval
 
+# Kept byte-identical across requests so local servers (Ollama, llama.cpp) can reuse
+# its processed tokens from cache: only the short per-move facts are read each time.
 SYSTEM_PROMPT = """You are a friendly, precise chess teacher inside an interactive chess tutor.
+You get FACTS from a chess engine (Stockfish) and the app. They are the truth about the position; \
+your job is to explain them in clear, encouraging, beginner-friendly language.
+Rules:
+- Never invent evaluations, moves, variations or tactics that are not in the facts.
+- If facts are missing, say engine analysis is needed instead of guessing.
+- Prefer plain language to engine numbers.
+- Teach the idea behind the move (development, king safety, center, tempo, tactics...).
+- Be brief: 2-3 short sentences for move feedback unless asked for more.
+- Reply in the student's language."""
 
-You receive FACTS computed by a chess engine (Stockfish) and by the application. \
-These facts are the source of truth about the position. Your job is to EXPLAIN them \
-in clear, encouraging, level-appropriate language.
+# Recent chat turns sent with each question (each costs prompt-reading time on a CPU).
+CHAT_HISTORY = 6
 
-Hard rules:
-- Never invent evaluations, moves, variations, or tactical claims that are not in the facts.
-- If the facts are incomplete or missing, say that engine analysis is needed — do not guess.
-- Do not dump raw engine numbers unless they help the point; prefer plain language.
-- Focus on teaching: name the idea or principle behind the move (development, king safety, \
-center, tempo, tactics...), say what the player did well or missed, and point toward the better idea.
-- Keep it short: 2-5 sentences for move feedback unless asked for more.
-- Write in the same language the student used.
-"""
+# Plies of each engine line to include: enough to show the idea, cheap to read.
+LINE_PLIES = 4
+GOOD_VERDICTS = {Classification.EXCELLENT, Classification.GOOD}
+
+
+def _line(moves: list[str]) -> str:
+    return " ".join(moves[:LINE_PLIES]) or "none"
+
+
+def _eval(score, student_is_white: bool) -> str:
+    return _fmt_eval(score.as_dict() if score else None, for_white=student_is_white)
 
 
 def build_move_feedback_messages(
     feedback: MoveFeedback, context: LessonContext, level: str = "beginner"
 ) -> list[dict]:
-    facts = {
-        "fen_before": feedback.fen_before,
-        "fen_after": feedback.fen_after,
-        "student_move": feedback.user_move_san,
-        "engine_best_move": feedback.best_move_san,
-        "classification": feedback.category.value,
-        "evaluation_before_best_play": _fmt_eval(
-            feedback.eval_before.as_dict() if feedback.eval_before else None
-        ),
-        "evaluation_after_student_move": _fmt_eval(
-            feedback.eval_after.as_dict() if feedback.eval_after else None
-        ),
-        "best_line": feedback.best_pv_san,
-        "line_after_student_move": feedback.reply_pv_san,
-        "notes": feedback.notes,
-        "depth": feedback.depth,
-    }
+    """Compact prompt: facts as short lines, evaluations from the student's side.
+
+    No FENs — models can't read them reliably (and must not calculate from them),
+    and on a CPU every prompt token delays the first word.
+    """
+    student_is_white = feedback.fen_before.split()[1] == "w"
+    same_as_best = feedback.best_move_uci in (None, feedback.user_move_uci)
+    facts = [
+        f"Student ({'White' if student_is_white else 'Black'}) played: {feedback.user_move_san} "
+        f"- verdict: {feedback.category.value}",
+        "Engine's best move: " + ("the same move" if same_as_best else (feedback.best_move_san or "unknown")),
+        f"Evaluation for the student (pawns, + = good for them): {_eval(feedback.eval_before, student_is_white)} "
+        f"with best play, {_eval(feedback.eval_after, student_is_white)} after their move",
+    ]
+    if not same_as_best:
+        facts.append(f"Engine line after the best move: {_line(feedback.best_pv_san)}")
+    facts.append(f"Likely continuation after the student's move: {_line(feedback.reply_pv_san)}")
+    if feedback.notes:
+        facts.append("Notes: " + "; ".join(feedback.notes))
+
+    if feedback.category in GOOD_VERDICTS:
+        task = ("Say why the move is good and which lesson idea it uses"
+                + ("." if same_as_best else "; mention the engine's move only if it teaches something."))
+    else:
+        task = "Say what the move allows or misses, why the engine's move is better, and which lesson idea applies."
+    if context.accepted_moves and feedback.user_move_san not in context.accepted_moves:
+        task += (f" The lesson's planned move is {', '.join(context.accepted_moves)}: if the student's move "
+                 "is playable, say so and explain how it differs from the plan.")
+
     user = (
-        "Explain the student's move to them now.\n"
-        f"Lesson: {context.lesson_title} (course: {context.course_title}). "
-        f"Concepts in focus: {', '.join(context.concepts) or 'general play'}.\n"
-        f"Current exercise goal: {context.exercise_prompt or 'find the best move'}\n"
-        f"Student level: {level}.\n"
-        f"Facts:\n{json.dumps(facts, indent=2)}\n\n"
-        "Cover: what the student did correctly (if anything), what they missed, "
-        "why the engine's move is better, and which idea from the lesson applies."
+        f"Lesson: {context.lesson_title} ({', '.join(context.concepts) or 'general play'}). "
+        f"Goal: {(context.exercise_prompt or 'find the best move').rstrip(' .')}. Level: {level}.\n"
+        + "\n".join(facts)
+        + f"\nTask: {task} 2-3 sentences, under 60 words."
     )
-    if context.accepted_moves:
-        user += (
-            "\nNote: this exercise specifically teaches a planned line; the goal move(s) are "
-            f"{', '.join(context.accepted_moves)}. If the student's move is sound but leaves "
-            "the taught line, acknowledge it is playable but explain how it differs from the "
-            "lesson's plan."
-        )
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user},
@@ -80,7 +92,7 @@ def build_chat_messages(
     )
     messages.append({"role": "user", "content": intro})
     messages.append({"role": "assistant", "content": "Understood. I will teach from these facts."})
-    for entry in transcript[-10:]:
+    for entry in transcript[-CHAT_HISTORY:]:
         messages.append({"role": entry["role"], "content": entry["content"]})
     messages.append({"role": "user", "content": message})
     return messages

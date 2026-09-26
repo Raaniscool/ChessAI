@@ -13,6 +13,10 @@ import time
 import httpx
 
 from .config import DOTENV_APPLIED, DOTENV_PATH, get_settings
+from .engine import MoveFeedback
+from .engine.classification import Classification, Score
+from .teacher.base import LessonContext
+from .teacher.prompts import SYSTEM_PROMPT, build_move_feedback_messages
 from .teacher.qwen import RESET, QwenTeacher, TeacherUnavailable
 
 
@@ -26,10 +30,18 @@ def _list_models(base_url: str, api_key: str) -> list[str]:
     return [m.get("id", "") for m in r.json().get("data", [])]
 
 
-SPEED_PROMPT = [
-    {"role": "system", "content": "You are a chess teacher."},
-    {"role": "user", "content": "In about four sentences, explain why knights belong in the center."},
-]
+def lesson_prompt() -> list[dict]:
+    """The exact kind of prompt the app sends after a move (canned engine facts)."""
+    fen = "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
+    feedback = MoveFeedback(
+        fen_before=fen, fen_after=fen, user_move_uci="f1c4", user_move_san="Bc4",
+        category=Classification.EXCELLENT, loss_cp=10, best_move_uci="d2d4", best_move_san="d4",
+        eval_before=Score("cp", 28), eval_after=Score("cp", 18),
+        best_pv_san=["d4", "exd4", "Nxd4", "Nf6"], reply_pv_san=["Nf6", "d3", "Be7", "Nc3"])
+    context = LessonContext("Italian Game", "The Italian Game: first moves",
+                            ["development", "center", "king safety"],
+                            "Develop your light-squared bishop to its most active square.", ["Bc4"])
+    return build_move_feedback_messages(feedback, context)
 
 
 RECOMMENDED_MODEL = "qwen3:4b-instruct"
@@ -47,7 +59,7 @@ def measure(teacher) -> tuple[float, float, int, int]:
         nonlocal reasoning
         reasoning += 1
 
-    for piece in teacher.stream(SPEED_PROMPT, max_tokens=120, on_reasoning=count_reasoning):
+    for piece in teacher.stream(lesson_prompt(), max_tokens=120, on_reasoning=count_reasoning):
         if piece == RESET:
             continue
         chunks += 1
@@ -80,7 +92,7 @@ def thinking_model_advice(model: str) -> list[str]:
 
 
 def speed_test(teacher) -> int:
-    print("Speed test (a typical explanation, streamed):")
+    print("Speed test (a real move explanation, streamed like in the app):")
     try:
         first, total, chunks, reasoning = measure(teacher)
     except TeacherUnavailable as exc:
@@ -96,12 +108,17 @@ def speed_test(teacher) -> int:
         print("[TIP ] Slow first words: the model may be (re)loading each time. Keep it in memory:")
         print('         setx OLLAMA_KEEP_ALIVE "2h"   then quit Ollama from the tray icon and start it again.')
         print("         Long prompts on CPU also delay the first word.")
+    if rate:
+        words = rate * 0.75
+        pace = "faster than" if words >= 4 else "slower than"
+        print(f"       ~{words:.0f} words/s appear on screen — {pace} typical reading speed (~4 words/s).")
     if rate and rate < 12:
         print("[TIP ] Under ~12 tokens/s usually means the model runs on the CPU. Check with:  ollama ps")
         print("         (PROCESSOR column: '100% GPU' is fast, 'CPU' is slow.)")
-        print("         Faster options, still free and unlimited:  ollama pull qwen3:1.7b")
-        print('         then  Set-Content .env "QWEN_MODEL=qwen3:1.7b"   (about 2x faster than 4b, slightly less smart;')
-        print("         the chess facts always come from Stockfish either way).")
+        if "1.7b" not in teacher.settings.qwen_model and "0.6b" not in teacher.settings.qwen_model:
+            print("         Faster option, still free and unlimited:  ollama pull qwen3:1.7b")
+            print('         then  Set-Content .env "QWEN_MODEL=qwen3:1.7b"   (about 2x faster than 4b, slightly less smart;')
+            print("         the chess facts always come from Stockfish either way).")
     elif rate:
         print("[ OK ] That's a healthy speed for a local model.")
     return 0
@@ -146,8 +163,10 @@ def main() -> int:
     try:
         reply = teacher._complete(
             [
-                {"role": "system", "content": "You are a chess teacher. Answer in one sentence."},
-                {"role": "user", "content": "Why is controlling the center good in chess?"},
+                # Same system prompt as the app, so the speed test below reuses it from the
+                # server's prompt cache, exactly like every move after the first in the app.
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": "In one sentence: why is controlling the center good in chess?"},
             ]
         )
     except TeacherUnavailable as exc:

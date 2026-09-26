@@ -147,6 +147,18 @@ class Settings:
         """
         return bool(self.qwen_model)
 
+    def qwen_is_ollama(self) -> bool:
+        url = self.qwen_base_url.lower()
+        return ":11434" in url or "ollama" in url
+
+    def qwen_reasoning_off(self) -> bool:
+        """Send Ollama's `reasoning_effort: "none"` (= think off) unless thinking was requested.
+
+        It is the reliable switch for models with a thinking mode (qwen3 hybrids, qwen3.5,
+        deepseek-r1...) and harmless for models without one. Other servers don't get the field.
+        """
+        return self.qwen_is_ollama() and self.qwen_thinking not in ("on", "true", "1", "yes")
+
     def qwen_disable_thinking(self) -> bool:
         """Whether to send Qwen3's `/no_think` soft switch."""
         if self.qwen_thinking in ("on", "true", "1", "yes"):

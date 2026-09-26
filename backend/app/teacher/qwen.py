@@ -10,7 +10,7 @@ import httpx
 
 from ..config import Settings, get_settings
 from .base import LessonContext
-from .prompts import build_chat_messages, build_move_feedback_messages
+from .prompts import SYSTEM_PROMPT, build_chat_messages, build_move_feedback_messages
 
 log = logging.getLogger(__name__)
 
@@ -159,6 +159,8 @@ class QwenTeacher:
             "temperature": 0.4,
             "stream": stream,
         }
+        if self.settings.qwen_reasoning_off():
+            payload["reasoning_effort"] = "none"
         limit = max_tokens if max_tokens is not None else self.settings.qwen_max_tokens
         if limit and limit > 0:
             payload["max_tokens"] = limit
@@ -237,10 +239,15 @@ class QwenTeacher:
             yield tail
 
     def warm_up(self) -> bool:
-        """Ask for a single token so the server loads the model into memory."""
+        """Ask for a single token so the server loads the model into memory.
+
+        Sent with the real system prompt: servers that cache prompt prefixes (Ollama,
+        llama.cpp) then already have it processed when the first move is explained.
+        """
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": "Say OK."}]
         try:
             response = httpx.post(self.url, headers=self.headers, timeout=self.settings.qwen_timeout,
-                                  json=self.build_payload([{"role": "user", "content": "Say OK."}], max_tokens=1))
+                                  json=self.build_payload(messages, max_tokens=1))
             response.raise_for_status()
         except httpx.HTTPError as exc:
             log.warning("Qwen warm-up failed: %s", exc)

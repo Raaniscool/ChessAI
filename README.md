@@ -132,6 +132,8 @@ Qwen3 `<think>…</think>` reasoning is always stripped before it reaches the st
 The app never makes you wait for the language model to see a result:
 
 - **Move feedback is instant**: Stockfish's verdict plus a built-in explanation appear right away (~0.1 s), then Qwen's explanation **streams in word by word** (`POST /api/sessions/{id}/explain`, NDJSON events). Chat replies stream the same way.
+- **Small prompts**: on a CPU the model must read the whole prompt before its first word, so move prompts carry only compact engine facts (no FENs/JSON, ~165 tokens), and the fixed system prompt is pre-loaded at startup so Ollama reuses it from its prompt cache.
+- **Thinking is switched off** on Ollama (`reasoning_effort: "none"`), so models with a thinking mode answer directly.
 - **Plans for known topics don't use Qwen at all** (`QWEN_PLANNER=auto`), so they're instant.
 - `python -m backend.app.check_qwen` runs a **speed test** (time to first word, tokens/s) and tells you what to change. Typical fixes, all free and unlimited:
   - Keep the model loaded: `setx OLLAMA_KEEP_ALIVE "2h"`, then restart Ollama (otherwise it unloads after 5 idle minutes and the next reply has to reload it).

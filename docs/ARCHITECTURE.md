@@ -77,6 +77,13 @@ covers the fallback case (Qwen down before any text) and retracting leaked reaso
 Chat uses `POST /chat/stream`. The server loads the model at startup (`QWEN_WARMUP`) and caps
 replies (`QWEN_MAX_TOKENS`).
 
+On CPU-only machines time-to-first-word is dominated by prompt processing, so prompts are kept
+small: move facts are short lines (no FENs: the model must not calculate from them anyway), engine
+lines are trimmed to 4 plies, evaluations are given from the student's side, and chat sends the last
+6 turns. `SYSTEM_PROMPT` is byte-identical across requests and the warm-up request includes it, so
+Ollama/llama.cpp prefix caching means only the per-move facts are read. On Ollama every request
+sends `reasoning_effort: "none"` (thinking off; ignored by models without a thinking mode).
+
 ## Lesson schema
 
 `teach` (text + optional board), `demonstrate` (fen + legal move sequence + comments), `exercise` (fen, side, prompt, progressive hints, `advance_on`: `any_legal` | `accepted_move` | `min_classification`, continue text). Courses list available + planned lessons. Loader validates everything and fails fast (`LessonError`).
