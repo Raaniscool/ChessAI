@@ -137,3 +137,10 @@ Planning never substitutes topics: units are only topics the request matched (a 
 a longer match, e.g. "checkmate" inside "smothered checkmate", doesn't count). Topics Qwen adds on
 its own are shown as related suggestions; with no match the API answers 422 with suggestions.
 
+
+## Knowledge Library (verified teaching examples)
+
+`backend/app/knowledge/`: a verified library of examples (rules, tactics, mates, openings,
+endgames, mistakes) imported from reliable sources (FIDE rules, the CC0 Lichess opening and
+puzzle databases, curated classics) and checked by python-chess, concept validators and
+Stockfish before use. Only verified entries are retrieved. See [KNOWLEDGE_LIBRARY.md](KNOWLEDGE_LIBRARY.md).
