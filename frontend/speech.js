@@ -204,7 +204,7 @@ export class Narrator {
       if (active && segments[active.segment].node) segments[active.segment].node.classList.remove("speaking")
       active = mark
       if (mark && segments[mark.segment].node) segments[mark.segment].node.classList.add("speaking")
-      this.hooks.onMove && this.hooks.onMove(mark, element)
+      this.hooks.onMove && this.hooks.onMove(mark, element, mark ? segments[mark.segment].node : null)
     }
     const done = () => {
       clearInterval(fallbackTimer)

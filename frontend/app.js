@@ -5,6 +5,7 @@
 import {Chessboard, COLOR, INPUT_EVENT_TYPE, FEN, BORDER_TYPE} from "./vendor/cm-chessboard/src/Chessboard.js"
 import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/markers/Markers.js"
 import {Chess} from "./vendor/chess.mjs/Chess.js"
+import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 
@@ -308,9 +309,67 @@ function squaresFor(mark, element) {
   return squares
 }
 
+// ---------- lines of moves: the pieces move ----------
+// In a game review, a line of moves ("the line goes Nc7+ Kd8 Nxa7") is shown by playing it
+// on the board — while it's read aloud, when pointed at, or all at once on a click. Only
+// single squares are highlighted. The board goes back to where it was afterwards.
+const lineView = {restore: null, timer: null, token: 0}
+
+const placementOf = fen => (fen || "").split(" ")[0]
+
+async function showLineMove(span) {
+  if (!board || !span.chessLine) return
+  const {positions, index} = span.chessLine
+  clearTimeout(lineView.timer)
+  const token = ++lineView.token
+  if (lineView.restore === null) lineView.restore = board.getPosition()
+  board.removeMarkers(SPEECH_MARKER)
+  board.removeMarkers(HOVER_MARKER)
+  if (placementOf(board.getPosition()) !== placementOf(positions[index])) await board.setPosition(positions[index], false)
+  if (token !== lineView.token) return
+  await board.setPosition(positions[index + 1], true)
+}
+
+function endLineView(delay) {
+  if (lineView.restore === null) return
+  clearTimeout(lineView.timer)
+  lineView.timer = setTimeout(async () => {
+    const fen = lineView.restore
+    lineView.restore = null
+    lineView.token++
+    if (board && fen) await board.setPosition(fen, true)
+  }, delay)
+}
+
+async function playWholeLine(span) {
+  if (!board || !span.chessLine) return
+  const {positions} = span.chessLine
+  clearTimeout(lineView.timer)
+  lineView.restore = null  // asked for: the line's final position stays on the board
+  const token = ++lineView.token
+  board.removeMarkers(SPEECH_MARKER)
+  board.removeMarkers(HOVER_MARKER)
+  await board.setPosition(positions[0], false)
+  for (let i = 1; i < positions.length; i++) {
+    await new Promise(r => setTimeout(r, 600))
+    if (token !== lineView.token) return
+    await board.setPosition(positions[i], true)
+  }
+}
+
+document.addEventListener("click", ev => {
+  const span = ev.target.closest ? ev.target.closest(".mv-line") : null
+  if (span) playWholeLine(span)
+})
+
 const narrator = new Narrator({
-  onMove(mark, element) {
+  onMove(mark, element, node) {
+    if (node && node.chessLine) {
+      showLineMove(node)
+      return
+    }
     board.removeMarkers(SPEECH_MARKER)
+    if (!mark) endLineView(1200)  // finished reading: back to the position being reviewed
     for (const sq of squaresFor(mark, element)) board.addMarker(SPEECH_MARKER, sq)
   },
   onState(speaking) {
@@ -324,7 +383,10 @@ document.addEventListener("mouseover", ev => {
   const mv = ev.target.closest ? ev.target.closest(".mv") : null
   if (mv === hoveredMove) return
   hoveredMove = mv
+  if (!board) return
   board.removeMarkers(HOVER_MARKER)
+  if (mv && mv.chessLine) { showLineMove(mv); return }
+  if (!narrator.current) endLineView(700)  // pointer left the line: put the position back
   if (!mv) return
   const san = mv.dataset.san
   for (const sq of squaresFor({san, square: targetSquare(san)}, mv)) board.addMarker(HOVER_MARKER, sq)
@@ -347,6 +409,7 @@ function speakButton(target) {
 // Moves in the text become highlightable; a 🔊 button reads the message aloud.
 function makeSpeakable(el) {
   decorateMoves(el)
+  annotateLines(el, Chess)  // review text: lines of moves play on the board
   if (narrator.supported && !el.querySelector(":scope > .speak-btn")) el.appendChild(speakButton(el))
   return el
 }

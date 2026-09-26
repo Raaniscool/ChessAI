@@ -44,16 +44,37 @@ The rules are the same as everywhere else in the tutor:
 7. **▶ Practice …** (on a pattern or a moment) builds a normal lesson plan in the
    Lessons tab. **💬 Explain my patterns** has the AI tutor explain the findings.
 
-**Read aloud:** with 🔊 *Read aloud* on (header), each moment's explanation is read when
-you open it, and so is the AI's answer. The 🔊 button on the card reads it on demand. As a
-move is spoken, its squares light up. Moves from Stockfish's line light up in the position
-where they're played. Pointing at a move in the text lights it up too.
+**Lines move the pieces.** When the review (or the AI's answer) mentions a move or a line
+of moves ("Stockfish prefers Nc7+ (the line goes Nc7+ Kd8 Nxa7)"), the board *plays* it
+instead of highlighting squares:
+- Read aloud: as each move is spoken, the piece moves; afterwards the board goes back to the
+  position you were reviewing.
+- Point at a move: the board shows the line up to that move, and goes back when you move away.
+- Click a move of a line (dotted underline): the whole line plays from the start.
 
-Only Chess.com PGNs are supported in this milestone. Nothing is scraped from
-Chess.com: you paste the text yourself (up to 100 games per paste; a game pasted
-twice is imported once). The app can't fetch your recent games by itself yet.
-Chess.com's official public API (monthly game archives per username) would be
-the way to add that later; everything after the importer would stay the same.
+Only single squares ("the f7 square") are highlighted. A run of moves counts as a line when
+the moves are next to each other in the text and chess.js can play
+them, in order, from one of the positions the moment is about (`frontend/lines.js`).
+
+**Read aloud:** with 🔊 *Read aloud* on (header), each moment's explanation is read when
+you open it, and so is the AI's answer. The 🔊 button on the card reads it on demand.
+
+### Fetching games from Chess.com
+
+`games/importers/chesscom_api.py` uses Chess.com's **Published-Data API** (read-only,
+public, no login; nothing is scraped from web pages):
+
+1. `GET https://api.chess.com/pub/player/{username}/games/archives`: the list of monthly archives.
+2. The newest months first (`…/games/YYYY/MM`), until there are enough games; at most 24 months back.
+3. Only standard chess with a PGN is kept (no Chess960, Bughouse, …), newest first by `end_time`.
+4. The PGNs then go through the normal importer, so fetched games are validated by
+   python-chess exactly like pasted ones.
+
+Chess.com asks API users to make requests one at a time and to identify their app, so
+requests are strictly serial and send a `User-Agent`. Clear messages for an unknown player
+(404/410), rate limiting (429), time-outs and no connection. The history report is limited to
+the fetched player's games, so a friend's game you pasted doesn't end up in your patterns.
+Pasting PGNs still works (up to 100 games per paste; a game pasted twice is imported once).
 
 ## What gets detected
 
@@ -256,4 +277,4 @@ position. Candidate mistakes are re-checked at `ENGINE_DEPTH` (default 14).
 - **API**: end to end, plus a real-Stockfish test that is skipped when no engine is
   installed.
 
-The UI flow is covered by `scripts/ui_e2e.mjs`.
+The UI flow is covered by `scripts/ui_e2e.mjs`; line detection by `frontend/tests/lines.test.mjs`.

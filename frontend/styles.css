@@ -267,6 +267,7 @@ header h1 { margin: 0; font-size: 20px; }
 .mv { font-weight: 600; color: #f0f3f5; border-radius: 4px; padding: 0 2px; margin: 0 -2px; transition: background .12s; }
 .mv.speaking { background: #f5c542; color: #1b1f24; }
 .mv:hover { background: rgba(245, 197, 66, .28); cursor: default; }  /* and lit on the board */
+.mv.mv-line { text-decoration: underline dotted rgba(245, 197, 66, .7); text-underline-offset: 3px; cursor: pointer; }
 /* the square being spoken, on the board */
 .cm-chessboard .markers .marker.marker-speech { fill: #f5c542; opacity: .6; }
 

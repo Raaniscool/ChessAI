@@ -307,10 +307,33 @@ const momentText = document.querySelector(".moment-text")
 const momentMove = momentText && momentText.querySelector(".moment-why .mv")
 check(!!momentMove && JSON.parse(momentText.dataset.fens).length > 2, "moment text: moves marked and linked to their positions")
 await new Promise(r => setTimeout(r, 300))  // let "Position before" finish drawing
-momentMove.dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
-check(board.getMarkers().some(m => m.type.class === "marker-speech"), "pointing at " + momentMove.textContent + " lights its squares on the board")
+// a move (or a line of moves) in the review is shown by moving the pieces, not by highlighting
+const placement = fen => fen.split(" ")[0]
+const lineMoves = [...momentText.querySelectorAll(".mv-line")]
+check(lineMoves.length > 0, "review moves are playable on the board: " + lineMoves.map(m => m.textContent).join(" "))
+const reviewPos = board.getPosition()
+const pointed = lineMoves[lineMoves.length - 1]
+pointed.dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
+const target = placement(pointed.chessLine.positions[pointed.chessLine.index + 1])
+await waitFor(() => placement(board.getPosition()) === target, "pointing at a move plays it on the board")
+check(!board.getMarkers().some(m => m.type.class === "marker-speech"), "pointing at " + pointed.textContent + " moves the piece instead of highlighting squares")
 $("ga-title").dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
-check(!board.getMarkers().some(m => m.type.class === "marker-speech"), "moving away clears them")
+await waitFor(() => board.getPosition() === reviewPos, "moving away puts the reviewed position back", 5000)
+check(true, "moving away puts the reviewed position back")
+const squareRef = momentText.querySelector(".mv:not(.mv-line)")
+if (squareRef) {
+  squareRef.dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
+  check(board.getMarkers().some(m => m.type.class === "marker-speech") && board.getPosition() === reviewPos,
+    "a single square (" + squareRef.textContent + ") is still highlighted, nothing moves")
+  $("ga-title").dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
+}
+const longest = lineMoves.find(m => m.chessLine.positions.length > 2)
+if (longest) {
+  longest.click()
+  const end = longest.chessLine.positions
+  await waitFor(() => placement(board.getPosition()) === placement(end[end.length - 1]), "clicking a line plays all of it", 10000)
+  check(true, "clicking a line plays all " + (end.length - 1) + " moves on the board")
+}
 const fenBefore = board.getPosition()
 ;[...document.querySelectorAll(".moment-views .btn")].find(b => b.textContent === "Best move").click()
 await waitFor(() => /Stockfish's move/.test($("board-status").textContent), "best move shown")
