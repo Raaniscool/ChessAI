@@ -117,14 +117,28 @@ export QWEN_MODEL=qwen3:4b
 | `QWEN_API_KEY` | `ollama` | ignored by local servers |
 | `QWEN_TIMEOUT` | `120` | seconds; first reply is slow while the model loads |
 | `QWEN_THINKING` | `auto` | `auto` = off for Qwen3 (sends `/no_think`; much faster). `on` / `off` to force |
+| `QWEN_MAX_TOKENS` | `300` | cap on explanation length (shorter = faster on local hardware) |
+| `QWEN_PLANNER` | `auto` | `auto` = ask Qwen only when the catalog can't answer (instant plans), `always`, `never` |
+| `QWEN_WARMUP` | `1` | load the model when the server starts so the first reply isn't the slowest |
 
-Qwen3 `<think>…</think>` reasoning is always stripped before it reaches the student. The status bar shows `teacher: qwen (model)` when connected.
+Qwen3 `<think>…</think>` reasoning is always stripped before it reaches the student (also mid-stream).
+
+#### Speed with a local model
+
+The app never makes you wait for the language model to see a result:
+
+- **Move feedback is instant**: Stockfish's verdict plus a built-in explanation appear right away (~0.1 s), then Qwen's explanation **streams in word by word** (`POST /api/sessions/{id}/explain`, NDJSON events). Chat replies stream the same way.
+- **Plans for known topics don't use Qwen at all** (`QWEN_PLANNER=auto`), so they're instant.
+- `python -m backend.app.check_qwen` runs a **speed test** (time to first word, tokens/s) and tells you what to change. Typical fixes, all free and unlimited:
+  - Keep the model loaded: `setx OLLAMA_KEEP_ALIVE "2h"`, then restart Ollama (otherwise it unloads after 5 idle minutes and the next reply has to reload it).
+  - Check `ollama ps`: `100% GPU` is fast; `CPU` is slow.
+  - Use a smaller model: `ollama pull qwen3:1.7b` (about 2× faster than 4b). The chess facts come from Stockfish either way. The status bar shows `teacher: qwen (model)` when connected.
 
 ## Status
 
 **Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite.
 
-**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Test suite: **94 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
+**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Streaming AI text + instant move verdicts + speed diagnostics. Test suite: **118 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
 **Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
 

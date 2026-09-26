@@ -26,6 +26,48 @@ def _list_models(base_url: str, api_key: str) -> list[str]:
     return [m.get("id", "") for m in r.json().get("data", [])]
 
 
+SPEED_PROMPT = [
+    {"role": "system", "content": "You are a chess teacher."},
+    {"role": "user", "content": "In about four sentences, explain why knights belong in the center."},
+]
+
+
+def measure(teacher) -> tuple[float, float, int]:
+    """(seconds to first visible word, total seconds, streamed chunks ~ tokens)."""
+    started = time.monotonic()
+    first = None
+    chunks = 0
+    for _ in teacher.stream(SPEED_PROMPT, max_tokens=120):
+        chunks += 1
+        if first is None:
+            first = time.monotonic() - started
+    total = time.monotonic() - started
+    return (first if first is not None else total), total, chunks
+
+
+def speed_test(teacher) -> None:
+    print("Speed test (a typical explanation, streamed):")
+    try:
+        first, total, chunks = measure(teacher)
+    except TeacherUnavailable as exc:
+        print(f"[WARN] streaming failed: {exc}")
+        return
+    rate = chunks / max(total - first, 0.01) if chunks > 1 else 0.0
+    print(f"       first words after {first:.1f}s, finished in {total:.1f}s, ~{rate:.0f} tokens/s")
+    if first > 8:
+        print("[TIP ] Slow first words: the model may be (re)loading each time. Keep it in memory:")
+        print('         setx OLLAMA_KEEP_ALIVE "2h"   then quit Ollama from the tray icon and start it again.')
+        print("         Long prompts on CPU also delay the first word.")
+    if rate and rate < 12:
+        print("[TIP ] Under ~12 tokens/s usually means the model runs on the CPU. Check with:  ollama ps")
+        print("         (PROCESSOR column: '100% GPU' is fast, 'CPU' is slow.)")
+        print("         Faster options, still free and unlimited:  ollama pull qwen3:1.7b")
+        print('         then  $env:QWEN_MODEL = "qwen3:1.7b"   (about 2x faster than 4b, slightly less smart;')
+        print("         the chess facts always come from Stockfish either way).")
+    elif rate:
+        print("[ OK ] That's a healthy speed for a local model.")
+
+
 def main() -> int:
     s = get_settings()
     print(f"QWEN_BASE_URL = {s.qwen_base_url}")
@@ -68,6 +110,8 @@ def main() -> int:
         print("       If it timed out, raise the limit: $env:QWEN_TIMEOUT = \"300\"")
         return 1
     print(f"[ OK ] Reply in {time.monotonic() - started:.1f}s: {reply}")
+    print()
+    speed_test(teacher)
     print()
     print("Qwen is connected. Start the app from THIS same window so it sees these settings.")
     return 0

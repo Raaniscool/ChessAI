@@ -7,10 +7,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import json
 import logging
+import threading
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -26,7 +29,27 @@ from .teacher import get_teacher
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
-app = FastAPI(title="AI Chess Tutor", version="0.1.0")
+def _warm_up_qwen() -> None:
+    """Load the model in the background so the learner's first reply isn't the slowest."""
+    settings = get_settings()
+    if not (settings.qwen_configured() and settings.qwen_warmup):
+        return
+
+    def run():
+        from .teacher import QwenTeacher
+        ok = QwenTeacher(settings).warm_up()
+        logging.getLogger("chessai").info("Qwen warm-up %s", "done" if ok else "failed")
+
+    threading.Thread(target=run, name="qwen-warmup", daemon=True).start()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _warm_up_qwen()
+    yield
+
+
+app = FastAPI(title="AI Chess Tutor", version="0.1.0", lifespan=lifespan)
 
 
 # --- error handling -------------------------------------------------------
@@ -232,6 +255,28 @@ def request_hint(session_id: str) -> dict:
 @app.post("/api/sessions/{session_id}/reveal")
 def reveal_solution(session_id: str) -> dict:
     return get_manager().reveal(get_manager().get(session_id))
+
+
+def _ndjson(events) -> StreamingResponse:
+    def lines():
+        for event in events:
+            yield json.dumps(event) + "\n"
+    # X-Accel-Buffering: stop proxies from holding the stream back.
+    return StreamingResponse(lines(), media_type="application/x-ndjson",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.post("/api/sessions/{session_id}/explain")
+def explain_stream(session_id: str) -> StreamingResponse:
+    """Stream the AI explanation of the latest graded move (one JSON event per line)."""
+    manager = get_manager()
+    return _ndjson(manager.explain_stream(manager.get(session_id)))
+
+
+@app.post("/api/sessions/{session_id}/chat/stream")
+def chat_stream(session_id: str, body: ChatRequest) -> StreamingResponse:
+    manager = get_manager()
+    return _ndjson(manager.chat_stream(manager.get(session_id), body.message))
 
 
 @app.post("/api/sessions/{session_id}/chat")

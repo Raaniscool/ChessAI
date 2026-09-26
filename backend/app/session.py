@@ -50,6 +50,8 @@ class Session:
     exercise_accepted: bool = False
     status: str = "active"  # active | completed
     transcript: list[dict] = field(default_factory=list)
+    last_feedback: object | None = None  # MoveFeedback of the latest graded move
+    last_context: object | None = None   # LessonContext it was graded in
 
 
 class SessionManager:
@@ -158,7 +160,8 @@ class SessionManager:
 
     def apply_move(self, session: Session, uci: str) -> dict:
         from .engine import get_engine
-        from .teacher import LessonContext, explain_or_fallback, get_teacher
+        from .config import get_settings
+        from .teacher import FallbackTeacher, LessonContext
 
         if session.status == "completed":
             raise ExerciseConflict("Lesson already completed")
@@ -189,14 +192,17 @@ class SessionManager:
             exercise_prompt=step.prompt,
             accepted_moves=step.accepted_san,
         )
-        teacher = get_teacher()
-        explanation, teacher_used = explain_or_fallback(teacher, feedback, context)
-
+        # Answer instantly with the engine verdict + deterministic explanation.
+        # The (slower) Qwen explanation is streamed separately via explain_stream(),
+        # so the learner never waits on the language model to see the result.
+        session.last_feedback = feedback
+        session.last_context = context
         result = {
             "accepted": accepted,
             "feedback": feedback.as_dict(),
-            "explanation": explanation,
-            "teacher": teacher_used,
+            "explanation": FallbackTeacher().explain_move(feedback, context),
+            "teacher": "fallback",
+            "ai_explanation": get_settings().qwen_configured(),
             "san": san,
         }
         if accepted:
@@ -248,22 +254,65 @@ class SessionManager:
 
     # --- chat ---
 
-    def chat(self, session: Session, message: str) -> dict:
-        from .teacher import LessonContext, chat_or_fallback, get_teacher
+    def _chat_context(self, session: Session):
+        from .teacher import LessonContext
 
-        if not message or not message.strip():
-            raise ChessError("Empty message")
         lesson = self.lesson(session)
-        context = LessonContext(
+        return LessonContext(
             course_title=self.library.course(lesson.course_id).title,
             lesson_title=lesson.title,
             concepts=lesson.concepts,
         )
-        session.transcript.append({"role": "user", "content": message.strip()})
-        teacher = get_teacher()
-        reply, teacher_used = chat_or_fallback(teacher, message.strip(), context, session.transcript)
-        session.transcript.append({"role": "assistant", "content": reply})
+
+    def chat(self, session: Session, message: str) -> dict:
+        from .teacher import chat_or_fallback, get_teacher
+
+        if not message or not message.strip():
+            raise ChessError("Empty message")
+        message = message.strip()
+        context = self._chat_context(session)
+        history = list(session.transcript)  # prompt gets the new message exactly once
+        reply, teacher_used = chat_or_fallback(get_teacher(), message, context, history)
+        session.transcript += [{"role": "user", "content": message},
+                               {"role": "assistant", "content": reply}]
         return {"reply": reply, "teacher": teacher_used}
+
+    # --- streaming (Qwen text appears as it's generated) ---
+
+    def explain_stream(self, session: Session):
+        """Event generator explaining the latest graded move. Validates before streaming."""
+        from .teacher import FallbackTeacher, stream_events
+        from .teacher.prompts import build_move_feedback_messages
+
+        feedback, context = session.last_feedback, session.last_context
+        if feedback is None:
+            raise ExerciseConflict("No move to explain yet")
+        return stream_events(
+            lambda: build_move_feedback_messages(feedback, context),
+            lambda: FallbackTeacher().explain_move(feedback, context),
+        )
+
+    def chat_stream(self, session: Session, message: str):
+        from .teacher import FallbackTeacher, stream_events
+        from .teacher.prompts import build_chat_messages
+
+        if not message or not message.strip():
+            raise ChessError("Empty message")
+        message = message.strip()
+        context = self._chat_context(session)
+        history = list(session.transcript)
+        events = stream_events(
+            lambda: build_chat_messages(message, context, history),
+            lambda: FallbackTeacher().chat(message, context, history),
+        )
+
+        def recording():
+            for event in events:
+                if event["type"] == "done":
+                    session.transcript += [{"role": "user", "content": message},
+                                           {"role": "assistant", "content": event["text"]}]
+                yield event
+        return recording()
 
 
 _manager: SessionManager | None = None

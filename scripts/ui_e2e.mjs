@@ -98,6 +98,17 @@ check(r === "ok", "exercise: bishop f1 can be picked up and moved to c4 (was the
 await waitFor(() => !$("btn-continue").classList.contains("hidden") || /Try again/.test($("board-status").textContent), "Bc4 graded", 60000)
 check(!$("btn-continue").classList.contains("hidden"), "Bc4 accepted")
 console.log("  feedback:", $("feedback-slot").textContent.trim().slice(0, 140))
+const qwenOn = /teacher: qwen/.test($("health").textContent)
+if (qwenOn) {
+  // Engine verdict is instant; Qwen's explanation must stream into the same card.
+  check(/Qwen is writing/.test($("feedback-slot").textContent) || /teacher: qwen/.test($("feedback-slot").textContent),
+        "AI explanation starts streaming right after the instant verdict")
+  await waitFor(() => /teacher: (qwen|fallback)/.test(document.querySelector(".teacher-label").textContent), "explanation stream done", 90000)
+  const label = document.querySelector(".teacher-label").textContent
+  check(label === "teacher: qwen", "streamed explanation finished (" + label + ")")
+  const expl = document.querySelector(".explanation").textContent
+  check(expl.length > 20 && !/<think>|<\/think>/.test(expl), "explanation shown without <think> tags: " + expl.slice(0, 60))
+}
 
 // 4) Black exercise: Nf6
 $("btn-continue").click()
@@ -106,6 +117,14 @@ check(move("e2", "e4") === "cannot-pick-up", "black exercise: white pieces can't
 check(move("g8", "f6") === "ok", "black exercise: knight g8 can move")
 await waitFor(() => !$("btn-continue").classList.contains("hidden"), "Nf6 accepted", 60000)
 check(true, "Nf6 accepted")
+
+if (qwenOn) {
+  // Chat answer streams into a bubble.
+  $("chat-input").value = "Why is the bishop good on c4?"
+  $("btn-chat").click()
+  await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && !m.classList.contains("typing") && m.textContent.length > 20 }, "chat stream", 90000)
+  check(true, "chat reply streamed: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 50))
+}
 
 // 5) Start the plan's opening lesson and play the first exercise as Black
 const sicilianLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /moves and ideas/.test(b.textContent))

@@ -67,6 +67,13 @@ class Settings:
     # Thinking makes small local models much slower and adds no value here,
     # because the chess facts come from Stockfish, not from the model.
     qwen_thinking: str = (_env("QWEN_THINKING", "auto") or "auto").lower()
+    # Cap reply length: explanations are 2-5 sentences; long rambles are slow on local hardware.
+    qwen_max_tokens: int = int(_env("QWEN_MAX_TOKENS", "300") or "300")
+    # Planner: "auto" = ask Qwen only when the catalog can't answer (instant plans
+    # for known topics), "always" = Qwen organizes every plan, "never".
+    qwen_planner: str = (_env("QWEN_PLANNER", "auto") or "auto").lower()
+    # Load the model into memory when the server starts so the first reply isn't the slowest.
+    qwen_warmup: bool = (_env("QWEN_WARMUP", "1") or "1").lower() not in ("0", "false", "no", "off")
 
     # --- Server ---
     host: str = _env("HOST", "0.0.0.0") or "0.0.0.0"

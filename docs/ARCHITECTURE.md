@@ -67,6 +67,16 @@ planned Phase 3 work.
 - `FallbackTeacher` — deterministic templates built strictly from engine facts; also the behavior when Qwen is unreachable (`explain_or_fallback` / `chat_or_fallback` degrade instead of failing).
 - `get_teacher()` picks based on `QWEN_MODEL`.
 
+### Latency design (local models)
+
+`POST /move` returns the engine verdict with the deterministic explanation immediately and never
+calls Qwen. When Qwen is configured the response carries `ai_explanation: true`; the browser then
+opens `POST /explain`, which streams NDJSON events: `start`, `delta`, `replace`, `done`. `replace`
+covers the fallback case (Qwen down before any text) and retracting leaked reasoning (a stray
+`</think>`). `ThinkFilter` strips reasoning incrementally even when tags are split across tokens.
+Chat uses `POST /chat/stream`. The server loads the model at startup (`QWEN_WARMUP`) and caps
+replies (`QWEN_MAX_TOKENS`).
+
 ## Lesson schema
 
 `teach` (text + optional board), `demonstrate` (fen + legal move sequence + comments), `exercise` (fen, side, prompt, progressive hints, `advance_on`: `any_legal` | `accepted_move` | `min_classification`, continue text). Courses list available + planned lessons. Loader validates everything and fails fast (`LessonError`).

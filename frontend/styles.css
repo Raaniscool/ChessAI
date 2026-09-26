@@ -226,3 +226,11 @@ header h1 { margin: 0; font-size: 20px; }
 .chip:hover { border-color: var(--accent); }
 .msg .btn { margin-top: 8px; }
 .msg { white-space: pre-line; }
+
+/* ---------- streaming AI text ---------- */
+.typing { color: var(--warn); }
+.msg.typing { color: var(--muted); }
+.teacher-label.typing::after, .msg.typing::after {
+  content: "▍"; margin-left: 2px; animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }

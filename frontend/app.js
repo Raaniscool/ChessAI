@@ -14,6 +14,7 @@ const state = {
   chess: new Chess(),      // local mirror; server stays authoritative
   busy: false,
   demoPlaying: false,
+  stream: null,            // AbortController of the AI text currently streaming
   exploreChess: null,      // free-play copy while the teacher explains (never graded)
   exploreStartFen: null,
 }
@@ -33,6 +34,50 @@ async function api(path, method = "GET", body = undefined) {
     throw err
   }
   return data
+}
+
+// Stream newline-delimited JSON events (AI text appears while it's generated).
+async function streamEvents(path, body, onEvent) {
+  if (state.stream) state.stream.abort()
+  const controller = new AbortController()
+  state.stream = controller
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      let msg = `Request failed (${res.status})`
+      try { msg = (await res.json()).error || msg } catch (_) { /* not JSON */ }
+      throw new Error(msg)
+    }
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ""
+    for (;;) {
+      const {value, done} = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, {stream: true})
+      let nl
+      while ((nl = buffer.indexOf("\n")) >= 0) {
+        const line = buffer.slice(0, nl).trim()
+        buffer = buffer.slice(nl + 1)
+        if (line) onEvent(JSON.parse(line))
+      }
+    }
+    if (buffer.trim()) onEvent(JSON.parse(buffer))
+  } catch (err) {
+    if (err.name !== "AbortError") throw err
+  } finally {
+    if (state.stream === controller) state.stream = null
+  }
+}
+
+function stopStream() {
+  if (state.stream) state.stream.abort()
+  state.stream = null
 }
 
 // ---------- board ----------
@@ -165,6 +210,7 @@ async function handleUserMove(from, to) {
   const uci = from + to + (promotion || "")
   const fenBefore = state.chess.fen()
   applyUci(state.chess, uci)
+  stopStream()
 
   state.busy = true
   setStatus("Analyzing your move…")
@@ -231,10 +277,42 @@ function renderFeedback(result) {
   const best = fb.best_move ? ` Engine's choice: ${fb.best_move}.` : ""
   card.innerHTML =
     `<span class="cat ${fb.category}">${label}</span> — you played <b>${fb.user_move}</b>.` +
-    `<div style="margin-top:6px">${escapeHtml(result.explanation)}</div>` +
-    `<div class="meta">${escapeHtml(best)} analysis: ${fb.depth || "?"} plies · teacher: ${result.teacher}</div>`
+    `<div class="explanation" style="margin-top:6px">${escapeHtml(result.explanation)}</div>` +
+    `<div class="meta">${escapeHtml(best)} analysis: ${fb.depth || "?"} plies · ` +
+    `<span class="teacher-label">teacher: ${result.teacher}</span></div>`
   slot.appendChild(card)
   if (result.continue_text) addMsg(result.continue_text)
+  if (result.ai_explanation) streamExplanation(card)
+}
+
+// The engine verdict is shown instantly; Qwen's explanation streams in after it.
+async function streamExplanation(card) {
+  const textEl = card.querySelector(".explanation")
+  const label = card.querySelector(".teacher-label")
+  const quick = textEl.textContent
+  let text = ""
+  label.textContent = "✍ Qwen is writing an explanation…"
+  label.classList.add("typing")
+  try {
+    await streamEvents(`/api/sessions/${state.sessionId}/explain`, undefined, ev => {
+      if (ev.type === "delta") {
+        text += ev.text
+        textEl.textContent = text
+      } else if (ev.type === "replace") {
+        text = ev.text
+        textEl.textContent = text
+      } else if (ev.type === "done") {
+        label.textContent = `teacher: ${ev.teacher}`
+      }
+    })
+  } catch (err) {
+    textEl.textContent = quick
+    label.textContent = "teacher: fallback (AI unavailable)"
+  } finally {
+    label.classList.remove("typing")
+    if (label.textContent.startsWith("✍")) label.textContent = text ? "teacher: qwen" : "teacher: fallback"
+    if (!text) textEl.textContent = quick
+  }
 }
 
 function escapeHtml(s) {
@@ -257,6 +335,7 @@ function hideControls() {
 // ---------- step rendering ----------
 
 async function renderStep(step) {
+  stopStream()
   state.step = step
   state.busy = false
   hideControls()
@@ -401,11 +480,23 @@ async function sendChat() {
     return
   }
   addMsg(message, "user")
+  const bubble = addMsg("…", "assistant")
+  bubble.classList.add("typing")
+  let text = ""
   try {
-    const res = await api(`/api/sessions/${state.sessionId}/chat`, "POST", {message})
-    addMsg(res.reply)
+    await streamEvents(`/api/sessions/${state.sessionId}/chat/stream`, {message}, ev => {
+      if (ev.type === "delta") text += ev.text
+      else if (ev.type === "replace" || ev.type === "done") text = ev.text
+      if (text) {
+        bubble.textContent = text
+        messagesEl.scrollTop = messagesEl.scrollHeight
+      }
+    })
   } catch (err) {
+    bubble.remove()
     renderError(err.message)
+  } finally {
+    bubble.classList.remove("typing")
   }
 }
 

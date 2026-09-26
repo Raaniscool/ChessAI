@@ -1,8 +1,11 @@
 from .base import LessonContext, Teacher
 from .fallback import FallbackTeacher
-from .qwen import QwenTeacher, TeacherUnavailable
+from .qwen import RESET, QwenTeacher, TeacherUnavailable
 
-__all__ = ["FallbackTeacher", "LessonContext", "QwenTeacher", "Teacher", "TeacherUnavailable", "get_teacher"]
+__all__ = [
+    "FallbackTeacher", "LessonContext", "QwenTeacher", "Teacher", "TeacherUnavailable",
+    "get_teacher", "stream_events",
+]
 
 
 def get_teacher():
@@ -40,3 +43,44 @@ def chat_or_fallback(teacher, message: str, context: LessonContext, transcript: 
     except TeacherUnavailable:
         fallback = FallbackTeacher()
         return fallback.chat(message, context, transcript), fallback.name
+
+
+def stream_events(make_messages, fallback_text):
+    """Stream a teacher reply as events for the browser (one JSON object per line).
+
+    Events: {"type": "start", "teacher": ...}, {"type": "delta", "text": ...},
+            {"type": "done", "teacher": ..., "text": <full reply>}.
+    `make_messages()` builds the Qwen prompt; `fallback_text()` is the
+    deterministic answer used when Qwen is off, fails, or says nothing.
+    If Qwen dies mid-answer, the partial answer is kept and marked.
+    """
+    teacher = get_teacher()
+    if not isinstance(teacher, QwenTeacher):
+        text = fallback_text()
+        yield {"type": "start", "teacher": "fallback"}
+        yield {"type": "delta", "text": text}
+        yield {"type": "done", "teacher": "fallback", "text": text}
+        return
+
+    yield {"type": "start", "teacher": "qwen"}
+    parts: list[str] = []
+    try:
+        for chunk in teacher.stream(make_messages()):
+            if chunk == RESET:  # what was shown was reasoning after all: retract it
+                parts.clear()
+                yield {"type": "replace", "text": ""}
+                continue
+            parts.append(chunk)
+            yield {"type": "delta", "text": chunk}
+    except TeacherUnavailable:
+        if parts:
+            note = " …(the AI stopped responding)"
+            parts.append(note)
+            yield {"type": "delta", "text": note}
+    text = "".join(parts).strip()
+    if not text:  # Qwen unreachable or returned only reasoning: never leave the student empty-handed
+        text = fallback_text()
+        yield {"type": "replace", "text": text}
+        yield {"type": "done", "teacher": "fallback", "text": text}
+        return
+    yield {"type": "done", "teacher": "qwen", "text": text}

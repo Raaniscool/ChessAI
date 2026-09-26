@@ -34,6 +34,7 @@ MAX_UNITS = 8
 MIN_CUSTOM_PLIES = 6
 MAX_CUSTOM_PLIES = 16
 SCREEN_DEPTH = 10
+PLANNER_MAX_TOKENS = 800  # a plan is a small JSON object; explanations use QWEN_MAX_TOKENS
 MAX_GOAL_LENGTH = 300
 
 
@@ -159,7 +160,8 @@ def ask_qwen(goal: str, catalog: Catalog) -> QwenPlan | None:
     if not settings.qwen_configured():
         return None
     try:
-        reply = QwenTeacher(settings).complete(build_planner_messages(goal, catalog))
+        reply = QwenTeacher(settings).complete(build_planner_messages(goal, catalog),
+                                              max_tokens=PLANNER_MAX_TOKENS)
         return parse_qwen_plan(extract_json(reply), catalog)
     except (TeacherUnavailable, ValueError, TypeError, AttributeError) as exc:
         log.warning("Qwen planning failed, using catalog only: %s", exc)
@@ -225,7 +227,7 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         raise PlanError("Tell me what you'd like to learn.", _suggestions(catalog))
 
     matched = catalog.search(goal)
-    qwen = ask_qwen(goal, catalog) if use_qwen else None
+    qwen = ask_qwen(goal, catalog) if use_qwen and _planner_wants_qwen(matched) else None
 
     # Topic selection: Qwen's ordering first, then any direct match it missed.
     chosen_ids: list[str] = list(qwen.topic_ids) if qwen else []
@@ -273,7 +275,8 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
                  "Stockfish (checked move by move)", unit)
 
     if not units:
-        hint = "" if use_qwen and qwen is not None else (
+        from ..config import get_settings
+        hint = "" if get_settings().qwen_configured() else (
             " With Qwen connected I can also build lessons for openings that aren't in my library."
         )
         raise PlanError(
@@ -300,6 +303,18 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         "lessons": [{"id": lesson["id"], "title": lesson["title"]} for lesson in lessons],
     }
     return {"plan": plan, "course": course, "lessons": lessons}
+
+
+def _planner_wants_qwen(matched: list[Topic]) -> bool:
+    """QWEN_PLANNER: auto (only when the catalog has no answer — instant plans for
+    known topics), always, or never."""
+    from ..config import get_settings
+    mode = get_settings().qwen_planner
+    if mode == "never":
+        return False
+    if mode == "always":
+        return True
+    return not matched
 
 
 def _verified_custom_opening(plan_id: str, n: int, extra: dict, engine) -> list[dict] | str:
