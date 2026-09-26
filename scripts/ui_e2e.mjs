@@ -89,7 +89,7 @@ async function finishDemo(label) {
 
 // 1) Planner from the chat box (before any lesson)
 $("chat-input").value = "I want to learn the Sicilian"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => [...document.querySelectorAll("#messages button")].some(b => /Start the first lesson/.test(b.textContent)), "plan message")
 await waitFor(() => document.querySelector(".course.plan"), "plan course")
 check(/Sicilian/.test(document.querySelector(".course.plan").textContent), "plan listed in the sidebar")
@@ -98,7 +98,7 @@ check(![...document.querySelectorAll(".course.plan .badge")].some(b => /availabl
 
 // 2) "I want to learn the Italian Game" builds the lesson on request
 $("chat-input").value = "I want to learn the Italian Game"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /Italian/.test(h.textContent)), "Italian plan")
 const itLesson = lessonIn(/Italian/, /Moves and ideas/)
 check(!!itLesson, "Italian plan has 'moves and ideas'")
@@ -133,7 +133,7 @@ if (qwenOn) {
   check(expl.length > 20 && !/<think>|<\/think>/.test(expl), "explanation shown without <think> tags: " + expl.slice(0, 60))
   // Chat answer streams into a bubble.
   $("chat-input").value = "Why is the pawn good on e4?"
-  $("btn-chat").click()
+  await sendChat()
   await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && !m.classList.contains("typing") && m.textContent.length > 20 }, "chat stream", 90000)
   check(true, "chat reply streamed: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 50))
 }
@@ -153,15 +153,21 @@ check(move("c7", "c5") === "ok", "plan exercise: 1...c5 playable")
 await waitFor(() => !$("btn-continue").classList.contains("hidden"), "c5 accepted", 60000)
 check(true, "1...c5 accepted")
 
+// The chat button is disabled while a plan is being built; wait for it like a user would.
+async function sendChat() {
+  await waitFor(() => !$("btn-chat").disabled, "chat button enabled")
+  $("btn-chat").click()
+}
+
 // 6) Chat routing: "I want to learn ..." makes a plan even mid-lesson
 $("chat-input").value = "I want to learn knight forks"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /fork/i.test(h.textContent)), "fork plan")
 check(true, "chat 'I want to learn…' creates a plan")
 
 // 7) The user's report: "I want to learn the smothered mate" must teach smothered mate
 $("chat-input").value = "I want to learn the smothered mate"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => /Learn: Smothered mate/.test(lastMsgs(1)[0]), "smothered plan message")
 const smPlan = lastMsgs(1)[0]
 check(/Smothered mate/.test(smPlan) && !/Fork|Pin|Skewer/.test(smPlan), "smothered-mate plan contains only smothered mate")
@@ -185,14 +191,14 @@ check(/Checkmate!/.test($("feedback-slot").textContent + lastMsgs(2).join(" ")),
 // 8) Unknown subject: honest answer + suggestions, no substitute plan
 const plansBefore = (await planIds()).length
 $("chat-input").value = "I want to learn the zorblax gambit"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => /don't have verified lessons/.test(lastMsgs(1)[0]), "unknown-subject answer", 90000)
 check(document.querySelectorAll("#messages .suggestions").length > 0, "unknown subject: suggestion chips shown")
 check((await planIds()).length === plansBefore, "unknown subject: no substitute plan created")
 
 // 9) Knowledge Library: "Show me checkmates" mid-lesson -> verified examples as a lesson
 $("chat-input").value = "Show me checkmates"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => /Learn: Checkmate/.test(lastMsgs(1)[0]), "library plan message", 30000)
 check(/verified examples/.test([...document.querySelectorAll("#messages .msg")].pop().textContent),
       "chat 'Show me…' builds a lesson from the verified library")
@@ -228,7 +234,7 @@ check(/Solution: \S+/.test(lastMsgs(1)[0]), "exercise solution comes from the ve
 const before = (await planIds()).length
 const assistantBefore = document.querySelectorAll("#messages .msg.assistant").length
 $("chat-input").value = "show me why this move is bad"
-$("btn-chat").click()
+await sendChat()
 await waitFor(() => { const all = [...document.querySelectorAll("#messages .msg.assistant")]; const m = all.pop(); return all.length >= assistantBefore && m && !m.classList.contains("typing") && m.textContent.length > 10 }, "chat reply", 90000)
 check((await planIds()).length === before, "'show me why…' is answered in the chat, not turned into a plan")
 
@@ -263,7 +269,7 @@ $("ga-pgn").value = GAME2
 $("ga-import-btn").click()
 await waitFor(() => /Analysis done/.test($("ga-status").textContent) && document.querySelector(".weakness.recurring"), "second game analyzed", 120000)
 const weakness = document.querySelector(".weakness.recurring")
-check(/Missed knight fork/.test(weakness.textContent) && /2 of your|both games/.test(weakness.textContent), "recurring weakness across 2 games: " + weakness.textContent.slice(0, 80))
+check(/Missed knight fork/.test(weakness.textContent) && /2 of your|both games/i.test(weakness.textContent), "recurring weakness across 2 games: " + weakness.textContent.slice(0, 80))
 check(/verified example/.test(weakness.textContent), "weakness links to verified library examples")
 check(document.querySelectorAll("#ga-games .game-item").length >= 2, "both games listed")
 // jump to where it happened
