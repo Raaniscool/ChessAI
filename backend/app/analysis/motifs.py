@@ -62,6 +62,7 @@ PRIORITY = ["missed_checkmate", "allowed_checkmate", "hung_piece", "walked_into_
             "missed_free_piece", "missed_trapped_piece", "allowed_discovered_attack", "allowed_pin",
             "allowed_skewer", "missed_threat", "king_safety", "poisoned_pawn", "bad_trade", "missed_check",
             "missed_tactic", "tactical_oversight", "endgame_mistake", "opening_mistake", "positional_mistake"]
+MATE_COMPANIONS = {"missed_checkmate", "allowed_checkmate", "missed_threat", "king_safety"}
 MATE_PATTERNS = ("smothered_mate", "back_rank_mate", "anastasia_mate", "arabian_mate", "boden_mate")
 FORK_CONCEPT = {chess.KNIGHT: "knight_fork", chess.PAWN: "pawn_fork", chess.QUEEN: "queen_fork"}
 
@@ -215,7 +216,7 @@ def detect(before: chess.Board, move: chess.Move, best_line: list[chess.Move], r
             if facts and cashes_in(actual, 1, _squares(facts, *TARGET_ROLES[name])):
                 add(finding(motif, facts))
         threat = _run("missed_threat", ctx)
-        if threat:
+        if threat and _real_threat(before, move, actual.moves[1]):
             add(finding("missed_threat", threat,
                         lines=[f"{threat['ignored_threat']} was already threatened before {actual.labels[0]}, "
                                f"and the move did nothing about it"]))
@@ -278,12 +279,39 @@ def detect(before: chess.Board, move: chess.Move, best_line: list[chess.Move], r
         else:
             add(finding("positional_mistake", {"phase": phase}, lines=[]))
 
+    if any(f.motif in ("missed_checkmate", "allowed_checkmate") for f in found.values()):
+        # Next to a checkmate every other tactic is noise for a beginner; keep only the
+        # lessons that explain how the mate became possible.
+        found = {k: f for k, f in found.items() if k in MATE_COMPANIONS}
     out = list(found.values())
     out.sort(key=lambda f: PRIORITY.index(f.motif) if f.motif in PRIORITY else len(PRIORITY))
     if phase == "endgame":
         for f in out:
             f.topic = f.topic or endgame_topic(before)
     return out
+
+
+def _real_threat(before: chess.Board, move: chess.Move, reply: chess.Move) -> bool:
+    """Was the opponent's punishing reply already a real threat before `move`?
+
+    Real means: had the learner passed, the reply would have mated, or captured a piece
+    that was undefended or worth more than the capturer. Capturing the piece the learner
+    just moved is never an ignored threat — that piece wasn't there before."""
+    if reply.to_square == move.to_square:
+        return False
+    probe = before.copy(stack=False)
+    probe.push(chess.Move.null())
+    if reply not in probe.legal_moves:
+        return False
+    target = probe.piece_at(reply.to_square)
+    attacker = probe.piece_at(reply.from_square)
+    probe.push(reply)
+    if probe.is_checkmate():
+        return True
+    if target is None or attacker is None or target.piece_type == chess.PAWN:
+        return False
+    defended = bool(probe.attackers(target.color, reply.to_square))
+    return not defended or VALUES[target.piece_type] > VALUES[attacker.piece_type]
 
 
 def endgame_topic(board: chess.Board) -> str:

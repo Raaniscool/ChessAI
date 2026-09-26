@@ -22,7 +22,7 @@ import chess
 
 from ..config import get_settings
 from ..engine import Analysis, Classification, Score, classify_move
-from ..engine.classification import GOOD_CP, INACCURATE_CP
+from ..engine.classification import DECIDED_POSITION_CP, GOOD_CP, INACCURATE_CP
 from ..games.model import GameRecord
 from .habits import OPENING_PLIES, detect_habits
 from .motifs import detect, non_pawn_material
@@ -57,6 +57,15 @@ def _learner_cp(score: Score | None, side: chess.Color) -> int | None:
     return max(-CP_CAP, min(CP_CAP, score.for_side(side)))
 
 
+def _decided(before: Score | None, after: Score | None, side: chess.Color) -> bool:
+    """Clearly won (or clearly lost) both before and after the move."""
+    a, b = _learner_cp(before, side), _learner_cp(after, side)
+    if a is None or b is None:
+        return False
+    return (a >= DECIDED_POSITION_CP and b >= DECIDED_POSITION_CP) or \
+        (a <= -DECIDED_POSITION_CP and b <= -DECIDED_POSITION_CP)
+
+
 def _uci_line(board: chess.Board, sans: list[str]) -> list[chess.Move]:
     """Engine lines come back as SAN; turn them into legal moves (stop at anything odd)."""
     probe, out = board.copy(stack=False), []
@@ -89,8 +98,9 @@ class GameAnalyzer:
             self._cache[key] = self.engine.analyse(board, depth=depth)
         return self._cache[key]
 
-    def _alternatives(self, board: chess.Board, best_uci: str | None, played: chess.Move) -> list[str]:
-        """Other moves Stockfish rates (nearly) as good as its best one."""
+    def _alternatives(self, board: chess.Board, best_uci: str | None, played: chess.Move,
+                      reference: Score | None = None) -> list[str]:
+        """Other moves Stockfish rates (nearly) as good as its best one (`reference`)."""
         if not hasattr(self.engine, "analyse_lines"):
             return []
         try:
@@ -100,7 +110,7 @@ class GameAnalyzer:
         if not lines:
             return []
         side = board.turn
-        top = lines[0].score.for_side(side)
+        top = max(lines[0].score.for_side(side), reference.for_side(side) if reference else -10**6)
         out = []
         for line in lines:
             if line.move.uci() == best_uci or line.move == played:
@@ -215,7 +225,8 @@ class GameAnalyzer:
         category, loss, notes = classify_move(before, move, deep_before.score, deep_after.score, best)
         if category not in (Classification.MISTAKE, Classification.BLUNDER) and "missed_mate" not in notes:
             return None  # the quick pass was noise: the deeper search doesn't confirm it
-        if "decided_position" in notes and loss < 3 * INACCURATE_CP and "missed_mate" not in notes:
+        if _decided(deep_before.score, deep_after.score, side) and loss < 3 * INACCURATE_CP \
+                and "missed_mate" not in notes:
             return None  # already decided either way, and it didn't change much: not worth a beginner's time
         best_line = _uci_line(before, deep_before.pv_san)
         reply_line = _uci_line(after, deep_after.pv_san)
@@ -249,7 +260,7 @@ class GameAnalyzer:
             "best_move_uci": deep_before.best_move_uci,
             "best_line": deep_before.pv_san[:8],
             "reply_line": deep_after.pv_san[:8],
-            "alternatives": self._alternatives(before, deep_before.best_move_uci, move),
+            "alternatives": self._alternatives(before, deep_before.best_move_uci, move, deep_before.score),
             "material_change": actual_gain,
             "best_line_material": best_gain,
             "findings": [f.as_dict() for f in findings],

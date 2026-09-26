@@ -124,6 +124,10 @@ def _clean(line: str) -> str:
 
 def fact_lines(moment: dict) -> list[str]:
     out = []
+    after = moment.get("fen_after")
+    if after and chess.Board(after).is_stalemate():
+        out.append(f"{moment['san']} leaves the opponent with no legal move while not in check: "
+                   f"that is stalemate, and the game ends in a draw")
     for f in moment.get("findings", []):
         out += [_clean(line) for line in f.get("fact_lines", [])]
     return out

@@ -110,12 +110,23 @@ class ScriptedEngine(FakeEngine):
     deep:     same shape, but only at depth >= deep_from (the analyzer's confirmation pass)
     Anything else: the greedy one-move-deep material search of FakeEngine."""
 
-    def __init__(self, analyses=None, deep=None, deep_from: int = 99, table=None, positions=None):
+    def __init__(self, analyses=None, deep=None, deep_from: int = 99, table=None, positions=None,
+                 flat: bool = False):
         super().__init__(table=table, positions=positions)
+        self.flat = flat  # every move is worth 0 (unless it mates): a game with no mistakes
         self.analyses = analyses or {}
         self.deep = deep or {}
         self.deep_from = deep_from
         self.analyse_calls: list[tuple[str, int]] = []
+
+    def _score(self, board: chess.Board, move: chess.Move) -> Score:
+        if self.flat and board.epd() not in self.table:
+            after = board.copy(stack=False)
+            after.push(move)
+            if after.is_checkmate():
+                return Score("mate", 1 if board.turn == chess.WHITE else -1)
+            return Score("cp", 0)
+        return super()._score(board, move)
 
     def _greedy_pv(self, board: chess.Board, plies: int = 4) -> list[str]:
         board = board.copy(stack=False)
