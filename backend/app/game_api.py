@@ -184,8 +184,9 @@ def analyze(body: AnalyzeRequest):
                 return
             except Exception as exc:  # one broken game must not stop the batch
                 yield {"type": "error", "game_id": game.id, "error": f"{type(exc).__name__}: {exc}"}
-        ids = body.game_ids or None
-        yield {"type": "done", "weaknesses": _weaknesses(ids)}
+        # Patterns are judged across all of the learner's analyzed games, not just this batch:
+        # a mistake in today's game may repeat one from last week.
+        yield {"type": "done", "weaknesses": _weaknesses()}
 
     return _ndjson(events())
 

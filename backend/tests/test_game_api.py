@@ -109,6 +109,16 @@ def test_explain_streams_a_verified_explanation(client):
     assert client.post("/api/games/nope-123/moments/0/explain", json={}).status_code == 404
 
 
+def test_a_new_game_is_compared_with_earlier_ones(client):
+    client.post("/api/games/import", json={"pgn": fork_game(game_no=600000001, black="alice"), "username": "RaanTest"})
+    first = ndjson(client.post("/api/games/analyze", json={"game_ids": ["chesscom-600000001"]}))[-1]
+    assert first["weaknesses"]["weaknesses"] == []
+    client.post("/api/games/import", json={"pgn": fork_game(game_no=600000002, black="bob"), "username": "RaanTest"})
+    second = ndjson(client.post("/api/games/analyze", json={"game_ids": ["chesscom-600000002"]}))
+    assert [e["game_id"] for e in second if e["type"] == "game_done"] == ["chesscom-600000002"]
+    assert [w["key"] for w in second[-1]["weaknesses"]["weaknesses"]] == ["knight_fork"]
+
+
 def test_weaknesses_endpoint_can_be_limited_to_some_games(client):
     import_and_analyze(client)
     both = client.get("/api/games/weaknesses").json()
