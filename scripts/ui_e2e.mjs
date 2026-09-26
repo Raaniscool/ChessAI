@@ -272,12 +272,23 @@ const weakness = document.querySelector(".weakness.recurring")
 check(/Missed knight fork/.test(weakness.textContent) && /2 of your|both games/i.test(weakness.textContent), "recurring weakness across 2 games: " + weakness.textContent.slice(0, 80))
 check(/verified example/.test(weakness.textContent), "weakness links to verified library examples")
 check(document.querySelectorAll("#ga-games .game-item").length >= 2, "both games listed")
+check($("ga-import").classList.contains("collapsed") && /Import more games/.test($("ga-import").textContent),
+  "the import form folds into one button once there are games")
 // jump to where it happened
 ;[...weakness.querySelectorAll("button")].find(b => /See it/.test(b.textContent)).click()
 await waitFor(() => !$("ga-review").classList.contains("hidden") && document.querySelector(".moment-headline"), "moment review")
 check(/You missed a knight fork/.test(document.querySelector(".moment-headline").textContent), "moment headline names the tactic")
 check(/^Move \d+\.\.\./.test(document.querySelector(".ga-card.moment h3").textContent), "Black's move titled 'Move N...': " + document.querySelector(".ga-card.moment h3").textContent)
 check(document.querySelector(".engine-details") && !document.querySelector(".engine-details").open, "engine numbers folded away by default")
+// the explanation can be read aloud, and its moves are tied to the positions they're about
+const momentText = document.querySelector(".moment-text")
+const momentMove = momentText && momentText.querySelector(".moment-why .mv")
+check(!!momentMove && JSON.parse(momentText.dataset.fens).length > 2, "moment text: moves marked and linked to their positions")
+await new Promise(r => setTimeout(r, 300))  // let "Position before" finish drawing
+momentMove.dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
+check(board.getMarkers().some(m => m.type.class === "marker-speech"), "pointing at " + momentMove.textContent + " lights its squares on the board")
+$("ga-title").dispatchEvent(new w.MouseEvent("mouseover", {bubbles: true}))
+check(!board.getMarkers().some(m => m.type.class === "marker-speech"), "moving away clears them")
 const fenBefore = board.getPosition()
 ;[...document.querySelectorAll(".moment-views .btn")].find(b => b.textContent === "Best move").click()
 await waitFor(() => /Stockfish's move/.test($("board-status").textContent), "best move shown")

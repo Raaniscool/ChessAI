@@ -33,6 +33,11 @@ The rules are the same as everywhere else in the tutor:
 6. **▶ Start training** (on a weakness or a moment) builds a normal lesson plan in
    the Lessons tab.
 
+**Read aloud:** with 🔊 *Read aloud* on (header), each moment's explanation is read when
+you open it, and so is the AI's answer. The 🔊 button on the card reads it on demand. As a
+move is spoken, its squares light up. Moves from Stockfish's line light up in the position
+where they're played. Pointing at a move in the text lights it up too.
+
 Only Chess.com PGNs are supported in this milestone. Nothing is scraped from
 Chess.com: you paste the text yourself.
 
