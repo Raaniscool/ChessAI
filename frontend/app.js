@@ -14,6 +14,8 @@ const state = {
   chess: new Chess(),      // local mirror; server stays authoritative
   busy: false,
   demoPlaying: false,
+  exploreChess: null,      // free-play copy while the teacher explains (never graded)
+  exploreStartFen: null,
 }
 
 // ---------- api ----------
@@ -83,33 +85,77 @@ function exerciseLocked() {
   return false
 }
 
-function moveInputHandler(event) {
-  if (exerciseLocked()) return false
-  switch (event.type) {
-    case INPUT_EVENT_TYPE.moveInputStarted: {
-      const piece = state.chess.get(event.squareFrom)
-      if (!piece || piece.color !== state.chess.turn()) return false
-      const moves = state.chess.moves({square: event.squareFrom, verbose: true})
-      if (!moves.length) return false
-      board.addLegalMovesMarkers(moves)
-      return true
+// Shared legal-move gate for both graded exercises and free exploration.
+function legalInputHandler(getChess, onMove) {
+  return (event) => {
+    const chess = getChess()
+    if (!chess) return false
+    switch (event.type) {
+      case INPUT_EVENT_TYPE.moveInputStarted: {
+        const piece = chess.get(event.squareFrom)
+        if (!piece || piece.color !== chess.turn()) return false
+        const moves = chess.moves({square: event.squareFrom, verbose: true})
+        if (!moves.length) return false
+        board.addLegalMovesMarkers(moves)
+        return true
+      }
+      case INPUT_EVENT_TYPE.validateMoveInput: {
+        const moves = chess.moves({square: event.squareFrom, verbose: true})
+        return moves.some(m => m.to === event.squareTo)
+      }
+      case INPUT_EVENT_TYPE.moveInputFinished: {
+        board.removeLegalMovesMarkers()
+        onMove(event.squareFrom, event.squareTo)
+        return true
+      }
+      case INPUT_EVENT_TYPE.moveInputCanceled: {
+        board.removeLegalMovesMarkers()
+        return false
+      }
+      default:
+        return false
     }
-    case INPUT_EVENT_TYPE.validateMoveInput: {
-      const moves = state.chess.moves({square: event.squareFrom, verbose: true})
-      return moves.some(m => m.to === event.squareTo)
-    }
-    case INPUT_EVENT_TYPE.moveInputFinished: {
-      board.removeLegalMovesMarkers()
-      handleUserMove(event.squareFrom, event.squareTo)
-      return true
-    }
-    case INPUT_EVENT_TYPE.moveInputCanceled: {
-      board.removeLegalMovesMarkers()
-      return false
-    }
-    default:
-      return false
   }
+}
+
+const exerciseInput = legalInputHandler(
+  () => (exerciseLocked() ? null : state.chess),
+  (from, to) => handleUserMove(from, to),
+)
+
+// ---------- free exploration (teach / after demonstrations) ----------
+
+const exploreInput = legalInputHandler(
+  () => (state.demoPlaying ? null : state.exploreChess),
+  async (from, to) => {
+    const chess = state.exploreChess
+    const candidates = chess.moves({square: from, verbose: true}).filter(m => m.to === to)
+    if (!candidates.length) return
+    chess.move({from, to, promotion: candidates.some(m => m.promotion) ? "q" : undefined})
+    await board.setPosition(chess.fen(), true)  // syncs castling rook / en passant / promotion
+    showBtn("btn-reset")
+    setStatus("Exploring freely — these moves aren't graded. Press ↺ to reset.")
+  },
+)
+
+function enableExplore(fen) {
+  state.exploreChess = new Chess(fen)
+  state.exploreStartFen = fen
+  board.disableMoveInput()
+  board.enableMoveInput(exploreInput)  // both colours, turn order enforced by the rules
+}
+
+async function resetExplore() {
+  if (!state.exploreStartFen) return
+  state.exploreChess = new Chess(state.exploreStartFen)
+  clearMarkers()
+  await board.setPosition(state.exploreStartFen, true)
+  hideBtn("btn-reset")
+  setStatus("Board reset. Try any legal move — nothing here is graded.")
+}
+
+function moveInputHandler(event) {
+  return exerciseInput(event)
 }
 
 async function handleUserMove(from, to) {
@@ -128,10 +174,10 @@ async function handleUserMove(from, to) {
     if (result.accepted) {
       // Server pushed the move too; local mirror matches. Unlocks Continue.
       state.step.accepted = true
-      showBtn("btn-continue")
       hideBtn("btn-hint"); hideBtn("btn-reveal")
       setStatus("")
       await board.setPosition(state.chess.fen(), true)
+      showBtn("btn-continue")  // only once the board has settled, so the click isn't ignored
     } else {
       // Not good enough for the lesson's goal: reset and let them retry.
       await board.setPosition(result.reset_fen || fenBefore, true)
@@ -205,7 +251,7 @@ function showBtn(id) { document.getElementById(id).classList.remove("hidden") }
 function hideBtn(id) { document.getElementById(id).classList.add("hidden") }
 
 function hideControls() {
-  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal"].forEach(hideBtn)
+  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal", "btn-reset"].forEach(hideBtn)
 }
 
 // ---------- step rendering ----------
@@ -218,12 +264,15 @@ async function renderStep(step) {
   document.getElementById("lesson-title").textContent = step.lesson_title
   document.getElementById("step-indicator").textContent = `Step ${step.index + 1} / ${step.total_steps}`
   board.disableMoveInput()
+  state.exploreChess = null
+  state.exploreStartFen = null
 
   if (step.type === "teach") {
     addMsg(step.text)
     await showPosition(step.board.fen, {highlights: step.board.highlights || []})
     showBtn("btn-continue")
-    setStatus(step.board.lock === false ? "" : "Board is locked while the teacher explains.")
+    enableExplore(step.board.fen)
+    setStatus("You can try moves on the board — they aren't graded.")
   } else if (step.type === "demonstrate") {
     addMsg(step.text)
     await showPosition(step.start_fen)
@@ -232,6 +281,9 @@ async function renderStep(step) {
   } else if (step.type === "exercise") {
     addMsg(`🎯 **Exercise:** ${step.prompt}`.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), "assistant", true)
     const side = step.side === "black" ? COLOR.black : COLOR.white
+    // The local mirror MUST match the exercise position, otherwise only pieces
+    // that could move in the previous position are draggable.
+    state.chess = new Chess(step.board.fen)
     await showPosition(step.board.fen, {orientation: side, highlights: []})
     board.enableMoveInput(moveInputHandler, side)
     showBtn("btn-hint"); showBtn("btn-reveal")
@@ -248,6 +300,7 @@ async function renderStep(step) {
 async function playDemonstration() {
   if (state.demoPlaying || !state.step || state.step.type !== "demonstrate") return
   state.demoPlaying = true
+  board.disableMoveInput()
   hideBtn("btn-play")
   const btn = document.getElementById("btn-play")
   const step = state.step
@@ -264,7 +317,8 @@ async function playDemonstration() {
     const after = step.board_after || {}
     clearMarkers()
     applyHighlights(after.highlights || [])
-    setStatus("Demonstration complete.")
+    enableExplore(demoChess.fen())
+    setStatus("Demonstration complete — try moves yourself, or press Continue.")
   } finally {
     state.demoPlaying = false
     showBtn("btn-continue")
@@ -341,14 +395,88 @@ async function sendChat() {
   const message = input.value.trim()
   if (!message) return
   input.value = ""
-  addMsg(message, "user")
-  if (!state.sessionId) {
-    addMsg("Start a lesson first — I teach inside the lesson context.", "system")
+  // "I want to learn ___" (or anything typed before a lesson starts) builds a plan.
+  if (!state.sessionId || isLearnRequest(message)) {
+    await requestPlan(message)
     return
   }
+  addMsg(message, "user")
   try {
     const res = await api(`/api/sessions/${state.sessionId}/chat`, "POST", {message})
     addMsg(res.reply)
+  } catch (err) {
+    renderError(err.message)
+  }
+}
+
+// ---------- learning plans ----------
+
+const LEARN_REQUEST = /^\s*(i\s*(really\s*)?(want|would like|'d like|wanna|need)\s*(to\s*)?(learn|study|practice|practise|get better at|improve|master)|teach me|help me (learn|with|improve|understand)|show me how|how do i (play|learn)|can you teach me|learn\b|plan\b)/i
+
+function isLearnRequest(text) {
+  return LEARN_REQUEST.test(text)
+}
+
+async function requestPlan(goal) {
+  goal = goal.trim()
+  if (!goal) return
+  addMsg(goal, "user")
+  const pending = addMsg("🧭 Building your learning plan… (with Qwen this can take a little while)", "system")
+  const btn = document.getElementById("btn-plan")
+  btn.disabled = true
+  try {
+    const res = await api("/api/plans", "POST", {goal})
+    pending.remove()
+    renderPlan(res)
+    await loadCourses()
+  } catch (err) {
+    pending.remove()
+    const suggestions = (err.data && err.data.suggestions) || []
+    const div = addMsg(escapeHtml(err.message), "assistant", true)
+    if (suggestions.length) {
+      const row = document.createElement("div")
+      row.className = "suggestions"
+      for (const s of suggestions) {
+        const chip = document.createElement("button")
+        chip.className = "chip"
+        chip.textContent = s
+        chip.addEventListener("click", () => requestPlan(s))
+        row.appendChild(chip)
+      }
+      div.appendChild(row)
+    }
+  } finally {
+    btn.disabled = false
+  }
+}
+
+const CATEGORY_ICONS = {opening: "♟", tactic: "⚔", endgame: "♔", strategy: "🧠"}
+
+function renderPlan(res) {
+  const plan = res.plan
+  const units = plan.units.map((u, i) =>
+    `<li><b>${escapeHtml(u.title)}</b> ${CATEGORY_ICONS[u.category] || ""}` +
+    ` <span class="muted">— ${escapeHtml(u.reason)} (${u.lesson_ids.length} lesson${u.lesson_ids.length === 1 ? "" : "s"})</span></li>`
+  ).join("")
+  const skipped = (plan.skipped || []).map(s =>
+    `<li>${escapeHtml(s.title)}: <span class="muted">${escapeHtml(s.reason)}</span></li>`).join("")
+  const div = addMsg(
+    `🧭 <b>${escapeHtml(plan.title)}</b><br>${escapeHtml(plan.summary)}<ol class="plan-units">${units}</ol>` +
+    (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : "") +
+    `<div class="muted">Planned by ${plan.planner === "qwen" ? "Qwen" : "the built-in catalog"}; every move you'll be asked to find is checked by Stockfish.</div>`,
+    "assistant", true)
+  const start = document.createElement("button")
+  start.className = "btn primary"
+  start.textContent = "▶ Start the first lesson"
+  start.addEventListener("click", () => startLesson(res.first_lesson_id))
+  div.appendChild(start)
+}
+
+async function deletePlan(planId, title) {
+  if (!confirm(`Delete the plan “${title}”?`)) return
+  try {
+    await api(`/api/plans/${planId}`, "DELETE")
+    await loadCourses()
   } catch (err) {
     renderError(err.message)
   }
@@ -363,8 +491,17 @@ async function loadCourses() {
     el.innerHTML = ""
     for (const course of data.courses) {
       const div = document.createElement("div")
-      div.className = "course"
-      div.innerHTML = `<h3>${escapeHtml(course.title)}</h3><p>${escapeHtml(course.description)}</p>`
+      div.className = "course" + (course.kind === "plan" ? " plan" : "")
+      div.innerHTML = `<h3>${course.kind === "plan" ? "🧭 " : ""}${escapeHtml(course.title)}</h3>` +
+        `<p>${escapeHtml(course.description)}</p>`
+      if (course.kind === "plan") {
+        const del = document.createElement("button")
+        del.className = "icon-btn"
+        del.title = "Delete this plan"
+        del.textContent = "✕"
+        del.addEventListener("click", () => deletePlan(course.plan.id, course.title))
+        div.appendChild(del)
+      }
       for (const lesson of course.lessons) {
         const btn = document.createElement("button")
         btn.className = "lesson-item" + (lesson.completed ? " done" : "")
@@ -401,6 +538,14 @@ document.getElementById("btn-continue").addEventListener("click", advanceLesson)
 document.getElementById("btn-hint").addEventListener("click", requestHint)
 document.getElementById("btn-reveal").addEventListener("click", revealSolution)
 document.getElementById("btn-chat").addEventListener("click", sendChat)
+document.getElementById("btn-reset").addEventListener("click", resetExplore)
+document.getElementById("plan-form").addEventListener("submit", e => {
+  e.preventDefault()
+  const input = document.getElementById("plan-input")
+  const goal = input.value
+  input.value = ""
+  requestPlan(goal)
+})
 document.getElementById("chat-input").addEventListener("keydown", e => {
   if (e.key === "Enter") sendChat()
 })

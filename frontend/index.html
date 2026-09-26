@@ -22,7 +22,15 @@
 
   <div class="layout">
     <aside id="sidebar">
-      <h2>Opening courses</h2>
+      <form id="plan-form" class="plan-form">
+        <label for="plan-input">What do you want to learn?</label>
+        <div class="plan-row">
+          <input id="plan-input" type="text" autocomplete="off"
+                 placeholder="e.g. the Sicilian, knight forks, rook endgames…">
+          <button id="btn-plan" class="btn primary" type="submit">Plan</button>
+        </div>
+      </form>
+      <h2>Your plans &amp; courses</h2>
       <div id="course-list" class="course-list">Loading…</div>
     </aside>
 
@@ -39,8 +47,9 @@
         </div>
         <div id="messages" class="messages">
           <div class="msg assistant">
-            Pick a lesson from the left to start. The AI will teach on the board,
-            demonstrate ideas, then put you on the move.
+            Tell me what you want to learn — type something like
+            <b>“I want to learn the London System”</b> or <b>“teach me knight forks”</b> —
+            and I'll build you a plan of lessons. Or pick a lesson on the left.
           </div>
         </div>
         <div id="feedback-slot"></div>
@@ -49,9 +58,10 @@
           <button id="btn-continue" class="btn primary hidden">Continue →</button>
           <button id="btn-hint" class="btn hidden">💡 Hint</button>
           <button id="btn-reveal" class="btn hidden">Show solution</button>
+          <button id="btn-reset" class="btn hidden">↺ Reset board</button>
         </div>
         <div class="chat-row">
-          <input id="chat-input" type="text" placeholder="Ask the teacher a question…"
+          <input id="chat-input" type="text" placeholder="Ask a question, or “I want to learn …”"
                  autocomplete="off">
           <button id="btn-chat" class="btn">Send</button>
         </div>
