@@ -21,7 +21,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 ## "I want to learn ___" — personal learning plans
 
-Type what you want to learn (sidebar box, or just say it in the chat: *"I want to learn the Sicilian"*, *"teach me knight forks"*, *"I want to get better at endgames"*). The tutor builds a plan of lessons and adds it to the sidebar.
+Type what you want to learn in the chat box (*"I want to learn the Sicilian"*, *"teach me knight forks"*, *"I want to get better at endgames"*). The tutor builds a plan of lessons and adds it to the sidebar ("Your lessons"). Built-in material such as the Italian Game lessons isn't advertised there — ask for it (*"I want to learn the Italian Game"*) and the tutor builds the lesson.
 
 - **Verified examples first:** if the [Knowledge Library](docs/KNOWLEDGE_LIBRARY.md) covers the subject (*"Show me checkmates"*, *"Teach me forks"*, *"Give me an endgame lesson"*), the plan starts with a short lesson built from verified examples: watch one, find the key move in a slightly harder one, then solve one on your own. A 🧠 *Explain this example* button has the AI explain it from the example's verified facts. Otherwise the catalog planner below runs as before.
 - Plans are built from a **verified topic catalog** (`backend/app/planner/data/topics.json`, 57 topics): 15 openings, opening principles, and 40+ tactics, checkmate patterns and endgames — e.g. *smothered mate*, *Anastasia's mate*, *Boden's mate*, *deflection*, *zwischenzug*, *x-ray*, *zugzwang*, *rook endgames*. Each opening becomes two lessons (watch + first moves, then the whole line from memory); each tactic/endgame topic becomes "learn the pattern" + "practice" lessons.
@@ -32,7 +32,9 @@ Type what you want to learn (sidebar box, or just say it in the chat: *"I want t
 - Without Qwen the planner works from the catalog alone (keyword + typo-tolerant matching).
 - Plans are saved to `data/plans/` (gitignored) and survive restarts. Delete one with the ✕ on its card.
 
-While the teacher is explaining (or after a demonstration) you can **move pieces freely** to try ideas — those moves aren't graded; ↺ resets the board.
+**Lesson flow:** demonstrations play by themselves (↻ *Watch again* replays them), then the button says **"Your turn — practise it →"**. Pieces can only be moved in an exercise; clicking the board anywhere else tells you what to press instead of silently doing nothing.
+
+**🔊 Read aloud:** turn it on in the header (speed and voice next to it) and the tutor's messages are read to you; every message also has its own 🔊 button. Chess notation is spoken as words (*Nxg5* → "knight takes G5", *O-O* → "castles kingside"), and as each move or square is spoken it lights up on the board and in the text. With read-aloud on, a demonstration waits for each comment to be read before playing the next move. It uses the browser's built-in voices (Edge and Chrome on Windows work offline; Edge's "Natural" voices sound best) — nothing to install.
 
 ## Repository layout
 
@@ -49,6 +51,7 @@ backend/app/
   planner/data/puzzles.json    # Stockfish-verified Lichess puzzles per theme (built by scripts/build_puzzle_library.py)
 backend/tests/         # pytest suite (chess, classification, lessons, engine, teacher)
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
+frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
 docs/ARCHITECTURE.md
 requirements.txt
@@ -149,7 +152,7 @@ The app never makes you wait for the language model to see a result:
 
 **Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite.
 
-**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans, free exploration on the board. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Verified Knowledge Library (107 examples) wired into plans, lessons, chat and the AI teacher. Test suite: **653 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
+**Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Verified Knowledge Library (107 examples) wired into plans, lessons, chat and the AI teacher. Test suite: **653 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
 **Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
 

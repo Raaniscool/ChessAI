@@ -12,26 +12,28 @@
   <header>
     <div class="brand">
       <span class="logo">♞</span>
-      <div>
-        <h1>AI Chess Tutor</h1>
-        <p class="tagline">Learn chess by playing, not just reading</p>
-      </div>
+      <h1>AI Chess Tutor</h1>
     </div>
-    <div id="health" class="health">checking…</div>
+    <div class="header-right">
+      <div id="speech-controls" class="speech-controls hidden">
+        <button id="btn-read-aloud" class="btn toggle" aria-pressed="false"
+                title="Read the tutor's messages aloud; squares light up on the board as they're spoken">🔊 Read aloud</button>
+        <select id="speech-rate" title="Reading speed" aria-label="Reading speed">
+          <option value="0.8">Slow</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.2">Fast</option>
+        </select>
+        <select id="speech-voice" title="Voice" aria-label="Voice"></select>
+        <button id="btn-stop-speech" class="btn hidden" title="Stop reading">■ Stop</button>
+      </div>
+      <span id="health" class="health" title="checking…"></span>
+    </div>
   </header>
 
   <div class="layout">
     <aside id="sidebar">
-      <form id="plan-form" class="plan-form">
-        <label for="plan-input">What do you want to learn?</label>
-        <div class="plan-row">
-          <input id="plan-input" type="text" autocomplete="off"
-                 placeholder="e.g. the Sicilian, knight forks, rook endgames…">
-          <button id="btn-plan" class="btn primary" type="submit">Plan</button>
-        </div>
-      </form>
-      <h2>Your plans &amp; courses</h2>
-      <div id="course-list" class="course-list">Loading…</div>
+      <h2>Your lessons</h2>
+      <div id="course-list" class="course-list"></div>
     </aside>
 
     <main class="main">
@@ -46,25 +48,20 @@
           <span id="step-indicator" class="step-indicator"></span>
         </div>
         <div id="messages" class="messages">
-          <div class="msg assistant">
-            Tell me what you want to learn — type something like
-            <b>“I want to learn the London System”</b> or <b>“teach me knight forks”</b> —
-            and I'll build you a plan of lessons. Or pick a lesson on the left.
-          </div>
+          <div class="msg assistant" id="welcome">What do you want to learn? Type it below — for example <b>“teach me knight forks”</b> or <b>“I want to learn the London System”</b> — and I'll build a lesson for you. Or pick a topic:</div>
         </div>
         <div id="feedback-slot"></div>
         <div class="controls">
-          <button id="btn-play" class="btn primary hidden">▶ Play demonstration</button>
           <button id="btn-continue" class="btn primary hidden">Continue →</button>
           <button id="btn-hint" class="btn hidden">💡 Hint</button>
           <button id="btn-reveal" class="btn hidden">Show solution</button>
+          <button id="btn-play" class="btn hidden">↻ Watch again</button>
           <button id="btn-explain-example" class="btn hidden" title="The AI teacher explains this verified example">🧠 Explain this example</button>
-          <button id="btn-reset" class="btn hidden">↺ Reset board</button>
         </div>
         <div class="chat-row">
-          <input id="chat-input" type="text" placeholder="Ask a question, or “I want to learn …”"
+          <input id="chat-input" type="text" placeholder="What do you want to learn? Or ask a question…"
                  autocomplete="off">
-          <button id="btn-chat" class="btn">Send</button>
+          <button id="btn-chat" class="btn primary">Send</button>
         </div>
       </section>
     </main>

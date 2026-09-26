@@ -39,6 +39,8 @@ const {Chessboard, INPUT_EVENT_TYPE} = await import(`${ROOT}/vendor/cm-chessboar
 let board
 const orig = Chessboard.prototype.enableMoveInput
 Chessboard.prototype.enableMoveInput = function (...a) { board = this; return orig.apply(this, a) }
+const origSet = Chessboard.prototype.setPosition
+Chessboard.prototype.setPosition = function (...a) { board = this; return origSet.apply(this, a) }
 await import(`${ROOT}/app.js`)
 
 const $ = id => document.getElementById(id)
@@ -61,79 +63,89 @@ function move(from, to) {
 }
 const check = (cond, msg) => { console.log((cond ? "PASS " : "FAIL ") + msg); if (!cond) process.exitCode = 1 }
 
-await waitFor(() => document.querySelectorAll(".lesson-item").length > 0, "courses")
-await waitFor(() => /engine/.test($("health").textContent), "health")
-console.log("health:", $("health").textContent)
+await waitFor(() => document.querySelector("#course-list .lesson-item, #course-list .empty"), "sidebar")
+await waitFor(() => /\b(ok|partial|bad)\b/.test($("health").className), "health")
+console.log("health:", $("health").className, "|", $("health").title)
 
-// 1) Planner from the sidebar box
-$("plan-input").value = "I want to learn the Sicilian"
-$("plan-form").dispatchEvent(new w.Event("submit", {cancelable: true}))
-await waitFor(() => [...document.querySelectorAll("#messages button")].some(b => /Start the first lesson/.test(b.textContent)), "plan message")
-await waitFor(() => document.querySelector(".course.plan"), "plan course")
-check(/Sicilian/.test(document.querySelector(".course.plan").textContent), "plan course listed first in sidebar")
-check(lastMsgs(1)[0].includes("Opening principles") && lastMsgs(1)[0].includes("Sicilian"), "plan message lists units")
+// 0) No leftovers: no built-in course in the sidebar, one text box, no technical status text
+check(!document.querySelector(".course:not(.plan)"), "no built-in course (Italian Game) advertised in the sidebar")
+check(!/Italian Game/.test($("course-list").textContent), "sidebar doesn't mention the Italian Game")
+check(!$("plan-input") && !$("btn-reset"), "no duplicate plan box, no free-move reset button")
+check(!/engine|plies|teacher/i.test($("health").textContent), "header status has no technical text when all is well")
+check(document.querySelectorAll("#welcome .chip").length >= 3, "welcome offers starter topics")
 
-// 2) Italian lesson 1: explore on teach step
-const italian = [...document.querySelectorAll(".course:not(.plan) .lesson-item")].find(b => !b.disabled)
-italian.click()
-await waitFor(() => $("step-indicator").textContent.startsWith("Step 1") && board && board.state.moveInputCallback, "step 1")
-check(move("e2", "e4") === "ok", "teach step: can move a white pawn (explore)")
-check(move("e7", "e5") === "ok", "teach step: then a black pawn (turns alternate)")
-check(move("g1", "f3") === "ok", "teach step: knight develops")
-await sleep(1200)
-check(/Exploring/.test($("board-status").textContent), "status says exploring/ungraded")
-$("btn-reset").click(); await sleep(400)
-check(board.getPosition().startsWith("rnbqkbnr/pppppppp"), "reset restores the position")
-
-// 3) Demonstration, then exercise Bc4 (the reported bug)
-$("btn-continue").click()
-await waitFor(() => $("step-indicator").textContent.startsWith("Step 2"), "step 2")
-$("btn-play").click()
-await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "demo complete", 20000)
-check(move("g8", "f6") === "ok", "after demo: can explore from the final position")
-$("btn-continue").click()
-await waitFor(() => $("step-indicator").textContent.startsWith("Step 3") && /Your move/.test($("board-status").textContent), "step 3 (exercise)")
-const r = move("f1", "c4"); console.log("  f1c4 ->", r)
-check(r === "ok", "exercise: bishop f1 can be picked up and moved to c4 (was the bug)")
-await waitFor(() => !$("btn-continue").classList.contains("hidden") || /Try again/.test($("board-status").textContent), "Bc4 graded", 60000)
-check(!$("btn-continue").classList.contains("hidden"), "Bc4 accepted")
-console.log("  feedback:", $("feedback-slot").textContent.trim().slice(0, 140))
-const qwenOn = /teacher: qwen/.test($("health").textContent)
-if (qwenOn) {
-  // Engine verdict is instant; Qwen's explanation must stream into the same card.
-  check(/Qwen is writing/.test($("feedback-slot").textContent) || /teacher: qwen/.test($("feedback-slot").textContent),
-        "AI explanation starts streaming right after the instant verdict")
-  await waitFor(() => /teacher: (qwen|fallback)/.test(document.querySelector(".teacher-label").textContent), "explanation stream done", 90000)
-  const label = document.querySelector(".teacher-label").textContent
-  check(label === "teacher: qwen", "streamed explanation finished (" + label + ")")
-  const expl = document.querySelector(".explanation").textContent
-  check(expl.length > 20 && !/<think>|<\/think>/.test(expl), "explanation shown without <think> tags: " + expl.slice(0, 60))
+// A lesson button inside the sidebar card of a plan (titles are shown without the plan name)
+const lessonIn = (plan, lesson) => {
+  const card = [...document.querySelectorAll(".course.plan")].find(c => plan.test(c.querySelector("h3").textContent))
+  return card && [...card.querySelectorAll(".lesson-item")].find(b => lesson.test(b.textContent))
 }
 
-// 4) Black exercise: Nf6
-$("btn-continue").click()
-await waitFor(() => $("step-indicator").textContent.startsWith("Step 4") && /Your move/.test($("board-status").textContent), "step 4")
-check(move("e2", "e4") === "cannot-pick-up", "black exercise: white pieces can't be moved")
-check(move("g8", "f6") === "ok", "black exercise: knight g8 can move")
-await waitFor(() => !$("btn-continue").classList.contains("hidden"), "Nf6 accepted", 60000)
-check(true, "Nf6 accepted")
+// Helpers for the demonstrate → practise flow
+const continueShown = () => !$("btn-continue").classList.contains("hidden")
+async function finishDemo(label) {
+  // demonstrations play by themselves; "Watch again" + Continue appear when done
+  await waitFor(() => !$("btn-play").classList.contains("hidden") && continueShown(), label, 40000)
+}
 
+// 1) Planner from the chat box (before any lesson)
+$("chat-input").value = "I want to learn the Sicilian"
+$("btn-chat").click()
+await waitFor(() => [...document.querySelectorAll("#messages button")].some(b => /Start the first lesson/.test(b.textContent)), "plan message")
+await waitFor(() => document.querySelector(".course.plan"), "plan course")
+check(/Sicilian/.test(document.querySelector(".course.plan").textContent), "plan listed in the sidebar")
+check(lastMsgs(1)[0].includes("Sicilian"), "plan message lists units")
+check(![...document.querySelectorAll(".course.plan .badge")].some(b => /available/.test(b.textContent)), "no 'available' badges")
+
+// 2) "I want to learn the Italian Game" builds the lesson on request
+$("chat-input").value = "I want to learn the Italian Game"
+$("btn-chat").click()
+await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => /Italian/.test(h.textContent)), "Italian plan")
+const itLesson = lessonIn(/Italian/, /Moves and ideas/)
+check(!!itLesson, "Italian plan has 'moves and ideas'")
+itLesson.click()
+await waitFor(() => /Italian/.test($("lesson-title").textContent) && $("step-indicator").textContent.startsWith("Step 1"), "Italian lesson start")
+await sleep(300)
+check(!board.isMoveInputEnabled(), "teach step: the board is locked (pieces can't be dragged)")
+check(move("e2", "e4") === "input-disabled", "teach step: no silent ungraded moves")
+board.context.dispatchEvent(new w.Event("pointerdown", {bubbles: true}))
+check(/press/i.test($("board-status").textContent), "clicking the locked board says what to do: " + $("board-status").textContent)
+
+// 3) Demonstration plays by itself, then leads straight into practice (the reported bug)
+$("btn-continue").click()
+await waitFor(() => $("step-indicator").textContent.startsWith("Step 2"), "step 2")
+check(!board.isMoveInputEnabled(), "during the demonstration the board is locked")
+await finishDemo("demo complete")
+check(!board.isMoveInputEnabled(), "after the demonstration the board stays locked (no dead moves)")
+check(/Your turn/.test($("btn-continue").textContent), "Continue says 'Your turn — practise it': " + $("btn-continue").textContent)
+$("btn-continue").click()
+await waitFor(() => $("step-indicator").textContent.startsWith("Step 3") && /Your move/.test($("board-status").textContent), "step 3 (exercise)")
+check(board.isMoveInputEnabled(), "exercise: the board takes moves")
+const r = move("e2", "e4"); console.log("  e2e4 ->", r)
+check(r === "ok", "exercise: 1.e4 playable")
+await waitFor(() => continueShown() || /Try again/.test($("board-status").textContent), "e4 graded", 60000)
+check(continueShown(), "1.e4 accepted")
+console.log("  feedback:", $("feedback-slot").textContent.trim().slice(0, 140))
+check(!/plies|teacher:/.test($("feedback-slot").textContent), "feedback card has no engine internals")
+const qwenOn = /AI teacher:/.test($("health").title)
 if (qwenOn) {
+  await waitFor(() => !document.querySelector(".teacher-label.typing"), "explanation stream done", 90000)
+  const expl = document.querySelector(".explanation").textContent
+  check(expl.length > 20 && !/<think>|<\/think>/.test(expl), "explanation shown without <think> tags: " + expl.slice(0, 60))
   // Chat answer streams into a bubble.
-  $("chat-input").value = "Why is the bishop good on c4?"
+  $("chat-input").value = "Why is the pawn good on e4?"
   $("btn-chat").click()
   await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && !m.classList.contains("typing") && m.textContent.length > 20 }, "chat stream", 90000)
   check(true, "chat reply streamed: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 50))
 }
+// Moves in the tutor's text are marked for read-aloud highlighting
+check(document.querySelectorAll("#messages .mv").length > 0, "moves/squares in messages are marked for read-aloud")
 
 // 5) Start the plan's opening lesson and play the first exercise as Black
-const sicilianLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /moves and ideas/.test(b.textContent))
+const sicilianLesson = lessonIn(/Sicilian/, /Moves and ideas/)
 sicilianLesson.click()
 await waitFor(() => /Sicilian/.test($("lesson-title").textContent), "plan lesson start")
 $("btn-continue").click()
-await waitFor(() => !$("btn-play").classList.contains("hidden"), "demo button")
-$("btn-play").click()
-await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "plan demo", 30000)
+await finishDemo("plan demo")
 $("btn-continue").click()
 await waitFor(() => /Exercise/.test(lastMsgs(1)[0]) && /Your move/.test($("board-status").textContent), "plan exercise")
 console.log("  prompt:", lastMsgs(1)[0])
@@ -153,14 +165,12 @@ $("btn-chat").click()
 await waitFor(() => /Learn: Smothered mate/.test(lastMsgs(1)[0]), "smothered plan message")
 const smPlan = lastMsgs(1)[0]
 check(/Smothered mate/.test(smPlan) && !/Fork|Pin|Skewer/.test(smPlan), "smothered-mate plan contains only smothered mate")
-const smLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /Smothered mate: learn the pattern/.test(b.textContent))
+const smLesson = lessonIn(/Smothered mate/, /Learn the pattern/)
 check(!!smLesson, "plan has 'Smothered mate: learn the pattern'")
 smLesson.click()
 await waitFor(() => /Smothered/.test($("lesson-title").textContent), "smothered lesson start")
 $("btn-continue").click()                                   // teach -> demo of the opponent's move
-await waitFor(() => !$("btn-play").classList.contains("hidden"), "puzzle demo button")
-$("btn-play").click()
-await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "puzzle demo", 30000)
+await finishDemo("puzzle demo")
 $("btn-continue").click()
 await waitFor(() => /smothered mate/i.test(lastMsgs(1)[0]) && /Your move/.test($("board-status").textContent), "puzzle exercise")
 console.log("  prompt:", lastMsgs(1)[0])
@@ -184,36 +194,32 @@ check((await planIds()).length === plansBefore, "unknown subject: no substitute 
 $("chat-input").value = "Show me checkmates"
 $("btn-chat").click()
 await waitFor(() => /Learn: Checkmate/.test(lastMsgs(1)[0]), "library plan message", 30000)
-check(/verified example library/.test([...document.querySelectorAll("#messages .msg")].pop().textContent),
+check(/verified examples/.test([...document.querySelectorAll("#messages .msg")].pop().textContent),
       "chat 'Show me…' builds a lesson from the verified library")
-const kLesson = [...document.querySelectorAll(".course.plan .lesson-item")].find(b => /Checkmate: learn from examples/.test(b.textContent))
+const kLesson = lessonIn(/^Checkmate$/, /Learn from examples/)
 check(!!kLesson, "library lesson listed in the sidebar")
 kLesson.click()
 await waitFor(() => /learn from examples/.test($("lesson-title").textContent), "library lesson start")
 check(/verified example/.test(lastMsgs(1)[0]), "intro explains the sequence")
 $("btn-continue").click()
-await waitFor(() => !$("btn-play").classList.contains("hidden"), "example 1 demo button")
-check(/Example 1 of/.test(lastMsgs(1)[0]), "example 1 is demonstrated first")
-$("btn-play").click()
-await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "example 1 demo", 30000)
+await waitFor(() => $("step-indicator").textContent.startsWith("Step 2"), "example 1 step")
+check(/Example 1 of/.test(document.querySelectorAll("#messages .msg")[document.querySelectorAll("#messages .msg").length - 1].textContent) ||
+      [...document.querySelectorAll("#messages .msg")].slice(-4).some(m => /Example 1 of/.test(m.textContent)), "example 1 is demonstrated first")
+await finishDemo("example 1 demo")
 $("btn-continue").click()
 await waitFor(() => !$("btn-explain-example").classList.contains("hidden"), "explain-example button")
 $("btn-explain-example").click()
 await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && /^🧠/.test(m.textContent) && !m.classList.contains("typing") }, "example explanation", 90000)
 check(true, "example explained: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 60))
 // example 2: guided — find the key move (read from the server's verified example)
-$("btn-continue").click()
-await waitFor(() => /Your move/.test($("board-status").textContent) || !$("btn-play").classList.contains("hidden") ||
-                    (/Example 2/.test(lastMsgs(1)[0]) && /aren't graded/.test($("board-status").textContent)), "example 2")
-await sleep(500)
-if (!$("btn-play").classList.contains("hidden")) {
-  $("btn-play").click()
-  await waitFor(() => /Demonstration complete/.test($("board-status").textContent), "example 2 setup", 30000)
-}
-if (!/Your move/.test($("board-status").textContent)) {
+for (let i = 0; i < 4 && !/Your move/.test($("board-status").textContent); i++) {
+  const at = $("step-indicator").textContent
+  await waitFor(() => continueShown(), "continue (example 2)", 40000)
   $("btn-continue").click()
-  await waitFor(() => /Your move/.test($("board-status").textContent), "example 2 exercise")
+  await waitFor(() => $("step-indicator").textContent !== at, "next step (example 2)")
+  await sleep(300)
 }
+await waitFor(() => /Your move/.test($("board-status").textContent), "example 2 exercise", 40000)
 check($("btn-explain-example").classList.contains("hidden"), "no explain button while the exercise is unsolved")
 $("btn-reveal").click()
 await waitFor(() => /Solution/.test(lastMsgs(1)[0]), "solution shown")

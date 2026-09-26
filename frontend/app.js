@@ -5,6 +5,7 @@
 import {Chessboard, COLOR, INPUT_EVENT_TYPE, FEN, BORDER_TYPE} from "./vendor/cm-chessboard/src/Chessboard.js"
 import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/markers/Markers.js"
 import {Chess} from "./vendor/chess.mjs/Chess.js"
+import {Narrator, decorateMoves} from "./speech.js"
 
 // ---------- state ----------
 
@@ -15,8 +16,6 @@ const state = {
   busy: false,
   demoPlaying: false,
   stream: null,            // AbortController of the AI text currently streaming
-  exploreChess: null,      // free-play copy while the teacher explains (never graded)
-  exploreStartFen: null,
 }
 
 // ---------- api ----------
@@ -168,36 +167,28 @@ const exerciseInput = legalInputHandler(
   (from, to) => handleUserMove(from, to),
 )
 
-// ---------- free exploration (teach / after demonstrations) ----------
+// ---------- board locked outside exercises ----------
+// Pieces can only be moved in an exercise. Anywhere else a click on the board explains
+// what to do instead of silently doing nothing.
 
-const exploreInput = legalInputHandler(
-  () => (state.demoPlaying ? null : state.exploreChess),
-  async (from, to) => {
-    const chess = state.exploreChess
-    const candidates = chess.moves({square: from, verbose: true}).filter(m => m.to === to)
-    if (!candidates.length) return
-    chess.move({from, to, promotion: candidates.some(m => m.promotion) ? "q" : undefined})
-    await board.setPosition(chess.fen(), true)  // syncs castling rook / en passant / promotion
-    showBtn("btn-reset")
-    setStatus("Exploring freely — these moves aren't graded. Press ↺ to reset.")
-  },
-)
-
-function enableExplore(fen) {
-  state.exploreChess = new Chess(fen)
-  state.exploreStartFen = fen
-  board.disableMoveInput()
-  board.enableMoveInput(exploreInput)  // both colours, turn order enforced by the rules
+function boardAcceptsMoves() {
+  return state.step && state.step.type === "exercise" && !state.step.accepted && !state.busy
 }
 
-async function resetExplore() {
-  if (!state.exploreStartFen) return
-  state.exploreChess = new Chess(state.exploreStartFen)
-  clearMarkers()
-  await board.setPosition(state.exploreStartFen, true)
-  hideBtn("btn-reset")
-  setStatus("Board reset. Try any legal move — nothing here is graded.")
-}
+document.getElementById("board").addEventListener("pointerdown", () => {
+  if (!state.step || boardAcceptsMoves()) return
+  if (state.demoPlaying) {
+    setStatus("Watch the demonstration — you'll get your turn right after.")
+    return
+  }
+  const cont = document.getElementById("btn-continue")
+  if (!cont.classList.contains("hidden")) {
+    setStatus(state.step.next_type === "exercise" && state.step.type !== "exercise"
+      ? "Your turn is next — press “Your turn” to practise."
+      : "Press Continue to go on.")
+    cont.classList.remove("nudge"); void cont.offsetWidth; cont.classList.add("nudge")
+  }
+})
 
 function moveInputHandler(event) {
   return exerciseInput(event)
@@ -211,6 +202,7 @@ async function handleUserMove(from, to) {
   const fenBefore = state.chess.fen()
   applyUci(state.chess, uci)
   stopStream()
+  narrator.stop()
 
   state.busy = true
   setStatus("Analyzing your move…")
@@ -223,7 +215,7 @@ async function handleUserMove(from, to) {
       hideBtn("btn-hint"); hideBtn("btn-reveal")
       setStatus("")
       await board.setPosition(state.chess.fen(), true)
-      showBtn("btn-continue")  // only once the board has settled, so the click isn't ignored
+      showContinue()  // only once the board has settled, so the click isn't ignored
     } else {
       // Not good enough for the lesson's goal: reset and let them retry.
       await board.setPosition(result.reset_fen || fenBefore, true)
@@ -240,18 +232,133 @@ async function handleUserMove(from, to) {
   }
 }
 
+// ---------- read aloud ----------
+
+const SPEECH_MARKER = {class: "marker-speech", slice: "markerSquare"}
+
+// Squares for a spoken move: destination, plus the origin when the move is legal on the
+// board as shown (tried for both sides — the text may talk about either player's move).
+function squaresFor(mark) {
+  if (!mark) return []
+  const squares = mark.square ? [mark.square] : []
+  const placement = (board.getPosition() || "").split(" ")[0]
+  if (!placement) return squares
+  for (const turn of ["w", "b"]) {
+    try {
+      const chess = new Chess(`${placement} ${turn} - - 0 1`)
+      const move = chess.move(mark.san.replace(/[+#]$/, ""))
+      if (move) return [move.from, move.to]
+    } catch (_) { /* not legal for this side */ }
+  }
+  return squares
+}
+
+const narrator = new Narrator({
+  onMove(mark) {
+    board.removeMarkers(SPEECH_MARKER)
+    for (const sq of squaresFor(mark)) board.addMarker(SPEECH_MARKER, sq)
+  },
+  onState(speaking) {
+    document.getElementById("btn-stop-speech").classList.toggle("hidden", !speaking)
+  },
+})
+
+function speakButton(target) {
+  const btn = document.createElement("button")
+  btn.className = "speak-btn no-speech"
+  btn.title = "Read this aloud"
+  btn.setAttribute("aria-label", "Read this aloud")
+  btn.textContent = "🔊"
+  btn.addEventListener("click", ev => {
+    ev.stopPropagation()
+    narrator.stop()
+    narrator.speak(target)
+  })
+  return btn
+}
+
+// Moves in the text become highlightable; a 🔊 button reads the message aloud.
+function makeSpeakable(el) {
+  decorateMoves(el)
+  if (narrator.supported && !el.querySelector(":scope > .speak-btn")) el.appendChild(speakButton(el))
+  return el
+}
+
+function setupSpeechControls() {
+  if (!narrator.supported) return
+  const controls = document.getElementById("speech-controls")
+  const toggle = document.getElementById("btn-read-aloud")
+  const rate = document.getElementById("speech-rate")
+  const voiceSel = document.getElementById("speech-voice")
+  controls.classList.remove("hidden")
+  const syncToggle = () => {
+    toggle.classList.toggle("on", narrator.enabled)
+    toggle.setAttribute("aria-pressed", String(narrator.enabled))
+  }
+  syncToggle()
+  rate.value = String(narrator.rate)
+  if (!rate.value) rate.value = "1"
+  toggle.addEventListener("click", () => {
+    narrator.enabled = !narrator.enabled
+    narrator.save()
+    syncToggle()
+    if (!narrator.enabled) narrator.stop()
+    else {  // start with the newest tutor message, so the learner hears it works
+      const last = [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
+      if (last) narrator.speak(last)
+    }
+  })
+  rate.addEventListener("change", () => { narrator.rate = Number(rate.value) || 1; narrator.save() })
+  const fillVoices = () => {
+    const voices = narrator.voices()
+    voiceSel.innerHTML = ""
+    for (const v of voices) {
+      const opt = document.createElement("option")
+      opt.value = v.name
+      opt.textContent = v.name.replace(/^Microsoft\s+/, "").replace(/\s+-\s+.*$/, "").replace(/\s*\(.*\)$/, "")
+      voiceSel.appendChild(opt)
+    }
+    const current = narrator.voice()
+    if (current) voiceSel.value = current.name
+    voiceSel.classList.toggle("hidden", voices.length < 2)
+  }
+  fillVoices()
+  window.speechSynthesis.addEventListener("voiceschanged", fillVoices)
+  voiceSel.addEventListener("change", () => { narrator.voiceName = voiceSel.value; narrator.save() })
+  document.getElementById("btn-stop-speech").addEventListener("click", () => narrator.stop())
+}
+
 // ---------- messages / feedback ----------
 
 const messagesEl = document.getElementById("messages")
+
+// Keep the newest message in view when the pane shrinks (buttons appear under it),
+// unless the learner scrolled up to re-read something.
+let pinnedToBottom = true
+messagesEl.addEventListener("scroll", () => {
+  pinnedToBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 40
+})
+if (typeof ResizeObserver === "function") {
+  new ResizeObserver(() => { if (pinnedToBottom) messagesEl.scrollTop = messagesEl.scrollHeight }).observe(messagesEl)
+}
 
 function addMsg(text, kind = "assistant", allowHtml = false) {
   const div = document.createElement("div")
   div.className = `msg ${kind}`
   if (allowHtml) div.innerHTML = text
   else div.textContent = text
+  if (kind !== "user") makeSpeakable(div)
   messagesEl.appendChild(div)
   messagesEl.scrollTop = messagesEl.scrollHeight
   return div
+}
+
+// Streamed text arrives in pieces: make it speakable once it's complete.
+function finishStreamedMsg(el) {
+  delete el.dataset.moves
+  el.querySelectorAll(":scope > .speak-btn").forEach(b => b.remove())
+  makeSpeakable(el)
+  return narrator.auto(el)
 }
 
 function renderError(text) {
@@ -274,15 +381,14 @@ function renderFeedback(result) {
   const card = document.createElement("div")
   card.className = `feedback-card ${fb.category}`
   const label = CATEGORY_LABELS[fb.category] || fb.category
-  const best = fb.best_move ? ` Engine's choice: ${fb.best_move}.` : ""
   card.innerHTML =
-    `<span class="cat ${fb.category}">${label}</span> — you played <b>${fb.user_move}</b>.` +
-    `<div class="explanation" style="margin-top:6px">${escapeHtml(result.explanation)}</div>` +
-    `<div class="meta">${escapeHtml(best)} analysis: ${fb.depth || "?"} plies · ` +
-    `<span class="teacher-label">teacher: ${result.teacher}</span></div>`
+    `<span class="cat ${fb.category}">${label}</span> — you played <b>${escapeHtml(fb.user_move)}</b>.` +
+    `<div class="explanation">${escapeHtml(result.explanation)}</div>` +
+    `<div class="meta"><span class="teacher-label"></span></div>`
   slot.appendChild(card)
   if (result.continue_text) addMsg(result.continue_text)
   if (result.ai_explanation) streamExplanation(card)
+  else { makeSpeakable(card); narrator.auto(card) }
 }
 
 // The engine verdict is shown instantly; Qwen's explanation streams in after it.
@@ -291,7 +397,7 @@ async function streamExplanation(card) {
   const label = card.querySelector(".teacher-label")
   const quick = textEl.textContent
   let text = ""
-  label.textContent = "✍ Qwen is writing an explanation…"
+  label.textContent = "✍ The AI teacher is writing…"
   label.classList.add("typing")
   try {
     await streamEvents(`/api/sessions/${state.sessionId}/explain`, undefined, ev => {
@@ -301,19 +407,15 @@ async function streamExplanation(card) {
       } else if (ev.type === "replace") {
         text = ev.text
         textEl.textContent = text
-      } else if (ev.type === "done") {
-        // corrected: Qwen's reply contradicted the engine verdict or the lesson result,
-        // so the server swapped in the explanation built directly from the engine facts.
-        label.textContent = ev.corrected ? "teacher: engine facts (AI reply corrected)" : `teacher: ${ev.teacher}`
       }
     })
   } catch (err) {
     textEl.textContent = quick
-    label.textContent = "teacher: fallback (AI unavailable)"
   } finally {
     label.classList.remove("typing")
-    if (label.textContent.startsWith("✍")) label.textContent = text ? "teacher: qwen" : "teacher: fallback"
+    label.textContent = ""
     if (!text) textEl.textContent = quick
+    if (card.isConnected) finishStreamedMsg(card)
   }
 }
 
@@ -331,13 +433,24 @@ function showBtn(id) { document.getElementById(id).classList.remove("hidden") }
 function hideBtn(id) { document.getElementById(id).classList.add("hidden") }
 
 function hideControls() {
-  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal", "btn-reset", "btn-explain-example"].forEach(hideBtn)
+  ;["btn-play", "btn-continue", "btn-hint", "btn-reveal", "btn-explain-example"].forEach(hideBtn)
+}
+
+// Continue says where it leads: into practice after a demonstration or explanation.
+function showContinue() {
+  const btn = document.getElementById("btn-continue")
+  const step = state.step
+  const intoPractice = step && step.type !== "exercise" && step.next_type === "exercise"
+  btn.textContent = !step || step.next_type === null ? "Finish lesson ✓"
+    : intoPractice ? "Your turn — practise it →" : "Continue →"
+  showBtn("btn-continue")
 }
 
 // ---------- step rendering ----------
 
 async function renderStep(step) {
   stopStream()
+  narrator.stop()
   state.step = step
   state.busy = false
   hideControls()
@@ -345,23 +458,23 @@ async function renderStep(step) {
   document.getElementById("lesson-title").textContent = step.lesson_title
   document.getElementById("step-indicator").textContent = `Step ${step.index + 1} / ${step.total_steps}`
   board.disableMoveInput()
-  state.exploreChess = null
-  state.exploreStartFen = null
 
   if (step.type === "teach") {
-    addMsg(step.text)
+    const msg = addMsg(step.text)
     await showPosition(step.board.fen, {highlights: step.board.highlights || []})
-    showBtn("btn-continue")
+    showContinue()
     if (step.example && step.example.explainable) showBtn("btn-explain-example")
-    enableExplore(step.board.fen)
-    setStatus("You can try moves on the board — they aren't graded.")
+    setStatus("")
+    narrator.auto(msg)
   } else if (step.type === "demonstrate") {
-    addMsg(step.text)
+    const msg = addMsg(step.text)
     await showPosition(step.start_fen)
-    showBtn("btn-play")
-    setStatus("Press “Play demonstration” to watch the moves.")
+    setStatus("Watch the demonstration…")
+    // Plays by itself (read aloud first when that's on); the learner can watch it again.
+    await narrator.auto(msg)
+    if (state.step === step) await playDemonstration()
   } else if (step.type === "exercise") {
-    addMsg(`🎯 **Exercise:** ${step.prompt}`.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), "assistant", true)
+    const msg = addMsg(`🎯 **Exercise:** ${escapeHtml(step.prompt)}`.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), "assistant", true)
     const side = step.side === "black" ? COLOR.black : COLOR.white
     // The local mirror MUST match the exercise position, otherwise only pieces
     // that could move in the previous position are draggable.
@@ -372,10 +485,11 @@ async function renderStep(step) {
     setStatus(`Your move — you are playing ${step.side}.`)
     if (step.accepted) {
       state.step.accepted = true
-      showBtn("btn-continue")
+      showContinue()
       hideBtn("btn-hint"); hideBtn("btn-reveal")
       setStatus("Solved — continue when ready.")
     }
+    narrator.auto(msg)
   }
 }
 
@@ -383,28 +497,37 @@ async function playDemonstration() {
   if (state.demoPlaying || !state.step || state.step.type !== "demonstrate") return
   state.demoPlaying = true
   board.disableMoveInput()
-  hideBtn("btn-play")
-  const btn = document.getElementById("btn-play")
+  hideBtn("btn-play"); hideBtn("btn-continue")
   const step = state.step
   const demoChess = new Chess(step.start_fen)
+  clearMarkers()
+  await board.setPosition(step.start_fen, false)
+  setStatus("Watch the demonstration…")
   try {
     for (let i = 0; i < step.moves.length; i++) {
+      if (state.step !== step) return  // learner moved on
       applyUci(demoChess, step.moves[i])
       await board.setPosition(demoChess.fen(), true)
-      await sleep(620)
-      if (step.comments && step.comments[i]) {
-        addMsg(step.comments[i], "system")
+      const comment = step.comments && step.comments[i]
+      if (comment) {
+        const msg = addMsg(comment, "system")
+        // Read aloud: the next move waits until the comment has been spoken.
+        if (narrator.enabled) await narrator.speak(msg)
+        else await sleep(900)
+      } else {
+        await sleep(620)
       }
     }
     const after = step.board_after || {}
     clearMarkers()
     applyHighlights(after.highlights || [])
-    enableExplore(demoChess.fen())
-    setStatus("Demonstration complete — try moves yourself, or press Continue.")
+    setStatus(step.next_type === "exercise" ? "Now it's your turn." : "")
   } finally {
     state.demoPlaying = false
-    showBtn("btn-continue")
-    void btn
+    if (state.step === step) {
+      showBtn("btn-play")
+      showContinue()
+    }
   }
 }
 
@@ -447,7 +570,7 @@ async function requestHint() {
   try {
     const res = await api(`/api/sessions/${state.sessionId}/hint`, "POST")
     if (res.hint) {
-      addMsg(`💡 Hint ${res.index}/${res.total}: ${res.hint}`, "system")
+      narrator.auto(addMsg(`💡 Hint ${res.index}/${res.total}: ${res.hint}`, "system"))
       if (res.exhausted) hideBtn("btn-hint")
     } else {
       addMsg("No more hints — try “Show solution”.", "system")
@@ -462,9 +585,9 @@ async function revealSolution() {
   try {
     const res = await api(`/api/sessions/${state.sessionId}/reveal`, "POST")
     const moves = res.accepted_moves.join(" or ")
-    addMsg(`🔎 Solution: ${moves || "see the engine's best move"}`, "system")
+    narrator.auto(addMsg(`🔎 Solution: ${moves || "see the engine's best move"}`, "system"))
     state.step.accepted = true
-    showBtn("btn-continue")
+    showContinue()
     hideBtn("btn-hint"); hideBtn("btn-reveal")
     setStatus("Solution shown — continue when ready.")
   } catch (err) {
@@ -494,6 +617,7 @@ async function explainExample() {
     addMsg(err.message, "system")
   } finally {
     bubble.classList.remove("typing")
+    if (bubble.isConnected && text) finishStreamedMsg(bubble)
   }
 }
 
@@ -536,6 +660,7 @@ async function sendChat() {
     renderError(err.message)
   } finally {
     bubble.classList.remove("typing")
+    if (bubble.isConnected && text) finishStreamedMsg(bubble)
   }
 }
 
@@ -554,7 +679,7 @@ async function requestPlan(goal) {
   if (!goal) return
   addMsg(goal, "user")
   const pending = addMsg("🧭 Looking for verified examples and building your lesson…", "system")
-  const btn = document.getElementById("btn-plan")
+  const btn = document.getElementById("btn-chat")
   btn.disabled = true
   try {
     // library: true → verified Knowledge Library examples first, then the catalog/Qwen planner.
@@ -572,31 +697,25 @@ async function requestPlan(goal) {
   }
 }
 
-const CATEGORY_ICONS = {opening: "♟", tactic: "⚔", endgame: "♔", strategy: "🧠"}
-const PLANNER_LABELS = {
-  knowledge: "Built from the verified example library",
-  qwen: "Planned by Qwen",
-  catalog: "Planned by the built-in catalog",
-}
 
 function renderPlan(res) {
   const plan = res.plan
-  const units = plan.units.map((u, i) =>
-    `<li><b>${escapeHtml(u.title)}</b> ${CATEGORY_ICONS[u.category] || ""}` +
-    ` <span class="muted">— ${escapeHtml(u.reason)} (${u.lesson_ids.length} lesson${u.lesson_ids.length === 1 ? "" : "s"})</span></li>`
+  const units = plan.units.map(u =>
+    `<li><b>${escapeHtml(u.title)}</b>` +
+    ` <span class="muted">(${u.lesson_ids.length} lesson${u.lesson_ids.length === 1 ? "" : "s"})</span></li>`
   ).join("")
   const skipped = (plan.skipped || []).map(s =>
     `<li>${escapeHtml(s.title)}: <span class="muted">${escapeHtml(s.reason)}</span></li>`).join("")
   const div = addMsg(
     `🧭 <b>${escapeHtml(plan.title)}</b><br>${escapeHtml(plan.summary)}<ol class="plan-units">${units}</ol>` +
-    (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : "") +
-    `<div class="muted">${PLANNER_LABELS[plan.planner] || "Planned by the built-in catalog"}; every move you'll be asked to find is checked by Stockfish.</div>`,
+    (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : ""),
     "assistant", true)
   const start = document.createElement("button")
   start.className = "btn primary"
   start.textContent = "▶ Start the first lesson"
   start.addEventListener("click", () => startLesson(res.first_lesson_id))
   div.appendChild(start)
+  narrator.auto(div)
   if ((plan.related || []).length) {
     const label = document.createElement("div")
     label.className = "muted"
@@ -606,13 +725,13 @@ function renderPlan(res) {
   }
 }
 
-function suggestionChips(suggestions) {
+function suggestionChips(suggestions, labels = suggestions) {
   const row = document.createElement("div")
-  row.className = "suggestions"
-  for (const s of suggestions) {
+  row.className = "suggestions no-speech"
+  for (const [i, s] of suggestions.entries()) {
     const chip = document.createElement("button")
     chip.className = "chip"
-    chip.textContent = s
+    chip.textContent = labels[i] || s
     chip.addEventListener("click", () => requestPlan(s))
     row.appendChild(chip)
   }
@@ -631,72 +750,93 @@ async function deletePlan(planId, title) {
 
 // ---------- sidebar / health ----------
 
+const STARTERS = ["Opening principles", "Knight forks", "Checkmate patterns", "Rook endgames"]
+
+// The sidebar lists the learner's own lessons. Built-in courses (e.g. the Italian Game
+// lessons) aren't advertised here: ask for a topic and the tutor builds the lesson.
 async function loadCourses() {
   const el = document.getElementById("course-list")
   try {
     const data = await api("/api/courses")
+    const plans = data.courses.filter(c => c.kind === "plan")
     el.innerHTML = ""
-    for (const course of data.courses) {
+    if (!plans.length) {
+      const empty = document.createElement("p")
+      empty.className = "muted empty"
+      empty.textContent = "Nothing here yet — lessons you ask for will appear here."
+      el.appendChild(empty)
+      return
+    }
+    for (const course of plans) {
       const div = document.createElement("div")
-      div.className = "course" + (course.kind === "plan" ? " plan" : "")
-      div.innerHTML = `<h3>${course.kind === "plan" ? "🧭 " : ""}${escapeHtml(course.title)}</h3>` +
-        `<p>${escapeHtml(course.description)}</p>`
-      if (course.kind === "plan") {
-        const del = document.createElement("button")
-        del.className = "icon-btn"
-        del.title = "Delete this plan"
-        del.textContent = "✕"
-        del.addEventListener("click", () => deletePlan(course.plan.id, course.title))
-        div.appendChild(del)
-      }
-      for (const lesson of course.lessons) {
+      div.className = "course plan"
+      const h3 = document.createElement("h3")
+      const subject = course.title.replace(/^Learn:\s*/, "")
+      h3.textContent = subject
+      div.appendChild(h3)
+      const del = document.createElement("button")
+      del.className = "icon-btn"
+      del.title = "Delete this plan"
+      del.textContent = "✕"
+      del.addEventListener("click", () => deletePlan(course.plan.id, course.title))
+      div.appendChild(del)
+      course.lessons.forEach((lesson, n) => {
         const btn = document.createElement("button")
         btn.className = "lesson-item" + (lesson.completed ? " done" : "")
         btn.disabled = lesson.status !== "available"
-        btn.innerHTML = `<span>${escapeHtml(lesson.title)}</span>` +
-          `<span class="badge">${lesson.completed ? "✓ done" : lesson.status}</span>`
-        if (lesson.status === "available") {
-          btn.addEventListener("click", () => startLesson(lesson.id))
-        }
+        btn.innerHTML = `<span>${n + 1}. ${escapeHtml(shortTitle(lesson.title, subject))}</span>` +
+          (lesson.completed ? `<span class="badge">✓</span>` : "")
+        if (lesson.status === "available") btn.addEventListener("click", () => startLesson(lesson.id))
         div.appendChild(btn)
-      }
+      })
       el.appendChild(div)
     }
   } catch (err) {
-    el.textContent = `Failed to load courses: ${err.message}`
+    el.textContent = `Couldn't load your lessons: ${err.message}`
   }
 }
 
+// "Back-rank mate: practice" under the "Back-rank mate" heading reads as "Practice".
+function shortTitle(title, subject) {
+  const prefix = subject.toLowerCase() + ":"
+  if (!title.toLowerCase().startsWith(prefix)) return title
+  const rest = title.slice(prefix.length).trim()
+  return rest ? rest[0].toUpperCase() + rest.slice(1) : title
+}
+
+// A quiet dot when everything works; words only when something needs attention.
 async function loadHealth() {
   const el = document.getElementById("health")
   try {
     const h = await api("/api/health")
-    el.textContent = `${h.engine ? "⚙ engine ✓" : "⚠ engine unavailable"} · teacher: ${h.teacher === "qwen" ? `qwen (${h.teacher_model})` : "offline fallback"}` +
-      ` · ${h.lessons} lesson${h.lessons === 1 ? "" : "s"}`
+    const teacher = h.teacher === "qwen" ? `AI teacher: ${h.teacher_model}` : "AI teacher offline (built-in explanations)"
+    el.title = `${h.engine ? "Chess engine ready" : "Chess engine unavailable"} · ${teacher}`
+    el.className = "health " + (h.engine ? (h.teacher === "qwen" ? "ok" : "partial") : "bad")
+    el.textContent = h.engine ? "" : "⚠ Chess engine unavailable"
   } catch (err) {
-    el.textContent = "⚠ server unreachable"
+    el.className = "health bad"
+    el.title = ""
+    el.textContent = "⚠ Server unreachable"
   }
 }
 
 // ---------- wire up ----------
 
 document.getElementById("btn-play").addEventListener("click", playDemonstration)
-document.getElementById("btn-continue").addEventListener("click", advanceLesson)
+document.getElementById("btn-continue").addEventListener("click", () => { narrator.stop(); advanceLesson() })
 document.getElementById("btn-hint").addEventListener("click", requestHint)
 document.getElementById("btn-reveal").addEventListener("click", revealSolution)
 document.getElementById("btn-chat").addEventListener("click", sendChat)
-document.getElementById("btn-reset").addEventListener("click", resetExplore)
 document.getElementById("btn-explain-example").addEventListener("click", explainExample)
-document.getElementById("plan-form").addEventListener("submit", e => {
-  e.preventDefault()
-  const input = document.getElementById("plan-input")
-  const goal = input.value
-  input.value = ""
-  requestPlan(goal)
-})
 document.getElementById("chat-input").addEventListener("keydown", e => {
   if (e.key === "Enter") sendChat()
 })
 
+{
+  const welcome = document.getElementById("welcome")
+  welcome.appendChild(suggestionChips(STARTERS.map(t => `I want to learn ${t.toLowerCase()}`), STARTERS))
+  makeSpeakable(welcome)
+}
+setupSpeechControls()
 loadHealth()
 loadCourses()

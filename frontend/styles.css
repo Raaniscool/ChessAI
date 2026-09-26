@@ -33,15 +33,23 @@ header {
 .brand { display: flex; align-items: center; gap: 14px; }
 .logo { font-size: 34px; color: var(--accent-2); }
 header h1 { margin: 0; font-size: 20px; }
-.tagline { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 
-.health {
-  font-size: 12px;
-  color: var(--muted);
-  background: var(--panel-2);
-  padding: 6px 12px;
-  border-radius: 999px;
+.header-right { display: flex; align-items: center; gap: 14px; }
+
+/* Status: a quiet dot when all is well (details on hover), words only on problems. */
+.health { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.health::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #59636e; }
+.health.ok::before { background: var(--accent-2); }
+.health.partial::before { background: var(--warn); }
+.health.bad { color: #f1b7b5; }
+.health.bad::before { background: var(--danger); }
+
+.speech-controls { display: flex; align-items: center; gap: 6px; }
+.speech-controls select {
+  background: var(--panel-2); color: var(--text); border: 1px solid #3c4550;
+  border-radius: 8px; padding: 7px 8px; font-size: 13px; max-width: 170px;
 }
+.btn.toggle.on { background: var(--accent); border-color: var(--accent); font-weight: 600; }
 
 .layout {
   display: grid;
@@ -94,7 +102,7 @@ header h1 { margin: 0; font-size: 20px; }
 
 .board-pane { background: var(--panel); border: 1px solid #343c45; border-radius: var(--radius); padding: 14px; }
 #board { width: 100%; }
-.board-status { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; min-height: 16px; }
+.board-status { font-size: 13.5px; color: #c3cad2; text-align: center; margin-top: 10px; min-height: 16px; }
 
 .lesson-pane {
   background: var(--panel);
@@ -122,15 +130,18 @@ header h1 { margin: 0; font-size: 20px; }
 }
 
 .msg {
-  padding: 10px 13px;
+  position: relative;
+  padding: 11px 36px 11px 14px;
   border-radius: 10px;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15.5px;
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 .msg.assistant { background: var(--panel-2); align-self: flex-start; max-width: 95%; }
 .msg.user { background: #35507a; align-self: flex-end; max-width: 85%; }
-.msg.system { background: transparent; color: var(--muted); font-size: 12.5px; padding: 2px 4px; }
+.msg.user { padding-right: 14px; }
+.msg.system { background: transparent; color: #c3cad2; font-size: 14.5px; padding: 3px 36px 3px 6px;
+              border-left: 3px solid #3c4550; border-radius: 0; }
 .msg strong { color: var(--accent-2); }
 
 .feedback-card {
@@ -139,10 +150,13 @@ header h1 { margin: 0; font-size: 20px; }
   border-radius: 8px;
   padding: 11px 13px;
   background: var(--panel-2);
-  font-size: 13.5px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   margin-top: 4px;
+  position: relative;
+  padding-right: 36px;
 }
+.feedback-card .explanation { margin-top: 6px; }
 .feedback-card .cat { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: .06em; }
 .feedback-card .meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
 .feedback-card.excellent { border-left-color: var(--accent); }
@@ -200,14 +214,6 @@ header h1 { margin: 0; font-size: 20px; }
 }
 
 /* ---------- learning plans ---------- */
-.plan-form { margin-bottom: 18px; }
-.plan-form label { display: block; font-weight: 600; margin-bottom: 6px; }
-.plan-row { display: flex; gap: 6px; }
-.plan-row input {
-  flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px;
-  border: 1px solid var(--panel-2); background: var(--panel); color: var(--text);
-}
-.plan-row input:focus { outline: none; border-color: var(--accent); }
 .course { position: relative; }
 .course.plan { border: 1px solid var(--accent); }
 .course.plan h3 { padding-right: 22px; }
@@ -224,6 +230,7 @@ header h1 { margin: 0; font-size: 20px; }
   border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer;
 }
 .chip:hover { border-color: var(--accent); }
+.msg .chip { background: var(--bg); border-color: #3c4550; font-size: 13px; padding: 5px 12px; }
 .msg .btn { margin-top: 8px; }
 .msg { white-space: pre-line; }
 
@@ -234,3 +241,21 @@ header h1 { margin: 0; font-size: 20px; }
   content: "▍"; margin-left: 2px; animation: blink 1s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- read aloud ---------- */
+.speak-btn {
+  position: absolute; top: 6px; right: 6px; background: none; border: none; cursor: pointer;
+  font-size: 14px; opacity: .45; padding: 3px; line-height: 1;
+}
+.speak-btn:hover, .msg:hover > .speak-btn, .feedback-card:hover > .speak-btn { opacity: 1; }
+.msg.reading, .feedback-card.reading { box-shadow: 0 0 0 2px rgba(245, 197, 66, .55); }
+.mv { font-weight: 600; color: #f0f3f5; border-radius: 4px; padding: 0 2px; transition: background .12s; }
+.mv.speaking { background: #f5c542; color: #1b1f24; }
+/* the square being spoken, on the board */
+.cm-chessboard .markers .marker.marker-speech { fill: #f5c542; opacity: .6; }
+
+/* Continue pulses when the learner clicks the (locked) board */
+.btn.nudge { animation: nudge .9s ease-in-out 2; }
+@keyframes nudge { 50% { box-shadow: 0 0 0 6px rgba(99, 179, 124, .45); transform: scale(1.04); } }
+
+.course-list .empty { margin: 0 0 6px; line-height: 1.5; }

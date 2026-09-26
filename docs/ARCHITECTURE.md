@@ -127,7 +127,9 @@ goal ─► Catalog.search (aliases, fuzzy tokens, categories, general curriculu
 - **Qwen organizes, it never supplies truth.** Unknown topic ids are dropped; custom lines must be legal and mistake-free per Stockfish (depth 10, ≥6 plies) or they're reported under `skipped`.
 - **Generated lessons use the same schema and validation** as hand-written ones, so sessions, hints, grading and the frontend need no special cases.
 - **Catalog audit:** `test_catalog_engine.py` asserts every exercise's accepted move is the engine's top choice (the best move is never rejected), every accepted alternative rates good/excellent, mate-in-one tasks have a mate, open-ended tasks have ≥2 good moves, and every opening line is mistake-free.
-- Frontend: the chat routes "I want to learn…" (or any message before a lesson starts) to the planner; plan cards list first in the sidebar.
+- Frontend: the chat routes "I want to learn…" (or any message before a lesson starts) to the planner; the sidebar lists only the learner's plans (built-in courses stay available through the planner and the API, `/api/courses` still returns them).
+- Lesson flow: the board takes moves only in exercises. Demonstrations auto-play; step payloads carry `next_type` so the button can say "Your turn — practise it".
+- Read aloud (`frontend/speech.js`): Web Speech API, no server. `tokenize` finds SAN moves/squares, `buildSpeech` turns them into words and records their offsets; word-boundary events (or a time estimate for voices without them) map the spoken position back to a move, whose squares get a `marker-speech` on the board and whose text span is highlighted. Pure functions are unit-tested with `node --test` (run from pytest by `test_frontend_js.py`).
 
 ## Roadmap alignment
 
