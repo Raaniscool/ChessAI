@@ -130,7 +130,7 @@ Chess.com PGN ─► games/importers/chesscom.py ─► games/model.GameRecord (
 ```
 
 **Adding Lichess later** only needs `games/importers/lichess.py` implementing
-`parse(text, username)` → `ImportResult`, registered in `importers/__init__.py`.
+`parse(text, username)` → `ImportResult`, registered in `IMPORTERS` (`games/importers/__init__.py`).
 Everything after `GameRecord` is platform-neutral.
 
 ## API
@@ -154,7 +154,7 @@ position. Candidate mistakes are re-checked at `ENGINE_DEPTH` (default 14).
 ## Tests
 
 `backend/tests/test_game_*.py`:
-- **Import** (32 tests): parsing, metadata, malformed and illegal PGNs, several games at once.
+- **Import**: parsing, metadata, malformed and illegal PGNs, several games at once.
 - **Analysis**: engine use, false alarms, motifs, edge cases.
 - **Review**: Qwen gets the verified facts, and contradictions are caught.
 - **Training and privacy**.
