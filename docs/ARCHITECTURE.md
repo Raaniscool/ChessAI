@@ -144,3 +144,13 @@ its own are shown as related suggestions; with no match the API answers 422 with
 endgames, mistakes) imported from reliable sources (FIDE rules, the CC0 Lichess opening and
 puzzle databases, curated classics) and checked by python-chess, concept validators and
 Stockfish before use. Only verified entries are retrieved. See [KNOWLEDGE_LIBRARY.md](KNOWLEDGE_LIBRARY.md).
+
+**In the tutor:**
+- *Planning:* `plan_for_goal` (planner) tries the library first. `knowledge/retrieval.py`
+  picks a short sequence, and `planner/knowledge_lessons.py` turns it into ordinary
+  lessons: demonstration → guided example → practice. With no suitable verified
+  example, the catalog → Qwen planner runs unchanged.
+- *Sessions:* lesson steps carry `example: <id>`, so the session hands the example's
+  verified facts (FEN, moves, legal moves, Stockfish verdicts, motif, explanation) to
+  the teacher. Learner moves go through python-chess and Stockfish as in every lesson.
+
