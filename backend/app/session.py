@@ -6,7 +6,7 @@ against the session's `chess.Board` before any engine or teacher is involved.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import chess
 
@@ -23,6 +23,27 @@ _CATEGORY_RANK = [
     Classification.MISTAKE,
     Classification.BLUNDER,
 ]
+
+
+# Notes that contradict a lesson-verified move: the library already checked that it
+# keeps the win (a long mate beyond the live search depth is not a "missed mate").
+_LESSON_OVERRIDDEN_NOTES = ("missed_mate", "decided_position")
+
+
+def agree_with_lesson(feedback):
+    """Grade a move the lesson accepts so the card never says "Blunder" next to "Correct!".
+
+    Accepted moves were verified by Stockfish when the lesson was built, under the
+    teaching policy (within 120 cp of the best move, or still clearly winning). The
+    live grader uses the stricter loss thresholds, so such a move could be labelled
+    Mistake while the lesson rightly accepts it. It is shown as Good instead, with an
+    `engine_prefers` note so the explanation names the engine's stronger move. The
+    engine's numbers (loss, evaluations, lines) are left untouched.
+    """
+    if _CATEGORY_RANK.index(feedback.category) <= _CATEGORY_RANK.index(Classification.GOOD):
+        return feedback
+    notes = [n for n in feedback.notes if n not in _LESSON_OVERRIDDEN_NOTES] + ["engine_prefers"]
+    return replace(feedback, category=Classification.GOOD, notes=notes)
 
 
 class SessionError(Exception):
@@ -231,6 +252,8 @@ class SessionManager:
         feedback = engine.evaluate_move(before, move)
 
         accepted = self._is_accepted(step, san, feedback)
+        if accepted and step.advance_on == "accepted_move":
+            feedback = agree_with_lesson(feedback)
         push = accepted or step.advance_on == "any_legal"
         if push:
             session.board.push(move)
@@ -248,6 +271,7 @@ class SessionManager:
             accepted_moves=step.accepted_san,
             facts=self._example_facts(session, example, before),
             example_id=example.id if example else None,
+            move_accepted=accepted,
         )
         if example is not None:
             try:

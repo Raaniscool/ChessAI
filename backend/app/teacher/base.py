@@ -24,6 +24,8 @@ class LessonContext:
     # legal moves, Stockfish verdicts, motif facts, explanation). Empty for other lessons.
     facts: list[str] = field(default_factory=list)
     example_id: str | None = None
+    # Did the graded move solve the exercise? (None: not a graded exercise move.)
+    move_accepted: bool | None = None
 
 
 class Teacher(Protocol):

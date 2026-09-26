@@ -49,7 +49,10 @@ class FallbackTeacher:
                 praise = _PRAISE_BY_CONCEPT[key]
                 break
 
-        if category in ("excellent", "good") and feedback.best_move_uci == feedback.user_move_uci:
+        if "engine_prefers" in feedback.notes:
+            text = (f"Correct — {move} solves the exercise. The engine's top choice, {best}, "
+                    "is even stronger, so it's worth a look.")
+        elif category in ("excellent", "good") and feedback.best_move_uci == feedback.user_move_uci:
             text = (
                 f"Excellent move — {move} is exactly what the engine plays here. "
                 + (praise or "It matches the plan we're learning.")

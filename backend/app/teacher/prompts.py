@@ -69,14 +69,26 @@ def build_move_feedback_messages(
     if not same_as_best:
         facts.append(f"Engine line after the best move: {_line(feedback.best_pv_san)}")
     facts.append(f"Likely continuation after the student's move: {_line(feedback.reply_pv_san)}")
-    if feedback.notes:
-        facts.append("Notes: " + "; ".join(feedback.notes))
+    notes = [n for n in feedback.notes if n != "engine_prefers"]
+    if notes:
+        facts.append("Notes: " + "; ".join(notes))
+    if context.move_accepted is True:
+        facts.append("Lesson result: CORRECT - this move solves the exercise.")
+    elif context.move_accepted is False:
+        facts.append("Lesson result: NOT SOLVED - this move does not solve the exercise; "
+                     "the student must try again.")
 
-    if feedback.category in GOOD_VERDICTS:
+    if "engine_prefers" in feedback.notes:
+        task = (f"Tell the student the move solves the exercise and why it works; then say the engine's "
+                f"{feedback.best_move_san or 'choice'} is even stronger. Do not call it a mistake.")
+    elif feedback.category in GOOD_VERDICTS:
         task = ("Say why the move is good and which lesson idea it uses"
                 + ("." if same_as_best else "; mention the engine's move only if it teaches something."))
     else:
-        task = "Say what the move allows or misses, why the engine's move is better, and which lesson idea applies."
+        task = ("Say what the move allows or misses, why the engine's move is better, and which lesson "
+                "idea applies. Never call the student's move good, right, correct or best.")
+    if context.move_accepted is False and feedback.category in GOOD_VERDICTS:
+        task += " Do not say the student solved the exercise or found the right move."
     if context.accepted_moves and feedback.user_move_san not in context.accepted_moves:
         task += (f" The lesson's planned move is {', '.join(context.accepted_moves)}: if the student's move "
                  "is playable, say so and explain how it differs from the plan.")
