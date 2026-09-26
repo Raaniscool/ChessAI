@@ -94,6 +94,10 @@ class QwenTeacher:
             raise TeacherUnavailable("Qwen returned an empty reply")
         return reply
 
+    def complete(self, messages: list[dict]) -> str:
+        """Send arbitrary messages (used by the planner); raises TeacherUnavailable."""
+        return self._complete(messages)
+
     def explain_move(self, feedback, context: LessonContext) -> str:
         return self._complete(build_move_feedback_messages(feedback, context))
 

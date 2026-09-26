@@ -86,6 +86,8 @@ class Course:
     title: str
     description: str
     lessons: list[LessonPlan]
+    kind: str = "course"  # "course" (curated) | "plan" (generated for a learner)
+    meta: dict = field(default_factory=dict)
 
 
 def _require(condition: bool, message: str) -> None:

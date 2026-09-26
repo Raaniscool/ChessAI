@@ -43,6 +43,25 @@ class LessonLibrary:
                 self._lessons[lesson.id] = lesson
             self._courses[course.id] = course
 
+    def register_course(self, course: Course, lessons: list[Lesson]) -> None:
+        """Add (or replace) a generated course whose lessons are already validated."""
+        if course.id in self._courses and self._courses[course.id].kind != "plan":
+            raise LessonError(f"Refusing to replace curated course {course.id}")
+        self.remove_course(course.id)
+        for lesson in lessons:
+            if lesson.id in self._lessons:
+                raise LessonError(f"Duplicate lesson id {lesson.id}")
+        for lesson in lessons:
+            lesson.course_id = course.id
+            self._lessons[lesson.id] = lesson
+        self._courses[course.id] = course
+
+    def remove_course(self, course_id: str) -> None:
+        course = self._courses.pop(course_id, None)
+        if course:
+            for plan in course.lessons:
+                self._lessons.pop(plan.id, None)
+
     def courses(self) -> list[Course]:
         return list(self._courses.values())
 
@@ -67,6 +86,8 @@ def get_library() -> LessonLibrary:
     global _library
     if _library is None:
         _library = LessonLibrary()
+        from ..planner.store import load_saved_plans  # lazy: planner depends on lessons
+        load_saved_plans(_library)
     return _library
 
 

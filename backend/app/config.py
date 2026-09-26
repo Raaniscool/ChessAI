@@ -72,6 +72,9 @@ class Settings:
     host: str = _env("HOST", "0.0.0.0") or "0.0.0.0"
     port: int = int(_env("PORT", "8000") or "8000")
 
+    # --- User data (generated plans; gitignored) ---
+    data_dir: Path = Path(_env("DATA_DIR", str(REPO_ROOT / "data")) or "")
+
     # --- Lessons ---
     lessons_dir: Path = Path(
         _env("LESSONS_DIR", str(REPO_ROOT / "backend" / "app" / "lessons" / "data")) or ""
