@@ -14,7 +14,7 @@ import chess
 import chess.pgn
 
 MAX_PGN_CHARS = 2_000_000
-MAX_GAMES = 50
+MAX_GAMES = 100  # one paste can hold the largest history (analysis.history.MAX_COUNT)
 
 _TAG = re.compile(r'^\[[A-Za-z0-9_]+\s+"')
 _CLOCK = re.compile(r"\[%clk\s+([0-9:.]+)\]")

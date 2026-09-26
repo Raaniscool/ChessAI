@@ -165,7 +165,13 @@ class ChessComImporter:
                                                             "are supported for now",
                                                 game.headers.get("White"), game.headers.get("Black")))
                 continue
-            records.append((game, to_record(game)))
+            record = to_record(game)
+            first = next((g.index for g, r in records if r.id == record.id), None)
+            if first is not None:  # the same game pasted twice: keep one
+                result.errors.append(ParseIssue(game.index, f"the same game as game {first} (skipped)",
+                                                record.white, record.black))
+                continue
+            records.append((game, record))
 
         name = (username or "").strip() or _common_player([r for _, r in records])
         if not name and records:
