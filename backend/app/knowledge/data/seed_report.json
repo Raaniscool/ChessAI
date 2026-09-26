@@ -2,72 +2,249 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 107,
-  "rejected": 9,
-  "needs_review": 6
+  "verified": 268,
+  "rejected": 20,
+  "needs_review": 35
  },
  "by_category": {
-  "basics": 15,
-  "checkmates": 25,
+  "basics": 22,
+  "checkmates": 67,
   "endgames": 6,
-  "mistakes": 12,
-  "tactics": 39,
+  "mistakes": 20,
+  "tactics": 143,
   "openings": 10
  },
  "by_concept": {
-  "absolute_pin": 3,
-  "anastasia_mate": 3,
-  "arabian_mate": 3,
-  "back_rank_mate": 4,
-  "boden_mate": 3,
+  "absolute_pin": 10,
+  "anastasia_mate": 10,
+  "arabian_mate": 10,
+  "back_rank_mate": 11,
+  "boden_mate": 10,
   "cannot_castle": 2,
   "captures": 1,
   "caro_kann": 5,
   "castling": 2,
   "check": 1,
-  "deflection": 3,
-  "discovered_attack": 1,
-  "discovered_check": 4,
-  "double_check": 3,
+  "deflection": 9,
+  "discovered_attack": 10,
+  "discovered_check": 11,
+  "double_check": 10,
   "early_queen": 1,
   "en_passant": 2,
   "evans_gambit": 1,
   "fools_mate": 1,
-  "fork": 3,
+  "fork": 10,
   "fried_liver": 1,
-  "hanging_piece": 3,
+  "hanging_piece": 10,
   "hanging_queen": 1,
-  "hung_piece": 3,
+  "hung_piece": 6,
   "ignoring_development": 1,
   "italian_game": 2,
   "king_safety_mistake": 2,
-  "knight_fork": 3,
+  "knight_fork": 10,
   "ladder_mate": 1,
   "legal_moves": 1,
   "legals_mate": 1,
   "lucena_position": 1,
-  "mate_in_one": 3,
+  "mate_in_one": 10,
   "missed_threat": 1,
   "opposition": 2,
-  "overloaded_piece": 3,
+  "overloaded_piece": 10,
   "passed_pawn": 1,
+  "pawn_fork": 1,
   "poisoned_pawn": 1,
-  "promotion": 4,
+  "promotion": 11,
+  "queen_fork": 2,
   "queen_mate": 1,
-  "removing_defender": 3,
+  "removing_defender": 10,
   "repeated_moves": 1,
   "rook_mate": 1,
-  "sacrifice": 2,
+  "sacrifice": 10,
   "scholars_mate": 1,
-  "skewer": 3,
-  "smothered_mate": 5,
+  "skewer": 10,
+  "smothered_mate": 12,
   "stalemate": 2,
-  "trapped_piece": 2,
+  "trapped_piece": 10,
   "two_knights_defense": 1,
-  "walked_into_fork": 1,
-  "zwischenzug": 3
+  "walked_into_fork": 6,
+  "zwischenzug": 10
  },
  "needs_review": [
+  {
+   "id": "lichess_4ua9r",
+   "reasons": [
+    "engine: after 51...Rxd2 the learner is only 125 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_4ua9r",
+    "status": "needs_review",
+    "title": "Absolute pin: knight pinned to the king",
+    "concept": "absolute_pin",
+    "category": "tactics",
+    "subcategory": "pin",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Use the pin.",
+    "start_fen": "8/7p/3K1ppk/2P5/3N4/8/P2R3r/8 w - - 1 51",
+    "moves": [
+     "c6",
+     "Rxd2",
+     "Kd5",
+     "Rxa2"
+    ],
+    "final_fen": "8/7p/2P2ppk/3K4/3N4/8/r7/8 w - - 0 53",
+    "key_move": "51...Rxd2",
+    "prompt": "What would you play here? Use the pin.",
+    "hints": [
+     "Which enemy piece can't move without exposing something more valuable behind it?",
+     "Look for a line through the knight to the king behind it."
+    ],
+    "notes": {
+     "51.c6": "The opponent's last move. Something is now possible — look closely.",
+     "51...Rxd2": "The rook on d2 pins the knight on d4 to the king on d6 — the pinned piece can't legally move.",
+     "52...Rxa2": "Black comes out 6 points of material ahead."
+    },
+    "explanation": "In an absolute pin the piece behind is the king, so the pinned piece may not legally move at all. The rook on d2 pins the knight on d4 to the king on d6 — the pinned piece can't legally move. Black comes out 6 points of material ahead.",
+    "tags": [
+     "pin",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "pin": {
+      "pinner": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d2"
+      },
+      "pinned": {
+       "piece": "knight",
+       "color": "white",
+       "square": "d4"
+      },
+      "behind": {
+       "piece": "king",
+       "color": "white",
+       "square": "d6"
+      },
+      "kind": "absolute",
+      "move": "51...Rxd2",
+      "created_by_move": true
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "4Ua9R",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/4Ua9R",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "pin"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 51...Rxd2 the learner is only 125 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 51...Rxd2 the learner is only 125 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxd2",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 125,
+       "best_move": "Rxd2",
+       "best_cp": 125,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "51...Rxd2"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxa2",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 203,
+        "best_move": "Rxa2",
+        "best_cp": 203,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "52...Rxa2"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
   {
    "id": "lichess_epqhk",
    "reasons": [
@@ -220,6 +397,1473 @@
        "label": "40.fxg5+"
       },
       "learner_moves": [],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_bcz2r",
+   "reasons": [
+    "engine: after 53.cxb6 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_bcz2r",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "8/8/1p1k4/p1PP1p1p/1P3Pp1/6K1/8/8 b - - 0 52",
+    "moves": [
+     "Kxd5",
+     "cxb6",
+     "Kc6",
+     "bxa5"
+    ],
+    "final_fen": "8/8/1Pk5/P4p1p/5Pp1/6K1/8/8 b - - 0 54",
+    "key_move": "53.cxb6",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "52...Kxd5": "The opponent's last move. Something is now possible — look closely.",
+     "54.bxa5": "White comes out 2 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 2 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "53.cxb6",
+      "removed_defender": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "b6"
+      },
+      "then": "54.bxa5",
+      "won_square": "a5"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "bCZ2R",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/bCZ2R",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 53.cxb6 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 53.cxb6 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "cxb6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "cxb6",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "53.cxb6"
+      },
+      "learner_moves": [
+       {
+        "move": "bxa5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "bxa5",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "54.bxa5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_h0bsy",
+   "reasons": [
+    "engine: after 69...Bxd7 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_h0bsy",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Remove the defender.",
+    "start_fen": "r7/P2RKp2/5R2/4kb2/8/6P1/8/8 w - - 5 69",
+    "moves": [
+     "Rxf7",
+     "Bxd7",
+     "Kxd7",
+     "Rxa7+"
+    ],
+    "final_fen": "8/r2K1R2/8/4k3/8/6P1/8/8 w - - 0 71",
+    "key_move": "69...Bxd7",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "69.Rxf7": "The opponent's last move. Something is now possible — look closely.",
+     "70...Rxa7+": "Black comes out 3 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. Black comes out 3 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "69...Bxd7",
+      "removed_defender": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d7"
+      },
+      "then": "70...Rxa7+",
+      "won_square": "a7"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "h0bsY",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/h0bsY",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 69...Bxd7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 69...Bxd7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Bxd7",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "Bxd7",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "69...Bxd7"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxa7+",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -4,
+        "best_move": "Rxa7+",
+        "best_cp": -4,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "70...Rxa7+"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_xzt58",
+   "reasons": [
+    "engine: after 64.Rxh5 the learner is only -34 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_xzt58",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "8/7R/8/rp4pp/4k3/6PP/p7/K7 b - - 3 63",
+    "moves": [
+     "g4",
+     "Rxh5",
+     "Kd3",
+     "hxg4"
+    ],
+    "final_fen": "8/8/8/rp5R/6P1/3k2P1/p7/K7 b - - 0 65",
+    "key_move": "64.Rxh5",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "63...g4": "The opponent's last move. Something is now possible — look closely.",
+     "65.hxg4": "White comes out 2 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 2 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "64.Rxh5",
+      "removed_defender": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "h5"
+      },
+      "then": "65.hxg4",
+      "won_square": "g4"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "xzT58",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/xzT58",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 64.Rxh5 the learner is only -34 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 64.Rxh5 the learner is only -34 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxh5",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -34,
+       "best_move": "Rxh5",
+       "best_cp": -34,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "64.Rxh5"
+      },
+      "learner_moves": [
+       {
+        "move": "hxg4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -12,
+        "best_move": "hxg4",
+        "best_cp": -12,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "65.hxg4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_39ely",
+   "reasons": [
+    "engine: after 44...Rxc6 the learner is only -4 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_39ely",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Remove the defender.",
+    "start_fen": "3q4/5ppk/rPQ4p/3N4/8/6PP/5P2/1R4K1 w - - 3 44",
+    "moves": [
+     "b7",
+     "Rxc6",
+     "b8=Q",
+     "Qxd5"
+    ],
+    "final_fen": "1Q6/5ppk/2r4p/3q4/8/6PP/5P2/1R4K1 w - - 0 46",
+    "key_move": "44...Rxc6",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "44.b7": "The opponent's last move. Something is now possible — look closely.",
+     "45...Qxd5": "Black comes out 4 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. Black comes out 4 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "44...Rxc6",
+      "removed_defender": {
+       "piece": "queen",
+       "color": "white",
+       "square": "c6"
+      },
+      "then": "45...Qxd5",
+      "won_square": "d5"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "39ELy",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/39ELy",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 44...Rxc6 the learner is only -4 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 44...Rxc6 the learner is only -4 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxc6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -4,
+       "best_move": "Rxc6",
+       "best_cp": -4,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "44...Rxc6"
+      },
+      "learner_moves": [
+       {
+        "move": "Qxd5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -1,
+        "best_move": "Qxd5",
+        "best_cp": -1,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "45...Qxd5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_5gpcn",
+   "reasons": [
+    "engine: after 27.Rxd4 the learner is only 28 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_5gpcn",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "5k2/pp4pp/8/2p2b2/3n4/5PK1/PP2rR2/3R4 b - - 1 26",
+    "moves": [
+     "Bc2",
+     "Rxd4",
+     "cxd4",
+     "Rxe2"
+    ],
+    "final_fen": "5k2/pp4pp/8/8/3p4/5PK1/PPb1R3/8 b - - 0 28",
+    "key_move": "27.Rxd4",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "26...Bc2": "The opponent's last move. Something is now possible — look closely.",
+     "28.Rxe2": "White comes out 3 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 3 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "27.Rxd4",
+      "removed_defender": {
+       "piece": "knight",
+       "color": "black",
+       "square": "d4"
+      },
+      "then": "28.Rxe2",
+      "won_square": "e2"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "5gPCn",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/5gPCn",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 27.Rxd4 the learner is only 28 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 27.Rxd4 the learner is only 28 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxd4",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 28,
+       "best_move": "Rxd4",
+       "best_cp": 28,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "27.Rxd4"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxe2",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 36,
+        "best_move": "Rxe2",
+        "best_cp": 36,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "28.Rxe2"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_95vv8",
+   "reasons": [
+    "engine: after 48.exf6 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_95vv8",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "8/8/2nk1p2/1b2PPpp/3P4/4KN1P/8/8 b - - 0 47",
+    "moves": [
+     "Kd5",
+     "exf6",
+     "Nd8",
+     "Nxg5"
+    ],
+    "final_fen": "3n4/8/5P2/1b1k1PNp/3P4/4K2P/8/8 b - - 0 49",
+    "key_move": "48.exf6",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "47...Kd5": "The opponent's last move. Something is now possible — look closely.",
+     "49.Nxg5": "White comes out 2 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 2 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "48.exf6",
+      "removed_defender": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "f6"
+      },
+      "then": "49.Nxg5",
+      "won_square": "g5"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "95vv8",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/95vv8",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 48.exf6 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 48.exf6 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "exf6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "exf6",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "48.exf6"
+      },
+      "learner_moves": [
+       {
+        "move": "Nxg5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Nxg5",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "49.Nxg5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_9vrvf",
+   "reasons": [
+    "engine: after 31...Rexe6 the learner is only 6 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_9vrvf",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Remove the defender.",
+    "start_fen": "4r2k/8/3pBr1p/3P1p2/3K4/p7/7P/5R1R w - - 0 31",
+    "moves": [
+     "Rxf5",
+     "Rexe6",
+     "dxe6",
+     "Rxf5"
+    ],
+    "final_fen": "7k/8/3pP2p/5r2/3K4/p7/7P/7R w - - 0 33",
+    "key_move": "31...Rexe6",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "31.Rxf5": "The opponent's last move. Something is now possible — look closely.",
+     "32...Rxf5": "Black comes out 3 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. Black comes out 3 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "31...Rexe6",
+      "removed_defender": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "e6"
+      },
+      "then": "32...Rxf5",
+      "won_square": "f5"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "9vRvF",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/9vRvF",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 31...Rexe6 the learner is only 6 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 31...Rexe6 the learner is only 6 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rexe6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 6,
+       "best_move": "Rexe6",
+       "best_cp": 6,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "31...Rexe6"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxf5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Rxf5",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "32...Rxf5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_azuvq",
+   "reasons": [
+    "engine: after 39.Bxe3 the learner is only -1 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_azuvq",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "8/3R1pkp/p3r1p1/1p6/8/3Bn2P/1P3BbK/8 b - - 1 38",
+    "moves": [
+     "Bf1",
+     "Bxe3",
+     "Rxe3",
+     "Bxf1"
+    ],
+    "final_fen": "8/3R1pkp/p5p1/1p6/8/4r2P/1P5K/5B2 b - - 0 40",
+    "key_move": "39.Bxe3",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "38...Bf1": "The opponent's last move. Something is now possible — look closely.",
+     "40.Bxf1": "White comes out 3 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 3 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "39.Bxe3",
+      "removed_defender": {
+       "piece": "knight",
+       "color": "black",
+       "square": "e3"
+      },
+      "then": "40.Bxf1",
+      "won_square": "f1"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "AzuVq",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/AzuVq",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 39.Bxe3 the learner is only -1 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 39.Bxe3 the learner is only -1 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Bxe3",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -1,
+       "best_move": "Bxe3",
+       "best_cp": -1,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "39.Bxe3"
+      },
+      "learner_moves": [
+       {
+        "move": "Bxf1",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -8,
+        "best_move": "Bxf1",
+        "best_cp": -8,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "40.Bxf1"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_hbzil",
+   "reasons": [
+    "engine: after 35.Bxc6 the learner is only 4 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_hbzil",
+    "status": "needs_review",
+    "title": "Removing the defender",
+    "concept": "removing_defender",
+    "category": "tactics",
+    "subcategory": "capturingDefender",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Remove the defender.",
+    "start_fen": "1r6/pp2k2p/2n3p1/3Bn3/8/P7/2P1R1PP/2K5 b - - 8 34",
+    "moves": [
+     "Rd8",
+     "Bxc6",
+     "bxc6",
+     "Rxe5+"
+    ],
+    "final_fen": "3r4/p3k2p/2p3p1/4R3/8/P7/2P3PP/2K5 b - - 0 36",
+    "key_move": "35.Bxc6",
+    "prompt": "What would you play here? Remove the defender.",
+    "hints": [
+     "What protects the target? Capture that piece first."
+    ],
+    "notes": {
+     "34...Rd8": "The opponent's last move. Something is now possible — look closely.",
+     "36.Rxe5+": "White comes out 3 points of material ahead."
+    },
+    "explanation": "Capture (or chase away) the piece that defends something, and what it defended is left hanging. White comes out 3 points of material ahead.",
+    "tags": [
+     "capturingDefender",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "removing_defender": {
+      "move": "35.Bxc6",
+      "removed_defender": {
+       "piece": "knight",
+       "color": "black",
+       "square": "c6"
+      },
+      "then": "36.Rxe5+",
+      "won_square": "e5"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "HbZIL",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/HbZIL",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "removing_defender"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 35.Bxc6 the learner is only 4 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 35.Bxc6 the learner is only 4 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Bxc6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 4,
+       "best_move": "Bxc6",
+       "best_cp": 4,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "35.Bxc6"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxe5+",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 2,
+        "best_move": "Rxe5+",
+        "best_cp": 2,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "36.Rxe5+"
+       }
+      ],
       "alternatives": []
      }
     }
@@ -1064,6 +2708,3181 @@
      }
     }
    }
+  },
+  {
+   "id": "lichess_3xtfz",
+   "reasons": [
+    "engine: after 52...Kg7 the learner is only 141 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_3xtfz",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "3n4/7B/5kp1/5p2/5P1P/8/2P3KP/8 w - - 1 52",
+    "moves": [
+     "Kg3",
+     "Kg7",
+     "h5",
+     "Kxh7"
+    ],
+    "final_fen": "3n4/7k/6p1/5p1P/5P2/6K1/2P4P/8 w - - 0 54",
+    "key_move": "52...Kg7",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "52.Kg3": "The opponent's last move. Something is now possible — look closely.",
+     "52...Kg7": "The bishop on h7 is trapped: every square it can go to is covered.",
+     "53...Kxh7": "Black comes out 3 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on h7 is trapped: every square it can go to is covered. Black comes out 3 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "52...Kg7",
+      "trapped": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "h7"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "black",
+        "square": "g7"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "3Xtfz",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/3Xtfz",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 52...Kg7 the learner is only 141 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 52...Kg7 the learner is only 141 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kg7",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 141,
+       "best_move": "Kg7",
+       "best_cp": 141,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "52...Kg7"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxh7",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 211,
+        "best_move": "Kxh7",
+        "best_cp": 211,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "53...Kxh7"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_5eauu",
+   "reasons": [
+    "engine: after 51.Bd7 the learner is only 138 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_5eauu",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "2r2k2/R1P5/3b4/p2p4/B1b3P1/5K2/8/8 b - - 2 50",
+    "moves": [
+     "Bb4",
+     "Bd7",
+     "Rxc7",
+     "Rxc7"
+    ],
+    "final_fen": "5k2/2RB4/8/p2p4/1bb3P1/5K2/8/8 b - - 0 52",
+    "key_move": "51.Bd7",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "50...Bb4": "The opponent's last move. Something is now possible — look closely.",
+     "51.Bd7": "The rook on c8 is trapped: every square it can go to is covered.",
+     "52.Rxc7": "White comes out 4 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on c8 is trapped: every square it can go to is covered. White comes out 4 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "51.Bd7",
+      "trapped": {
+       "piece": "rook",
+       "color": "black",
+       "square": "c8"
+      },
+      "attacked_by": [
+       {
+        "piece": "bishop",
+        "color": "white",
+        "square": "d7"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "5eAuu",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/5eAuu",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 51.Bd7 the learner is only 138 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 51.Bd7 the learner is only 138 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Bd7",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 138,
+       "best_move": "Bd7",
+       "best_cp": 138,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "51.Bd7"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxc7",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 121,
+        "best_move": "Rxc7",
+        "best_cp": 121,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "52.Rxc7"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_6e1u6",
+   "reasons": [
+    "engine: after 49...g6 the learner is only 45 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_6e1u6",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "8/5kp1/1n6/1Pp2B2/1p1pKP1P/1P4P1/8/8 w - - 0 49",
+    "moves": [
+     "g4",
+     "g6",
+     "Bxg6+",
+     "Kxg6"
+    ],
+    "final_fen": "8/8/1n4k1/1Pp5/1p1pKPPP/1P6/8/8 w - - 0 51",
+    "key_move": "49...g6",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "49.g4": "The opponent's last move. Something is now possible — look closely.",
+     "49...g6": "The bishop on f5 is trapped: every square it can go to is covered.",
+     "50...Kxg6": "Black comes out 2 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on f5 is trapped: every square it can go to is covered. Black comes out 2 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "49...g6",
+      "trapped": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "f5"
+      },
+      "attacked_by": [
+       {
+        "piece": "pawn",
+        "color": "black",
+        "square": "g6"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "6e1U6",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/6e1U6",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 49...g6 the learner is only 45 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 49...g6 the learner is only 45 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "g6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 45,
+       "best_move": "g6",
+       "best_cp": 45,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "49...g6"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxg6",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -9,
+        "best_move": "Kxg6",
+        "best_cp": -9,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "50...Kxg6"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_7ipor",
+   "reasons": [
+    "engine: after 38.Kg3 the learner is only -17 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_7ipor",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the knight",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "8/1p6/pB3pk1/4p2p/1P2P3/P4K2/6n1/8 b - - 3 37",
+    "moves": [
+     "Nh4+",
+     "Kg3",
+     "Nf5+",
+     "exf5+"
+    ],
+    "final_fen": "8/1p6/pB3pk1/4pP1p/1P6/P5K1/8/8 b - - 0 39",
+    "key_move": "38.Kg3",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The knight has very few squares. Take them away."
+    ],
+    "notes": {
+     "37...Nh4+": "The opponent's last move. Something is now possible — look closely.",
+     "38.Kg3": "The knight on h4 is trapped: every square it can go to is covered.",
+     "39.exf5+": "White comes out 3 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The knight on h4 is trapped: every square it can go to is covered. White comes out 3 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "38.Kg3",
+      "trapped": {
+       "piece": "knight",
+       "color": "black",
+       "square": "h4"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "g3"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "7ipoR",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/7ipoR",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 38.Kg3 the learner is only -17 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 38.Kg3 the learner is only -17 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kg3",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -17,
+       "best_move": "Kg3",
+       "best_cp": -17,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "38.Kg3"
+      },
+      "learner_moves": [
+       {
+        "move": "exf5+",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -14,
+        "best_move": "exf5+",
+        "best_cp": -14,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "39.exf5+"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_9dsdt",
+   "reasons": [
+    "engine: after 47.g4 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_9dsdt",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "8/p5k1/1p4p1/6KP/5P2/P7/2P1b1P1/8 b - - 2 46",
+    "moves": [
+     "Bxh5",
+     "g4",
+     "Bxg4",
+     "Kxg4"
+    ],
+    "final_fen": "8/p5k1/1p4p1/8/5PK1/P7/2P5/8 b - - 0 48",
+    "key_move": "47.g4",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "46...Bxh5": "The opponent's last move. Something is now possible — look closely.",
+     "47.g4": "The bishop on h5 is trapped: every square it can go to is covered.",
+     "48.Kxg4": "White comes out 2 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on h5 is trapped: every square it can go to is covered. White comes out 2 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "47.g4",
+      "trapped": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "h5"
+      },
+      "attacked_by": [
+       {
+        "piece": "pawn",
+        "color": "white",
+        "square": "g4"
+       },
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "g5"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "9dsdt",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/9dsdt",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 47.g4 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 47.g4 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "g4",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "g4",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "47.g4"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxg4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 7,
+        "best_move": "Kxg4",
+        "best_cp": 7,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "48.Kxg4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_agndz",
+   "reasons": [
+    "engine: after 36.Kb2 the learner is only 52 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_agndz",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "4k3/R2b4/5p2/2N3p1/p1P5/r1P5/2K5/8 b - - 0 35",
+    "moves": [
+     "Bf5+",
+     "Kb2",
+     "Rb3+",
+     "Nxb3"
+    ],
+    "final_fen": "4k3/R7/5p2/5bp1/p1P5/1NP5/1K6/8 b - - 0 37",
+    "key_move": "36.Kb2",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "35...Bf5+": "The opponent's last move. Something is now possible — look closely.",
+     "36.Kb2": "The rook on a3 is trapped: every square it can go to is covered.",
+     "37.Nxb3": "White comes out 5 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on a3 is trapped: every square it can go to is covered. White comes out 5 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "36.Kb2",
+      "trapped": {
+       "piece": "rook",
+       "color": "black",
+       "square": "a3"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "b2"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "AgNDz",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/AgNDz",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 36.Kb2 the learner is only 52 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 36.Kb2 the learner is only 52 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kb2",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 52,
+       "best_move": "Kb2",
+       "best_cp": 52,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "36.Kb2"
+      },
+      "learner_moves": [
+       {
+        "move": "Nxb3",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 49,
+        "best_move": "Nxb3",
+        "best_cp": 49,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "37.Nxb3"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_fhmfa",
+   "reasons": [
+    "engine: after 39...Kc6 the learner is only -1 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_fhmfa",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "8/2b3p1/8/1RPkp1p1/1P1p4/5PP1/5K1P/8 w - - 3 39",
+    "moves": [
+     "Ke2",
+     "Kc6",
+     "Ra5",
+     "Bxa5"
+    ],
+    "final_fen": "8/6p1/2k5/b1P1p1p1/1P1p4/5PP1/4K2P/8 w - - 0 41",
+    "key_move": "39...Kc6",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "39.Ke2": "The opponent's last move. Something is now possible — look closely.",
+     "39...Kc6": "The rook on b5 is trapped: every square it can go to is covered.",
+     "40...Bxa5": "Black comes out 5 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on b5 is trapped: every square it can go to is covered. Black comes out 5 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "39...Kc6",
+      "trapped": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b5"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "black",
+        "square": "c6"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "FHMfa",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/FHMfa",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 39...Kc6 the learner is only -1 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 39...Kc6 the learner is only -1 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kc6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -1,
+       "best_move": "Kc6",
+       "best_cp": -1,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "39...Kc6"
+      },
+      "learner_moves": [
+       {
+        "move": "Bxa5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 1,
+        "best_move": "Bxa5",
+        "best_cp": 1,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "40...Bxa5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_ftujb",
+   "reasons": [
+    "engine: after 45.Kf3 the learner is only -2 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_ftujb",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "r7/8/4p1k1/p3P1r1/2pP1P2/2P1K3/8/7R b - - 0 44",
+    "moves": [
+     "Rg4",
+     "Kf3",
+     "Rxf4+",
+     "Kxf4"
+    ],
+    "final_fen": "r7/8/4p1k1/p3P3/2pP1K2/2P5/8/7R b - - 0 46",
+    "key_move": "45.Kf3",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "44...Rg4": "The opponent's last move. Something is now possible — look closely.",
+     "45.Kf3": "The rook on g4 is trapped: every square it can go to is covered.",
+     "46.Kxf4": "White comes out 4 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on g4 is trapped: every square it can go to is covered. White comes out 4 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "45.Kf3",
+      "trapped": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g4"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "f3"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "FTUjb",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/FTUjb",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 45.Kf3 the learner is only -2 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 45.Kf3 the learner is only -2 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kf3",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -2,
+       "best_move": "Kf3",
+       "best_cp": -2,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "45.Kf3"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxf4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Kxf4",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "46.Kxf4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_lirv3",
+   "reasons": [
+    "engine: after 51.Kh7 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_lirv3",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "7b/8/3k1pK1/6p1/7p/5P2/6PP/8 b - - 0 50",
+    "moves": [
+     "Ke7",
+     "Kh7",
+     "Kf7",
+     "Kxh8"
+    ],
+    "final_fen": "7K/5k2/5p2/6p1/7p/5P2/6PP/8 b - - 0 52",
+    "key_move": "51.Kh7",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "50...Ke7": "The opponent's last move. Something is now possible — look closely.",
+     "51.Kh7": "The bishop on h8 is trapped: every square it can go to is covered.",
+     "52.Kxh8": "White comes out 3 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on h8 is trapped: every square it can go to is covered. White comes out 3 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "51.Kh7",
+      "trapped": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "h8"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "h7"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "Lirv3",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/Lirv3",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 51.Kh7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 51.Kh7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kh7",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "Kh7",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "51.Kh7"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxh8",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Kxh8",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "52.Kxh8"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_tttbq",
+   "reasons": [
+    "engine: after 29...Bf6 the learner is only 94 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_tttbq",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "8/3p4/2pn2k1/4R1b1/2P1P3/8/P5PP/7K w - - 1 29",
+    "moves": [
+     "c5",
+     "Bf6",
+     "Re6",
+     "dxe6"
+    ],
+    "final_fen": "8/8/2pnpbk1/2P5/4P3/8/P5PP/7K w - - 0 31",
+    "key_move": "29...Bf6",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "29.c5": "The opponent's last move. Something is now possible — look closely.",
+     "29...Bf6": "The rook on e5 is trapped: every square it can go to is covered.",
+     "30...dxe6": "Black comes out 5 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on e5 is trapped: every square it can go to is covered. Black comes out 5 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "29...Bf6",
+      "trapped": {
+       "piece": "rook",
+       "color": "white",
+       "square": "e5"
+      },
+      "attacked_by": [
+       {
+        "piece": "bishop",
+        "color": "black",
+        "square": "f6"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "TTtbQ",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/TTtbQ",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 29...Bf6 the learner is only 94 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 29...Bf6 the learner is only 94 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Bf6",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 94,
+       "best_move": "Bf6",
+       "best_cp": 94,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "29...Bf6"
+      },
+      "learner_moves": [
+       {
+        "move": "dxe6",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 104,
+        "best_move": "dxe6",
+        "best_cp": 104,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "30...dxe6"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_w8khq",
+   "reasons": [
+    "engine: after 37.Kb2 the learner is only -12 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_w8khq",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Win the trapped piece.",
+    "start_fen": "5k2/5ppp/3p4/p2B3P/2P3P1/8/8/1bK5 b - - 2 36",
+    "moves": [
+     "Ba2",
+     "Kb2",
+     "Bxc4",
+     "Bxc4"
+    ],
+    "final_fen": "5k2/5ppp/3p4/p6P/2B3P1/8/1K6/8 b - - 0 38",
+    "key_move": "37.Kb2",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "36...Ba2": "The opponent's last move. Something is now possible — look closely.",
+     "37.Kb2": "The bishop on a2 is trapped: every square it can go to is covered.",
+     "38.Bxc4": "White comes out 2 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on a2 is trapped: every square it can go to is covered. White comes out 2 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "37.Kb2",
+      "trapped": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "a2"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "white",
+        "square": "b2"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "W8Khq",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/W8Khq",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 37.Kb2 the learner is only -12 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 37.Kb2 the learner is only -12 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kb2",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -12,
+       "best_move": "Kb2",
+       "best_cp": -12,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "37.Kb2"
+      },
+      "learner_moves": [
+       {
+        "move": "Bxc4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -5,
+        "best_move": "Bxc4",
+        "best_cp": -5,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "38.Bxc4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_y2hda",
+   "reasons": [
+    "engine: after 39...Kg7 the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_y2hda",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the rook",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "5k2/8/4p2R/4r1p1/8/5B1P/5KP1/8 w - - 0 39",
+    "moves": [
+     "Rf6+",
+     "Kg7",
+     "Rxe6",
+     "Rxe6"
+    ],
+    "final_fen": "8/6k1/4r3/6p1/8/5B1P/5KP1/8 w - - 0 41",
+    "key_move": "39...Kg7",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The rook has very few squares. Take them away."
+    ],
+    "notes": {
+     "39.Rf6+": "The opponent's last move. Something is now possible — look closely.",
+     "39...Kg7": "The rook on f6 is trapped: every square it can go to is covered.",
+     "40...Rxe6": "Black comes out 4 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The rook on f6 is trapped: every square it can go to is covered. Black comes out 4 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "39...Kg7",
+      "trapped": {
+       "piece": "rook",
+       "color": "white",
+       "square": "f6"
+      },
+      "attacked_by": [
+       {
+        "piece": "king",
+        "color": "black",
+        "square": "g7"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "Y2hDA",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/Y2hDA",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 39...Kg7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 39...Kg7 the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Kg7",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "Kg7",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "39...Kg7"
+      },
+      "learner_moves": [
+       {
+        "move": "Rxe6",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Rxe6",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "40...Rxe6"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_zrldb",
+   "reasons": [
+    "engine: after 49...Rg2 the learner is only 1 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_zrldb",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "8/8/2p5/2Nk4/1P1p4/8/PKP2B1r/8 w - - 3 49",
+    "moves": [
+     "Bg1",
+     "Rg2",
+     "Bxd4",
+     "Kxd4"
+    ],
+    "final_fen": "8/8/2p5/2N5/1P1k4/8/PKP3r1/8 w - - 0 51",
+    "key_move": "49...Rg2",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "49.Bg1": "The opponent's last move. Something is now possible — look closely.",
+     "49...Rg2": "The bishop on g1 is trapped: every square it can go to is covered.",
+     "50...Kxd4": "Black comes out 2 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on g1 is trapped: every square it can go to is covered. Black comes out 2 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "49...Rg2",
+      "trapped": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "g1"
+      },
+      "attacked_by": [
+       {
+        "piece": "rook",
+        "color": "black",
+        "square": "g2"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "ZrLDb",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/ZrLDb",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 49...Rg2 the learner is only 1 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 49...Rg2 the learner is only 1 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rg2",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 1,
+       "best_move": "Rg2",
+       "best_cp": 1,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "49...Rg2"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxd4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 11,
+        "best_move": "Kxd4",
+        "best_cp": 11,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "50...Kxd4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_bomdq",
+   "reasons": [
+    "engine: after 39...c5 the learner is only -42 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_bomdq",
+    "status": "needs_review",
+    "title": "Trapped piece: trapping the bishop",
+    "concept": "trapped_piece",
+    "category": "tactics",
+    "subcategory": "trappedPiece",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Win the trapped piece.",
+    "start_fen": "8/4Pk2/2pb1P2/p7/2pB4/2P5/P2K4/8 w - - 7 39",
+    "moves": [
+     "Ke3",
+     "c5",
+     "Ke4",
+     "cxd4"
+    ],
+    "final_fen": "8/4Pk2/3b1P2/p7/2ppK3/2P5/P7/8 w - - 0 41",
+    "key_move": "39...c5",
+    "prompt": "What would you play here? Win the trapped piece.",
+    "hints": [
+     "Which enemy piece has run out of safe squares?",
+     "The bishop has very few squares. Take them away."
+    ],
+    "notes": {
+     "39.Ke3": "The opponent's last move. Something is now possible — look closely.",
+     "39...c5": "The bishop on d4 is trapped: every square it can go to is covered.",
+     "40...cxd4": "Black comes out 3 points of material ahead."
+    },
+    "explanation": "A trapped piece is attacked and has no safe square to go to, so it will be lost. The bishop on d4 is trapped: every square it can go to is covered. Black comes out 3 points of material ahead.",
+    "tags": [
+     "trappedPiece",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "trapped_piece": {
+      "move": "39...c5",
+      "trapped": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "d4"
+      },
+      "attacked_by": [
+       {
+        "piece": "pawn",
+        "color": "black",
+        "square": "c5"
+       }
+      ]
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "bOMDQ",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/bOMDQ",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "trapped_piece"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 39...c5 the learner is only -42 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 39...c5 the learner is only -42 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "c5",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -42,
+       "best_move": "c5",
+       "best_cp": -42,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "39...c5"
+      },
+      "learner_moves": [
+       {
+        "move": "cxd4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 2,
+        "best_move": "cxd4",
+        "best_cp": 2,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "40...cxd4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_tilvh",
+   "reasons": [
+    "engine: after 40.Rb6+ the learner is only 6 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_tilvh",
+    "status": "needs_review",
+    "title": "Zwischenzug (in-between move)",
+    "concept": "zwischenzug",
+    "category": "tactics",
+    "subcategory": "intermezzo",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+    "start_fen": "1R6/8/4k1p1/1K6/P2r4/1P5P/8/r7 b - - 11 39",
+    "moves": [
+     "Rdxa4",
+     "Rb6+",
+     "Kd5",
+     "bxa4"
+    ],
+    "final_fen": "8/8/1R4p1/1K1k4/P7/7P/8/r7 b - - 0 41",
+    "key_move": "40.Rb6+",
+    "prompt": "What would you play here? Find the in-between move.",
+    "hints": [
+     "Don't play the automatic move. Is there a check or bigger threat first?"
+    ],
+    "notes": {
+     "39...Rdxa4": "The opponent's last move. Something is now possible — look closely.",
+     "41.bxa4": "White comes out 5 points of material ahead."
+    },
+    "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 5 points of material ahead.",
+    "tags": [
+     "intermezzo",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "zwischenzug": {
+      "move": "40.Rb6+",
+      "instead_of_recapturing_on": "a4",
+      "forcing": "check"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "tIlVH",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/tIlVH",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "zwischenzug"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 40.Rb6+ the learner is only 6 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 40.Rb6+ the learner is only 6 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rb6+",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 6,
+       "best_move": "Rb6+",
+       "best_cp": 6,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "40.Rb6+"
+      },
+      "learner_moves": [
+       {
+        "move": "bxa4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 28,
+        "best_move": "bxa4",
+        "best_cp": 28,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "41.bxa4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_0mjwt",
+   "reasons": [
+    "engine: after 36...Rxf5+ the learner is only 90 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_0mjwt",
+    "status": "needs_review",
+    "title": "Zwischenzug (in-between move)",
+    "concept": "zwischenzug",
+    "category": "tactics",
+    "subcategory": "intermezzo",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. Black to move: Find the in-between move.",
+    "start_fen": "3r2R1/pp2kp2/8/4rB2/8/6R1/P4KP1/8 w - - 2 36",
+    "moves": [
+     "Rxd8",
+     "Rxf5+",
+     "Ke3",
+     "Kxd8"
+    ],
+    "final_fen": "3k4/pp3p2/8/5r2/8/4K1R1/P5P1/8 w - - 0 38",
+    "key_move": "36...Rxf5+",
+    "prompt": "What would you play here? Find the in-between move.",
+    "hints": [
+     "Don't play the automatic move. Is there a check or bigger threat first?"
+    ],
+    "notes": {
+     "36.Rxd8": "The opponent's last move. Something is now possible — look closely.",
+     "37...Kxd8": "Black comes out 8 points of material ahead."
+    },
+    "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. Black comes out 8 points of material ahead.",
+    "tags": [
+     "intermezzo",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "zwischenzug": {
+      "move": "36...Rxf5+",
+      "instead_of_recapturing_on": "d8",
+      "forcing": "check"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "0MjwT",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/0MjwT",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "zwischenzug"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 36...Rxf5+ the learner is only 90 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 36...Rxf5+ the learner is only 90 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxf5+",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 90,
+       "best_move": "Rxf5+",
+       "best_cp": 90,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "36...Rxf5+"
+      },
+      "learner_moves": [
+       {
+        "move": "Kxd8",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 75,
+        "best_move": "Kxd8",
+        "best_cp": 75,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "37...Kxd8"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_26opz",
+   "reasons": [
+    "engine: after 38.Re3+ the learner is only -10 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_26opz",
+    "status": "needs_review",
+    "title": "Zwischenzug (in-between move)",
+    "concept": "zwischenzug",
+    "category": "tactics",
+    "subcategory": "intermezzo",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+    "start_fen": "8/5pp1/4k2p/1n6/2pr2P1/5R1P/4KP2/8 b - - 1 37",
+    "moves": [
+     "Rxg4",
+     "Re3+",
+     "Kd5",
+     "hxg4"
+    ],
+    "final_fen": "8/5pp1/7p/1n1k4/2p3P1/4R3/4KP2/8 b - - 0 39",
+    "key_move": "38.Re3+",
+    "prompt": "What would you play here? Find the in-between move.",
+    "hints": [
+     "Don't play the automatic move. Is there a check or bigger threat first?"
+    ],
+    "notes": {
+     "37...Rxg4": "The opponent's last move. Something is now possible — look closely.",
+     "39.hxg4": "White comes out 5 points of material ahead."
+    },
+    "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 5 points of material ahead.",
+    "tags": [
+     "intermezzo",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "zwischenzug": {
+      "move": "38.Re3+",
+      "instead_of_recapturing_on": "g4",
+      "forcing": "check"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "26OpZ",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/26OpZ",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "zwischenzug"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 38.Re3+ the learner is only -10 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 38.Re3+ the learner is only -10 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Re3+",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -10,
+       "best_move": "Re3+",
+       "best_cp": -10,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "38.Re3+"
+      },
+      "learner_moves": [
+       {
+        "move": "hxg4",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -6,
+        "best_move": "hxg4",
+        "best_cp": -6,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "39.hxg4"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_3lfr6",
+   "reasons": [
+    "engine: after 32.Rc8+ the learner is only 0 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_3lfr6",
+    "status": "needs_review",
+    "title": "Zwischenzug (in-between move)",
+    "concept": "zwischenzug",
+    "category": "tactics",
+    "subcategory": "intermezzo",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+    "start_fen": "6k1/1p4p1/p5p1/4P3/8/8/1q3rPP/2R3QK b - - 2 31",
+    "moves": [
+     "Rxg2",
+     "Rc8+",
+     "Kh7",
+     "Qxg2"
+    ],
+    "final_fen": "2R5/1p4pk/p5p1/4P3/8/8/1q4QP/7K b - - 0 33",
+    "key_move": "32.Rc8+",
+    "prompt": "What would you play here? Find the in-between move.",
+    "hints": [
+     "Don't play the automatic move. Is there a check or bigger threat first?"
+    ],
+    "notes": {
+     "31...Rxg2": "The opponent's last move. Something is now possible — look closely.",
+     "33.Qxg2": "White comes out 5 points of material ahead."
+    },
+    "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 5 points of material ahead.",
+    "tags": [
+     "intermezzo",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "zwischenzug": {
+      "move": "32.Rc8+",
+      "instead_of_recapturing_on": "g2",
+      "forcing": "check"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "3lFR6",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/3lFR6",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "zwischenzug"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 32.Rc8+ the learner is only 0 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 32.Rc8+ the learner is only 0 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rc8+",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": 0,
+       "best_move": "Rc8+",
+       "best_cp": 0,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "32.Rc8+"
+      },
+      "learner_moves": [
+       {
+        "move": "Qxg2",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": 0,
+        "best_move": "Qxg2",
+        "best_cp": 0,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "33.Qxg2"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
+  },
+  {
+   "id": "lichess_n7gdf",
+   "reasons": [
+    "engine: after 41.Rxg6+ the learner is only -34 cp better — the tactic doesn't clearly win"
+   ],
+   "record": {
+    "id": "lichess_n7gdf",
+    "status": "needs_review",
+    "title": "Zwischenzug (in-between move)",
+    "concept": "zwischenzug",
+    "category": "tactics",
+    "subcategory": "intermezzo",
+    "difficulty": 3,
+    "description": "A position from a real Lichess game. White to move: Find the in-between move.",
+    "start_fen": "8/3r2k1/1R4pp/p4pPP/1p3P2/8/r7/4R1K1 b - - 0 40",
+    "moves": [
+     "hxg5",
+     "Rxg6+",
+     "Kh7",
+     "fxg5"
+    ],
+    "final_fen": "8/3r3k/6R1/p4pPP/1p6/8/r7/4R1K1 b - - 0 42",
+    "key_move": "41.Rxg6+",
+    "prompt": "What would you play here? Find the in-between move.",
+    "hints": [
+     "Don't play the automatic move. Is there a check or bigger threat first?"
+    ],
+    "notes": {
+     "40...hxg5": "The opponent's last move. Something is now possible — look closely.",
+     "42.fxg5": "White comes out 2 points of material ahead."
+    },
+    "explanation": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move. White comes out 2 points of material ahead.",
+    "tags": [
+     "intermezzo",
+     "lichess",
+     "real game",
+     "2-move"
+    ],
+    "presentation_modes": [
+     "demonstration",
+     "interactive",
+     "hint",
+     "practice",
+     "deep_dive"
+    ],
+    "facts": {
+     "zwischenzug": {
+      "move": "41.Rxg6+",
+      "instead_of_recapturing_on": "g5",
+      "forcing": "check"
+     }
+    },
+    "source": {
+     "source_type": "lichess_puzzle",
+     "source_id": "N7Gdf",
+     "source_license": "CC0-1.0",
+     "source_url": "https://lichess.org/training/N7Gdf",
+     "reference": "Lichess puzzle database (database.lichess.org)",
+     "import_date": "2026-09-25"
+    },
+    "verification": {
+     "status": "needs_review",
+     "pipeline_version": 1,
+     "method": "seed_builder",
+     "checked": [
+      "fen",
+      "position",
+      "moves",
+      "structure",
+      "concept",
+      "solution",
+      "explanation",
+      "duplicate"
+     ],
+     "stages": [
+      {
+       "name": "fen",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "position",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "moves",
+       "outcome": "pass",
+       "detail": "4 legal moves"
+      },
+      {
+       "name": "structure",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "concept",
+       "outcome": "pass",
+       "detail": "zwischenzug"
+      },
+      {
+       "name": "engine",
+       "outcome": "uncertain",
+       "detail": "after 41.Rxg6+ the learner is only -34 cp better — the tactic doesn't clearly win"
+      },
+      {
+       "name": "solution",
+       "outcome": "pass",
+       "detail": "best"
+      },
+      {
+       "name": "explanation",
+       "outcome": "pass",
+       "detail": ""
+      },
+      {
+       "name": "duplicate",
+       "outcome": "pass",
+       "detail": ""
+      }
+     ],
+     "verified_at": "2026-09-26",
+     "engine": {
+      "outcome": "uncertain",
+      "profile": "tactic",
+      "reasons": [
+       "after 41.Rxg6+ the learner is only -34 cp better — the tactic doesn't clearly win"
+      ],
+      "depth": 14,
+      "key_move": {
+       "move": "Rxg6+",
+       "category": "best",
+       "loss_cp": 0,
+       "eval_cp": -34,
+       "best_move": "Rxg6+",
+       "best_cp": -34,
+       "alternatives": [],
+       "mate_after": false,
+       "label": "41.Rxg6+"
+      },
+      "learner_moves": [
+       {
+        "move": "fxg5",
+        "category": "best",
+        "loss_cp": 0,
+        "eval_cp": -38,
+        "best_move": "fxg5",
+        "best_cp": -38,
+        "alternatives": [],
+        "mate_after": false,
+        "label": "42.fxg5"
+       }
+      ],
+      "alternatives": []
+     }
+    }
+   }
   }
  ],
  "rejected": [
@@ -1084,6 +5903,62 @@
   {
    "id": "lichess_pfshr",
    "source": "pfShr",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_0v37a",
+   "source": "0V37A",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_5lzfi",
+   "source": "5LzFi",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_pqk4x",
+   "source": "pQK4X",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_4kuyy",
+   "source": "4kuyy",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_6v4kt",
+   "source": "6V4KT",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_hy3kz",
+   "source": "Hy3KZ",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_mqfva",
+   "source": "MqFVa",
+   "reasons": [
+    "concept: Pin: no pin is created or exploited"
+   ]
+  },
+  {
+   "id": "lichess_obcol",
+   "source": "OBcoL",
    "reasons": [
     "concept: Pin: no pin is created or exploited"
    ]
@@ -1124,8 +5999,29 @@
    ]
   },
   {
+   "id": "lichess_6n1md",
+   "source": "6N1Md",
+   "reasons": [
+    "concept: Sacrifice: the sacrifice is never paid back (no mate, no material regained)"
+   ]
+  },
+  {
    "id": "lichess_thpzl",
    "source": "THPZL",
+   "reasons": [
+    "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
+   ]
+  },
+  {
+   "id": "lichess_7quge",
+   "source": "7QUge",
+   "reasons": [
+    "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
+   ]
+  },
+  {
+   "id": "lichess_81g0p",
+   "source": "81G0P",
    "reasons": [
     "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
    ]

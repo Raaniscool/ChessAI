@@ -22,7 +22,7 @@ Lookup order: **verified library → deterministic rules → Stockfish → Qwen*
 |------|-------|
 | Schema, concept graph (62 concepts), validators, verification pipeline | done |
 | Source importers: curated records, Lichess opening DB, Lichess puzzles | done |
-| Seed library: 107 verified examples, reproducible build | done |
+| Seed library: 268 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
 | Runtime tiers (generated / personal), review states, usage metadata | done (data model + library API) |
 | Tutor integration: retrieval layer, lessons from examples, chat/planner, teacher facts | done (see *Using the library in the tutor*) |
 | Qwen candidates on a library miss (verified before saving) | after that |
@@ -95,7 +95,7 @@ Any fail → `rejected`; any uncertain (e.g. no engine) → `needs_review`; else
 | FIDE Laws of Chess (rules as facts) | facts | rules examples (`curated/basics.json`) |
 | Standard patterns, classic traps, textbook endgames | public-domain facts, original text | `curated/{checkmates,endgames,mistakes}.json` |
 | [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) | CC0 | opening lines; the moves come from the database, max. 6 extra moves |
-| Lichess puzzle database (via `planner/data/puzzles.json`) | CC0 | tactics/mates from real games, and "walked into a fork / hung a piece" mistakes |
+| Lichess puzzle database (via `planner/data/puzzles.json` and the larger `sources/data/lichess_puzzles/pool.json`) | CC0 | tactics/mates from real games, and "walked into a fork / hung a piece" mistakes |
 
 ## Using the library in the tutor
 
@@ -192,11 +192,28 @@ API: `POST /api/plans {goal, library, level?}`, `POST /api/knowledge/intent {mes
 After editing a curated record, a validator or a threshold:
 
 ```powershell
-.\.venv\Scripts\python scripts\build_knowledge_seed.py
+.\.venv\Scripts\python scripts\build_knowledge_seed.py --puzzles-per-concept 10 --mistakes-per-concept 6
 .\.venv\Scripts\python -m pytest backend/tests/ -q
 ```
 
-The build takes about a minute and is deterministic: rebuilding without changes
+**The puzzle pool.** Lichess puzzles reach the library through two files, both verified move by
+move by `scripts/build_puzzle_library.py` (Stockfish: the solution must be the unique best move,
+by 150 cp, at every learner move): the planner's `planner/data/puzzles.json` (read first, so
+existing entries stay stable) and the larger `knowledge/sources/data/lichess_puzzles/pool.json`
+(30 per theme, 18 themes, none repeated from puzzles.json). The pool was built from the per-theme
+CC0 samples in github.com/pwenker/chessli2 (`puzzles/<theme>.csv`):
+
+```powershell
+.\.venv\Scripts\python scripts\build_puzzle_library.py <csv-dir> --out backend/app/knowledge/sources/data/lichess_puzzles/pool.json `
+  --themes fork,pin,skewer,discoveredAttack,doubleCheck,deflection,capturingDefender,hangingPiece,trappedPiece,sacrifice,intermezzo,backRankMate,smotheredMate,anastasiaMate,arabianMate,bodenMate,mateIn1,promotion `
+  --per-theme 30 --max-candidates 120 --exclude backend/app/planner/data/puzzles.json
+```
+
+Every pool puzzle still goes through the full library pipeline (concept validator, Stockfish,
+explanation checks, near-duplicate filter). In the last build, 35 landed in `needs_review` (e.g. the
+tactic only wins 141 cp) and 20 were rejected: bigger, not looser.
+
+The seed build takes a few minutes and is deterministic: rebuilding without changes
 produces identical files. Check `seed_report.json` for anything that landed in
 `needs_review` or `rejected`. Fix the source record, or leave it out if Stockfish
 disagrees with the idea.

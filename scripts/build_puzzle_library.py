@@ -6,6 +6,10 @@ Only the chess content (position, moves, theme tags, Lichess puzzle id) is used.
 
     python scripts/build_puzzle_library.py CSV_DIR [--per-theme 7] [--depth 16] [--themes a,b]
 
+    # the larger pool the Knowledge Library draws from (the planner's puzzles.json is untouched):
+    python scripts/build_puzzle_library.py CSV_DIR --out backend/app/knowledge/sources/data/lichess_puzzles/pool.json \
+        --themes fork,pin,... --per-theme 25 --max-candidates 90 --exclude backend/app/planner/data/puzzles.json
+
 Every kept puzzle is replayed with python-chess and checked move by move with Stockfish:
 at each of the learner's moves the solution must be the engine's best move AND clearly
 better than the second-best (so an equally good alternative is never marked wrong).
@@ -138,7 +142,8 @@ def _mates(board: chess.Board, move: chess.Move) -> bool:
         board.pop()
 
 
-def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing: dict) -> dict:
+def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing: dict,
+          max_candidates: int = MAX_CANDIDATES, exclude: set[str] | None = None) -> dict:
     cmd = get_settings().engine_cmd
     if not cmd:
         sys.exit("No engine: run `npm install` or set ENGINE_CMD")
@@ -153,6 +158,8 @@ def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing
             started = time.monotonic()
             candidates = []
             for rec in parse_pgn_csv(path):
+                if exclude and rec["id"] in exclude:
+                    continue  # already shipped elsewhere
                 ucis = to_ucis(rec["fen"], rec["sans"])
                 if not ucis or len(ucis) < 2 or len(ucis) % 2 != 0:
                     continue  # setup + learner moves; a learner move must end the line
@@ -169,7 +176,7 @@ def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing
             def pick(pool: list[dict], want: int) -> list[dict]:
                 nonlocal tried
                 got = []
-                for rec in pool[:MAX_CANDIDATES]:
+                for rec in pool[:max_candidates]:
                     if len(got) >= want:
                         break
                     board_key = rec["fen"].split(" ")[0]
@@ -200,20 +207,28 @@ def main() -> None:
     ap.add_argument("--per-theme", type=int, default=7)
     ap.add_argument("--depth", type=int, default=16)
     ap.add_argument("--themes", default="", help="comma-separated; default: every theme used in topics.json")
+    ap.add_argument("--out", type=Path, default=OUT, help="output file (default: the planner's puzzles.json)")
+    ap.add_argument("--max-candidates", type=int, default=MAX_CANDIDATES, help="puzzles tried per difficulty tier")
+    ap.add_argument("--exclude", type=Path, action="append", default=[],
+                    help="skip puzzle ids already in this puzzles file (repeatable)")
     args = ap.parse_args()
+    out = args.out
 
     topics = json.loads((OUT.parent / "topics.json").read_text(encoding="utf-8"))["topics"]
     themes = [t for t in args.themes.split(",") if t] or sorted(
         {t["puzzle_theme"] for t in topics if t.get("puzzle_theme")})
-    existing = json.loads(OUT.read_text(encoding="utf-8"))["themes"] if OUT.exists() else {}
-    library = build(args.csv_dir, themes, args.per_theme, args.depth, existing)
-    OUT.write_text(json.dumps({
+    existing = json.loads(out.read_text(encoding="utf-8"))["themes"] if out.exists() else {}
+    exclude = {p["id"] for path in args.exclude
+               for ps in json.loads(path.read_text(encoding="utf-8"))["themes"].values() for p in ps}
+    library = build(args.csv_dir, themes, args.per_theme, args.depth, existing, args.max_candidates, exclude)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({
         "source": "Lichess puzzle database (https://database.lichess.org/#puzzles)",
         "license": "CC0 1.0 (public domain)",
         "verified_with": f"Stockfish, depth {args.depth}, unique best move at every learner move",
         "themes": {k: library[k] for k in sorted(library)},
     }, indent=1) + "\n", encoding="utf-8")
-    print(f"wrote {OUT} ({OUT.stat().st_size // 1024} KB)")
+    print(f"wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":

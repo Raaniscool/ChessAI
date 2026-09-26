@@ -204,8 +204,20 @@ REQUIRED = [
 def test_seed_library_loads_cleanly(seed):
     stats = seed.stats()
     assert stats["load_errors"] == 0
-    assert 50 <= stats["verified"] <= 200
+    # The library was enlarged on request (a bigger Lichess pool, ~10 per tactic); the upper
+    # bound still catches a runaway build that stops filtering.
+    assert 200 <= stats["verified"] <= 600
     assert set(stats["by_category"]) == set(CATEGORIES)
+
+
+def test_seed_library_is_balanced(seed):
+    """Larger, not lopsided: no concept dominates, and the Lichess tactics have real depth."""
+    from collections import Counter
+    per = Counter(ex.concept for ex in seed.verified())
+    assert max(per.values()) <= 15, per.most_common(3)
+    for concept in ("fork", "knight_fork", "absolute_pin", "skewer", "discovered_attack", "back_rank_mate",
+                    "smothered_mate", "mate_in_one", "hanging_piece", "removing_defender"):
+        assert per[concept] >= 8, (concept, per[concept])
 
 
 @pytest.mark.parametrize("concept", REQUIRED)

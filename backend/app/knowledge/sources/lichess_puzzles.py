@@ -1,7 +1,10 @@
 """Teaching examples from real games: the Lichess puzzle database (CC0).
 
-Source: planner/data/puzzles.json — puzzles from the Lichess database that
-scripts/build_puzzle_library.py already checked move by move with Stockfish.
+Sources: planner/data/puzzles.json (the planner's puzzle lessons) and the larger
+sources/data/lichess_puzzles/pool.json. Both are puzzles from the Lichess database
+that scripts/build_puzzle_library.py already checked move by move with Stockfish.
+The planner's puzzles come first, so existing library entries stay stable when the
+pool grows.
 Each puzzle is a real position from a real game: the opponent's last move,
 then the winning continuation.
 
@@ -24,6 +27,7 @@ from . import provenance
 
 PUZZLES = Path(__file__).resolve().parents[2] / "planner" / "data" / "puzzles.json"
 TOPICS = Path(__file__).resolve().parents[2] / "planner" / "data" / "topics.json"
+POOL = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool.json"
 LICENSE = "CC0-1.0"
 
 # Lichess theme -> library concept (refined from the facts where possible)
@@ -75,15 +79,28 @@ def _title(concept_name: str, kind: str, f: dict) -> str:
     return concept_name
 
 
+def _themes(path: Path | None, order) -> dict[str, list[dict]]:
+    """{theme: puzzles}: the given file, or the planner's puzzles followed by the pool."""
+    paths = [path] if path else [PUZZLES, POOL]
+    merged: dict[str, list[dict]] = {}
+    for p in paths:
+        if not p.exists():
+            continue
+        with open(p, encoding="utf-8") as fh:
+            for theme, puzzles in json.load(fh)["themes"].items():
+                known = {x["id"] for x in merged.get(theme, [])}
+                merged.setdefault(theme, []).extend(sorted((x for x in puzzles if x["id"] not in known), key=order))
+    return merged
+
+
 def candidates(library, per_concept: int = 4, path: Path | None = None) -> list[dict]:
-    with open(path or PUZZLES, encoding="utf-8") as fh:
-        themes = json.load(fh)["themes"]
+    themes = _themes(path, lambda p: (len(p["moves"]), p["id"]))
     with open(TOPICS, encoding="utf-8") as fh:
         topic_text = {t["puzzle_theme"]: t.get("puzzle", {}) for t in json.load(fh)["topics"] if t.get("puzzle_theme")}
     out: list[dict] = []
     per: dict[str, int] = {}
     for theme, concept in THEMES.items():
-        for puzzle in sorted(themes.get(theme, []), key=lambda p: (len(p["moves"]), p["id"])):
+        for puzzle in themes.get(theme, []):
             cand = _candidate(puzzle, theme, concept, library, topic_text.get(theme, {}))
             if cand is None or per.get(cand["concept"], 0) >= per_concept:
                 continue
@@ -175,14 +192,13 @@ def mistake_candidates(library, per_concept: int = 3, exclude: set[str] | None =
     doesn't enter the library twice. Longer puzzles are tried first, the tactic
     importer takes the shortest ones."""
     exclude = exclude or set()
-    with open(path or PUZZLES, encoding="utf-8") as fh:
-        themes = json.load(fh)["themes"]
+    themes = _themes(path, lambda p: (-len(p["moves"]), p["id"]))
     out: list[dict] = []
     for theme, concept in MISTAKE_THEMES.items():
         if concept not in library.concepts:
             continue
         taken = 0
-        for puzzle in sorted(themes.get(theme, []), key=lambda p: (-len(p["moves"]), p["id"])):
+        for puzzle in themes.get(theme, []):
             if taken >= per_concept:
                 break
             if puzzle["id"] in exclude:
