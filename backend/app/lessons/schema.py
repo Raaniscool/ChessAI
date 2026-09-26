@@ -53,6 +53,7 @@ class ExerciseStep:
     accepted_san: list[str] | None = None  # required when advance_on == accepted_move
     min_category: str | None = None  # required when advance_on == min_classification
     continue_text: str = ""
+    concepts: list[str] = field(default_factory=list)  # exercise-level concept tags
 
     type = "exercise"
 
@@ -162,6 +163,10 @@ def _parse_exercise(data: dict) -> ExerciseStep:
     continue_text = data.get("continue_text", "")
     _require(isinstance(continue_text, str), "continue_text must be a string")
 
+    concepts_raw = data.get("concepts", [])
+    _require(isinstance(concepts_raw, list) and all(isinstance(c, str) for c in concepts_raw),
+             "concepts must be a list of strings")
+
     return ExerciseStep(
         fen=fen,
         side=side,
@@ -171,6 +176,7 @@ def _parse_exercise(data: dict) -> ExerciseStep:
         accepted_san=accepted_san,
         min_category=min_category,
         continue_text=continue_text,
+        concepts=list(concepts_raw),
     )
 
 

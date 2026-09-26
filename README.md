@@ -66,4 +66,14 @@ Without `QWEN_MODEL` the app uses the built-in fallback teacher (engine facts on
 
 ## Status
 
-**Phase 1 — MVP in progress.** Done so far: chess system, engine integration + move classification, teacher layer (Qwen + fallback), lesson schema/loader, Italian Game lesson 1, test suite (17 passing). Next: FastAPI session API, web UI, then the full teach→demo→practice→feedback loop end-to-end.
+**Phase 1 — MVP: core loop complete.** ✅ chess system, engine integration + position-aware move classification, teacher layer (Qwen + facts-only fallback), lesson schema/loader, Italian Game lesson 1, session API, web UI (board + demonstrations + exercises + hints + chat), test suite (25 passing).
+
+**Next:** [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) — architecture + MVP proposal for the second pillar: personalized training from the user's own games (PGN import → pattern detection → weakness report → generated training).
+
+The proven MVP loop:
+
+```
+User chooses lesson → AI teaches concept → board demonstrates it → user gets a
+position → user moves → python-chess validates → Stockfish classifies → Qwen
+explains → next teaching position → lesson completion ✓
+```

@@ -73,6 +73,18 @@ class FallbackTeacher:
         pv = " ".join(feedback.best_pv_san[:6])
         if pv:
             text += f" Engine's line: {pv}."
+
+        # Lesson context: sound move, but not the taught line?
+        if (
+            context.accepted_moves
+            and feedback.user_move_san not in context.accepted_moves
+            and category in ("excellent", "good", "inaccurate")
+        ):
+            goals = " or ".join(context.accepted_moves)
+            text += (
+                f" It's a playable move, but this exercise is specifically about"
+                f" {goals} — try the lesson's move to complete it."
+            )
         return text
 
     def chat(self, message: str, context: LessonContext, transcript: list[dict]) -> str:

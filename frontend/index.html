@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chess Tutor</title>
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/chessboard.css">
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/extensions/markers/markers.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">♞</span>
+      <div>
+        <h1>AI Chess Tutor</h1>
+        <p class="tagline">Learn chess by playing, not just reading</p>
+      </div>
+    </div>
+    <div id="health" class="health">checking…</div>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar">
+      <h2>Opening courses</h2>
+      <div id="course-list" class="course-list">Loading…</div>
+    </aside>
+
+    <main class="main">
+      <section class="board-pane">
+        <div id="board"></div>
+        <div id="board-status" class="board-status"></div>
+      </section>
+
+      <section class="lesson-pane">
+        <div class="lesson-header">
+          <h2 id="lesson-title">Welcome</h2>
+          <span id="step-indicator" class="step-indicator"></span>
+        </div>
+        <div id="messages" class="messages">
+          <div class="msg assistant">
+            Pick a lesson from the left to start. The AI will teach on the board,
+            demonstrate ideas, then put you on the move.
+          </div>
+        </div>
+        <div id="feedback-slot"></div>
+        <div class="controls">
+          <button id="btn-play" class="btn primary hidden">▶ Play demonstration</button>
+          <button id="btn-continue" class="btn primary hidden">Continue →</button>
+          <button id="btn-hint" class="btn hidden">💡 Hint</button>
+          <button id="btn-reveal" class="btn hidden">Show solution</button>
+        </div>
+        <div class="chat-row">
+          <input id="chat-input" type="text" placeholder="Ask the teacher a question…"
+                 autocomplete="off">
+          <button id="btn-chat" class="btn">Send</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

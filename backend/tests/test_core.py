@@ -166,6 +166,24 @@ def test_fallback_refuses_without_engine_facts():
     assert "engine analysis" in text.lower()
 
 
+def test_fallback_points_to_lesson_goal_move():
+    """Sound engine move that isn't the taught line must reference the goal."""
+    lesson = get_library().lesson("italian_01")
+    ex = next(s for s in lesson.steps if s.type == "exercise")
+    ctx = LessonContext(
+        course_title="Italian Game",
+        lesson_title=lesson.title,
+        concepts=lesson.concepts,
+        exercise_prompt=ex.prompt,
+        accepted_moves=ex.accepted_san,
+    )
+    feedback = _make_feedback()
+    feedback.category = Classification.EXCELLENT  # sound, but off-line
+    feedback.user_move_san = "d4"
+    text = FallbackTeacher().explain_move(feedback, ctx)
+    assert "Bc4" in text and "try the lesson's move" in text
+
+
 def _make_feedback():
     from app.engine import MoveFeedback
 
