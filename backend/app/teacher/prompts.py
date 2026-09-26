@@ -141,3 +141,22 @@ def build_example_messages(context: LessonContext, level: str = "beginner",
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user},
     ]
+
+
+def build_game_moment_messages(facts: list[str], level: str = "beginner",
+                               question: str | None = None) -> list[dict]:
+    """Explain one moment of the learner's own game. Stockfish already judged it; Qwen explains."""
+    task = (f"The student asks: {question.strip()}\nAnswer using only the facts." if question else
+            "Explain to the student, in three short parts: what happened, why it was a mistake "
+            "(what the better move does), and what to look for next time.")
+    user = (
+        "A moment from the student's own game, analysed by Stockfish. These facts are verified:\n"
+        + "\n".join(f"- {line}" for line in facts[:MAX_FACT_LINES])
+        + f"\nTask: {task} The verdict and the better move are already decided by the engine: do not "
+          "question them, and do not add moves, variations, evaluations or piece positions that are not "
+          f"in the facts. Level: {level}. Plain language, under 110 words."
+    )
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user},
+    ]
