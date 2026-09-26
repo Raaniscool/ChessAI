@@ -171,6 +171,8 @@ await sendChat()
 await waitFor(() => /Learn: Smothered mate/.test(lastMsgs(1)[0]), "smothered plan message")
 const smPlan = lastMsgs(1)[0]
 check(/Smothered mate/.test(smPlan) && !/Fork|Pin|Skewer/.test(smPlan), "smothered-mate plan contains only smothered mate")
+// the sidebar course list refreshes after the chat reply: wait for it (a race, not a missing lesson)
+await waitFor(() => lessonIn(/Smothered mate/, /Learn the pattern/), "smothered-mate lesson in the sidebar", 15000).catch(() => null)
 const smLesson = lessonIn(/Smothered mate/, /Learn the pattern/)
 check(!!smLesson, "plan has 'Smothered mate: learn the pattern'")
 smLesson.click()
@@ -264,18 +266,25 @@ check(chips.includes("RaanTest") && chips.includes("endgamer"), "one game withou
 $("ga-status").querySelectorAll(".chip")[chips.indexOf("RaanTest")].click()
 await waitFor(() => /Analysis done/.test($("ga-status").textContent), "first game analyzed", 120000)
 check($("ga-username").value === "RaanTest", "the chosen player is remembered")
-check(/import a few more games|only one game/i.test($("ga-overview").textContent), "one game: no recurring weakness claimed yet")
+await waitFor(() => document.querySelector(".ga-history"), "history card")
+check(/isn't enough game history/.test($("ga-overview").textContent) && !document.querySelector(".weakness.recurring"),
+  "one game: explains there isn't enough history, no pattern claimed")
 $("ga-pgn").value = GAME2
 $("ga-import-btn").click()
-await waitFor(() => /Analysis done/.test($("ga-status").textContent) && document.querySelector(".weakness.recurring"), "second game analyzed", 120000)
-const weakness = document.querySelector(".weakness.recurring")
-check(/Missed knight fork/.test(weakness.textContent) && /2 of your|both games/i.test(weakness.textContent), "recurring weakness across 2 games: " + weakness.textContent.slice(0, 80))
-check(/verified example/.test(weakness.textContent), "weakness links to verified library examples")
+await waitFor(() => /Analysis done/.test($("ga-status").textContent) && document.querySelector(".weakness.pattern.tier-occasional"), "second game analyzed", 120000)
+const weakness = document.querySelector(".weakness.pattern.tier-occasional")
+check(/Missed knight fork/.test(weakness.textContent) && /Found in both games/.test(weakness.textContent), "knight fork in 2 games: " + weakness.textContent.slice(0, 80))
+check(!document.querySelector(".weakness.recurring") && /not a pattern yet/i.test($("ga-overview").textContent) &&
+  /isn't enough game history/.test($("ga-overview").textContent), "2 games: seen twice, but not called a recurring pattern")
+check(/verified example/.test(weakness.textContent), "pattern links to verified library examples")
 check(document.querySelectorAll("#ga-games .game-item").length >= 2, "both games listed")
 check($("ga-import").classList.contains("collapsed") && /Import more games/.test($("ga-import").textContent),
   "the import form folds into one button once there are games")
 // jump to where it happened
-;[...weakness.querySelectorAll("button")].find(b => /See it/.test(b.textContent)).click()
+;[...weakness.querySelectorAll("button")].find(b => /Show the games/.test(b.textContent)).click()
+const evidenceRows = weakness.querySelectorAll(".pattern-evidence:not(.hidden) .evidence-row")
+check(evidenceRows.length === 2 && /move \d+: you played/.test(evidenceRows[0].textContent), "the pattern lists the games and moves where it happened")
+evidenceRows[0].click()
 await waitFor(() => !$("ga-review").classList.contains("hidden") && document.querySelector(".moment-headline"), "moment review")
 check(/You missed a knight fork/.test(document.querySelector(".moment-headline").textContent), "moment headline names the tactic")
 check(/^Move \d+\.\.\./.test(document.querySelector(".ga-card.moment h3").textContent), "Black's move titled 'Move N...': " + document.querySelector(".ga-card.moment h3").textContent)
@@ -298,9 +307,12 @@ await waitFor(() => /You played/.test($("board-status").textContent), "my move s
 document.querySelector(".moment-ask .btn").click()
 await waitFor(() => { const a = document.querySelector(".moment-ai"); return a && !a.classList.contains("hidden") && a.textContent.length > 20 && !document.querySelector(".moment-ask .btn").disabled }, "moment explanation", 120000)
 check(/fork|knight/i.test(document.querySelector(".moment-ai").textContent), "explanation: " + document.querySelector(".moment-ai").textContent.slice(0, 70))
-// the recurring note offers practice; start training from it
-const practise = [...document.querySelectorAll(".moment-related .btn")].find(b => /Practise/.test(b.textContent))
-check(!!practise, "moment says it's a recurring weakness and offers practice")
+// the moment says it happened in another game too (not a pattern yet) and offers practice
+const related = document.querySelector(".moment-related")
+check(!!related && /2 of your last 2 games/.test(related.textContent) && /not a pattern yet/.test(related.textContent),
+  "moment: seen in 2 games, not called a pattern: " + (related ? related.textContent.slice(0, 80) : "none"))
+const practise = [...document.querySelectorAll(".moment-related .btn")].find(b => /Practice Knight fork/.test(b.textContent))
+check(!!practise, "the moment offers practice")
 practise.click()
 await waitFor(() => !document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden") &&
   /From your games/.test(lastMsgs(1)[0] || ""), "training plan in lessons view")
@@ -319,6 +331,51 @@ for (let i = 0; i < 4 && !/Your move/.test($("board-status").textContent); i++) 
   await sleep(300)
 }
 check(/Your game against/.test(lastMsgs(1)[0]) && board.isMoveInputEnabled(), "exercise from your own game: " + lastMsgs(1)[0].slice(0, 70))
+
+// 11) Game history: the last 10 games analyzed together
+const forkAgain = (base, link) => base.replace(/game\/live\/\d+/, `game/live/${link}`)
+const quiet = link => pgnHead("quietplayer", link, "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1") + "1... e5 2. Nf3 Nc6 *\n"
+const MORE = [forkAgain(GAME1, 900000003), forkAgain(GAME2, 900000004),
+  ...[5, 6, 7, 8, 9, 10].map(i => quiet(900000000 + i))].join("\n")
+$("tab-games").click()
+await waitFor(() => document.querySelector(".ga-history"), "history card again")
+$("ga-import").querySelector(".ga-more").click()
+$("ga-pgn").value = MORE
+$("ga-import-btn").click()
+await waitFor(() => /Imported 8 games/.test($("ga-status").textContent) && /Analysis done/.test($("ga-status").textContent), "8 more games analyzed", 300000)
+await waitFor(() => document.querySelector(".history-count"), "history controls")
+check(document.querySelector(".history-count").value === "10", "10 games is the default")
+document.querySelector(".history-run").click()
+await waitFor(() => /Done: 10 games analyzed together/.test(document.querySelector(".history-status").textContent) &&
+  document.querySelector(".weakness.recurring"), "history of 10 games", 120000)
+const hist = $("ga-overview")
+check(/Your last 10 games, analyzed together/.test(hist.querySelector("h3").textContent), "history covers the last 10 games")
+check(!/isn't enough game history/.test(hist.textContent), "10 games: enough history")
+const rec = hist.querySelector(".weakness.recurring")
+check(/Missed knight fork/.test(rec.textContent) && /Found in 4 of 10 games/.test(rec.textContent),
+  "recurring pattern across games: " + rec.textContent.slice(0, 80))
+check(/Patterns that keep showing up/.test(hist.textContent) && /I found 1 recurring pattern in your last 10 games/.test(hist.textContent),
+  "summary names the recurring pattern")
+check(/10\s*games analyzed/.test(hist.querySelector(".history-stats").textContent), "overview: games analyzed")
+check([...rec.querySelectorAll("button")].some(b => /Practice Knight fork/.test(b.textContent)), "pattern offers practice")
+// a second run reuses every analysis
+const rerun = (await (await realFetch(new URL("api/games/history/analyze", BASE), {method: "POST",
+  headers: {"Content-Type": "application/json"}, body: JSON.stringify({count: 10})})).text()).trim().split("\n").map(l => JSON.parse(l))
+check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyze === 0 &&
+  rerun.at(-1).report.recurring.includes("knight_fork"), "running it again reuses all 10 analyses")
+// custom count: fewer than 10 is refused in the browser
+const sel = document.querySelector(".history-count")
+sel.value = "custom"
+sel.dispatchEvent(new w.Event("change"))
+document.querySelector(".history-custom").value = "9"
+document.querySelector(".history-run").click()
+check(/at least 10/.test(document.querySelector(".history-error").textContent), "custom count below 10 is refused")
+// the tutor explains the findings (Qwen if running, else the verified summary)
+const explainBtn = [...hist.querySelectorAll("button")].find(b => /Explain my patterns/.test(b.textContent))
+explainBtn.click()
+await waitFor(() => { const o = hist.querySelector(".history-explain"); return o && o.textContent.length > 30 && !explainBtn.disabled }, "history explanation", 120000)
+check(/knight fork/i.test(hist.querySelector(".history-explain").textContent), "explanation: " + hist.querySelector(".history-explain").textContent.slice(0, 80))
+try { w.localStorage.removeItem("chessai.historyCount") } catch (_) { /* none */ }
 for (const id of await gameIds()) if (!gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
 
 check(errors.length === 0, "no unhandled errors " + errors.join("\n"))
