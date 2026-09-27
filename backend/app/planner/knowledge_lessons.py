@@ -47,6 +47,10 @@ def _credit(example) -> str:
         return f"From a real game: Lichess puzzle {src['source_url']} (public domain)."
     if kind == "lichess_openings":
         return "Opening line from the Lichess opening database (public domain)."
+    if kind in ("procedural", "qwen_generated"):
+        who = "proposed by Qwen" if kind == "qwen_generated" else "built by ChessAI"
+        return (f"Generated position ({who}, not from a real game) — checked by python-chess and Stockfish "
+                "before it was used.")
     return ""
 
 

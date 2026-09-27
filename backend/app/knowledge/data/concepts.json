@@ -1255,6 +1255,32 @@
    }
   },
   {
+   "id": "spotting_threats",
+   "name": "Spotting threats",
+   "category": "mistakes",
+   "summary": "Before you move, ask what your opponent is threatening. If a piece of yours can be taken for free, deal with that first: move it, defend it, or block the attack.",
+   "aliases": [
+    "spotting threats",
+    "spot threats",
+    "spot the threat",
+    "identify threats",
+    "identify the threat",
+    "defending against threats",
+    "defend against threats",
+    "what is my opponent threatening",
+    "threat awareness"
+   ],
+   "parents": [
+    "missed_threat",
+    "hung_piece"
+   ],
+   "validator": {
+    "type": "parries_threat"
+   },
+   "engine": "defence",
+   "topics": []
+  },
+  {
    "id": "walked_into_fork",
    "name": "Walking into a fork",
    "category": "mistakes",

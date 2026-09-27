@@ -936,6 +936,50 @@ def v_missed_threat(ctx: Ctx, params: dict) -> dict:
     return facts
 
 
+def _threats_against(board: chess.Board, side: chess.Color) -> list[tuple[chess.Square, chess.Square]]:
+    """(attacker, target) captures the *opponent* of `side` could make if it were their move
+    that win material: an undefended piece, or a piece worth more than its attacker."""
+    probe = board.copy(stack=False)
+    probe.turn = not side
+    probe.ep_square = None
+    out = []
+    for move in probe.legal_moves:
+        victim = probe.piece_at(move.to_square)
+        if victim is None or victim.color != side or victim.piece_type in (chess.PAWN, chess.KING):
+            continue
+        attacker = probe.piece_at(move.from_square)
+        defended = bool(probe.attackers(side, move.to_square))
+        if not defended or VALUES[attacker.piece_type] < VALUES[victim.piece_type]:
+            out.append((move.from_square, move.to_square))
+    return out
+
+
+@validator("parries_threat")
+def v_parries_threat(ctx: Ctx, params: dict) -> dict:
+    """Before the key move the opponent threatens to win a piece; the key move stops it
+    (moves the piece to safety, defends it, blocks, or removes the attacker) without
+    leaving another piece to be taken the same way."""
+    if ctx.key_ply is None:
+        raise Fail("a threat-defence example needs a key move")
+    r = ctx.replay
+    before, after = r.boards[ctx.key_ply], r.boards[ctx.key_ply + 1]
+    side = before.turn
+    if before.is_check():
+        raise Fail("the side to move is in check: that is not spotting a threat")
+    threats = _threats_against(before, side)
+    if not threats:
+        raise Fail("there is no threat to parry: nothing of the learner's can be won")
+    remaining = _threats_against(after, side) if not after.is_checkmate() else []
+    if remaining:
+        attacker, target = remaining[0]
+        raise Fail(f"after {ctx.label(ctx.key_ply)} the {PIECE_NAMES[after.piece_at(target).piece_type]} on "
+                   f"{chess.square_name(target)} can still be won")
+    attacker, target = threats[0]
+    return {"move": ctx.label(ctx.key_ply), "threat": {"attacker": piece_fact(before, attacker),
+                                                       "target": piece_fact(before, target)},
+            "threat_count": len(threats)}
+
+
 @validator("early_queen")
 def v_early_queen(ctx: Ctx, params: dict) -> dict:
     r = ctx.replay

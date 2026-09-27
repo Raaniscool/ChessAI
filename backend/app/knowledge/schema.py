@@ -21,9 +21,11 @@ from .positions import Replay, ReplayError, replay
 CATEGORIES = ("basics", "tactics", "checkmates", "openings", "endgames", "mistakes")
 STATUSES = ("candidate", "verifying", "verified", "rejected", "needs_review", "deprecated")
 PRESENTATION_MODES = ("demonstration", "interactive", "hint", "practice", "deep_dive")
-ENGINE_PROFILES = ("none", "tactic", "mate", "opening", "mistake", "principle", "endgame_win", "endgame_draw")
+ENGINE_PROFILES = ("none", "tactic", "mate", "opening", "mistake", "principle", "endgame_win", "endgame_draw",
+                   "defence")
 SOURCE_TYPES = ("curated", "lichess_puzzle", "lichess_openings", "historical_game", "rules_reference",
-                "endgame_theory", "qwen_generated", "user_submitted", "user_game")
+                "endgame_theory", "qwen_generated", "user_submitted", "user_game",
+                "procedural")  # procedural: built by the app's position generator, then verified
 MAX_PLIES = 20  # "up to 10 moves" for each side
 LEVELS = {1: "beginner", 2: "beginner", 3: "intermediate", 4: "advanced", 5: "advanced"}
 LEVEL_TO_DIFFICULTY = {"beginner": 1, "intermediate": 3, "advanced": 4}

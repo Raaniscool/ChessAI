@@ -21,6 +21,8 @@ Each concept has an engine *profile* (concepts.json → "engine"):
     mistake       the mistake must lose >= 150 cp and the punishment must be good
     endgame_win   the learner's side is winning and every learner move keeps the win
     endgame_draw  the final position is a draw (|eval| <= 80 cp or stalemate)
+    defence       a defensive key move: it must be good, and ignoring the threat (passing)
+                  must cost at least THREAT_MIN_CP (200 cp) — the threat is real
     principle     principle violations (early queen, same piece twice, no development):
                   rarely a single blunder, so the violating side must simply end the
                   line measurably worse (>= 80 cp, 40-80 = needs review)
@@ -46,6 +48,7 @@ DRAW_CP = 80
 PRINCIPLE_MIN_DROP = 80
 PRINCIPLE_REVIEW_DROP = 40
 GOOD_CATEGORIES = ("best", "strong_alternative", "acceptable")
+THREAT_MIN_CP = 200
 
 
 @dataclass
@@ -275,5 +278,36 @@ def _principle(example, rep, engine, depth) -> EngineReport:
     return EngineReport("pass", "principle", [], details)
 
 
-_PROFILES = {"principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
+def _defence(example, rep, engine, depth) -> EngineReport:
+    """A defensive key move: it must be good, and the threat must be real — if the learner
+    just passed, they would lose at least THREAT_MIN_CP."""
+    if example.key_ply is None:
+        return EngineReport("fail", "defence", ["no key move"])
+    board = rep.boards[example.key_ply]
+    side = board.turn
+    key = judge_move(engine, board, rep.moves[example.key_ply], depth).as_dict()
+    key["label"] = rep.labels[example.key_ply]
+    details = {"depth": depth, "key_move": key, "alternatives": key["alternatives"]}
+    if key["category"] not in GOOD_CATEGORIES:
+        return EngineReport("fail", "defence", [f"{key['label']} is a {key['category']} (best {key['best_move']})"],
+                            details)
+    passed = board.copy(stack=False)
+    passed.push(chess.Move.null())
+    passed = chess.Board(passed.fen())  # "pass": same position, other side to move (no null move in history)
+    if passed.is_check() or not any(passed.legal_moves):
+        return EngineReport("fail", "defence", ["the threat can't be measured (null move gives check)"], details)
+    ignored, _ = eval_cp(engine, passed, side, depth)
+    details["eval_if_ignored"] = ignored
+    drop = key["eval_cp"] - ignored
+    details["threat_cp"] = drop
+    if drop < THREAT_MIN_CP:
+        return EngineReport("fail", "defence", [f"ignoring the threat only costs {drop} cp — it isn't a real threat"],
+                            details)
+    if key["eval_cp"] < -DRAW_CP:
+        return EngineReport("uncertain", "defence", [f"even after {key['label']} the learner is worse "
+                                                     f"({key['eval_cp']} cp)"], details)
+    return EngineReport("pass", "defence", [], details)
+
+
+_PROFILES = {"defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
              "endgame_win": _endgame_win, "endgame_draw": _endgame_draw}
