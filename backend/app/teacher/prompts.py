@@ -13,13 +13,13 @@ from .base import LessonContext, _fmt_eval
 # its processed tokens from cache: only the short per-move facts are read each time.
 SYSTEM_PROMPT = """You are a friendly, precise chess teacher inside an interactive chess tutor.
 You get FACTS from a chess engine (Stockfish) and the app. They are the truth about the position; \
-your job is to explain them in clear, encouraging, beginner-friendly language.
+your job is to explain them in clear, encouraging language that suits the student's level.
 Rules:
 - Never invent evaluations, moves, variations or tactics that are not in the facts.
 - If facts are missing, say engine analysis is needed instead of guessing.
 - Prefer plain language to engine numbers.
 - Teach the idea behind the move (development, king safety, center, tempo, tactics...).
-- Be brief: 2-3 short sentences for move feedback unless asked for more.
+- Say why the move or position matters; never narrate the obvious. Keep to the length asked for.
 - Reply in the student's language."""
 
 # Verified example facts sent per request (a few hundred tokens at most).
@@ -49,14 +49,21 @@ def _facts_block(context: LessonContext) -> str:
             "these facts are true):\n" + "\n".join(f"- {line}" for line in lines))
 
 
+_LENGTH = {"critical": "2-4 sentences", "important": "2-3 sentences", "supporting": "1 short sentence",
+           "obvious": "a few words"}
+
+
 def build_move_feedback_messages(
-    feedback: MoveFeedback, context: LessonContext, level: str = "beginner"
+    feedback: MoveFeedback, context: LessonContext, level: str | None = None
 ) -> list[dict]:
     """Compact prompt: facts as short lines, evaluations from the student's side.
 
     No FENs — models can't read them reliably (and must not calculate from them),
     and on a CPU every prompt token delays the first word.
     """
+    from .importance import budget
+    level = level or context.level or "beginner"
+    importance = context.importance or "important"
     student_is_white = feedback.fen_before.split()[1] == "w"
     same_as_best = feedback.best_move_uci in (None, feedback.user_move_uci)
     facts = [
@@ -98,7 +105,10 @@ def build_move_feedback_messages(
         f"Goal: {(context.exercise_prompt or 'find the best move').rstrip(' .')}. Level: {level}.\n"
         + "\n".join(facts)
         + _facts_block(context)
-        + f"\nTask: {task} 2-3 sentences, under 60 words."
+        + (f"\n{context.learner_note}" if context.learner_note else "")
+        + (" Use plain words, no evaluation numbers." if level == "beginner" else "")
+        + f"\nTask: {task} {_LENGTH.get(importance, '2-3 sentences')}, under "
+          f"{budget(importance, context.style)} words."
     )
     return [
         {"role": "system", "content": SYSTEM_PROMPT},

@@ -294,6 +294,10 @@ class SessionManager:
 
         lesson = self.lesson(session)
         example = self._example_for(session, at_or_before=False) if step.example else None
+        from .teacher.importance import classify, read_aloud, wants_ai
+        importance, _why = classify(feedback, accepted=accepted, key_move=first_move_of_example or not step.example,
+                                    board=before)
+        level, style, note = self._teaching_prefs(lesson, importance)
         context = LessonContext(
             course_title=self.library.course(lesson.course_id).title,
             lesson_title=lesson.title,
@@ -303,6 +307,10 @@ class SessionManager:
             facts=self._example_facts(session, example, before),
             example_id=example.id if example else None,
             move_accepted=accepted,
+            level=level,
+            style=style,
+            importance=importance,
+            learner_note=note,
         )
         if example is not None:
             try:
@@ -319,7 +327,10 @@ class SessionManager:
             "feedback": feedback.as_dict(),
             "explanation": FallbackTeacher().explain_move(feedback, context),
             "teacher": "fallback",
-            "ai_explanation": get_settings().qwen_configured(),
+            # the AI teacher only where a coach would say more (teacher.importance)
+            "ai_explanation": get_settings().qwen_configured() and wants_ai(importance, style),
+            "importance": importance,
+            "read_aloud": read_aloud(importance),
             "san": san,
         }
         if accepted:
@@ -391,6 +402,30 @@ class SessionManager:
                 out["uci"] = board.parse_san(step.accepted_san[0]).uci()
             except ValueError:
                 pass
+        return out
+
+    def _teaching_prefs(self, lesson, importance: str) -> tuple[str, str, str]:
+        """(level, explanation style, learner note) for explanations in this lesson."""
+        try:
+            from .learner import get_profile, prompt_context
+            from .learner.personalize import personalized
+            profile = get_profile()
+            if personalized(profile):
+                note = prompt_context(profile, self._lesson_concepts_cached(lesson)) if importance == "critical" else ""
+                return profile.level, profile.explanation_style, note
+            return lesson.difficulty if lesson.difficulty in ("beginner", "intermediate", "advanced") else \
+                "beginner", profile.explanation_style, ""
+        except Exception:  # pragma: no cover - defensive
+            return "beginner", "balanced", ""
+
+    def _lesson_concepts_cached(self, lesson) -> list[str]:
+        from .knowledge.library import get_knowledge
+        library = get_knowledge()
+        out = []
+        for name in lesson.concepts[:2]:
+            found = library.match_concepts(name)
+            if found:
+                out.append(found[0])
         return out
 
     def completion_summary(self, session: Session) -> dict:

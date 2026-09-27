@@ -26,6 +26,11 @@ class LessonContext:
     example_id: str | None = None
     # Did the graded move solve the exercise? (None: not a graded exercise move.)
     move_accepted: bool | None = None
+    # Who is learning, and how much this move deserves (teacher.importance):
+    level: str = "beginner"
+    style: str = "balanced"            # brief | balanced | detailed
+    importance: str | None = None      # critical | important | supporting | obvious
+    learner_note: str = ""             # a line about the learner (learner.views.prompt_context)
 
 
 class Teacher(Protocol):
