@@ -198,6 +198,27 @@ await waitFor(() => /don't have verified lessons/.test(lastMsgs(1)[0]), "unknown
 check(document.querySelectorAll("#messages .suggestions").length > 0, "unknown subject: suggestion chips shown")
 check((await planIds()).length === plansBefore, "unknown subject: no substitute plan created")
 
+// 8b) Ambiguous request: a question with genuinely different readings, never a guess
+$("chat-input").value = "I want to learn knight and bishop endgames"
+await sendChat()
+await waitFor(() => document.querySelector(".clarify-card"), "clarification question", 30000)
+const card = [...document.querySelectorAll(".clarify-card")].pop()
+check(/What do you mean by “knight and bishop endgames”\?/.test(card.textContent), "question names the ambiguous words")
+const opts = [...card.querySelectorAll(".clarify-options .chip")]
+check(opts.length >= 3 && /Something else/.test(opts[opts.length - 1].textContent), "2+ readings plus 'Something else'")
+opts[opts.length - 1].click()
+card.querySelector(".clarify-other button").click()               // nothing typed
+check(/few words/.test(card.querySelector(".clarify-note").textContent), "'Something else' needs a few words")
+const versus = opts.find(b => /against/.test(b.textContent))
+check(!!versus, "a 'knight against bishop' reading is offered")
+versus.click()
+await waitFor(() => [...document.querySelectorAll("#messages .plan-badge")].length, "custom plan", 60000)
+const planMsg = [...document.querySelectorAll("#messages .msg.assistant")].pop()
+check(/against/i.test(planMsg.textContent) && /Understood as/.test(planMsg.textContent), "plan follows the chosen reading")
+check(/verified/.test(planMsg.querySelector(".plan-badge").textContent), "custom plan shows it was verified")
+planMsg.querySelector(".understood .link-btn").click()             // "Ask me again"
+await waitFor(() => document.querySelectorAll(".clarify-card").length === 2, "asked again on request", 30000)
+
 // 9) Knowledge Library: "Show me checkmates" mid-lesson -> verified examples as a lesson
 $("chat-input").value = "Show me checkmates"
 await sendChat()

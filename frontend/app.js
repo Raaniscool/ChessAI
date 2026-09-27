@@ -9,6 +9,7 @@ import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 import {errorMessage, readEvents, reach} from "./net.js"
+import {OTHER, clarifyBody, optionLabel, understoodLine, verificationBadge} from "./plan-view.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -790,10 +791,12 @@ function isLearnRequest(text) {
   return LEARN_REQUEST.test(text)
 }
 
-async function requestPlan(goal) {
+// `body` overrides the request (a clarification answer or "ask me again"); the learner's
+// message is only echoed for a new request.
+async function requestPlan(goal, body = null) {
   goal = goal.trim()
   if (!goal) return
-  addMsg(goal, "user")
+  if (!body) addMsg(goal, "user")
   const pending = addMsg("🧭 Looking for verified examples and building your lesson…", "system")
   // Without library examples the server builds new positions and checks each with Stockfish.
   const slow = setTimeout(() => {
@@ -804,8 +807,12 @@ async function requestPlan(goal) {
   btn.disabled = true
   try {
     // library: true → verified Knowledge Library examples first, then the catalog/Qwen planner.
-    const res = await api("/api/plans", "POST", {goal, library: true})
+    const res = await api("/api/plans", "POST", body || {goal, library: true})
     pending.remove()
+    if (res.clarify) {  // several different readings: ask instead of guessing
+      renderClarify(res.clarify, res.goal || goal)
+      return
+    }
     renderPlan(res)
     await loadCourses()
   } catch (err) {
@@ -820,6 +827,42 @@ async function requestPlan(goal) {
 }
 
 
+// A question card: one button per reading, plus "Something else" with a text box.
+function renderClarify(question, goal) {
+  const div = addMsg(`🤔 <b>${escapeHtml(question.question)}</b>`, "assistant", true)
+  div.classList.add("clarify-card")
+  const row = document.createElement("div")
+  row.className = "clarify-options no-speech"
+  const other = document.createElement("form")
+  other.className = "clarify-other no-speech"
+  other.hidden = true
+  other.innerHTML = `<input type="text" maxlength="200" placeholder="Tell me what you'd like to learn">` +
+    `<button class="btn primary" type="submit">Send</button>`
+  const note = document.createElement("div")
+  note.className = "muted clarify-note"
+  const answer = (choice, text = "") => {
+    const got = clarifyBody(goal, question, choice, text)
+    if (got.error) { note.textContent = got.error; return }
+    div.querySelectorAll("button, input").forEach(el => { el.disabled = true })
+    const picked = question.options.find(o => o.id === choice)
+    addMsg(choice === OTHER ? text.trim() : optionLabel(picked), "user")
+    requestPlan(goal, got.body)
+  }
+  for (const opt of question.options) {
+    const b = document.createElement("button")
+    b.className = "chip"
+    b.textContent = optionLabel(opt)
+    b.addEventListener("click", () => {
+      if (opt.id === OTHER) { other.hidden = false; other.querySelector("input").focus(); return }
+      answer(opt.id)
+    })
+    row.appendChild(b)
+  }
+  other.addEventListener("submit", e => { e.preventDefault(); answer(OTHER, other.querySelector("input").value) })
+  div.append(row, other, note)
+  narrator.auto(div)
+}
+
 function renderPlan(res) {
   const plan = res.plan
   const units = plan.units.map(u =>
@@ -833,6 +876,29 @@ function renderPlan(res) {
     `🧭 <b>${escapeHtml(plan.title)}</b><br>${escapeHtml(plan.summary)}<ol class="plan-units">${units}</ol>` +
     (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : ""),
     "assistant", true)
+  const badge = verificationBadge(plan)
+  if (badge) {
+    const el = document.createElement("div")
+    el.className = `plan-badge ${badge.kind}`
+    el.textContent = badge.text
+    el.title = badge.detail
+    const why = document.createElement("div")
+    why.className = "muted plan-badge-detail"
+    why.textContent = badge.detail
+    div.append(el, why)
+  }
+  const understood = understoodLine(plan)
+  if (understood) {
+    const line = document.createElement("div")
+    line.className = "muted understood no-speech"
+    line.textContent = understood + " "
+    const again = document.createElement("button")
+    again.className = "link-btn"
+    again.textContent = "Ask me again"
+    again.addEventListener("click", () => requestPlan(plan.goal, {goal: plan.goal, library: true, reclarify: true}))
+    line.appendChild(again)
+    div.appendChild(line)
+  }
   const start = document.createElement("button")
   start.className = "btn primary"
   start.textContent = "▶ Start the first lesson"
