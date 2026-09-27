@@ -24,7 +24,8 @@ General detectors, each looking at a *kind* of ambiguity rather than at examples
 A question is asked only when at least two readings produce *different plans*
 (different components or level); a remembered answer to the same ambiguity key is
 reused; an answer given in this request is applied. Qwen never resolves anything here —
-see qwen_readings() for how its suggestions become a question, never a silent choice.
+missing.qwen_candidates() + qwen_question() turn its suggestions into a question, never a
+silent choice.
 """
 from __future__ import annotations
 

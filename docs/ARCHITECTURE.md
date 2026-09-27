@@ -158,6 +158,10 @@ a longer match, e.g. "checkmate" inside "smothered checkmate", doesn't count). T
 its own are shown as related suggestions; with no match the API answers 422 with suggestions.
 
 
+## Understanding requests and custom plans
+
+`planner.plan_for_goal()` first structures the request (`planner/intent/`). Real ambiguities become a clarification question and are never guessed. Plain single-subject requests keep the existing planners. Structured requests (material, a flipped side, exclusions, several subjects, clarified readings) and subjects the library has no plan for go to `planner/custom/`, which proposes (Qwen, then a deterministic composer), validates (legality → Stockfish correctness → education → consistency → duplication → personalization) and only then presents a plan. Verified plans are promoted to `knowledge/plan_library.py` with provenance. Details: [INTENT_AND_CUSTOM_PLANS.md](INTENT_AND_CUSTOM_PLANS.md).
+
 ## Knowledge Library (verified teaching examples)
 
 `backend/app/knowledge/`: a verified library of examples (rules, tactics, mates, openings,
