@@ -44,6 +44,7 @@ class Query:
     exclude: set[str] = field(default_factory=set)
     not_seen_recently: bool = True
     include_personal: bool = False
+    target_rating: int | None = None  # learner-matched difficulty (knowledge.difficulty scale)
 
     def as_dict(self) -> dict:
         return {"concepts": self.concepts, "count": self.count, "level": self.level,
@@ -369,6 +370,10 @@ class KnowledgeLibrary:
             fresh = (e.id in recent, seen.get(e.id, 0))
             if query.simplest:
                 return (e.difficulty,) + fresh + (e.id,)
+            if query.target_rating is not None:
+                # nearest to the learner's level first, in 100-point buckets so freshness still counts
+                from .difficulty import puzzle_rating
+                return fresh[:1] + (abs(puzzle_rating(e) - query.target_rating) // 100,) + fresh[1:] + (e.id,)
             return fresh + (_level_distance(e.difficulty, query.level), e.difficulty, e.id)
 
         groups: dict[str, list[Example]] = {}
@@ -380,6 +385,9 @@ class KnowledgeLibrary:
             for group in order:
                 if group and len(picked) < query.count:
                     picked.append(group.pop(0))
+        if query.target_rating is not None:
+            from .difficulty import puzzle_rating
+            return sorted(picked, key=lambda e: (puzzle_rating(e), e.id))
         return sorted(picked, key=lambda e: (e.difficulty, e.id))
 
     def stats(self) -> dict:

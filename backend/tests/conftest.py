@@ -10,3 +10,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ["DATA_DIR"] = tempfile.mkdtemp(prefix="chessai-test-data-")
 os.environ["CHESSAI_DOTENV"] = "0"  # ignore the developer's .env (QWEN_MODEL etc.)
 os.environ.pop("QWEN_MODEL", None)
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _fresh_learner(tmp_path_factory):
+    """Every test starts with a brand-new learner, so one test's results never
+    change the difficulty another test's lessons are built at."""
+    from app.learner import LearnerStore, set_store
+    set_store(LearnerStore(tmp_path_factory.mktemp("learners")))
+    yield
+    set_store(None)
