@@ -22,18 +22,29 @@
     <div class="header-right">
       <div id="speech-controls" class="speech-controls hidden">
         <button id="btn-read-aloud" class="btn toggle" aria-pressed="false"
-                title="Read the tutor's messages aloud; squares light up on the board as they're spoken">🔊 Read aloud</button>
-        <select id="speech-rate" title="Reading speed" aria-label="Reading speed">
-          <option value="0.8">Slow</option>
-          <option value="1" selected>Normal</option>
-          <option value="1.2">Fast</option>
-        </select>
-        <select id="speech-voice" title="Voice" aria-label="Voice"></select>
+                title="Read the coach's messages aloud; squares light up on the board as they're spoken">🔊 Read aloud</button>
         <button id="btn-stop-speech" class="btn hidden" title="Stop reading">■ Stop</button>
       </div>
+      <button id="btn-coach" class="btn" aria-expanded="false" aria-controls="coach-panel"
+              title="What your coach knows about you, and what to practise next">👤 Coach</button>
+      <button id="btn-settings" class="btn icon" aria-expanded="false" aria-controls="settings-panel"
+              title="Settings: voice, speed, what's read aloud, explanation length" aria-label="Settings">⚙</button>
       <span id="health" class="health" title="checking…"></span>
     </div>
   </header>
+
+  <aside id="coach-panel" class="side-panel hidden" aria-label="Your coach">
+    <div class="panel-head"><h2>Your coach</h2><button class="icon-btn panel-close" aria-label="Close">✕</button></div>
+    <div class="panel-body"></div>
+  </aside>
+  <aside id="settings-panel" class="side-panel hidden" aria-label="Settings">
+    <div class="panel-head"><h2>Settings</h2><button class="icon-btn panel-close" aria-label="Close">✕</button></div>
+    <div class="panel-body"></div>
+    <div class="hidden">
+      <select id="speech-rate" title="Reading speed" aria-label="Reading speed"></select>
+      <select id="speech-voice" title="Voice" aria-label="Voice"></select>
+    </div>
+  </aside>
 
   <div class="layout">
     <aside id="sidebar">

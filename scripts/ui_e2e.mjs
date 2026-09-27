@@ -74,6 +74,26 @@ check(!$("plan-input") && !$("btn-reset"), "no duplicate plan box, no free-move 
 check(!/engine|plies|teacher/i.test($("health").textContent), "header status has no technical text when all is well")
 check(document.querySelectorAll("#welcome .chip").length >= 3, "welcome offers starter topics")
 
+// 0b) Onboarding: a short optional card for a new learner, never a wall
+await waitFor(() => document.querySelector(".onboarding-card"), "onboarding card", 10000)
+const onb = document.querySelector(".onboarding-card")
+check(onb.querySelector(".onb-rating") && onb.querySelectorAll(".onb-experience .chip").length === 5 &&
+  onb.querySelector(".onb-username") && onb.querySelectorAll(".onb-goals .chip").length >= 6,
+  "onboarding asks rating or experience, goals, optional Chess.com username")
+onb.querySelector(".onb-save").click()
+check(/rating|description/.test(onb.querySelector(".onb-error").textContent), "onboarding: nothing chosen → a clear hint")
+onb.querySelector(".onb-skip").click()
+await waitFor(() => !document.querySelector(".onboarding-card"), "onboarding skipped")
+check(/No problem/.test(lastMsgs(1)[0]), "skipping onboarding is fine: " + lastMsgs(1)[0])
+// Settings: voice, speed, what's read aloud automatically; without any voice the text just stays
+$("btn-settings").click()
+check(!$("settings-panel").classList.contains("hidden"), "settings panel opens")
+check([...$("speech-rate").options].map(o => o.value).join() === "slow,normal,fast", "speed: slow / normal / fast")
+check(document.querySelectorAll("#settings-panel [data-kind]").length === 5, "five kinds of auto-read to choose from")
+check(/docs\/TTS\.md|browser/.test($("voice-status").textContent), "voice status explains the voice: " + $("voice-status").textContent.slice(0, 90))
+$("btn-settings").click()
+check($("settings-panel").classList.contains("hidden"), "settings panel closes")
+
 // A lesson button inside the sidebar card of a plan (titles are shown without the plan name)
 const lessonIn = (plan, lesson) => {
   const card = [...document.querySelectorAll(".course.plan")].find(c => plan.test(c.querySelector("h3").textContent))
@@ -230,7 +250,10 @@ const kLesson = lessonIn(/^Checkmate$/, /understand the idea/i)
 check(!!kLesson, "library lesson listed in the sidebar")
 kLesson.click()
 await waitFor(() => /understand the idea/.test($("lesson-title").textContent), "library lesson start")
-check(/verified example/.test(lastMsgs(1)[0]), "intro explains the sequence")
+{
+  const intro = [...document.querySelectorAll("#messages .msg")].pop().textContent
+  check(/verified example/.test(intro), "intro explains the sequence: " + intro.slice(0, 90))
+}
 $("btn-continue").click()
 await waitFor(() => $("step-indicator").textContent.startsWith("Step 2"), "example 1 step")
 check(/Example 1 of/.test(document.querySelectorAll("#messages .msg")[document.querySelectorAll("#messages .msg").length - 1].textContent) ||
@@ -241,15 +264,16 @@ await waitFor(() => !$("btn-explain-example").classList.contains("hidden"), "exp
 $("btn-explain-example").click()
 await waitFor(() => { const m = [...document.querySelectorAll("#messages .msg.assistant")].pop(); return m && /^🧠/.test(m.textContent) && !m.classList.contains("typing") }, "example explanation", 90000)
 check(true, "example explained: " + [...document.querySelectorAll("#messages .msg.assistant")].pop().textContent.slice(0, 60))
-// example 2: guided — find the key move (read from the server's verified example)
-for (let i = 0; i < 4 && !/Your move/.test($("board-status").textContent); i++) {
+// the guided example — find the key move (read from the server's verified example). How many
+// demonstrations come first depends on the learner (a beginner meeting a new idea sees two).
+for (let i = 0; i < 10 && !/Your move/.test($("board-status").textContent); i++) {
   const at = $("step-indicator").textContent
   await waitFor(() => continueShown(), "continue (example 2)", 40000)
   $("btn-continue").click()
   await waitFor(() => $("step-indicator").textContent !== at, "next step (example 2)")
   await sleep(300)
 }
-await waitFor(() => /Your move/.test($("board-status").textContent), "example 2 exercise", 40000)
+await waitFor(() => /Your move/.test($("board-status").textContent), "example 2 exercise (at " + $("step-indicator").textContent + ")", 40000)
 check($("btn-explain-example").classList.contains("hidden"), "no explain button while the exercise is unsolved")
 $("btn-reveal").click()
 await waitFor(() => /Solution/.test(lastMsgs(1)[0]), "solution shown")
@@ -379,6 +403,8 @@ await waitFor(() => [...document.querySelectorAll(".course.plan h3")].some(h => 
 const own = lessonIn(/From your games/, /your own games/i)
 check(!!own, "plan has a lesson with positions from your own games")
 own.click()
+await waitFor(() => /your own games/i.test($("lesson-title").textContent), "own-games lesson starts")
+await sleep(300)
 for (let i = 0; i < 4 && !/Your move/.test($("board-status").textContent); i++) {
   const at = $("step-indicator").textContent
   await waitFor(() => continueShown() || /Your move/.test($("board-status").textContent), "continue (own games)", 40000)
@@ -434,6 +460,25 @@ await waitFor(() => { const o = hist.querySelector(".history-explain"); return o
 check(/knight fork/i.test(hist.querySelector(".history-explain").textContent), "explanation: " + hist.querySelector(".history-explain").textContent.slice(0, 80))
 try { w.localStorage.removeItem("chessai.historyCount") } catch (_) { /* none */ }
 for (const id of await gameIds()) if (!gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
+
+// Coach panel: what the coach knows, and editing my details (at the end: it changes the level)
+$("tab-lessons").click()
+await sleep(300)
+$("btn-coach").click()
+await waitFor(() => /Level/.test($("coach-panel").textContent), "coach panel")
+check(/Level/.test($("coach-panel").textContent) && [...$("coach-panel").querySelectorAll("button")].some(b => /My details/.test(b.textContent)),
+  "coach panel shows the level and lets me edit my details")
+check(/From your games/.test($("coach-panel").textContent) && /Missed knight fork/.test($("coach-panel").textContent),
+  "the game-history pattern is part of what the coach knows")
+;[...$("coach-panel").querySelectorAll("button")].find(b => /My details/.test(b.textContent)).click()
+await waitFor(() => document.querySelector(".onboarding-card"), "details card")
+const details = document.querySelector(".onboarding-card")
+details.querySelector(".onb-rating").value = "1450"
+details.querySelector(".onb-save").click()
+await waitFor(() => !document.querySelector(".onboarding-card"), "details saved")
+check(/Thanks! I'll start around/.test(lastMsgs(1)[0]), "saving my details: " + lastMsgs(1)[0])
+const prof = await (await realFetch(new URL("api/profile", BASE))).json()
+check(prof.profile.onboarding.rating === 1450 && prof.profile.onboarding.done, "onboarding answer is stored in the learner profile")
 
 check(errors.length === 0, "no unhandled errors " + errors.join("\n"))
 for (const id of await planIds()) {

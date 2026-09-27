@@ -550,12 +550,12 @@ export function setupGameAnalysis(ctx) {
     let text = ""
     try {
       await streamEvents("/api/games/history/explain",
-        {count: view.historyCount, level: "beginner", username: historyUser()}, ev => {
+        {count: view.historyCount, username: historyUser()}, ev => {
         if (ev.type === "delta") { text += ev.text; target.textContent = text }
         if (ev.type === "replace" || ev.type === "done") { text = ev.text; target.textContent = text }
       })
       makeSpeakable(target)
-      narrator.auto(target)
+      narrator.auto(target, "analysis")
     } catch (err) {
       target.textContent = `Couldn't get an explanation: ${err.message}`
     } finally {
@@ -769,7 +769,7 @@ export function setupGameAnalysis(ctx) {
     setActive(before)
     showBefore(m)
     el.body.scrollTop = 0
-    narrator.auto(text)
+    narrator.auto(text, "analysis")
   }
 
   // The history pattern (seen in 2+ games) this moment is part of, if any.
@@ -803,14 +803,14 @@ export function setupGameAnalysis(ctx) {
     let text = ""
     try {
       await streamEvents(`/api/games/${encodeURIComponent(view.game.game.id)}/moments/${m.ply}/explain`,
-        {question: question || null, level: "beginner"}, ev => {
+        {question: question || null}, ev => {
           if (ev.type === "delta") { text += ev.text; target.textContent = text }
           if (ev.type === "replace") { text = ev.text; target.textContent = text }
           if (ev.type === "done") { text = ev.text; target.textContent = text }
         })
       delete target.dataset.moves
       makeSpeakable(target)
-      narrator.auto(target)
+      narrator.auto(target, "explanations")
     } catch (err) {
       target.textContent = `Couldn't get an explanation: ${err.message}`
     } finally {

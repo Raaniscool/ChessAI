@@ -10,6 +10,7 @@ import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 import {errorMessage, readEvents, reach} from "./net.js"
 import {OTHER, clarifyBody, optionLabel, understoodLine, verificationBadge} from "./plan-view.js"
+import {setupCoach} from "./coach.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -17,6 +18,7 @@ import {OTHER, clarifyBody, optionLabel, understoodLine, verificationBadge} from
 const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "lesson-title", "step-indicator",
   "course-list", "health", "chat-input", "btn-chat", "btn-continue", "btn-hint", "btn-reveal", "btn-play",
   "btn-explain-example", "speech-controls", "btn-read-aloud", "speech-rate", "speech-voice", "btn-stop-speech",
+  "btn-coach", "btn-settings", "coach-panel", "settings-panel",
   "welcome", "tab-lessons", "tab-games", "lessons-side", "games-side", "analysis-pane", "ga-games", "ga-pgn",
   "ga-username", "ga-fetch-btn", "ga-paste", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
   "ga-back", "ga-prev", "ga-next", "ga-body"]
@@ -238,7 +240,8 @@ async function handleUserMove(from, to) {
       // Not good enough for the lesson's goal: reset and let them retry.
       await board.setPosition(result.reset_fen || fenBefore, true)
       state.chess = new Chess(result.reset_fen || fenBefore)
-      setStatus("Try again — you can do it.")
+      setStatus(retryText(result.tries || 1))
+      if (result.help) renderHelpOffer(result.help)
     }
   } catch (err) {
     state.chess = new Chess(fenBefore)
@@ -248,6 +251,39 @@ async function handleUserMove(from, to) {
   } finally {
     state.busy = false
   }
+}
+
+// "Try again", said a little differently each time (the words matter less than not sounding stuck).
+function retryText(tries) {
+  return tries <= 1 ? "Try again — you can do it."
+    : tries === 2 ? "Try again — take a moment to look at every check and capture."
+      : "Try again, or use a hint — no shame in it."
+}
+
+// After repeated misses: the right kind of help, offered once, not forced.
+function renderHelpOffer(help) {
+  if (document.querySelector("#messages .help-offer[data-offer='" + help.offer + "']")) return
+  const div = addMsg(help.text, "system")
+  div.classList.add("help-offer")
+  div.dataset.offer = help.offer
+  const btn = document.createElement("button")
+  btn.className = "btn no-speech"
+  btn.textContent = help.offer === "hint" ? "💡 Show a hint" : "Show the answer"
+  btn.addEventListener("click", () => {
+    btn.disabled = true
+    if (help.offer === "hint") requestHint()
+    else revealSolution()
+  })
+  div.appendChild(btn)
+}
+
+// A note from the coach: the lesson changed to fit how it's going ("a harder one next").
+function showCoachNote(text) {
+  if (!text || text === state.lastNote) return
+  state.lastNote = text
+  const div = addMsg(text, "system")
+  div.classList.add("coach-note")
+  narrator.auto(div, "lessons")
 }
 
 // ---------- read aloud ----------
@@ -359,6 +395,9 @@ const narrator = new Narrator({
   onState(speaking) {
     document.getElementById("btn-stop-speech").classList.toggle("hidden", !speaking)
   },
+  onNotice(text) {
+    addMsg(text, "system")
+  },
 })
 
 // Pointing at a move or square in any text lights it up on the board (no speech needed).
@@ -398,51 +437,6 @@ function makeSpeakable(el) {
   return el
 }
 
-function setupSpeechControls() {
-  if (!narrator.supported) return
-  const controls = document.getElementById("speech-controls")
-  const toggle = document.getElementById("btn-read-aloud")
-  const rate = document.getElementById("speech-rate")
-  const voiceSel = document.getElementById("speech-voice")
-  controls.classList.remove("hidden")
-  const syncToggle = () => {
-    toggle.classList.toggle("on", narrator.enabled)
-    toggle.setAttribute("aria-pressed", String(narrator.enabled))
-  }
-  syncToggle()
-  rate.value = String(narrator.rate)
-  if (!rate.value) rate.value = "1"
-  toggle.addEventListener("click", () => {
-    narrator.enabled = !narrator.enabled
-    narrator.save()
-    syncToggle()
-    if (!narrator.enabled) narrator.stop()
-    else {  // start with what's on screen, so the learner hears it works
-      const last = state.view === "games" ? gameAnalysis.readable()
-        : [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
-      if (last) narrator.speak(last)
-    }
-  })
-  rate.addEventListener("change", () => { narrator.rate = Number(rate.value) || 1; narrator.save() })
-  const fillVoices = () => {
-    const voices = narrator.voices()
-    voiceSel.innerHTML = ""
-    for (const v of voices) {
-      const opt = document.createElement("option")
-      opt.value = v.name
-      opt.textContent = v.name.replace(/^Microsoft\s+/, "").replace(/\s+-\s+.*$/, "").replace(/\s*\(.*\)$/, "")
-      voiceSel.appendChild(opt)
-    }
-    const current = narrator.voice()
-    if (current) voiceSel.value = current.name
-    voiceSel.classList.toggle("hidden", voices.length < 2)
-  }
-  fillVoices()
-  window.speechSynthesis.addEventListener("voiceschanged", fillVoices)
-  voiceSel.addEventListener("change", () => { narrator.voiceName = voiceSel.value; narrator.save() })
-  document.getElementById("btn-stop-speech").addEventListener("click", () => narrator.stop())
-}
-
 // ---------- messages / feedback ----------
 
 const messagesEl = document.getElementById("messages")
@@ -469,11 +463,11 @@ function addMsg(text, kind = "assistant", allowHtml = false) {
 }
 
 // Streamed text arrives in pieces: make it speakable once it's complete.
-function finishStreamedMsg(el) {
+function finishStreamedMsg(el, kind = "explanations", importance = undefined) {
   delete el.dataset.moves
   el.querySelectorAll(":scope > .speak-btn").forEach(b => b.remove())
   makeSpeakable(el)
-  return narrator.auto(el)
+  return narrator.auto(el, kind, importance)
 }
 
 function renderError(text) {
@@ -502,12 +496,14 @@ function renderFeedback(result) {
     `<div class="meta"><span class="teacher-label"></span></div>`
   slot.appendChild(card)
   if (result.continue_text) addMsg(result.continue_text)
-  if (result.ai_explanation) streamExplanation(card)
-  else { makeSpeakable(card); narrator.auto(card) }
+  // Read out only when the move matters (importance), never every recapture.
+  if (result.ai_explanation) streamExplanation(card, result.importance)
+  else { makeSpeakable(card); narrator.auto(card, "explanations", result.importance) }
+  if (result.adapted && result.adapted.note) showCoachNote(result.adapted.note)
 }
 
 // The engine verdict is shown instantly; Qwen's explanation streams in after it.
-async function streamExplanation(card) {
+async function streamExplanation(card, importance) {
   const textEl = card.querySelector(".explanation")
   const label = card.querySelector(".teacher-label")
   const quick = textEl.textContent
@@ -530,7 +526,7 @@ async function streamExplanation(card) {
     label.classList.remove("typing")
     label.textContent = ""
     if (!text) textEl.textContent = quick
-    if (card.isConnected) finishStreamedMsg(card)
+    if (card.isConnected) finishStreamedMsg(card, "explanations", importance)
   }
 }
 
@@ -573,6 +569,7 @@ async function renderStep(step) {
   document.getElementById("lesson-title").textContent = step.lesson_title
   document.getElementById("step-indicator").textContent = `Step ${step.index + 1} / ${step.total_steps}`
   board.disableMoveInput()
+  if (step.coach_note) showCoachNote(step.coach_note)
 
   if (step.type === "teach") {
     const msg = addMsg(step.text)
@@ -580,13 +577,13 @@ async function renderStep(step) {
     showContinue()
     if (step.example && step.example.explainable) showBtn("btn-explain-example")
     setStatus("")
-    narrator.auto(msg)
+    narrator.auto(msg, "lessons")
   } else if (step.type === "demonstrate") {
     const msg = addMsg(step.text)
     await showPosition(step.start_fen)
     setStatus("Watch the demonstration…")
     // Plays by itself (read aloud first when that's on); the learner can watch it again.
-    await narrator.auto(msg)
+    await narrator.auto(msg, "lessons")
     if (state.step === step) await playDemonstration()
   } else if (step.type === "exercise") {
     const msg = addMsg(`🎯 **Exercise:** ${escapeHtml(step.prompt)}`.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"), "assistant", true)
@@ -604,7 +601,7 @@ async function renderStep(step) {
       hideBtn("btn-hint"); hideBtn("btn-reveal")
       setStatus("Solved — continue when ready.")
     }
-    narrator.auto(msg)
+    narrator.auto(msg, "puzzles")
   }
 }
 
@@ -627,7 +624,7 @@ async function playDemonstration() {
       if (comment) {
         const msg = addMsg(comment, "system")
         // Read aloud: the next move waits until the comment has been spoken.
-        if (narrator.enabled) await narrator.speak(msg)
+        if (narrator.enabled && narrator.prefs.read.lessons !== false) await narrator.speak(msg)
         else await sleep(900)
       } else {
         await sleep(620)
@@ -658,9 +655,10 @@ async function advanceLesson() {
     if (res.completed) {
       hideControls()
       board.disableMoveInput()
-      addMsg(`✅ ${res.completion_text}`)
+      renderCompletion(res)
       setStatus("Lesson complete!")
       loadCourses()
+      coach.refresh()
     } else {
       await renderStep(res.step)
     }
@@ -671,10 +669,35 @@ async function advanceLesson() {
   }
 }
 
+// The end of a lesson: how it went, in plain words, and where to go next.
+function renderCompletion(res) {
+  const summary = res.summary || {}
+  const div = addMsg(`✅ ${res.completion_text}`)
+  div.classList.add("lesson-summary")
+  if (summary.text) {
+    const line = document.createElement("div")
+    line.className = "stats"
+    line.textContent = summary.text
+    div.insertBefore(line, div.querySelector(".speak-btn"))
+  }
+  const next = res.next_steps || []
+  if (next.length) {
+    const label = document.createElement("div")
+    label.className = "muted"
+    label.textContent = "Where to next:"
+    div.appendChild(label)
+    const row = suggestionChips(next.map(s => s.goal), next.map(s => s.title))
+    next.forEach((s, i) => { if (row.children[i]) row.children[i].title = s.reason })
+    div.appendChild(row)
+  }
+  narrator.auto(div, "lessons")
+}
+
 async function startLesson(lessonId) {
   try {
     const res = await api(`/api/lessons/${lessonId}/start`, "POST")
     state.sessionId = res.session_id
+    state.lastNote = null
     await renderStep(res.step)
   } catch (err) {
     renderError(err.message)
@@ -685,7 +708,7 @@ async function requestHint() {
   try {
     const res = await api(`/api/sessions/${state.sessionId}/hint`, "POST")
     if (res.hint) {
-      narrator.auto(addMsg(`💡 Hint ${res.index}/${res.total}: ${res.hint}`, "system"))
+      narrator.auto(addMsg(`💡 Hint ${res.index}/${res.total}: ${res.hint}`, "system"), "hints")
       if (res.exhausted) hideBtn("btn-hint")
     } else {
       addMsg("No more hints — try “Show solution”.", "system")
@@ -700,11 +723,26 @@ async function revealSolution() {
   try {
     const res = await api(`/api/sessions/${state.sessionId}/reveal`, "POST")
     const moves = res.accepted_moves.join(" or ")
-    narrator.auto(addMsg(`🔎 Solution: ${moves || "see the engine's best move"}`, "system"))
+    narrator.auto(addMsg(`🔎 Solution: ${moves || "see the engine's best move"}`, "system"), "hints")
     state.step.accepted = true
-    showContinue()
     hideBtn("btn-hint"); hideBtn("btn-reveal")
+    board.disableMoveInput()
+    // Play the answer on the board, so the learner sees the idea rather than just reads it.
+    if (res.uci && state.step.board) {
+      try {
+        const chess = new Chess(state.step.board.fen)
+        const move = applyUci(chess, res.uci)
+        await showPosition(state.step.board.fen, {orientation: board.getOrientation()})
+        await board.setPosition(chess.fen(), true)
+        clearMarkers()
+        board.addMarker(MARKER_TYPE.square, move.from)
+        board.addMarker(MARKER_TYPE.square, move.to)
+        state.chess = chess
+      } catch (_) { /* the text answer is enough */ }
+    }
+    showContinue()
     setStatus("Solution shown — continue when ready.")
+    if (res.adapted && res.adapted.note) showCoachNote(res.adapted.note)
   } catch (err) {
     addMsg(err.message, "system")
   }
@@ -860,7 +898,7 @@ function renderClarify(question, goal) {
   }
   other.addEventListener("submit", e => { e.preventDefault(); answer(OTHER, other.querySelector("input").value) })
   div.append(row, other, note)
-  narrator.auto(div)
+  narrator.auto(div, "lessons")
 }
 
 function renderPlan(res) {
@@ -887,6 +925,13 @@ function renderPlan(res) {
     why.textContent = badge.detail
     div.append(el, why)
   }
+  const personal = plan.personalization && plan.personalization.reason
+  if (personal) {
+    const line = document.createElement("div")
+    line.className = "personal-note"
+    line.textContent = "Personalized for you: " + personal
+    div.appendChild(line)
+  }
   const understood = understoodLine(plan)
   if (understood) {
     const line = document.createElement("div")
@@ -904,7 +949,7 @@ function renderPlan(res) {
   start.textContent = "▶ Start the first lesson"
   start.addEventListener("click", () => startLesson(res.first_lesson_id))
   div.appendChild(start)
-  narrator.auto(div)
+  narrator.auto(div, "lessons")
   // Foundations the plan assumes (e.g. opening principles before the Sicilian): offered, never
   // added — the plan contains only what was asked for.
   if ((plan.prerequisites || []).length) {
@@ -1092,6 +1137,13 @@ document.getElementById("chat-input").addEventListener("keydown", e => {
   welcome.appendChild(suggestionChips(STARTERS.map(t => `I want to learn ${t.toLowerCase()}`), STARTERS))
   makeSpeakable(welcome)
 }
-setupSpeechControls()
+const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escapeHtml})
+coach.init({
+  readCurrent() {
+    const last = state.view === "games" ? gameAnalysis.readable()
+      : [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
+    if (last) narrator.speak(last)
+  },
+}).then(() => { if (!state.sessionId) coach.offerOnboarding() })
 loadHealth()
 loadCourses()

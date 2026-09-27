@@ -123,115 +123,402 @@ export function markAt(marks, index) {
 const PREFS_KEY = "chess-tutor-speech"
 const CHARS_PER_SECOND = 14  // fallback pacing when a voice sends no word events
 
+// ---------- read-aloud settings (pure, tested) ----------
+
+export const SPEEDS = {slow: 0.85, normal: 1, fast: 1.2}
+// What may be read out automatically. Everything else is read only when the learner presses 🔊.
+export const READ_KINDS = {
+  lessons: "Lesson steps",
+  explanations: "Important move explanations",
+  hints: "Hints",
+  puzzles: "Exercise instructions",
+  analysis: "Game analysis summaries",
+}
+const DEFAULT_READ = {lessons: true, explanations: true, hints: true, puzzles: true, analysis: false}
+export const SAMPLE_TEXT = "Knight to f3 develops a piece and controls the centre. Now it's your move — what would you play?"
+
+/** Saved settings in today's shape. Old saves ({enabled, rate, voice}) keep their meaning. */
+export function loadPrefs(raw) {
+  const saved = raw && typeof raw === "object" ? raw : {}
+  let speed = SPEEDS[saved.speed] ? saved.speed : "normal"
+  if (!SPEEDS[saved.speed] && typeof saved.rate === "number") {
+    speed = saved.rate <= 0.9 ? "slow" : saved.rate >= 1.15 ? "fast" : "normal"
+  }
+  const read = {...DEFAULT_READ}
+  if (saved.read && typeof saved.read === "object") {
+    for (const k of Object.keys(DEFAULT_READ)) if (k in saved.read) read[k] = !!saved.read[k]
+  }
+  const oldBrowserVoice = saved.rate !== undefined && typeof saved.voice === "string" ? saved.voice : ""
+  return {
+    enabled: !!saved.enabled,
+    provider: typeof saved.provider === "string" && saved.provider ? saved.provider : "auto",
+    voice: saved.rate !== undefined ? "" : (typeof saved.voice === "string" ? saved.voice : ""),
+    browserVoice: typeof saved.browserVoice === "string" ? saved.browserVoice : oldBrowserVoice,
+    speed,
+    read,
+  }
+}
+
+/**
+ * Should this be read out without the learner asking? Only when read-aloud is on, that kind
+ * of text is ticked, and (for move explanations) the moment matters — obvious moves stay quiet.
+ */
+export function shouldRead(prefs, kind, importance) {
+  if (!prefs.enabled) return false
+  if (kind && prefs.read && prefs.read[kind] === false) return false
+  if (importance && !["critical", "important"].includes(importance)) return false
+  return true
+}
+
+/**
+ * Split spoken text into sentence-sized chunks (each ≤ max characters) that the server voice
+ * can start on quickly; offsets point into `spoken` so word highlighting still lines up.
+ */
+export function chunkSpeech(spoken, max = 280) {
+  const chunks = []
+  const push = (start, end) => {
+    while (start < end && /\s/.test(spoken[start])) start++
+    while (end > start && /\s/.test(spoken[end - 1])) end--
+    if (end > start) chunks.push({start, end, text: spoken.slice(start, end)})
+  }
+  const sentences = []
+  const re = /[^.!?…]+(?:[.!?…]+["”’)]*|$)/g
+  let m
+  while ((m = re.exec(spoken)) && m[0]) sentences.push([m.index, m.index + m[0].length])
+  let from = null
+  let to = null
+  for (const [a, b] of sentences) {
+    if (b - a > max) {  // one very long sentence: break at commas, then spaces
+      if (from !== null) { push(from, to); from = null }
+      let s = a
+      while (b - s > max) {
+        const slice = spoken.slice(s, s + max)
+        let cut = Math.max(slice.lastIndexOf(", "), slice.lastIndexOf("; "))
+        if (cut < max / 3) cut = slice.lastIndexOf(" ")
+        if (cut <= 0) cut = max
+        push(s, s + cut + 1)
+        s = s + cut + 1
+      }
+      from = s; to = b
+      continue
+    }
+    if (from === null) { from = a; to = b; continue }
+    // The first chunk stays short so the voice starts at once; later ones group sentences.
+    const limit = chunks.length === 0 ? Math.min(max, 140) : max
+    if (b - from <= limit) to = b
+    else { push(from, to); from = a; to = b }
+  }
+  if (from !== null) push(from, to)
+  return chunks
+}
+
+/** Voices of the usable server provider, grouped for a picker: [{persona, voices}]. */
+export function voiceGroups(voices) {
+  const groups = []
+  for (const persona of ["female", "male"]) {
+    const list = voices.filter(v => v.persona === persona)
+    if (list.length) groups.push({persona, label: persona === "female" ? "Female voices" : "Male voices", voices: list})
+  }
+  return groups
+}
+
+/**
+ * Reads tutor text aloud.
+ *   natural voice — a real neural voice from the server (/api/tts), sentence by sentence, the
+ *                   next sentence fetched while the current one plays; cached on both sides.
+ *   browser voice — the system voices (speechSynthesis) when no natural voice is set up or it fails.
+ *   neither       — the text simply stays on screen.
+ * Moves are spoken as words ("knight takes e5") and highlighted on the board as they're read.
+ */
 export class Narrator {
   /**
-   * @param {object} hooks  onMove(mark|null, element) — highlight (or clear) a move/square;
-   *                        onState(speaking: boolean) — UI feedback.
+   * @param {object} hooks  onMove(mark|null, element, node) — highlight (or clear) a move/square;
+   *                        onState(speaking: boolean) — UI feedback;
+   *                        onNotice(text) — the natural voice stopped working (now using the browser).
+   * @param {object} deps   fetch / Audio / storage, replaceable in tests.
    */
-  constructor(hooks = {}) {
-    this.synth = typeof window !== "undefined" ? window.speechSynthesis : undefined
-    this.supported = !!(this.synth && typeof window.SpeechSynthesisUtterance === "function")
+  constructor(hooks = {}, deps = {}) {
+    const win = typeof window !== "undefined" ? window : {}
+    this.synth = "synth" in deps ? deps.synth : win.speechSynthesis
+    this.browserSupported = !!(this.synth && typeof win.SpeechSynthesisUtterance === "function")
+    this.fetch = deps.fetch || (typeof fetch === "function" ? fetch.bind(globalThis) : null)
+    this.Audio = deps.Audio || win.Audio || null
+    this.storage = "storage" in deps ? deps.storage : (typeof localStorage !== "undefined" ? localStorage : null)
     this.hooks = hooks
-    const saved = (() => { try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || {} } catch (_) { return {} } })()
-    this.enabled = !!saved.enabled
-    this.rate = saved.rate || 1
-    this.voiceName = saved.voice || ""
+    let saved = {}
+    try { saved = JSON.parse(this.storage && this.storage.getItem(PREFS_KEY)) || {} } catch (_) { /* ignore */ }
+    this.prefs = loadPrefs(saved)
+    this.server = null        // /api/tts status
+    this.failures = 0         // natural-voice errors in a row; after 2 we use the browser voice
+    this.audioCache = new Map()
     this.queue = []
     this.current = null
     this.generation = 0
+    this.playing = null       // {audio, url}
   }
 
+  // ----- settings -----
+  get enabled() { return this.prefs.enabled }
+  set enabled(on) { this.prefs.enabled = !!on }
+  get rate() { return SPEEDS[this.prefs.speed] || 1 }
+  get voiceName() { return this.prefs.browserVoice }
+  set voiceName(name) { this.prefs.browserVoice = name }
+
+  /** Something can speak: a natural voice on the server, or the browser's own. */
+  get supported() { return this.browserSupported || !!this.naturalProvider() }
+
   save() {
-    try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({enabled: this.enabled, rate: this.rate, voice: this.voiceName}))
-    } catch (_) { /* private mode */ }
+    try { this.storage && this.storage.setItem(PREFS_KEY, JSON.stringify(this.prefs)) } catch (_) { /* private mode */ }
+  }
+
+  /** Server status from GET /api/tts. */
+  configure(status) {
+    this.server = status && Array.isArray(status.providers) ? status : null
+    this.failures = 0
+  }
+
+  /** The server provider to use, or null for the browser voice. */
+  naturalProvider(prefs = this.prefs) {
+    if (!this.server || !this.fetch || !this.Audio || this.failures >= 2) return null
+    if (prefs.provider === "browser") return null
+    const usable = this.server.providers.filter(p => p.available && p.voices.length)
+    return usable.find(p => p.id === prefs.provider) || usable.find(p => p.id === this.server.default) || usable[0] || null
+  }
+
+  engine(prefs = this.prefs) {
+    if (this.naturalProvider(prefs)) return "natural"
+    return this.browserSupported ? "browser" : null
   }
 
   voices() {
-    if (!this.supported) return []
+    if (!this.browserSupported) return []
     const all = this.synth.getVoices()
-    const lang = (navigator.language || "en").slice(0, 2)
+    const lang = ((typeof navigator !== "undefined" && navigator.language) || "en").slice(0, 2)
     const mine = all.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang))
     return (mine.length ? mine : all).sort((a, b) => score(b) - score(a))
   }
 
-  voice() {
+  voice(name = this.prefs.browserVoice) {
     const list = this.voices()
-    return list.find(v => v.name === this.voiceName) || list[0] || null
+    return list.find(v => v.name === name) || list[0] || null
   }
 
   /** Stop talking and forget everything queued. */
   stop() {
     this.generation++
+    const queued = this.queue
     this.queue = []
-    if (this.supported) this.synth.cancel()
+    for (const item of queued) item.resolve()  // nobody waits forever on text that won't be read
+    if (this.browserSupported) this.synth.cancel()
+    this._stopAudio()
     this._finish()
   }
 
   /** Read an element's text aloud (queued behind anything already being read). */
-  speak(element) {
-    if (!this.supported || !element) return Promise.resolve()
+  speak(element, options = {}) {
+    if (!element || !this.engine(this._prefsFor(options))) return Promise.resolve()
     return new Promise(resolve => {
-      this.queue.push({element, resolve})
+      this.queue.push({element, resolve, options})
       if (!this.current) this._next()
     })
   }
 
-  /** Auto-read: only when the learner turned read-aloud on. */
-  auto(element) {
-    return this.enabled ? this.speak(element) : Promise.resolve()
+  /** Auto-read: only when read-aloud is on, this kind of text is ticked, and it matters. */
+  auto(element, kind = "lessons", importance = undefined) {
+    return shouldRead(this.prefs, kind, importance) ? this.speak(element) : Promise.resolve()
+  }
+
+  /** Let the learner hear a voice before choosing it. */
+  preview(choice) {
+    this.stop()
+    const el = typeof document !== "undefined" ? document.createElement("div") : null
+    if (!el) return Promise.resolve()
+    el.textContent = SAMPLE_TEXT
+    return this.speak(el, choice)
+  }
+
+  _prefsFor(options) {
+    return options && (options.provider || options.voice || options.browserVoice || options.speed)
+      ? {...this.prefs, ...options} : this.prefs
   }
 
   _next() {
     const item = this.queue.shift()
     if (!item) { this.current = null; this.hooks.onState && this.hooks.onState(false); return }
-    const {element, resolve} = item
-    const segments = segmentsOf(element)
+    const segments = segmentsOf(item.element)
     const {spoken, marks} = buildSpeech(segments)
-    if (!spoken.trim()) { resolve(); this._next(); return }
-
+    if (!spoken.trim()) { item.resolve(); this._next(); return }
     const generation = this.generation
-    const utter = new window.SpeechSynthesisUtterance(spoken)
-    const voice = this.voice()
-    if (voice) { utter.voice = voice; utter.lang = voice.lang }
-    utter.rate = this.rate
+    const prefs = this._prefsFor(item.options)
+    const show = this._highlighter(item.element, segments)
+    const done = () => {
+      show(null)
+      item.element.classList.remove("reading")
+      if (this.current === item) this.current = null
+      item.resolve()
+      if (generation === this.generation) this._next()
+    }
+    this.current = item
+    item.element.classList.add("reading")
+    this.hooks.onState && this.hooks.onState(true)
+    const provider = this.naturalProvider(prefs)
+    if (provider) {
+      this._playNatural(provider, prefs, spoken, marks, show, generation).then(rest => {
+        if (generation !== this.generation) return
+        if (rest === null || !this.browserSupported) done()
+        else this._playBrowser(prefs, spoken, marks, show, done, rest)  // continue where it failed
+      })
+    } else {
+      this._playBrowser(prefs, spoken, marks, show, done, 0)
+    }
+  }
+
+  _highlighter(element, segments) {
     let active = null
-    let sawBoundary = false
-    let fallbackTimer = null
-    let started = 0
-    const show = mark => {
+    return mark => {
       if (mark === active) return
       if (active && segments[active.segment].node) segments[active.segment].node.classList.remove("speaking")
       active = mark
       if (mark && segments[mark.segment].node) segments[mark.segment].node.classList.add("speaking")
       this.hooks.onMove && this.hooks.onMove(mark, element, mark ? segments[mark.segment].node : null)
     }
-    const done = () => {
-      clearInterval(fallbackTimer)
-      show(null)
-      element.classList.remove("reading")
-      if (this.current === item) this.current = null
-      resolve()
-      if (generation === this.generation) this._next()
+  }
+
+  // ----- natural (server) voice -----
+
+  /** Audio for one chunk; the same text in the same voice is fetched only once. */
+  _audioFor(provider, prefs, text) {
+    const voiceIds = provider.voices.map(v => v.id)
+    const voice = voiceIds.includes(prefs.voice) ? prefs.voice : voiceIds[0]
+    const key = `${provider.id}|${voice}|${prefs.speed}|${text}`
+    if (this.audioCache.has(key)) {
+      const hit = this.audioCache.get(key)
+      this.audioCache.delete(key); this.audioCache.set(key, hit)  // most recently used
+      return hit
     }
+    const request = this.fetch("/api/tts/speak", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text, voice, speed: prefs.speed, provider: provider.id}),
+    }).then(res => {
+      if (!res.ok) throw new Error(`voice unavailable (${res.status})`)
+      return res.blob()
+    })
+    request.catch(() => this.audioCache.delete(key))
+    this.audioCache.set(key, request)
+    while (this.audioCache.size > 80) this.audioCache.delete(this.audioCache.keys().next().value)
+    return request
+  }
+
+  /**
+   * Play chunk after chunk. Resolves null when everything was spoken (or reading was stopped),
+   * or the index in `spoken` where the browser voice should take over after an error.
+   */
+  async _playNatural(provider, prefs, spoken, marks, show, generation) {
+    const chunks = chunkSpeech(spoken)
+    let next = chunks.length ? this._audioFor(provider, prefs, chunks[0].text) : null
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i]
+      let blob
+      try {
+        blob = await next
+      } catch (_) {
+        return this._naturalFailed(generation, chunk.start)
+      }
+      if (generation !== this.generation) return null
+      // Fetch the next sentence while this one plays: no gap between sentences.
+      next = i + 1 < chunks.length ? this._audioFor(provider, prefs, chunks[i + 1].text) : null
+      if (next) next.catch(() => {})
+      const ok = await this._playBlob(blob, chunk, marks, show, generation)
+      if (generation !== this.generation) return null
+      if (!ok) return this._naturalFailed(generation, chunk.start)
+      this.failures = 0
+    }
+    return null
+  }
+
+  _naturalFailed(generation, at) {
+    if (generation !== this.generation) return null
+    this.failures++
+    if (this.failures === 2 && this.hooks.onNotice) {
+      this.hooks.onNotice(this.browserSupported
+        ? "The natural voice isn't responding, so I'm using your browser's voice for now."
+        : "The natural voice isn't responding — the text stays on screen.")
+    }
+    return at
+  }
+
+  _playBlob(blob, chunk, marks, show, generation) {
+    return new Promise(resolve => {
+      let url = ""
+      try { url = URL.createObjectURL(blob) } catch (_) { resolve(false); return }
+      const audio = new this.Audio(url)
+      this.playing = {audio, url}
+      let settled = false
+      const finish = ok => {
+        if (settled) return
+        settled = true
+        audio.ontimeupdate = audio.onended = audio.onerror = null
+        if (this._stopResolve === stopper) this._stopResolve = null
+        if (this.playing && this.playing.audio === audio) this._stopAudio()
+        resolve(ok)
+      }
+      const stopper = () => finish(true)
+      // Word highlighting: estimate the position from how far the audio has played.
+      audio.ontimeupdate = () => {
+        if (generation !== this.generation || !audio.duration) return
+        const share = Math.min(1, audio.currentTime / audio.duration)
+        show(markAt(marks, chunk.start + share * (chunk.end - chunk.start)))
+      }
+      audio.onended = () => finish(true)
+      audio.onerror = () => finish(false)
+      this._stopResolve = stopper
+      const started = audio.play()
+      if (started && typeof started.catch === "function") started.catch(() => finish(false))
+    })
+  }
+
+  _stopAudio() {
+    const playing = this.playing
+    this.playing = null
+    if (playing) {
+      try { playing.audio.pause() } catch (_) { /* ignore */ }
+      try { URL.revokeObjectURL(playing.url) } catch (_) { /* ignore */ }
+    }
+    const resolveStop = this._stopResolve
+    this._stopResolve = null
+    if (resolveStop && playing) resolveStop()
+  }
+
+  // ----- browser voice -----
+
+  _playBrowser(prefs, spoken, marks, show, done, from) {
+    if (!this.browserSupported) { done(); return }
+    const text = spoken.slice(from)
+    if (!text.trim()) { done(); return }
+    const utter = new window.SpeechSynthesisUtterance(text)
+    const voice = this.voice(prefs.browserVoice)
+    if (voice) { utter.voice = voice; utter.lang = voice.lang }
+    utter.rate = SPEEDS[prefs.speed] || 1
+    let sawBoundary = false
+    let fallbackTimer = null
+    let started = 0
+    const finish = () => { clearInterval(fallbackTimer); done() }
     utter.onstart = () => {
       started = performance.now()
       // Voices without word events (some network voices): estimate the position from time.
       fallbackTimer = setInterval(() => {
         if (sawBoundary) { clearInterval(fallbackTimer); return }
-        const index = ((performance.now() - started) / 1000) * CHARS_PER_SECOND * this.rate
+        const index = from + ((performance.now() - started) / 1000) * CHARS_PER_SECOND * utter.rate
         show(markAt(marks, index))
       }, 120)
     }
     utter.onboundary = ev => {
       sawBoundary = true
-      show(markAt(marks, ev.charIndex))
+      show(markAt(marks, from + ev.charIndex))
     }
-    utter.onend = done
-    utter.onerror = done
-    this.current = item
-    element.classList.add("reading")
-    this.hooks.onState && this.hooks.onState(true)
+    utter.onend = finish
+    utter.onerror = finish
     this.synth.speak(utter)
   }
 
