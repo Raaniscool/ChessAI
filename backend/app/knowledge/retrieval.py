@@ -117,7 +117,33 @@ def resolve_concepts(library: KnowledgeLibrary, text: str) -> tuple[list[str], b
     leftover = [t for i, t in enumerate(tokens) if i not in covered and t not in FILLER
                 and not t.isdigit()]
     specific = any(library.concepts[c].parents for c in matched)
-    return matched, specific or not leftover
+    return matched, (specific or not leftover) and not _qualified(library, matched, tokens, covered, text)
+
+
+_PIECE_WORDS = {"king", "queen", "rook", "bishop", "knight", "pawn", "piece", "white", "black", "kings", "queens",
+                "rooks", "bishops", "knights", "pawns", "pieces"}
+_MATE_IN_N = re.compile(r"\bmate\s+in\s+(?:([2-9])|two|three|four|five)\b", re.I)
+
+
+def _qualified(library: KnowledgeLibrary, matched: list[str], tokens: list[str], covered: set[int],
+               text: str) -> bool:
+    """Is the request a *named variety* the library doesn't have ("Greek gift sacrifice",
+    "epaulette mate", "mate in two")? Answering it with the generic concept would quietly
+    teach something else, so such a match is not confident (the caller then says what it has)."""
+    if _MATE_IN_N.search(text or ""):
+        return True
+    for cid in matched:
+        concept = library.concepts[cid]
+        spans = [_phrase_span(_normalize(a), tokens) for a in [concept.name, cid.replace("_", " ")] + concept.aliases]
+        spans = [sp for sp in spans if sp]
+        if not spans:
+            continue
+        before = min(min(sp) for sp in spans) - 1
+        if before >= 0 and before not in covered:
+            word = tokens[before]
+            if word not in FILLER and word not in _PIECE_WORDS and not word.isdigit():
+                return True
+    return False
 
 
 def lesson_request(library: KnowledgeLibrary, text: str) -> list[str]:

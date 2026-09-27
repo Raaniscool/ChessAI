@@ -80,7 +80,19 @@ def _token_match(a: str, b: str) -> bool:
         return True
     if len(a) < 4 or len(b) < 4:  # short tokens (e.g. "kid", "bc4") must match exactly
         return False
+    # Typos keep the first letter; without this "position" matched "opposition" (ratio 0.89)
+    # and "the Philidor position" became an opposition lesson.
+    if a[0] != b[0]:
+        return False
+    # Everyday chess words are never typos of a subject: "position" is not "positional"
+    # (strategy), "moves" is not "mover".
+    if a in _EXACT_ONLY or b in _EXACT_ONLY:
+        return False
     return SequenceMatcher(None, a, b).ratio() >= 0.84
+
+
+_EXACT_ONLY = frozenset("""position positions positional move moves piece pieces player players playing
+game games square squares""".split())
 
 
 def _phrase_span(phrase: list[str], goal: list[str]) -> frozenset[int] | None:
@@ -109,6 +121,19 @@ really just some any all lot lots quickly fast faster overall general generally 
 beginning beginner beginners novice player players playing play games game chess basics basic fundamentals
 fundamental everything win winning more stop losing lose rating elo online again first new
 """.split())
+
+
+_QUALIFIER_OK = _FILLER | set("""king queen rook bishop knight pawn piece pieces kings queens rooks bishops knights
+pawns white black simple easy basic common typical classic famous do does did is are was were be been it its
+this that these those there their them they work works use using spot spotting find finding avoid avoiding
+defend defending against vs versus from into by""".split())
+
+
+def _qualifier_before(tokens: list[str], span: frozenset[int], covered: frozenset[int]) -> bool:
+    """An unknown word directly in front of the matched phrase ("greek gift | sacrifice")."""
+    before = min(span) - 1
+    return before >= 0 and before not in covered and tokens[before] not in _QUALIFIER_OK \
+        and not tokens[before].isdigit()
 
 
 def _only_filler(tokens: list[str], alias: list[str]) -> bool:
@@ -283,6 +308,11 @@ class Catalog:
         # checkmate", "attack" inside "discovered attack") isn't what was asked for.
         spans = [s[3] for s in scored]
         scored = [s for s in scored if not any(s[3] < other for other in spans)]
+        # "Greek gift sacrifice" is not a request for the general Sacrifices topic: a match
+        # right after an unknown qualifier is only a near match (offered as related, never
+        # swapped in for what was asked).
+        covered = frozenset().union(*spans) if spans else frozenset()
+        scored = [s for s in scored if not _qualifier_before(tokens, s[3], covered)]
         if scored:
             scored.sort(key=lambda s: (-s[0], s[1]))
             found = [s[2] for s in scored]
@@ -311,6 +341,19 @@ class Catalog:
             if _phrase_in(phrase, tokens) and _only_filler(tokens, phrase):
                 return [self.topics[t] for t in self.general["topics"]]
         return []
+
+    def near_matches(self, goal: str) -> list[Topic]:
+        """Topics named in the goal but qualified by a word we don't know ("Greek gift
+        sacrifice" -> Sacrifices): related material, not an answer."""
+        tokens = _normalize(goal)
+        found: list[Topic] = []
+        for topic in self.topics.values():
+            for alias in topic.aliases:
+                span = _phrase_span(_normalize(alias), tokens)
+                if span is not None and topic not in found:
+                    found.append(topic)
+        exact = set(t.id for t in self.search(goal))
+        return [t for t in found if t.id not in exact]
 
     def with_prerequisites(self, topics: list[Topic], limit: int = 8) -> list[tuple[Topic, str | None]]:
         """Order topics so prerequisites come first. Returns (topic, required_by)."""
