@@ -25,7 +25,8 @@ Lookup order: **verified library → deterministic rules → Stockfish → Qwen*
 | Seed library: 268 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
 | Runtime tiers (generated / personal), review states, usage metadata | done (data model + library API) |
 | Tutor integration: retrieval layer, lessons from examples, chat/planner, teacher facts | done (see *Using the library in the tutor*) |
-| Qwen candidates on a library miss (verified before saving) | after that |
+| New positions on a library miss: constructors + Qwen proposals, verified before saving | done (see *Generated positions*) |
+| Missing-content fallback (never a dead end) | done (see *When the library has nothing*) |
 | Admin dashboard | not planned yet (the review API/data model is ready for it) |
 
 ## Layout (`backend/app/knowledge/`)
@@ -186,6 +187,51 @@ never change an example's status.
 API: `POST /api/plans {goal, library, level?}`, `POST /api/knowledge/intent {message}`,
 `POST /api/sessions/{id}/example/explain` (NDJSON stream). `/api/health` reports
 `knowledge_examples`.
+
+## Generated positions (`knowledge/generation/`)
+
+When the library has too few verified examples, new positions can be generated. **Nothing
+generated is trusted until it passes the same checks as every library entry.**
+
+```
+proposal  ← a constructor (python-chess builds a position with the idea)  or  Qwen (FEN + intended move)
+  → position        python-chess: legal position, side to move, legal intended move
+  → concept         the concept's validator must find the idea after the intended move
+  → discrimination  Stockfish multipv: every move about as good as the intended one must use the
+                    same idea (otherwise the puzzle doesn't test the concept)
+  → line            Stockfish's continuation must show the gain (tactic ≥150 cp, mate, endgame win)
+  → words           title / explanation / hints written from the validator's facts, not by Qwen
+  → pipeline        verify_candidate(): rules, concept, engine profile, solution, explanation, duplicates
+  → saved           verified → used · Qwen proposal that is only uncertain → needs_review (never shown)
+                    anything else → rejected, with the stage and reason
+```
+
+- Qwen only **proposes** (every third attempt, when connected). Its intended move is checked like
+  any other; a wrong tactic is rejected at the concept or discrimination stage.
+- Ids are `gen_<concept>_<hash>` (global generated tier) or `mygen_…` (personal tier). Duplicates
+  (same position, or a position already in the library or already shown) are skipped.
+- Provenance on every entry: `source.kind = "generated"`, the proposer (constructor or Qwen),
+  `verified_by`, the Stockfish eval, the key move and the alternatives Stockfish accepts.
+- Time and attempt budgets (default 25 s / 40 attempts). If Stockfish dies, generation stops at once
+  with `stopped = "Stockfish stopped working"` instead of retrying.
+- Constructors: knight/queen/pawn fork, hanging piece, threat, back-rank mate, supported mate, bare
+  queen mate, skewer, absolute pin, opposition. **Not generated:** relative pins (they rarely win by
+  force; the constructor failed the discrimination check 40 of 40 times and was removed), openings
+  (only the Lichess opening database is used), and concepts without a validator.
+
+## When the library has nothing (`planner/missing.py`)
+
+A lesson request never fails just because there is no verified example:
+
+1. The verified library and the catalog are searched first.
+2. The request is resolved to a concept id or a glossary term (`knowledge/data/glossary.json`). With
+   Qwen connected, Qwen may map the words to one of *our* ids (a language task only).
+3. New positions are generated for the concept (above, ~20 s budget, progress streamed).
+4. Otherwise verified examples of a **broader** concept, labelled as broader.
+5. Otherwise the hand-written definition, labelled *"not engine-checked"*, plus related verified material.
+
+The plan carries `plan.fallback = {term, concept, understood_via, text_source, broader, generated,
+verified_examples}` so the UI can say exactly what was checked and by what.
 
 ## Rebuilding the seed library
 

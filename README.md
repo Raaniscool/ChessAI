@@ -168,7 +168,7 @@ The app never makes you wait for the language model to see a result:
 
 **Learning plans:** ✅ "I want to learn ___" planner (catalog + optional Qwen organization), verified topic catalog with Stockfish audit, generated lessons, persistent plans. Streaming AI text + instant move verdicts + speed diagnostics. Themed puzzle lessons (40+ tactics, mating patterns and endgames). Verified Knowledge Library (268 examples) wired into plans, lessons, chat and the AI teacher. Test suite: **653 passing** (+ `scripts/ui_e2e.mjs` UI smoke test).
 
-**Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, game history analysis across your last N games (tiered, scored patterns), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Chess.com games are fetched by username. Plans contain only what you asked for, in stages. Test suite: **888 passing**. The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
+**Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, game history analysis across your last N games (tiered, scored patterns), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Chess.com games are fetched by username. Plans contain only what you asked for, in stages. Personalized, Stockfish-verified puzzles for your recurring weaknesses, and a fallback that never leaves a lesson request empty. Test suite: **1034 passing** (+ 34 frontend). The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
 
 The proven MVP loop:
 
