@@ -795,6 +795,11 @@ async function requestPlan(goal) {
   if (!goal) return
   addMsg(goal, "user")
   const pending = addMsg("🧭 Looking for verified examples and building your lesson…", "system")
+  // Without library examples the server builds new positions and checks each with Stockfish.
+  const slow = setTimeout(() => {
+    pending.textContent = "🧭 Still working: if my library has no checked examples of this, I build new " +
+      "positions and check every one with Stockfish first (up to ~20 seconds)…"
+  }, 3000)
   const btn = document.getElementById("btn-chat")
   btn.disabled = true
   try {
@@ -809,6 +814,7 @@ async function requestPlan(goal) {
     const div = addMsg(escapeHtml(err.message), "assistant", true)
     if (suggestions.length) div.appendChild(suggestionChips(suggestions))
   } finally {
+    clearTimeout(slow)
     btn.disabled = false
   }
 }

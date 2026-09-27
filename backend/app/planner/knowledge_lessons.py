@@ -352,7 +352,8 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
     count = len(retrieval.examples)
     title = f"Learn: {subject}"
     summary = (f"A step-by-step plan for {subject.lower()}: " + " → ".join(u["title"] for u in units) +
-               f". It uses {count} verified examples; every move is checked by the Stockfish chess engine.")
+               f". It uses {count} verified example{'s' if count != 1 else ''}; every move is checked by the "
+               "Stockfish chess engine.")
     plan = {
         "id": plan_id,
         "goal": goal,

@@ -15,7 +15,11 @@ from app.planner.catalog import _token_match, get_catalog
 @pytest.mark.parametrize("a, b, same", [
     ("position", "opposition", False),
     ("position", "positional", False),
-    ("positions", "position", False),
+    ("positions", "position", True),    # a plural is the same word...
+    ("pins", "pin", True),              # ...also for short words (audit: "relative pins")
+    ("mates", "mate", True),
+    ("pinned", "pin", False),           # but not other word forms
+    ("oppositions", "position", False),
     ("sicillian", "sicilian", True),    # real typos still work
     ("najdorff", "najdorf", True),
     ("forks", "forks", True),

@@ -78,6 +78,10 @@ def _normalize(text: str) -> list[str]:
 def _token_match(a: str, b: str) -> bool:
     if a == b:
         return True
+    # plurals: "relative pins" is "relative pin" (short words like "pin" never reach the fuzzy test)
+    short, long_ = sorted((a, b), key=len)
+    if len(short) >= 3 and long_ in (short + "s", short + "es"):
+        return True
     if len(a) < 4 or len(b) < 4:  # short tokens (e.g. "kid", "bc4") must match exactly
         return False
     # Typos keep the first letter; without this "position" matched "opposition" (ratio 0.89)
@@ -341,6 +345,17 @@ class Catalog:
             if _phrase_in(phrase, tokens) and _only_filler(tokens, phrase):
                 return [self.topics[t] for t in self.general["topics"]]
         return []
+
+    def best_alias_size(self, goal: str) -> int:
+        """Length of the longest topic alias found in the goal (0 = none)."""
+        tokens = _normalize(goal)
+        best = 0
+        for topic in self.topics.values():
+            for alias in topic.aliases:
+                phrase = _normalize(alias)
+                if _phrase_span(phrase, tokens) is not None:
+                    best = max(best, len(" ".join(phrase)))
+        return best
 
     def near_matches(self, goal: str) -> list[Topic]:
         """Topics named in the goal but qualified by a word we don't know ("Greek gift

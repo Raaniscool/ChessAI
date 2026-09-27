@@ -355,8 +355,44 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
             record = None
         if record:
             return record
+    # A named idea from the glossary that the catalog only partly matches ("stalemate tricks"
+    # vs the king-and-queen topic's "stalemate" alias) is not a request for that topic.
+    if library_first and _glossary_outranks_catalog(cleaned, catalog or get_catalog()):
+        record = _fallback(cleaned, level, catalog, use_qwen, engine)
+        if record is not None:
+            return record
     # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
-    return create_plan(cleaned, catalog=catalog, use_qwen=use_qwen, engine=engine)
+    try:
+        return create_plan(cleaned, catalog=catalog, use_qwen=use_qwen, engine=engine)
+    except PlanError as err:
+        if not library_first or len(cleaned) < 2:
+            raise
+        # Nothing verified in the library or the catalog: never a dead end for something we
+        # recognise (generated + engine-checked positions, a broader idea, a labelled definition).
+        record = _fallback(cleaned, level, catalog, use_qwen, engine)
+        if record is None:
+            raise  # nothing recognisable in the request: keep the answer + suggestions
+        return record
+
+
+def _glossary_outranks_catalog(goal: str, catalog: Catalog) -> bool:
+    from ..knowledge.glossary import get_glossary
+
+    found = get_glossary().match_size(goal)
+    return bool(found) and found[1] > catalog.best_alias_size(goal)
+
+
+def _fallback(goal: str, level, catalog, use_qwen: bool, engine) -> dict | None:
+    from .missing import fallback_plan
+
+    from ..engine import get_engine
+
+    try:  # the engine is started only if positions are actually generated
+        return fallback_plan(goal, catalog=catalog, engine=engine, engine_factory=get_engine, level=level,
+                             use_qwen=use_qwen)
+    except Exception as exc:  # the fallback must never turn a clean "not available" into a crash
+        log.warning("missing-library fallback failed: %s", exc)
+        return None
 
 
 def _planner_wants_qwen(matched: list[Topic]) -> bool:
