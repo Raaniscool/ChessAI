@@ -64,6 +64,7 @@ PLANS: dict[str, list[tuple[str, str]]] = {
     "tactics": _FORKS + [("skewer", "skewer"), ("absolute_pin", "absolute_pin"), ("hanging_piece", "hanging_piece")],
     "opposition": [("opposition", "opposition")],
     "king_pawn_endgame": [("opposition", "opposition")],
+    "endgames": [("opposition", "opposition"), ("queen_mate", "bare_queen_mate")],
 }
 MOTIF_OF = {"bare_queen_mate": "support_mate"}
 QWEN_HINTS = {
@@ -241,11 +242,13 @@ def _duplicate_of(example, library, accepted: list) -> str | None:
 def generate(concept: str, library, engine, *, count: int = 1, tier: str = "generated",
              personal: dict | None = None, seed: int | None = None, time_budget: float = 25.0,
              max_attempts: int = 40, use_qwen: bool | None = None, teacher=None, depth: int = 14,
-             gen_log: GenerationLog | None = None, save: bool = True, on_progress=None) -> GenerationResult:
+             gen_log: GenerationLog | None = None, save: bool = True, on_progress=None,
+             avoid_positions: set[str] | None = None) -> GenerationResult:
     """Generate up to `count` verified puzzles for `concept`.
 
     `personal` = {"target_weakness", "evidence": [...], ...} for learner-specific puzzles
-    (saved in the personal tier, never mixed into the shared library)."""
+    (saved in the personal tier, never mixed into the shared library). `avoid_positions`:
+    board FENs never to produce (the learner's own game positions)."""
     started = time.monotonic()
     result = GenerationResult(concept)
     gen_log = gen_log or get_log()
@@ -291,7 +294,7 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
             proposal = _constructed(cname, rng, side)
             if proposal is None:
                 continue
-        if proposal.fen in seen:
+        if proposal.fen in seen or chess.Board(proposal.fen).board_fen() in (avoid_positions or ()):
             continue
         seen.add(proposal.fen)
         source_kind = "qwen_generated" if via_qwen else "procedural"
@@ -305,9 +308,12 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
         except Rejected as exc:
             _reject(result, gen_log, entry, exc.stage, exc.reason)
             continue
-        except Exception as exc:  # engine crash, timeouts: this candidate only
+        except Exception as exc:  # engine crash, timeouts: this candidate only...
             log.warning("generation candidate failed: %s", exc)
             _reject(result, gen_log, entry, "engine", f"analysis failed: {exc}")
+            if _engine_gone(exc):  # ...unless the engine itself is gone: the rest would fail too
+                result.stopped = "Stockfish stopped working"
+                break
             continue
         if report.status == "verified":
             dup = _duplicate_of(report.example, library, result.accepted)
@@ -331,6 +337,13 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
                     failed.detail if failed else report.status)
     result.elapsed = time.monotonic() - started
     return result
+
+
+def _engine_gone(exc: Exception) -> bool:
+    import chess.engine
+
+    from ...engine import EngineUnavailable
+    return isinstance(exc, (EngineUnavailable, chess.engine.EngineTerminatedError)) or "event loop dead" in str(exc)
 
 
 def _reject(result: GenerationResult, gen_log: GenerationLog, entry: dict, stage: str, reason: str) -> None:

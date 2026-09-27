@@ -86,6 +86,35 @@ def games_of(docs: list[dict], username: str | None) -> list[dict]:
     return [d for d in docs if (d.get("game", {}).get("player") or "").lower() == name]
 
 
+def default_player(docs: list[dict]) -> str | None:
+    """Whose games to use when no username is given: the player with the most imported games
+    (ties go to the most recent game). Games of different people are never mixed."""
+    counts: dict[str, int] = {}
+    latest: dict[str, tuple] = {}
+    for d in docs:
+        name = (d.get("game", {}).get("player") or "").strip()
+        if not name:
+            continue
+        key = name.lower()
+        counts[key] = counts.get(key, 0) + 1
+        latest[key] = max(latest.get(key, ()), recency_key(d["game"]))
+    if not counts:
+        return None
+    return max(counts, key=lambda k: (counts[k], latest[k]))
+
+
+def one_player(docs: list[dict], username: str | None) -> tuple[list[dict], str | None]:
+    """(the games of one learner, their name). `username` picks them; without it the
+    default player is used whenever the store holds games of more than one person."""
+    if (username or "").strip():
+        return games_of(docs, username), username.strip()
+    names = {(d.get("game", {}).get("player") or "").strip().lower() for d in docs} - {""}
+    if len(names) <= 1:
+        return docs, (next(iter(names)) if names else None)
+    name = default_player(docs)
+    return games_of(docs, name), name
+
+
 def _norm_date(value: str | None) -> str:
     return (value or "").replace(".", "-").strip() if value and "?" not in value else ""
 

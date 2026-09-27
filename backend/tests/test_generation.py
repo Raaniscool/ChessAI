@@ -136,6 +136,23 @@ def test_no_engine_means_nothing_is_generated(tmp_path):
     assert not result.accepted and "Stockfish" in result.stopped
 
 
+def test_a_dead_engine_stops_generation_at_once(tmp_path):
+    import chess.engine
+
+    class Dead:
+        calls = 0
+
+        def analyse_lines(self, *a, **k):
+            Dead.calls += 1
+            raise chess.engine.EngineTerminatedError("engine process died unexpectedly")
+
+    lib = make_library(tmp_path)
+    result = gen.generate("knight_fork", lib, Dead(), count=2, seed=1, use_qwen=False,
+                          gen_log=GenerationLog(tmp_path / "l.json"))
+    assert not result.accepted and result.stopped == "Stockfish stopped working"
+    assert Dead.calls == 1 and len(result.rejected) == 1
+
+
 def test_unsupported_concept_is_reported(tmp_path):
     lib = make_library(tmp_path)
     result = gen.generate("italian_game", lib, object(), gen_log=GenerationLog(tmp_path / "l.json"))

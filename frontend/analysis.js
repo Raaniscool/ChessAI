@@ -5,7 +5,7 @@
 import {analysisLine, evalForLearner, gameMeta, matchup, progressText, resultLabel, reviewItems, uciSquares}
   from "./game-format.js"
 import {PRESET_COUNTS, TIER_HEADINGS, evidenceLine, foundIn, historyProgress, parseCount, patternDetail, patternIcon,
-  practiceLabel, resultsLine, selectionText, MAX_COUNT, MIN_COUNT} from "./history-view.js"
+  practiceLabel, puzzleStatus, resultsLine, selectionText, MAX_COUNT, MIN_COUNT} from "./history-view.js"
 
 const USERNAME_KEY = "chessai.chesscomUsername"
 const COUNT_KEY = "chessai.historyCount"
@@ -443,6 +443,11 @@ export function setupGameAnalysis(ctx) {
     actions.appendChild(toggle)
     actions.appendChild(button(practiceLabel(p), p.tier === "recurring" ? "primary" : "",
       () => startTraining([p.key], r.game_ids), "Verified examples first, then positions from your own games"))
+    if (p.new_puzzles) {
+      const more = button("New puzzles for this", "", () => newPuzzles(p, r.game_ids, more),
+        "New positions made for this skill (not from your games), each checked by Stockfish")
+      actions.appendChild(more)
+    }
     for (const e of p.evidence) {
       const li = el_("li")
       const b = button("", `evidence-row ${e.severity}`, () => openGame(e.game_id, e.moment_id),
@@ -553,6 +558,27 @@ export function setupGameAnalysis(ctx) {
       narrator.auto(target)
     } catch (err) {
       target.textContent = `Couldn't get an explanation: ${err.message}`
+    } finally {
+      btn.disabled = false
+    }
+  }
+
+  // New puzzles for one weakness: generated on the server, each checked by Stockfish before
+  // it is shown. Takes a while, so progress is streamed into the status line.
+  async function newPuzzles(p, gameIds, btn) {
+    btn.disabled = true
+    let made = 0
+    setImportStatus(`🧩 Building new puzzles for “${escapeHtml(p.title)}”…`, "")
+    try {
+      await streamEvents("/api/games/puzzles", {key: p.key, count: 3, game_ids: gameIds}, ev => {
+        if (ev.type === "puzzle") made += 1
+        const text = escapeHtml(puzzleStatus(ev, made))
+        if (ev.type === "error") setImportStatus(text, "error")
+        else if (text) setImportStatus(`🧩 ${text}`, "")
+        if (ev.type === "done") onTraining(ev)
+      }, {exclusive: false})
+    } catch (err) {
+      setImportStatus(escapeHtml(err.message), "error")
     } finally {
       btn.disabled = false
     }

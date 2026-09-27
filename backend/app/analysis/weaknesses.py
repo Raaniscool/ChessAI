@@ -102,7 +102,13 @@ def summarize(key: str, evidence: list[dict], total_games: int, library=None,
         "evidence": evidence[:max_evidence] if max_evidence else evidence,
         "library_examples": library.count_for(key) if (library is not None and concept) else 0,
         "topics": topics,
+        "new_puzzles": bool(concept) and _can_generate(key),  # POST /api/games/puzzles can make some
     }
+
+
+def _can_generate(concept_id: str) -> bool:
+    from ..knowledge.generation import supported
+    return supported(concept_id)
 
 
 def recurring_weaknesses(analyses: list[dict], library=None, min_games: int = MIN_GAMES,

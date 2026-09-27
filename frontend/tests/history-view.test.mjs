@@ -53,3 +53,14 @@ test("selection message", () => {
     "Only 12 games are imported, so I'm using those. All of them are already analyzed.")
   assert.match(selectionText({requested: 10, available: 0, selected: [], to_analyze: 0}), /import your Chess.com/)
 })
+
+test("new-puzzle progress wording", async () => {
+  const {puzzleStatus} = await import("../history-view.js")
+  assert.equal(puzzleStatus({type: "status", text: "Stockfish is checking a position…"}), "Stockfish is checking a position…")
+  assert.equal(puzzleStatus({type: "puzzle"}, 1), "1 new puzzle checked by Stockfish…")
+  assert.equal(puzzleStatus({type: "puzzle"}, 2), "2 new puzzles checked by Stockfish…")
+  assert.equal(puzzleStatus({type: "done", new: 2, reused: 1}), "3 puzzles ready (new positions, not from your games).")
+  assert.equal(puzzleStatus({type: "done", new: 0, reused: 1}), "1 puzzle ready (new positions, not from your games).")
+  assert.equal(puzzleStatus({type: "error", error: "No engine"}), "No engine")
+  assert.equal(puzzleStatus({type: "other"}), "")
+})

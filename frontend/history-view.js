@@ -93,3 +93,15 @@ export function selectionText(ev) {
   const cached = ev.cached ? ` (${ev.cached} already done)` : ""
   return `${using} Analyzing ${ev.to_analyze} game${ev.to_analyze === 1 ? "" : "s"}${cached}…`
 }
+
+// Status line while new puzzles are generated (POST /api/games/puzzles, NDJSON events).
+export function puzzleStatus(ev, made = 0) {
+  if (ev.type === "status") return ev.text
+  if (ev.type === "puzzle") return `${made} new puzzle${made === 1 ? "" : "s"} checked by Stockfish…`
+  if (ev.type === "done") {
+    const n = ev.new + ev.reused
+    return `${n} puzzle${n === 1 ? "" : "s"} ready (new positions, not from your games).`
+  }
+  if (ev.type === "error") return ev.error
+  return ""
+}

@@ -8,7 +8,9 @@ For each weakness (most important first):
   3. your own positions  the positions from the learner's games, before the mistake:
                          "find a better move" — accepted moves are Stockfish's best move
                          and the alternatives it rated as good during the analysis
-  4. follow-up practice  more verified library practice + catalog lessons for the topic
+  4. new puzzles         positions generated for this weakness (personal tier, engine-
+                         verified, never copies of the learner's games) not yet shown
+  5. follow-up practice  more verified library practice + catalog lessons for the topic
 
 The plan is saved like every other plan (DATA_DIR/plans, private). Positions from
 the learner's games live only inside this personal plan: they are never written
@@ -133,9 +135,54 @@ def _lesson(lesson_id: str, title: str, steps: list[dict], completion: str, conc
     return lesson
 
 
+def _generated_lesson(lesson_id: str, subject: str, weakness: dict, examples: list, names: list[str],
+                      total_games: int) -> dict:
+    games = weakness.get("game_count") or len(weakness.get("games", []))
+    intro = (f"New puzzles for you: {len(examples)} position{'s' if len(examples) != 1 else ''} built to practise "
+             f"the skill behind “{weakness['title'].lower()}” (found in {games} of your "
+             f"{total_games} analyzed game{'s' if total_games != 1 else ''}). They are not from your games: ChessAI "
+             "made them, and Stockfish checked that each one works and really needs the idea.")
+    steps = [{"type": "teach", "text": intro, "board": {"fen": examples[0].start_fen}}]
+    for k, example in enumerate(examples, start=1):
+        steps += example_steps(example, "practice", k, len(examples), names)
+    return _lesson(lesson_id, f"{subject}: new puzzles for you", steps,
+                   f"Done — {len(examples)} new {subject.lower()} puzzle{'s' if len(examples) != 1 else ''} solved.",
+                   names, personal=True, origin={"type": PLANNER, "weakness": weakness["key"],
+                                                 "generated": [e.id for e in examples]})
+
+
+def create_puzzle_plan(weakness: dict, examples: list, total_games: int, library) -> dict:
+    """Just the new puzzles for one weakness, as a plan (the "New puzzles for this" button)."""
+    if not examples:
+        raise TrainingError("no verified puzzles for this weakness yet")
+    concept = library.concepts.get(weakness.get("concept") or "")
+    subject = concept.name if concept else weakness["title"]
+    names = list(dict.fromkeys(library.concepts[e.concept].name for e in examples if e.concept in library.concepts))
+    plan_id = uuid.uuid4().hex[:8]
+    lesson = _generated_lesson(f"plan_{plan_id}_01", subject, weakness, examples, names, total_games)
+    title = f"New puzzles: {weakness['title']}"
+    summary = (f"{len(examples)} new position{'s' if len(examples) != 1 else ''} for “{weakness['title'].lower()}”, "
+               "made for you and checked by Stockfish. They are practice positions, not positions from your games.")
+    unit = {"topic_id": None, "title": title, "category": CATEGORY.get(concept.category if concept else "", "tactic"),
+            "reason": weakness.get("description", ""), "verified_by": "generated positions checked by python-chess + "
+            "Stockfish", "lesson_ids": [lesson["id"]], "concepts": sorted({e.concept for e in examples}),
+            "weakness": weakness["key"], "example_ids": [e.id for e in examples], "generated": True}
+    plan = {"id": plan_id, "goal": f"New puzzles for {weakness['title']}", "title": title, "summary": summary,
+            "created": datetime.now(timezone.utc).isoformat(timespec="seconds"), "planner": PLANNER,
+            "units": [unit], "skipped": [], "related": [],
+            "personal": {"games": list(weakness.get("games", [])), "weaknesses": [weakness["key"]],
+                         "generated": [e.id for e in examples]}}
+    course = {"id": f"plan_{plan_id}", "title": title, "description": summary, "kind": "plan",
+              "lessons": [{"id": lesson["id"], "title": lesson["title"]}]}
+    return {"plan": plan, "course": course, "lessons": [lesson]}
+
+
 def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total_games: int, library,
-                         usage=None, catalog=None, level: str | None = None, record_usage: bool = True) -> dict:
-    """A plan record ({plan, course, lessons}) — registered and saved like any other plan."""
+                         usage=None, catalog=None, level: str | None = None, record_usage: bool = True,
+                         generated: dict[str, list] | None = None) -> dict:
+    """A plan record ({plan, course, lessons}) — registered and saved like any other plan.
+
+    `generated`: {weakness key: [verified personal puzzles not shown yet]}."""
     if not weaknesses:
         raise TrainingError("choose at least one weakness to train")
     catalog = catalog or get_catalog()
@@ -190,6 +237,10 @@ def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total
                 "Those were your own positions — next time you'll spot it over the board.", names,
                 personal=True, origin={"type": PLANNER, "weakness": weakness["key"],
                                        "moments": [m["id"] for m in picked]}))
+        new_puzzles = (generated or {}).get(weakness["key"]) or []
+        if new_puzzles:
+            unit_lessons.append(_generated_lesson(f"{prefix}g", subject, weakness, new_puzzles[:3], names,
+                                                  total_games))
         if retrieval and retrieval.practice:
             practice = []
             for k, example in enumerate(retrieval.practice, start=1):

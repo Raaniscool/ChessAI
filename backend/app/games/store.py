@@ -112,6 +112,10 @@ def save_analysis(game_id: str, analysis: dict, directory: Path | None = None) -
         _write(path, doc)
 
 
+def exists(game_id: str, directory: Path | None = None) -> bool:
+    return _path(game_id, directory).exists()
+
+
 def delete_game(game_id: str, directory: Path | None = None) -> None:
     path = _path(game_id, directory)
     if not path.exists():
