@@ -131,6 +131,18 @@ class Settings:
     qwen_warmup: bool = (_env("QWEN_WARMUP", "1") or "1").lower() not in ("0", "false", "no", "off")
 
     # --- Server ---
+    # --- read-aloud (backend/app/tts; docs/TTS.md) ---
+    # auto: Kokoro (local) if its model files are installed, else an OpenAI-compatible
+    # speech server if TTS_OPENAI_BASE_URL is set, else the browser's own voices.
+    tts_provider: str = (_env("TTS_PROVIDER", "auto") or "auto").lower()  # auto | kokoro | openai | browser
+    tts_kokoro_model: str = _env("TTS_KOKORO_MODEL", "") or ""   # default: DATA_DIR/tts/kokoro-v1.0.int8.onnx
+    tts_kokoro_voices: str = _env("TTS_KOKORO_VOICES", "") or ""  # default: DATA_DIR/tts/voices-v1.0.bin
+    tts_openai_base_url: str = _env("TTS_OPENAI_BASE_URL", "") or ""  # e.g. http://localhost:8880/v1
+    tts_openai_api_key: str = _env("TTS_OPENAI_API_KEY", "") or ""
+    tts_openai_model: str = _env("TTS_OPENAI_MODEL", "kokoro") or "kokoro"  # kokoro | gpt-4o-mini-tts | tts-1
+    tts_cache_mb: int = int(_env("TTS_CACHE_MB", "200") or "200")
+    tts_timeout: float = float(_env("TTS_TIMEOUT", "30") or "30")
+
     host: str = _env("HOST", "0.0.0.0") or "0.0.0.0"
     port: int = int(_env("PORT", "8000") or "8000")
 

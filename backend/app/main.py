@@ -415,6 +415,10 @@ from .learner_api import router as profile_router  # noqa: E402
 
 app.include_router(profile_router)
 
+from .tts_api import router as tts_router  # noqa: E402
+
+app.include_router(tts_router)
+
 
 # --- frontend -------------------------------------------------------------
 
