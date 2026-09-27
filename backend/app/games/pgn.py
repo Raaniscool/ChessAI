@@ -71,7 +71,7 @@ def _clean_headers(game: chess.pgn.Game) -> dict[str, str]:
 
 _SAN_TOKEN = re.compile(r"^(?:[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=?[QRBN])?|O-O(?:-O)?|0-0(?:-0)?|--|Z0)"
                         r"[+#]?[!?]*$")
-_SKIP_TOKEN = re.compile(r"^(?:\d+\.+|\$\d+|[!?]+|1-0|0-1|1/2-1/2|\*)$")
+_SKIP_TOKEN = re.compile(r"^(?:\d+\.+|\$\d+|[!?]+|1-0|0-1|1/2-1/2|\*|e\.p\.)$")  # "exd6 e.p." is valid PGN
 
 
 def _movetext(raw: str) -> str:
@@ -97,6 +97,13 @@ def unreadable_token(raw: str) -> str | None:
 
 def _validate(game: chess.pgn.Game, index: int, raw: str) -> ParsedGame:
     headers = _clean_headers(game)
+    if "FEN" in game.headers:  # a broken start position explains every "illegal move" after it
+        try:
+            start = game.board()
+        except ValueError as exc:
+            raise PgnError(f"the starting position (FEN header) is invalid: {exc}") from exc
+        if start.status() != chess.STATUS_VALID:
+            raise PgnError("the starting position (FEN header) is not a legal chess position")
     if game.errors:
         first = game.errors[0]
         raise PgnError(_describe_error(first))
@@ -159,13 +166,18 @@ def split_pgns(text: str) -> list[str]:
     """Raw text of each game (for storing the PGN exactly as pasted).
 
     A new game starts at a header line after movetext (or a blank line + header)."""
-    chunks, current, seen_moves = [], [], False
+    chunks, current, seen_moves, tags = [], [], False, set()
     for line in text.split("\n"):
         stripped = line.strip()
         is_tag = bool(_TAG.match(stripped))
-        if is_tag and seen_moves:
+        name = stripped[1:].split(None, 1)[0] if is_tag else None
+        # a repeated tag ([Event ...] again) also starts a new game: a game without moves
+        # must be reported, not silently merged into the next one
+        if is_tag and (seen_moves or name in tags):
             chunks.append("\n".join(current))
-            current, seen_moves = [], False
+            current, seen_moves, tags = [], False, set()
+        if is_tag:
+            tags.add(name)
         if stripped and not is_tag:
             seen_moves = True
         current.append(line)

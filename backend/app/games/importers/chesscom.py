@@ -25,16 +25,45 @@ from ..pgn import ParsedGame, ParseIssue, PgnError, read_games
 from .base import ImportResult, PlayerNeeded
 
 SOURCE = "chesscom"
-_LINK_ID = re.compile(r"chess\.com/(?:game/)?(?:live|daily|computer)?/?(?:game/)?(\d+)", re.I)
+# Chess.com game URLs, old and new, including the review page:
+#   /game/live/123  /game/daily/123  /game/computer/123  /live/game/123  /daily/game/123
+#   /game/123  /analysis/game/live/123?tab=review
+# Live, daily and computer games are numbered separately, so the kind is part of the id
+# (live keeps the plain "chesscom-123" form used since the first version).
+_LINK_KIND_ID = re.compile(r"chess\.com/(?:analysis/)?(?:game/(live|daily|computer)/|(live|daily)/game/)(\d+)", re.I)
+_LINK_PLAIN_ID = re.compile(r"chess\.com/(?:analysis/)?game/(\d+)", re.I)
 _MOVE_TOKEN = re.compile(r"^\d+\.")
 _OTHER_SITES = ("lichess.org", "chess24", "playstrategy", "chessbase", "fics", "icc")
 
 
+def link_id(url: str | None) -> tuple[str, str] | None:
+    """("live" | "daily" | "computer", number) from a Chess.com game URL, or None."""
+    m = _LINK_KIND_ID.search(url or "")
+    if m:
+        return (m.group(1) or m.group(2)).lower(), m.group(3)
+    m = _LINK_PLAIN_ID.search(url or "")
+    return ("live", m.group(1)) if m else None
+
+
+def id_from_link(url: str | None) -> str | None:
+    found = link_id(url)
+    if found is None:
+        return None
+    kind, number = found
+    return f"{SOURCE}-{number}" if kind == "live" else f"{SOURCE}-{kind}-{number}"
+
+
+def legacy_ids(game_id: str) -> list[str]:
+    """Ids older versions gave the same game (daily/computer games used to be "chesscom-<n>")."""
+    m = re.fullmatch(rf"{SOURCE}-(?:daily|computer)-(\d+)", game_id)
+    return [f"{SOURCE}-{m.group(1)}"] if m else []
+
+
 def _game_id(headers: dict, parsed: ParsedGame) -> str:
     for key in ("Link", "Site"):
-        m = _LINK_ID.search(headers.get(key, ""))
-        if m:
-            return f"{SOURCE}-{m.group(1)}"
+        found = id_from_link(headers.get(key, ""))
+        if found:
+            return found
     digest = hashlib.sha1("|".join([
         headers.get("White", ""), headers.get("Black", ""), headers.get("Date", ""),
         headers.get("StartTime", ""), parsed.start_fen, " ".join(parsed.moves_uci)]).encode()).hexdigest()
@@ -149,6 +178,10 @@ def _common_player(games: list[GameRecord]) -> str | None:
 class ChessComImporter:
     source = SOURCE
     label = "Chess.com"
+
+    @staticmethod
+    def legacy_ids(record: GameRecord) -> list[str]:
+        return legacy_ids(record.id)
 
     def parse(self, text: str, username: str | None = None) -> ImportResult:
         """Parse pasted Chess.com PGN(s); every game is validated with python-chess.

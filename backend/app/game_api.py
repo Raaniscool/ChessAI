@@ -125,8 +125,9 @@ def _import(pgn: str, username: str | None, source: str = "chesscom") -> dict:
     importer = get_importer(source)
     result = importer.parse(pgn, username)
     new = 0
+    legacy = getattr(importer, "legacy_ids", lambda record: [])
     for game in result.games:
-        new += store.save_game(game)
+        new += store.save_game(game, legacy_ids=legacy(game))
     return {
         "source": importer.source,
         "imported": [g.summary() for g in result.games],

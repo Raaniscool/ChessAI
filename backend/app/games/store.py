@@ -50,23 +50,49 @@ def load_doc(game_id: str, directory: Path | None = None) -> dict:
         raise GameNotFound(game_id) from None
 
 
-def save_game(game: GameRecord, directory: Path | None = None) -> bool:
+def _same_game(old: dict, game: GameRecord) -> bool:
+    return old["game"].get("moves_uci") == game.moves_uci and old["game"].get("start_fen") == game.start_fen
+
+
+def save_game(game: GameRecord, directory: Path | None = None, legacy_ids: list[str] | None = None) -> bool:
     """Store a game. Re-importing the same game keeps its analysis if the moves are unchanged.
 
+    `legacy_ids`: ids an older version stored this same game under. A stored game under such
+    an id with the very same moves is moved to the new id (keeping its analysis) instead of
+    being duplicated; a different game that merely shared the old id is left alone.
     Returns True when the game is new."""
     path = _path(game.id, directory)
     with _lock:
         analysis = None
         new = not path.exists()
+        old_doc, legacy_path = None, None
         if not new:
             try:
-                old = json.loads(path.read_text(encoding="utf-8"))
-                same_side = old["game"].get("player_color") == game.player_color
-                if old["game"].get("moves_uci") == game.moves_uci and same_side:
-                    analysis = old.get("analysis")
-            except (OSError, ValueError, KeyError):
-                pass
+                old_doc = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                old_doc = None
+        else:
+            for legacy in legacy_ids or []:
+                try:
+                    candidate = _path(legacy, directory)
+                    doc = json.loads(candidate.read_text(encoding="utf-8"))
+                except (GameNotFound, OSError, ValueError):
+                    continue
+                if _same_game(doc, game):
+                    old_doc, legacy_path, new = doc, candidate, False
+                    break
+        if old_doc is not None:
+            try:
+                same_side = old_doc["game"].get("player_color") == game.player_color
+                # an analysis made under a legacy id refers to that id throughout (moments,
+                # evidence links): it is redone rather than patched
+                if old_doc["game"].get("moves_uci") == game.moves_uci and same_side and legacy_path is None:
+                    analysis = old_doc.get("analysis")
+            except (KeyError, AttributeError):
+                analysis = None
         _write(path, {"schema_version": SCHEMA_VERSION, "game": game.to_dict(), "analysis": analysis})
+        if legacy_path is not None:
+            legacy_path.unlink(missing_ok=True)
     return new
 
 
