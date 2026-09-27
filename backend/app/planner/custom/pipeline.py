@@ -103,6 +103,7 @@ def build_custom_plan(intent: LearningIntent, *, level: str | None = None, libra
     template = plan_library.find(intent.signature(), learner, (personal or {}).get("weakness"))
     if template is not None:
         cand = _from_template(template, library)
+        cand.goal, cand.intent = intent.goal, intent.as_dict()  # this request's words; same meaning
         report = validate(cand, ctx)
         if report.status == "verified":
             record = build_record(cand, report, library=library, catalog=catalog, status="reused", template=template)
