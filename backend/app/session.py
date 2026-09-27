@@ -362,7 +362,7 @@ class SessionManager:
 
         if not message or not message.strip():
             raise ChessError("Empty message")
-        message = message.strip()
+        message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
         context = self._chat_context(session)
         history = list(session.transcript)  # prompt gets the new message exactly once
         reply, teacher_used = chat_or_fallback(get_teacher(), message, context, history)
@@ -418,7 +418,7 @@ class SessionManager:
 
         if not message or not message.strip():
             raise ChessError("Empty message")
-        message = message.strip()
+        message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
         context = self._chat_context(session)
         history = list(session.transcript)
         events = stream_events(
@@ -435,6 +435,7 @@ class SessionManager:
         return recording()
 
 
+MAX_CHAT_CHARS = 2000
 _manager: SessionManager | None = None
 
 

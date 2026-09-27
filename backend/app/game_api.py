@@ -99,7 +99,9 @@ def _analyzed(game_ids: list[str] | None = None) -> list[dict]:
     if game_ids:
         wanted = set(game_ids)
         docs = [d for d in docs if d["game"]["id"] in wanted]
-    return [d for d in docs if d.get("analysis")]
+    # an analysis made by an older analyzer version doesn't count until it is redone
+    # (the history report already ignored them; weaknesses and training used them anyway)
+    return [d for d in docs if _current(d.get("analysis"))]
 
 
 def _current(analysis: dict | None) -> bool:
@@ -283,10 +285,12 @@ def analyze(body: AnalyzeRequest):
         wanted = set(body.game_ids)
         docs = [d for d in docs if d["game"]["id"] in wanted]
     todo = [d for d in docs if body.reanalyze or not _current(d.get("analysis"))]
-    try:
-        engine = get_engine()
-    except EngineUnavailable as exc:
-        return _error(503, str(exc))
+    engine = None
+    if todo:  # nothing to analyze = no engine needed (cached results work offline)
+        try:
+            engine = get_engine()
+        except EngineUnavailable as exc:
+            return _error(503, str(exc))
 
     def events():
         yield from _analysis_events(todo, engine)

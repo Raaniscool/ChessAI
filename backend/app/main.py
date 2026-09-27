@@ -13,9 +13,11 @@ import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import chess_system
 from .chess_system import ChessError
@@ -95,6 +97,25 @@ async def unexpected_error_handler(request: Request, exc: Exception):
         status_code=500,
         content={"error": f"Server error ({type(exc).__name__}): {exc}. See the server console for details."},
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    # The UI reads {"error": ...}; FastAPI's default {"detail": [...]} showed up as a bare
+    # "Request failed (422)".
+    problems = []
+    for err in exc.errors()[:3]:
+        where = ".".join(str(p) for p in err.get("loc", ()) if p not in ("body", "query", "path"))
+        problems.append(f"{where}: {err.get('msg')}" if where else str(err.get("msg")))
+    return JSONResponse(status_code=422, content={"error": "Invalid request — " + "; ".join(problems)})
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error_handler(request: Request, exc: StarletteHTTPException):
+    message = exc.detail if isinstance(exc.detail, str) else "Request failed"
+    if exc.status_code == 404 and message == "Not Found":
+        message = f"Not found: {request.url.path}"
+    return JSONResponse(status_code=exc.status_code, content={"error": message}, headers=exc.headers)
 
 
 @app.exception_handler(PlanError)

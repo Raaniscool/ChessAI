@@ -355,7 +355,8 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
             record = None
         if record:
             return record
-    return create_plan(goal, catalog=catalog, use_qwen=use_qwen, engine=engine)
+    # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
+    return create_plan(cleaned, catalog=catalog, use_qwen=use_qwen, engine=engine)
 
 
 def _planner_wants_qwen(matched: list[Topic]) -> bool:

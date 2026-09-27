@@ -8,6 +8,7 @@ import {Chess} from "./vendor/chess.mjs/Chess.js"
 import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
+import {errorMessage, readEvents, reach} from "./net.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -46,7 +47,7 @@ const state = {
 async function api(path, method = "GET", body = undefined) {
   const opts = {method, headers: {"Content-Type": "application/json"}}
   if (body !== undefined) opts.body = JSON.stringify(body)
-  const res = await fetch(path, opts)
+  const res = await reach(path, opts)
   let data = null
   try { data = await res.json() } catch (_) { /* empty body */ }
   if (!res.ok) {
@@ -68,32 +69,14 @@ async function streamEvents(path, body, onEvent, {exclusive = true} = {}) {
     state.stream = controller
   }
   try {
-    const res = await fetch(path, {
+    const res = await reach(path, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     })
-    if (!res.ok) {
-      let msg = `Request failed (${res.status})`
-      try { msg = (await res.json()).error || msg } catch (_) { /* not JSON */ }
-      throw new Error(msg)
-    }
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ""
-    for (;;) {
-      const {value, done} = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, {stream: true})
-      let nl
-      while ((nl = buffer.indexOf("\n")) >= 0) {
-        const line = buffer.slice(0, nl).trim()
-        buffer = buffer.slice(nl + 1)
-        if (line) onEvent(JSON.parse(line))
-      }
-    }
-    if (buffer.trim()) onEvent(JSON.parse(buffer))
+    if (!res.ok) throw new Error(await errorMessage(res))
+    await readEvents(res.body, onEvent, controller.signal)
   } catch (err) {
     if (err.name !== "AbortError") throw err
   } finally {
