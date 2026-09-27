@@ -376,6 +376,68 @@ def _support_mate(rng: random.Random, side: str, pawns: bool = True) -> Proposal
     return _finish(board, key, "support_mate", "queen" if pawns else "bare", side, 1)
 
 
+# --------------------------------------------------------------------- mates with given material
+_LETTER_TYPE = {"Q": chess.QUEEN, "R": chess.ROOK, "B": chess.BISHOP, "N": chess.KNIGHT}
+
+
+def _mates_in_one(board: chess.Board) -> list[chess.Move]:
+    out = []
+    for move in board.legal_moves:
+        board.push(move)
+        if board.is_checkmate():
+            out.append(move)
+        board.pop()
+    return out
+
+
+def material_mate(pieces: tuple[str, ...]) -> Constructor:
+    """King + `pieces` (e.g. ("B", "N")) against a lone king: exactly one move mates.
+
+    Parameterized by material, so it serves any "checkmate with ..." request whose pieces
+    can force mate — not one hand-made pattern. The lone king is on the edge (where these
+    mates happen) and still has legal moves, so the position isn't a dead stalemate trap."""
+    types = [_LETTER_TYPE[p] for p in pieces]
+    heavy = any(t in (chess.QUEEN, chess.ROOK) for t in types)
+
+    def build(rng: random.Random, side: str) -> Proposal | None:
+        for _ in range(250):  # random placements are cheap; mates in one among them are rare
+            board = chess.Board(None)
+            edge = [s for s in chess.SQUARES if chess.square_file(s) in (0, 7) or chess.square_rank(s) in (0, 7)]
+            bk = rng.choice(edge)
+            board.set_piece_at(bk, chess.Piece(chess.KING, B))
+            near = [s for s in chess.SQUARES if chess.square_distance(s, bk) == 2]
+            board.set_piece_at(rng.choice(near), chess.Piece(chess.KING, W))
+            for t in types:
+                free = [s for s in chess.SQUARES if board.piece_at(s) is None and chess.square_distance(s, bk) > 1]
+                board.set_piece_at(rng.choice(free), chess.Piece(t, W))
+            bishops = list(board.pieces(chess.BISHOP, W))
+            if len(bishops) == 2 and (sum(divmod(bishops[0], 8)) % 2) == (sum(divmod(bishops[1], 8)) % 2):
+                continue  # two bishops on the same colour can't mate
+            board.turn = W
+            if not board.is_valid():
+                continue
+            probe = board.copy(stack=False)
+            probe.turn = B
+            if not any(probe.legal_moves):
+                continue  # Black would be stalemated: not an instructive mate
+            mates = _mates_in_one(board)
+            if len(mates) != 1:
+                continue
+            return _finish(board, mates[0], "material_mate", "".join(pieces), side, 2 if heavy else 3,
+                           pieces="".join(pieces))
+        return None
+
+    return build
+
+
+def register_material_mate(pieces: tuple[str, ...]) -> str:
+    """Register (once) and return the constructor name for mates with these pieces."""
+    name = "material_mate_" + "".join(sorted(pieces))
+    if name not in CONSTRUCTORS:
+        CONSTRUCTORS[name] = material_mate(tuple(sorted(pieces)))
+    return name
+
+
 # --------------------------------------------------------------------- threat defence
 def _threat(rng: random.Random, side: str) -> Proposal | None:
     """Black threatens to take a white piece; White must see it before doing anything else.

@@ -69,6 +69,29 @@ def describe(motif: str, facts: dict, key_label: str, side: str) -> dict:
                      "A queen next to the king is checkmate when your own king protects it."]
         return {"title": title, "description": f"{you} to move and checkmate in one move.", "explanation": text,
                 "prompt": f"{you} to move. Checkmate in one move.", "hints": hints, "tags": tags}
+    if motif == "material_mate":
+        checker = (facts.get("checkers") or [{}])[0]
+        piece = checker.get("piece", "piece")
+        covered = [e for e in facts.get("escape_squares", []) if "covered_by" in e]
+        by_type: dict[str, set] = {}
+        for e in covered:
+            if e["covered_by"]["piece"] != "king":
+                by_type.setdefault(e["covered_by"]["piece"], set()).add(e["covered_by"]["square"])
+        guards = [p + ("s" if len(sq) > 1 else "") for p, sq in sorted(by_type.items())]
+        plural = len(guards) > 1 or any(g.endswith("s") for g in guards)
+        guard_text = (f" Your {' and '.join(guards)} cover{'' if plural else 's'} the escape squares"
+                      if guards else " Every escape square is covered")
+        return {
+            "title": "Checkmate in one: pieces working together",
+            "description": f"{you} to move and checkmate in one move.",
+            "explanation": (f"After {key_label} the {piece} gives check, and the {facts['mated_side']} king on "
+                            f"{facts['king']} has nowhere to go.{guard_text}, so it's checkmate. Mates like this "
+                            "happen on the edge, where the king has fewest squares."),
+            "prompt": f"{you} to move. Find the checkmate — only one move works.",
+            "hints": ["The enemy king is on the edge: count the squares it could escape to.",
+                      "Look for a check that also leaves every escape square covered."],
+            "tags": ["checkmate", "mate in one", "generated"],
+        }
     if motif == "threat":
         t = facts["threat"]
         return {

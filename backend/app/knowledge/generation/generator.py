@@ -67,6 +67,10 @@ PLANS: dict[str, list[tuple[str, str]]] = {
     "endgames": [("opposition", "opposition"), ("queen_mate", "bare_queen_mate")],
 }
 MOTIF_OF = {"bare_queen_mate": "support_mate"}
+
+
+def motif_of(cname: str) -> str:
+    return "material_mate" if cname.startswith("material_mate_") else MOTIF_OF.get(cname, cname)
 QWEN_HINTS = {
     "knight_fork": "The solution is a knight move that attacks the king and an undefended rook or queen.",
     "queen_fork": "The solution is a queen move that attacks the king and an undefended piece.",
@@ -243,16 +247,19 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
              personal: dict | None = None, seed: int | None = None, time_budget: float = 25.0,
              max_attempts: int = 40, use_qwen: bool | None = None, teacher=None, depth: int = 14,
              gen_log: GenerationLog | None = None, save: bool = True, on_progress=None,
-             avoid_positions: set[str] | None = None) -> GenerationResult:
+             avoid_positions: set[str] | None = None,
+             plans: list[tuple[str, str]] | None = None) -> GenerationResult:
     """Generate up to `count` verified puzzles for `concept`.
 
     `personal` = {"target_weakness", "evidence": [...], ...} for learner-specific puzzles
     (saved in the personal tier, never mixed into the shared library). `avoid_positions`:
-    board FENs never to produce (the learner's own game positions)."""
+    board FENs never to produce (the learner's own game positions). `plans`: explicit
+    [(target concept, constructor)] pairs instead of the concept's default plan (used for
+    parameterized constructors such as mates with given material)."""
     started = time.monotonic()
     result = GenerationResult(concept)
     gen_log = gen_log or get_log()
-    plans = PLANS.get(concept)
+    plans = plans or PLANS.get(concept)
     if not plans:
         result.stopped = f"no generator for {concept}"
         return result
@@ -269,7 +276,7 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
         weights = []
         for target, cname in plans:
             recent = gen_log.recent_variants(target)
-            used = sum(n for sig, n in recent.items() if sig and sig.split(":")[0] == MOTIF_OF.get(cname, cname))
+            used = sum(n for sig, n in recent.items() if sig and sig.split(":")[0] == motif_of(cname))
             weights.append(1.0 / (1 + used))
         return rng.choices(plans, weights=weights, k=1)[0]
 
