@@ -45,18 +45,26 @@ class Resolution:
 
 
 def _qwen_map(goal: str, library, glossary, teacher=None) -> tuple[str, str] | None:
-    """Ask Qwen which of our ids the request means. Returns (kind, id) or None."""
+    """The one id Qwen maps the request to — or None, including when Qwen sees several
+    readings: choosing between them is the learner's decision, never Qwen's."""
+    found = qwen_candidates(goal, library, glossary, teacher)
+    return found[0] if len(found) == 1 else None
+
+
+def qwen_candidates(goal: str, library, glossary, teacher=None) -> list[tuple[str, str]]:
+    """Every known term Qwen says the request could exactly mean: [(kind, id)], at most 3.
+    A language task only: ids we don't have are dropped, never invented."""
     from ..config import get_settings
     from ..teacher.qwen import QwenTeacher, TeacherUnavailable
     from .planner import extract_json
 
     if teacher is None:
         if not get_settings().qwen_configured():
-            return None
+            return []
         try:
             teacher = QwenTeacher()
         except TeacherUnavailable:
-            return None
+            return []
     options = [f"{c.id}: {c.name}" for c in library.concepts.values()]
     options += [f"{t.id}: {t.term}" for t in glossary.terms.values()]
     messages = [
@@ -64,31 +72,49 @@ def _qwen_map(goal: str, library, glossary, teacher=None) -> tuple[str, str] | N
                                       "JSON object only."},
         {"role": "user", "content": (
             f"Request: {goal!r}\nKnown terms (id: name):\n" + "\n".join(options) + "\n\n"
-            'Answer {"id": "<id>", "match": "same"} only if the request asks for exactly that term (a synonym, '
-            'translation or misspelling). Otherwise answer {"id": null, "match": "none"}. Never pick a term '
-            "that is merely related or more general.")},
+            'Answer {"ids": ["<id>", ...], "match": "same"} listing every term the request could mean exactly '
+            '(a synonym, translation or misspelling) — usually one, at most 3 if the words really are ambiguous. '
+            'Otherwise answer {"ids": [], "match": "none"}. Never list a term that is merely related or more '
+            "general, and never choose between readings: list them all.")},
     ]
     try:
-        data = extract_json(teacher.complete(messages, max_tokens=60))
+        data = extract_json(teacher.complete(messages, max_tokens=80))
     except (TeacherUnavailable, ValueError) as exc:
         log.info("Qwen term mapping unavailable: %s", exc)
-        return None
-    cid, match = data.get("id"), data.get("match")
-    if match != "same" or not isinstance(cid, str):
-        return None
-    if cid in library.concepts:
-        return "concept", cid
-    if cid in glossary.terms:
-        return "glossary", cid
-    return None  # an id we don't have: ignored, never invented
+        return []
+    if data.get("match") != "same":
+        return []
+    ids = data.get("ids")
+    if ids is None and isinstance(data.get("id"), str):
+        ids = [data["id"]]
+    out: list[tuple[str, str]] = []
+    for cid in ids if isinstance(ids, list) else []:
+        if not isinstance(cid, str):
+            continue
+        if cid in library.concepts:
+            out.append(("concept", cid))
+        elif cid in glossary.terms:
+            out.append(("glossary", cid))
+        # an id we don't have: ignored, never invented
+    return list(dict.fromkeys(out))[:3]
 
 
-def resolve(goal: str, library, glossary, use_qwen: bool = True, teacher=None) -> Resolution | None:
+def resolve(goal: str, library, glossary, use_qwen: bool = True, teacher=None,
+            clarify: bool = False) -> Resolution | None:
     term = glossary.match(goal)  # glossary terms are the named ideas the graph lacks ("greek gift")
     concept = None if term else next(iter(library.match_concepts(goal)), None)
     via = "text"
     if term is None and concept is None and use_qwen:
-        mapped = _qwen_map(goal, library, glossary, teacher)
+        found = qwen_candidates(goal, library, glossary, teacher)
+        if len(found) >= 2:
+            if not clarify:
+                return None  # several readings and nobody to ask: don't guess
+            from .catalog import get_catalog
+            from .intent import ClarificationNeeded, qwen_question
+            question = qwen_question(goal, [i for _, i in found], library, get_catalog(), glossary)
+            if question is not None:
+                raise ClarificationNeeded(question, goal)
+        mapped = found[0] if len(found) == 1 else None
         if mapped:
             via = "qwen"
             if mapped[0] == "concept":
@@ -136,7 +162,7 @@ def _text_lesson(lesson_id: str, title: str, text: str, related_names: list[str]
 
 def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str | None = None,
                   use_qwen: bool = True, teacher=None, usage=None, generate_budget: float = GENERATE_BUDGET,
-                  on_progress=None, engine_factory=None) -> dict | None:
+                  on_progress=None, engine_factory=None, clarify: bool = False) -> dict | None:
     """A plan for a request the verified library and the catalog couldn't serve."""
     from ..knowledge.generation import generate, supported
     from ..knowledge.glossary import get_glossary
@@ -148,7 +174,7 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
     library = library or get_knowledge()
     catalog = catalog or get_catalog()
     usage = usage if usage is not None else get_usage()
-    res = resolve(goal, library, get_glossary(), use_qwen=use_qwen, teacher=teacher)
+    res = resolve(goal, library, get_glossary(), use_qwen=use_qwen, teacher=teacher, clarify=clarify)
     if res is None:
         return None
 

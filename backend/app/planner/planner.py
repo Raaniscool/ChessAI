@@ -337,15 +337,69 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
 
 
 def plan_for_goal(goal: str, library_first: bool = True, level: str | None = None,
-                  catalog: Catalog | None = None, use_qwen: bool = True, engine=None) -> dict:
-    """Library first, then the existing planner.
+                  catalog: Catalog | None = None, use_qwen: bool = True, engine=None, *,
+                  clarify: bool = False, answers: dict | None = None, reclarify: bool = False,
+                  memory=None, personal: dict | None = None, learner: str | None = None,
+                  teacher=None) -> dict:
+    """Understand the request, then library first, then the existing planner.
 
+    0. With `clarify` (the API): the request is structured into an intent
+       (planner.intent). A request with several materially different readings raises
+       ClarificationNeeded — the learner chooses; remembered answers are reused. A request
+       with structure the other planners can't express (material, a flipped side,
+       exclusions, a clarified reading) or a weakness to train goes to the custom-plan
+       pipeline: propose → validate (python-chess, Stockfish, plan checks) → present.
     1. Verified Knowledge Library examples for the requested concept (demonstration ->
        guided example -> practice), when the library has something suitable;
     2. otherwise exactly the old behaviour: catalog topics, then Qwen-organized plans
-       whose new lines are screened by Stockfish.
+       whose new lines are screened by Stockfish;
+    3. never a dead end for something recognisable: a custom plan for a name only the
+       opening database knows, then the missing-library fallback.
     """
     cleaned = " ".join((goal or "").split())[:MAX_GOAL_LENGTH]
+    intent = None
+    if clarify and library_first and len(cleaned) >= 2:
+        from .intent import IntentMemory, understand
+        intent = understand(cleaned, answers=answers, memory=memory if memory is not None else IntentMemory(),
+                            reclarify=reclarify)
+        level = intent.level or level
+        cleaned = " ".join(intent.goal.split())[:MAX_GOAL_LENGTH] or cleaned
+        if personal and not intent.components and personal.get("concept"):
+            from .intent import Component
+            intent.components = [Component("concept", personal["concept"], personal.get("title") or personal["concept"])]
+        single = intent.components[0] if len(intent.components) == 1 else None
+        if single is not None and single.kind in ("topic", "concept", "glossary") and not intent.exclude \
+                and not personal:
+            # a clarified plain subject ("Philidor" → the Philidor position): the normal planners
+            # teach one named subject best (library examples, catalog lessons, definition fallback)
+            cleaned = single.label
+        elif intent.structured:
+            record = _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher)
+            if record is not None:
+                return record
+    record = _plan_without_intent(cleaned, library_first, level, catalog, use_qwen, engine, intent, teacher)
+    if intent is not None and (intent.clarified or intent.structured):
+        record["plan"]["intent"] = intent.as_dict()
+    return record
+
+
+def _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher) -> dict | None:
+    from ..engine import get_engine
+    from .custom import build_custom_plan
+
+    try:
+        result = build_custom_plan(intent, level=level, catalog=catalog, engine=engine, engine_factory=get_engine,
+                                   use_qwen=use_qwen, teacher=teacher, personal=personal, learner=learner)
+    except Exception as exc:  # the custom pipeline must never break planning
+        log.warning("custom plan pipeline failed: %s", exc)
+        return None
+    if result.record is None:
+        log.info("no verified custom plan for %r: %s", intent.goal, result.attempts)
+    return result.record
+
+
+def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_qwen: bool, engine, intent,
+                         teacher=None) -> dict:
     if library_first and len(cleaned) >= 2:
         from .knowledge_lessons import create_knowledge_plan
         try:
@@ -358,7 +412,7 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
     # A named idea from the glossary that the catalog only partly matches ("stalemate tricks"
     # vs the king-and-queen topic's "stalemate" alias) is not a request for that topic.
     if library_first and _glossary_outranks_catalog(cleaned, catalog or get_catalog()):
-        record = _fallback(cleaned, level, catalog, use_qwen, engine)
+        record = _fallback(cleaned, level, catalog, use_qwen, engine, clarify=intent is not None, teacher=teacher)
         if record is not None:
             return record
     # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
@@ -367,9 +421,18 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
     except PlanError as err:
         if not library_first or len(cleaned) < 2:
             raise
+        # A name only the opening database knows ("the Dutch"): a custom plan from its line,
+        # screened by Stockfish before it is shown.
+        suggested = [c for c in (getattr(intent, "suggested", None) or []) if c.kind == "opening_db"]
+        if intent is not None and suggested:
+            from dataclasses import replace
+            record = _custom(replace(intent, components=suggested[:1], interpretation=suggested[0].label), level,
+                             catalog, use_qwen, engine, None, None, teacher)
+            if record is not None:
+                return record
         # Nothing verified in the library or the catalog: never a dead end for something we
         # recognise (generated + engine-checked positions, a broader idea, a labelled definition).
-        record = _fallback(cleaned, level, catalog, use_qwen, engine)
+        record = _fallback(cleaned, level, catalog, use_qwen, engine, clarify=intent is not None, teacher=teacher)
         if record is None:
             raise  # nothing recognisable in the request: keep the answer + suggestions
         return record
@@ -382,14 +445,17 @@ def _glossary_outranks_catalog(goal: str, catalog: Catalog) -> bool:
     return bool(found) and found[1] > catalog.best_alias_size(goal)
 
 
-def _fallback(goal: str, level, catalog, use_qwen: bool, engine) -> dict | None:
+def _fallback(goal: str, level, catalog, use_qwen: bool, engine, clarify: bool = False, teacher=None) -> dict | None:
+    from .intent import ClarificationNeeded
     from .missing import fallback_plan
 
     from ..engine import get_engine
 
     try:  # the engine is started only if positions are actually generated
         return fallback_plan(goal, catalog=catalog, engine=engine, engine_factory=get_engine, level=level,
-                             use_qwen=use_qwen)
+                             use_qwen=use_qwen, clarify=clarify, teacher=teacher)
+    except ClarificationNeeded:
+        raise  # Qwen saw several readings: the learner chooses
     except Exception as exc:  # the fallback must never turn a clean "not available" into a crash
         log.warning("missing-library fallback failed: %s", exc)
         return None

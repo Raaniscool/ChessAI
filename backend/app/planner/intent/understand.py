@@ -369,6 +369,33 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
     library = library or get_knowledge()
     lexicon = lexicon or get_lexicon()
     answers = dict(answers or {})
+    # A reading the learner chose among Qwen's suggestions (asked earlier for these words).
+    qkey = qwen_key(goal)
+    answer, remembered = _answer_for(qkey, answers, memory, reclarify)
+    if answer is not None:
+        if answer.get("choice") == OTHER:
+            text = (answer.get("text") or "").strip()
+            if not text:
+                raise ClarificationError("Tell me in a few words what you meant.")
+            if _depth < 2:
+                inner = understand(text, answers={k: v for k, v in answers.items() if k != qkey}, memory=memory,
+                                   reclarify=reclarify, catalog=catalog, library=library, lexicon=lexicon,
+                                   _depth=_depth + 1)
+                inner.clarified.insert(0, {"key": qkey, "kind": "interpretation", "term": goal, "choice": OTHER,
+                                           "text": text, "original": goal, "remembered": remembered})
+                if memory is not None and not remembered:
+                    memory.put(qkey, OTHER, "Something else", text, goal)
+                return inner
+        comp = _component_from_key(str(answer.get("choice", "")), library, catalog)
+        if comp is None and not remembered:
+            raise ClarificationError(f"“{answer.get('choice')}” is not one of the choices.")
+        if comp is not None:
+            if memory is not None and not remembered:
+                memory.put(qkey, comp.key(), comp.label, None, goal)
+            return LearningIntent(goal, [comp], interpretation=comp.label,
+                                  clarified=[{"key": qkey, "kind": "interpretation", "term": goal,
+                                              "choice": comp.key(), "label": comp.label, "remembered": remembered}],
+                                  source="remembered" if remembered else "clarified")
     p = parse(goal)
     exact = lexicon.exact(p.tokens)
 
@@ -505,22 +532,48 @@ def _distinct(options: list[Interpretation]) -> list[Interpretation]:
 
 
 # ---------------------------------------------------------------------- Qwen
-def qwen_question(goal: str, ids: list[str], library, catalog) -> Question | None:
+def qwen_question(goal: str, ids: list[str], library, catalog, glossary=None) -> Question | None:
     """Qwen mapped an unknown request to several of our subjects: ask, never pick.
 
     `ids` are concept or topic ids Qwen suggested (already restricted to ids we know).
     With one id there's nothing to choose; with several distinct ones the learner does."""
     options: list[Interpretation] = []
-    for k, cid in enumerate(dict.fromkeys(ids)):
-        if cid in library.concepts:
-            c = library.concepts[cid]
-            options.append(Interpretation(f"opt{k + 1}", c.name, [Component("concept", cid, c.name)]))
-        elif cid in catalog.topics:
-            t = catalog.topics[cid]
-            options.append(Interpretation(f"opt{k + 1}", t.title, [Component("topic", cid, t.title)]))
+    for cid in dict.fromkeys(ids):
+        comp = _component_from_key(cid if ":" in cid else _key_for(cid, library, catalog, glossary), library,
+                                   catalog, glossary)
+        if comp is not None:
+            # the option id *is* the subject, so the answer can be applied without asking Qwen again
+            options.append(Interpretation(comp.key(), comp.label, [comp]))
     options = _distinct(options)[:4]
     if len(options) < 2:
         return None
     term = goal.strip()
-    return Question(f"qwen:{' '.join(_normalize(goal))}", "interpretation", term,
+    return Question(qwen_key(goal), "interpretation", term,
                     f"“{term}” could mean a few different things. Which one?", options)
+
+
+def qwen_key(goal: str) -> str:
+    return f"qwen:{' '.join(_normalize(goal))}"
+
+
+def _key_for(cid: str, library, catalog, glossary) -> str:
+    if cid in library.concepts:
+        return f"concept:{cid}"
+    if cid in catalog.topics:
+        return f"topic:{cid}"
+    return f"glossary:{cid}"
+
+
+def _component_from_key(key: str, library, catalog, glossary=None) -> Component | None:
+    kind, _, ident = key.partition(":")
+    if kind == "concept" and ident in library.concepts:
+        return Component("concept", ident, library.concepts[ident].name)
+    if kind == "topic" and ident in catalog.topics:
+        return Component("topic", ident, catalog.topics[ident].title)
+    if kind == "glossary":
+        if glossary is None:
+            from ...knowledge.glossary import get_glossary
+            glossary = get_glossary()
+        if ident in glossary.terms:
+            return Component("glossary", ident, glossary.terms[ident].term)
+    return None

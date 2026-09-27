@@ -390,6 +390,21 @@ def _find_weaknesses(keys: list[str], game_ids: list[str] | None, username: str 
     return (docs, chosen), None
 
 
+def weakness_context(key: str, username: str | None = None, level: str | None = None) -> dict | None:
+    """What a weakness-triggered plan needs to be personal: the weakness, its evidence from
+    the learner's games (positions it must not copy), and the learner's level."""
+    found, err = _find_weaknesses([key], None, username)
+    if err is not None:
+        return None
+    _docs, chosen = found
+    w = chosen[0]
+    evidence = w.get("evidence", [])
+    return {"learner": username or "local", "weakness": w["key"], "concept": w.get("concept"),
+            "title": w.get("title"), "evidence": evidence,
+            "evidence_fens": [e["fen"] for e in evidence if e.get("fen")],
+            "games": w.get("game_count"), "level": level}
+
+
 @router.post("/training")
 def training(body: TrainingRequest):
     from .knowledge.generation.log import get_log

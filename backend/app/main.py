@@ -140,11 +140,22 @@ class ChatRequest(BaseModel):
     message: str
 
 
+class Clarification(BaseModel):
+    key: str                  # the question's key (from a previous {"clarify": ...} answer)
+    choice: str               # an option id, or "other"
+    text: str | None = None   # the learner's own words for "other"
+
+
 class PlanRequest(BaseModel):
     goal: str
     # Try the verified Knowledge Library first (the UI always does). Off = catalog planner only.
+    # It also turns on intent understanding: ambiguous requests get a question back.
     library: bool = False
     level: str | None = None  # beginner | intermediate | advanced (learner skill, optional)
+    clarification: Clarification | None = None  # the answer to a question this endpoint asked
+    reclarify: bool = False   # ignore remembered answers for this request and ask again
+    weakness: str | None = None  # a recurring weakness key (Game History) this plan should train
+    username: str | None = None  # whose games / whose personal plans
 
 
 class IntentRequest(BaseModel):
@@ -239,14 +250,35 @@ def make_plan(body: PlanRequest) -> dict:
     With ``library: true`` verified Knowledge Library examples are tried first;
     without a suitable example this is exactly the catalog → Qwen planner.
     """
-    record = plan_for_goal(body.goal, library_first=body.library, level=body.level)
+    from .planner.intent import ClarificationError, ClarificationNeeded
+
+    answers = None
+    if body.clarification is not None:
+        c = body.clarification
+        answers = {c.key: {"choice": c.choice, "text": c.text}}
+    personal = None
+    if body.weakness:
+        from .game_api import weakness_context
+        personal = weakness_context(body.weakness, body.username, body.level)
+        if personal is None:
+            return JSONResponse(status_code=422, content={"error": "that weakness wasn't found in your analyzed games"})
+    try:
+        record = plan_for_goal(body.goal, library_first=body.library, level=body.level, clarify=body.library,
+                               answers=answers, reclarify=body.reclarify, personal=personal,
+                               learner=body.username or (personal or {}).get("learner"))
+    except ClarificationNeeded as need:
+        # Several materially different readings: the learner chooses before anything is built.
+        return {"clarify": need.question.as_dict(), "goal": body.goal}
+    except ClarificationError as exc:
+        return JSONResponse(status_code=422, content={"error": str(exc)})
     register_record(get_library(), record)
     save_record(record)
     return {
         "plan": record["plan"],
         "course_id": record["course"]["id"],
         "first_lesson_id": record["lessons"][0]["id"],
-        "source": {"knowledge": "knowledge", "fallback": "fallback"}.get(record["plan"].get("planner"), "planner"),
+        "source": {"knowledge": "knowledge", "fallback": "fallback", "custom": "custom"}.get(
+            record["plan"].get("planner"), "planner"),
     }
 
 
