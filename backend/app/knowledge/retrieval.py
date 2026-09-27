@@ -72,6 +72,12 @@ class RetrievalRequest:
     avoid_seen: bool = True               # prefer examples the learner hasn't seen
     include_prerequisites: bool | None = None  # None = only for beginners
     weak_concepts: list[str] = field(default_factory=list)  # personalization signal
+    # Learner-model personalization (learner.views.lesson_shape); all optional:
+    target_rating: int | None = None      # choose examples near this puzzle rating (knowledge.difficulty)
+    practice_rating: int | None = None    # ... and the extra practice near this one
+    roles: list[str] | None = None        # explicit role pattern, e.g. ["guided", "practice", "practice"]
+    known_concepts: set[str] = field(default_factory=set)  # already met: no prerequisite demo needed
+    prefer_real: bool = False             # prefer positions from real games (puzzles → games transfer)
 
 
 @dataclass
@@ -208,8 +214,14 @@ def _interactive(example: Example) -> bool:
     return example.key_move is not None and "interactive" in example.presentation_modes
 
 
-def _assign_roles(examples: list[Example], mode: str | None) -> list[tuple[Example, str]]:
-    """Easiest first: watch one, find the key move in the next, solve the last alone."""
+def _assign_roles(examples: list[Example], mode: str | None,
+                  roles: list[str] | None = None) -> list[tuple[Example, str]]:
+    """Easiest first: watch one, find the key move in the next, solve the last alone.
+    An explicit `roles` pattern (from the learner model) replaces the default; examples
+    that can't be interactive are always demonstrations."""
+    if roles:
+        return [(e, roles[i] if i < len(roles) and _interactive(e) else "demonstration")
+                for i, e in enumerate(examples)]
     out: list[tuple[Example, str]] = []
     last = len(examples) - 1
     for i, example in enumerate(examples):
@@ -256,13 +268,24 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
                     request.subcategory and e.subcategory.lower() != request.subcategory.lower()):
                 exclude.add(e.id)
 
-    count = max(1, min(MAX_COUNT, request.count or _requested_count(request.text, parsed.count)))
+    if request.prefer_real:
+        real = {e.id for cid in concepts for e in library.examples_for(cid) if _from_real_game(e)}
+        if len(real - exclude) >= 2:  # only when enough real positions remain to build a lesson
+            for cid in concepts:
+                exclude |= {e.id for e in library.examples_for(cid) if e.id not in real}
+
+    asked = _requested_count(request.text, parsed.count)
+    default = len(request.roles) if request.roles else DEFAULT_COUNT
+    count = max(1, min(MAX_COUNT, request.count or (asked if asked != DEFAULT_COUNT else default)))
     mode = request.mode or parsed.mode
+    # an explicit level in the words ("hard forks") beats the learner model's target
+    target = request.target_rating if parsed.level is None and not parsed.simplest else None
 
     def query(cids: list[str], n: int, **kw) -> Query:
         return Query(concepts=cids, count=n, level=kw.get("level", level), simplest=parsed.simplest,
                      mode=kw.get("mode", mode), tags=request.tags, category=request.category,
-                     exclude=exclude | kw.get("exclude", set()), not_seen_recently=request.avoid_seen)
+                     exclude=exclude | kw.get("exclude", set()), not_seen_recently=request.avoid_seen,
+                     target_rating=kw.get("target", target))
 
     picked: list[Example] = []
     # Personalization: one example of something the learner found hard, when it fits the request.
@@ -272,7 +295,11 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
         picked += library.select(query(weak, 1), seen, last_used)
     picked += library.select(query(concepts, count - len(picked), exclude={e.id for e in picked}),
                              seen, last_used)
-    picked = _trusted(sorted(picked, key=lambda e: (e.difficulty, e.id)))
+    if target is not None:
+        from .difficulty import puzzle_rating
+        picked = _trusted(sorted(picked, key=lambda e: (puzzle_rating(e), e.id)))
+    else:
+        picked = _trusted(sorted(picked, key=lambda e: (e.difficulty, e.id)))
 
     # Prerequisites the learner hasn't met yet: one easy demonstration each, shown first.
     prereqs: list[str] = []
@@ -281,7 +308,7 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
     if wants_prereqs is None:
         wants_prereqs = level == "beginner"
     if wants_prereqs and picked:
-        met = {library.entries[eid].concept for eid in seen if eid in library.entries}
+        met = {library.entries[eid].concept for eid in seen if eid in library.entries} | set(request.known_concepts)
         for cid in concepts:
             for pre in library.concepts[cid].prerequisites:
                 if pre in prereqs or not library.count_for(pre):
@@ -295,15 +322,16 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
                     prereqs.append(pre)
                     prereq_examples += found
 
-    sequence = [(e, "demonstration") for e in prereq_examples] + _assign_roles(picked, mode)
+    sequence = [(e, "demonstration") for e in prereq_examples] + _assign_roles(picked, mode, request.roles)
 
     practice: list[Example] = []
     if request.practice_count and picked:
         n = max(0, min(MAX_PRACTICE, request.practice_count))
         harder = LEVELS[min(LEVELS.index(level) + 1, 2)] if level in LEVELS else None
         taken = {e.id for e, _ in sequence}
+        practice_target = request.practice_rating if target is not None else None
         practice = _trusted(library.select(query(concepts, n, level=harder, mode="interactive",
-                                                 exclude=taken), seen, last_used))
+                                                 exclude=taken, target=practice_target), seen, last_used))
         practice = [e for e in practice if _interactive(e)]
 
     related: list[str] = []
@@ -325,6 +353,15 @@ def _requested_count(text: str, parsed: int) -> int:
         return DEFAULT_COUNT
     word = m.group(1).lower()
     return int(word) if word.isdigit() else _COUNT_WORDS[word]
+
+
+REAL_GAME_SOURCES = ("lichess_puzzle", "historical_game", "chesscom_game")
+
+
+def _from_real_game(example: Example) -> bool:
+    """Positions that arose in real games (puzzle databases, historical games), not constructed."""
+    kind = (example.source or {}).get("source_type", "")
+    return kind in REAL_GAME_SOURCES
 
 
 def _trusted(examples: list[Example]) -> list[Example]:

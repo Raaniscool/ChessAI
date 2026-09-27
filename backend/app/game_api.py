@@ -237,9 +237,40 @@ def history_analyze(body: HistoryRequest):
             if event["type"] == "error":
                 failed.append({"game_id": event["game_id"], "error": event["error"]})
             yield event
-        yield {"type": "done", "report": _history_report(n, failed, body.username)}
+        report = _history_report(n, failed, body.username)
+        learn_from_history(report, selected, body.username)
+        yield {"type": "done", "report": report}
 
     return _ndjson(events())
+
+
+def _learner_level(default: str | None = "beginner") -> str | None:
+    """The learner model's level; `default` while the tutor knows nothing about them yet."""
+    try:
+        from .learner import get_profile
+        from .learner.personalize import personalized
+        profile = get_profile()
+        return profile.level if personalized(profile) else default
+    except Exception:  # pragma: no cover
+        return default
+
+
+def learn_from_history(report: dict, selected: list[dict], username: str | None) -> None:
+    """Game History findings feed the learner model (weaknesses, a rating from real games).
+    The profile must never break the analysis, so failures are only logged."""
+    ratings = []
+    for d in selected:
+        g = d.get("game") or {}
+        elo = g.get("white_elo") if g.get("player_color") == "white" else \
+            g.get("black_elo") if g.get("player_color") == "black" else None
+        if isinstance(elo, int) and elo > 0:
+            ratings.append(elo)
+    try:
+        from .learner import get_store
+        get_store().update("local", lambda p: p.update_from_history(report, ratings=ratings, username=username))
+    except Exception:  # pragma: no cover - defensive
+        import logging
+        logging.getLogger(__name__).warning("couldn't update the learner profile", exc_info=True)
 
 
 @router.post("/history/explain")
@@ -252,7 +283,7 @@ def history_explain(body: HistoryRequest):
         return _error(422, "analyze some games first")
     from .teacher import stream_events
     from .teacher.prompts import build_history_messages
-    level = body.level if body.level in ("beginner", "intermediate", "advanced") else "beginner"
+    level = body.level if body.level in ("beginner", "intermediate", "advanced") else _learner_level()
     library = _knowledge()
     facts = history.history_facts(report, library, level)
     return _ndjson(stream_events(
@@ -361,7 +392,7 @@ def explain_moment(game_id: str, ply: int, body: ExplainRequest | None = None):
         return _error(404, f"move {ply} of this game is not one of its analysed moments")
     from .teacher import stream_events
     from .teacher.prompts import build_game_moment_messages
-    level = body.level if body.level in ("beginner", "intermediate", "advanced") else "beginner"
+    level = body.level if body.level in ("beginner", "intermediate", "advanced") else _learner_level()
     facts = review.moment_facts(moment, _knowledge(), level)
     question = (body.question or "").strip()[:300] or None
     return _ndjson(stream_events(
@@ -402,7 +433,7 @@ def weakness_context(key: str, username: str | None = None, level: str | None = 
     return {"learner": username or "local", "weakness": w["key"], "concept": w.get("concept"),
             "title": w.get("title"), "evidence": evidence,
             "evidence_fens": [e["fen"] for e in evidence if e.get("fen")],
-            "games": w.get("game_count"), "level": level}
+            "games": w.get("game_count"), "level": level or _learner_level(None)}
 
 
 @router.post("/training")
@@ -421,7 +452,7 @@ def training(body: TrainingRequest):
     generated = {w["key"]: personal_puzzles.unseen_for(w, _knowledge(), shown) for w in chosen}
     try:
         record = create_training_plan(chosen, moments, len(docs), _knowledge(), usage=get_usage(),
-                                      level=body.level, generated=generated)
+                                      level=body.level or _learner_level(None), generated=generated)
     except TrainingError as exc:
         return _error(422, str(exc))
     used = [eid for u in record["lessons"] for eid in (u.get("origin") or {}).get("generated", [])]

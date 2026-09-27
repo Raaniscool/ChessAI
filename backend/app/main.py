@@ -202,7 +202,7 @@ def _catalog_size() -> int | str:
 @app.get("/api/courses")
 def courses() -> dict:
     library = get_library()
-    completed = get_manager().completed_lessons
+    completed = _completed()
     out = []
     for course in library.courses():
         lessons = []
@@ -263,9 +263,11 @@ def make_plan(body: PlanRequest) -> dict:
         if personal is None:
             return JSONResponse(status_code=422, content={"error": "that weakness wasn't found in your analyzed games"})
     try:
+        from .learner import get_profile
         record = plan_for_goal(body.goal, library_first=body.library, level=body.level, clarify=body.library,
                                answers=answers, reclarify=body.reclarify, personal=personal,
-                               learner=body.username or (personal or {}).get("learner"))
+                               learner=body.username or (personal or {}).get("learner"),
+                               profile=get_profile())
     except ClarificationNeeded as need:
         # Several materially different readings: the learner chooses before anything is built.
         return {"clarify": need.question.as_dict(), "goal": body.goal}
@@ -311,7 +313,17 @@ def remove_plan(plan_id: str) -> dict:
 
 @app.get("/api/progress")
 def progress() -> dict:
-    return {"completed_lessons": sorted(get_manager().completed_lessons)}
+    return {"completed_lessons": sorted(_completed())}
+
+
+def _completed() -> set[str]:
+    """Finished lessons: this run's, plus those remembered in the learner profile."""
+    from .learner import get_profile
+    try:
+        remembered = set(get_profile().completed_lessons)
+    except Exception:
+        remembered = set()
+    return set(get_manager().completed_lessons) | remembered
 
 
 @app.post("/api/lessons/{lesson_id}/start")
@@ -339,7 +351,8 @@ def advance_session(session_id: str) -> dict:
     step = manager.advance(session)
     if step is None:
         lesson = manager.lesson(session)
-        return {"completed": True, "completion_text": lesson.completion_text}
+        return {"completed": True, "completion_text": lesson.completion_text,
+                **manager.completion_summary(session)}
     return {"completed": False, "step": step}
 
 
@@ -397,6 +410,10 @@ def session_chat(session_id: str, body: ChatRequest) -> dict:
 from .game_api import router as games_router  # noqa: E402
 
 app.include_router(games_router)
+
+from .learner_api import router as profile_router  # noqa: E402
+
+app.include_router(profile_router)
 
 
 # --- frontend -------------------------------------------------------------

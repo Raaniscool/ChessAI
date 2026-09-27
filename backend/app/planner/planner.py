@@ -340,7 +340,7 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
                   catalog: Catalog | None = None, use_qwen: bool = True, engine=None, *,
                   clarify: bool = False, answers: dict | None = None, reclarify: bool = False,
                   memory=None, personal: dict | None = None, learner: str | None = None,
-                  teacher=None) -> dict:
+                  teacher=None, profile=None) -> dict:
     """Understand the request, then library first, then the existing planner.
 
     0. With `clarify` (the API): the request is structured into an intent
@@ -355,7 +355,11 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
        whose new lines are screened by Stockfish;
     3. never a dead end for something recognisable: a custom plan for a name only the
        opening database knows, then the missing-library fallback.
+
+    `profile` (the learner model) personalizes library lessons and sets the level the
+    other planners use when the request doesn't say; a blank profile changes nothing.
     """
+    from ..learner.personalize import personalized
     cleaned = " ".join((goal or "").split())[:MAX_GOAL_LENGTH]
     intent = None
     if clarify and library_first and len(cleaned) >= 2:
@@ -374,10 +378,12 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
             # teach one named subject best (library examples, catalog lessons, definition fallback)
             cleaned = single.label
         elif intent.structured:
-            record = _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher)
+            record = _custom(intent, level or _profile_level(profile), catalog, use_qwen, engine, personal,
+                             learner, teacher)
             if record is not None:
                 return record
-    record = _plan_without_intent(cleaned, library_first, level, catalog, use_qwen, engine, intent, teacher)
+    record = _plan_without_intent(cleaned, library_first, level, catalog, use_qwen, engine, intent, teacher,
+                                  profile=profile if personalized(profile) else None)
     if intent is not None and (intent.clarified or intent.structured):
         record["plan"]["intent"] = intent.as_dict()
     return record
@@ -398,12 +404,17 @@ def _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher
     return result.record
 
 
+def _profile_level(profile) -> str | None:
+    from ..learner.personalize import personalized
+    return profile.level if personalized(profile) else None
+
+
 def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_qwen: bool, engine, intent,
-                         teacher=None) -> dict:
+                         teacher=None, profile=None) -> dict:
     if library_first and len(cleaned) >= 2:
         from .knowledge_lessons import create_knowledge_plan
         try:
-            record = create_knowledge_plan(cleaned, level=level, catalog=catalog)
+            record = create_knowledge_plan(cleaned, level=level, catalog=catalog, profile=profile)
         except Exception as exc:  # the library must never break planning
             log.warning("Knowledge Library retrieval failed, using the catalog planner: %s", exc)
             record = None
@@ -412,7 +423,8 @@ def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_
     # A named idea from the glossary that the catalog only partly matches ("stalemate tricks"
     # vs the king-and-queen topic's "stalemate" alias) is not a request for that topic.
     if library_first and _glossary_outranks_catalog(cleaned, catalog or get_catalog()):
-        record = _fallback(cleaned, level, catalog, use_qwen, engine, clarify=intent is not None, teacher=teacher)
+        record = _fallback(cleaned, level or _profile_level(profile), catalog, use_qwen, engine,
+                           clarify=intent is not None, teacher=teacher)
         if record is not None:
             return record
     # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
@@ -432,7 +444,8 @@ def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_
                 return record
         # Nothing verified in the library or the catalog: never a dead end for something we
         # recognise (generated + engine-checked positions, a broader idea, a labelled definition).
-        record = _fallback(cleaned, level, catalog, use_qwen, engine, clarify=intent is not None, teacher=teacher)
+        record = _fallback(cleaned, level or _profile_level(profile), catalog, use_qwen, engine,
+                           clarify=intent is not None, teacher=teacher)
         if record is None:
             raise  # nothing recognisable in the request: keep the answer + suggestions
         return record

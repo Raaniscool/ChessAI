@@ -208,8 +208,10 @@ def _distinct_titles(new: list[dict], existing: list[dict], topic_title: str) ->
 
 
 def knowledge_lesson(lesson_id: str, title: str, intro: str, sequence: list[tuple], completion: str,
-                     concept_names: list[str]) -> dict:
+                     concept_names: list[str], reminder: str | None = None) -> dict:
     examples = [e for e, _ in sequence]
+    if reminder:
+        intro = f"{intro}\n\n{reminder}"
     steps: list[dict] = [{"type": "teach", "text": intro, "board": {"fen": examples[0].start_fen}}]
     for number, (example, role) in enumerate(sequence, start=1):
         steps += example_steps(example, role, number, len(sequence), concept_names)
@@ -256,10 +258,39 @@ def _intro(library, retrieval, names: list[str]) -> str:
     return text
 
 
+def _personal_intro(intro: str, why: str) -> str:
+    """The concept summary, then why the lesson is shaped this way for this learner
+    (instead of the generic "first I'll show you ..." sentence)."""
+    head = intro.partition("\n\nI picked ")[0]
+    m = re.search(r" We'll start with a quick look at [^.]+\.", intro)
+    return f"{head}\n\n{why}{m.group(0) if m else ''}"
+
+
+def _personal_request(goal: str, library, level: str | None, profile) -> tuple[dict, dict | None]:
+    """RetrievalRequest settings for this learner (learner.personalize), or the defaults."""
+    from ..knowledge.retrieval import resolve_concepts
+    from ..learner.personalize import personalized, retrieval_settings
+
+    defaults = {"level": level, "practice_count": PRACTICE_EXAMPLES}
+    if not personalized(profile):
+        return defaults, None
+    concepts, confident = resolve_concepts(library, goal)
+    if not concepts or not confident:
+        return defaults, None
+    out = retrieval_settings(profile, concepts[0], concepts, library)
+    settings = out["settings"]
+    if level:  # an explicit level for this request (the words, or the API) wins
+        settings["level"] = level
+    return settings, out["shape"]
+
+
 def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None = None,
-                          catalog=None, record_usage: bool = True) -> dict | None:
+                          catalog=None, record_usage: bool = True, profile=None) -> dict | None:
     """A plan record built from verified library examples, or None when the library
-    has nothing suitable (the caller then falls back to the catalog/Qwen planner)."""
+    has nothing suitable (the caller then falls back to the catalog/Qwen planner).
+
+    With a learner `profile` the examples, their roles and the wording follow the
+    learner model (learner.personalize); a blank profile changes nothing."""
     from ..knowledge.library import get_knowledge
     from ..knowledge.retrieval import RetrievalRequest, retrieve
     from ..knowledge.usage import get_usage
@@ -267,8 +298,11 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
 
     library = library or get_knowledge()
     usage = usage if usage is not None else get_usage()
-    retrieval = retrieve(library, RetrievalRequest(text=goal, level=level,
-                                                   practice_count=PRACTICE_EXAMPLES), usage)
+    settings, shape = _personal_request(goal, library, level, profile)
+    retrieval = retrieve(library, RetrievalRequest(text=goal, **settings), usage)
+    if not retrieval.found and shape is not None and settings.get("exclude"):
+        settings["exclude"] = set()  # the calculation filter left too little: plain examples then
+        retrieval = retrieve(library, RetrievalRequest(text=goal, **settings), usage)
     if not retrieval.found:
         return None
 
@@ -278,10 +312,21 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
     opening = main_category == "opening"
     plan_id = uuid.uuid4().hex[:8]
     prefix = f"plan_{plan_id}_01"
+    intro = _intro(library, retrieval, names)
+    personalization = None
+    reminder = None
+    if shape is not None:
+        from ..learner.personalize import piece_reminder, plan_note, reason
+        main = retrieval.concepts[0]
+        why = reason(shape, profile, main, library.concepts[main].name)
+        intro = _personal_intro(intro, why)
+        personalization = plan_note(profile, shape, [r for _, r in retrieval.sequence], why)
+        if shape.get("reminders"):
+            reminder = piece_reminder(library, main)
     examples_lesson = knowledge_lesson(
         f"{prefix}a", f"{subject}: see it in real lines" if opening else f"{subject}: understand the idea",
-        _intro(library, retrieval, names), retrieval.sequence,
-        f"Lesson complete — you've seen {subject.lower()} in action.", names)
+        intro, retrieval.sequence,
+        f"Lesson complete — you've seen {subject.lower()} in action.", names, reminder=reminder)
     review_lesson = None
     if retrieval.practice:
         review_lesson = knowledge_lesson(
@@ -364,6 +409,7 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
         "units": units,
         "skipped": [],
         "related": [library.concepts[c].name for c in retrieval.related][:4],
+        **({"personalization": personalization} if personalization else {}),
         "knowledge": {
             "concepts": retrieval.concepts,
             "level": retrieval.level,
