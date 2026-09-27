@@ -49,6 +49,8 @@ def _warm_up_qwen() -> None:
 async def lifespan(app: FastAPI):
     _warm_up_qwen()
     yield
+    from .engine.service import shutdown_engine
+    shutdown_engine()  # otherwise Ctrl+C hangs once Stockfish has been started
 
 
 app = FastAPI(title="AI Chess Tutor", version="0.1.0", lifespan=lifespan)
@@ -244,7 +246,7 @@ def make_plan(body: PlanRequest) -> dict:
         "plan": record["plan"],
         "course_id": record["course"]["id"],
         "first_lesson_id": record["lessons"][0]["id"],
-        "source": "knowledge" if record["plan"].get("planner") == "knowledge" else "planner",
+        "source": {"knowledge": "knowledge", "fallback": "fallback"}.get(record["plan"].get("planner"), "planner"),
     }
 
 

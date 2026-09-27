@@ -260,6 +260,19 @@ def set_engine(engine: AnalysisEngine | None) -> None:
         _engine = engine
 
 
+def shutdown_engine() -> None:
+    """Stop the engine subprocess (app shutdown). python-chess keeps a non-daemon thread
+    for it, so without this the server hangs after Ctrl+C once Stockfish has started."""
+    global _engine
+    with _engine_lock:
+        engine, _engine = _engine, None
+    if engine is not None:
+        try:
+            engine.close()
+        except Exception:
+            pass
+
+
 def engine_available() -> bool:
     try:
         get_engine()

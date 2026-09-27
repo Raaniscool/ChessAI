@@ -72,3 +72,23 @@ def test_chat_messages_are_capped(client, monkeypatch):
     sid = client.post(f"/api/lessons/{lesson['id']}/start").json()["session_id"]
     assert client.post(f"/api/sessions/{sid}/chat", json={"message": "x" * 20000}).status_code == 200
     assert len(seen["message"]) == MAX_CHAT_CHARS
+
+
+def test_app_shutdown_closes_the_engine():
+    """Audit B17: once Stockfish had started, Ctrl+C left the server hanging (python-chess
+    keeps a non-daemon thread per engine). The app lifespan now closes it."""
+    from fastapi.testclient import TestClient
+
+    from app.engine import service
+    from app.main import app as fastapi_app
+
+    class Closable:
+        closed = 0
+
+        def close(self):
+            Closable.closed += 1
+
+    with TestClient(fastapi_app):
+        service.set_engine(Closable())
+    assert Closable.closed == 1
+    assert service._engine is None
