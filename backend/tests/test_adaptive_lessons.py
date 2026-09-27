@@ -57,7 +57,11 @@ def test_same_request_different_learners_different_lessons():
     assert b["personalization"]["level"] == "beginner" and s["personalization"]["level"] == "advanced"
     assert b["personalization"]["reason"] != s["personalization"]["reason"]
     intro_b = beginner["lessons"][0]["steps"][0]["text"]
-    assert b["personalization"]["reason"] in intro_b and "I picked" not in intro_b
+    assert b["personalization"]["reason"] in intro_b and intro_b.count("verified example") == 1
+    n_demos = b["knowledge"]["roles"].count("demonstration")
+    assert f"{['', 'one', 'two', 'three'][n_demos]} to watch" in intro_b  # the outline counts what's coming
+    intro_s = strong["lessons"][0]["steps"][0]["text"]
+    assert "to watch" not in intro_s or s["knowledge"]["roles"].count("demonstration")
 
 
 def test_beginners_get_a_piece_reminder_and_strong_players_dont():
@@ -312,3 +316,13 @@ def test_game_history_updates_the_learner_model():
     # the lesson for it now mentions the games
     record = plan("knight forks", p)
     assert "4 of your last 10 games" in record["plan"]["personalization"]["reason"]
+
+
+def test_skipping_onboarding_keeps_the_default_lesson_shape():
+    from app.learner import LearnerProfile
+    from app.learner.personalize import personalized
+    p = LearnerProfile()
+    p.set_onboarding(skipped=True)
+    assert not p.is_new and not personalized(p)  # not offered again, but nothing to personalize from
+    p.set_onboarding(experience="casual")
+    assert personalized(p)

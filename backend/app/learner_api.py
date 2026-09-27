@@ -66,7 +66,7 @@ def clean_tts(raw: dict) -> dict:
     out: dict = {}
     if "enabled" in raw:
         out["enabled"] = bool(raw["enabled"])
-    for key in ("provider", "voice"):
+    for key in ("provider", "voice", "browser_voice"):
         if isinstance(raw.get(key), str) and len(raw[key]) <= 80:
             out[key] = raw[key]
     if raw.get("speed") in SPEEDS:

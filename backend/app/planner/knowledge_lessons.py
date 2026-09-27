@@ -233,16 +233,28 @@ def _names(library, concepts: list[str]) -> list[str]:
     return [library.concepts[c].name for c in concepts]
 
 
+_WORDS = {1: "one", 2: "two", 3: "three", 4: "four"}
+
+
+def _outline(roles: list[str]) -> str:
+    """What the examples are for, counted: "two to watch, one where you find the key move, then one
+    on your own"."""
+    demos, guided, practice = roles.count("demonstration"), roles.count("guided"), roles.count("practice")
+    parts = []
+    if demos:
+        parts.append(f"{_WORDS.get(demos, demos)} to watch")
+    if guided:
+        parts.append(f"{_WORDS.get(guided, guided)} where you find the key move with a little help")
+    if practice:
+        parts.append(f"{_WORDS.get(practice, practice)} to solve on your own")
+    if len(parts) > 1:
+        parts[-1] = "then " + parts[-1]
+    return ", ".join(parts)
+
+
 def _intro(library, retrieval, names: list[str]) -> str:
     main = library.concepts[retrieval.concepts[0]]
     roles = [role for _, role in retrieval.sequence]
-    plan = []
-    if "demonstration" in roles:
-        plan.append("first I'll show you an example")
-    if "guided" in roles:
-        plan.append("then you'll find the key move in a slightly harder one")
-    if "practice" in roles:
-        plan.append("and finally you'll solve one on your own")
     if len(names) == 1:
         # "A back-rank mate: ..." already names the idea — don't prefix "Back-rank mate:" again.
         names_it = re.match(rf"^(an?\s+|the\s+)?{re.escape(main.name)}\b", main.summary, re.IGNORECASE)
@@ -250,8 +262,9 @@ def _intro(library, retrieval, names: list[str]) -> str:
     else:
         text = f"{', '.join(names)}."
     count = len(retrieval.sequence)
+    outline = _outline(roles)
     text += f"\n\nI picked {count} verified example{'s' if count != 1 else ''} for you"
-    text += (": " + ", ".join(plan) + ".") if plan else "."
+    text += f": {outline}." if outline else "."
     if retrieval.prerequisites:
         pre = ", ".join(library.concepts[p].name.lower() for p in retrieval.prerequisites)
         text += f" We'll start with a quick look at {pre}, which you need for this."
@@ -259,11 +272,9 @@ def _intro(library, retrieval, names: list[str]) -> str:
 
 
 def _personal_intro(intro: str, why: str) -> str:
-    """The concept summary, then why the lesson is shaped this way for this learner
-    (instead of the generic "first I'll show you ..." sentence)."""
-    head = intro.partition("\n\nI picked ")[0]
-    m = re.search(r" We'll start with a quick look at [^.]+\.", intro)
-    return f"{head}\n\n{why}{m.group(0) if m else ''}"
+    """The concept summary, why the lesson is shaped this way for this learner, then what's in it."""
+    head, _, rest = intro.partition("\n\nI picked ")
+    return f"{head}\n\n{why} I picked {rest}" if rest else f"{head}\n\n{why}"
 
 
 def _personal_request(goal: str, library, level: str | None, profile) -> tuple[dict, dict | None]:

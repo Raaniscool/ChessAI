@@ -165,6 +165,8 @@ class LearnerProfile:
             if not 100 <= int(rating) <= 3500:
                 raise ValueError("a rating should be between 100 and 3500")
             ob["rating"] = int(rating)
+        elif experience is not None:
+            ob.pop("rating", None)  # "no rating, I play casually" replaces an earlier rating
         if username is not None:
             name = username.strip()
             if name and not re.fullmatch(r"[A-Za-z0-9_-]{2,40}", name):

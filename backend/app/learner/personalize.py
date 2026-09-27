@@ -32,8 +32,14 @@ PIECES = {
 
 
 def personalized(profile: LearnerProfile | None) -> bool:
-    """Is there anything to personalize from? (A blank profile keeps the defaults.)"""
-    return profile is not None and not profile.is_new
+    """Is there anything to personalize from? (A blank profile keeps the defaults.)
+
+    Skipping onboarding says nothing about the learner: until they answer or show how they do,
+    lessons keep their default shape."""
+    if profile is None:
+        return False
+    told_us = profile.onboarding.get("done") and not profile.onboarding.get("skipped")
+    return bool(told_us or profile.concepts or profile.weaknesses)
 
 
 def roles_for(shape: dict) -> list[str]:

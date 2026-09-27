@@ -236,3 +236,10 @@ def test_store_persists_resets_and_survives_a_corrupt_file(tmp_path):
     store.path("broken").write_text("{not json", encoding="utf-8")
     assert LearnerStore(tmp_path).get("broken").is_new
     assert store.path("../../etc").parent == tmp_path
+
+
+def test_switching_from_a_rating_to_a_description_replaces_the_rating():
+    p = LearnerProfile()
+    p.set_onboarding(rating=1600, platform="chesscom")
+    p.set_onboarding(experience="rules")
+    assert "rating" not in p.onboarding and p.rating == R.from_experience("rules")
