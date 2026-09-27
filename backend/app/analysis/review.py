@@ -95,9 +95,27 @@ def _side(color: str | None) -> str:
     return "White" if color == "white" else "Black"
 
 
+def _stalemates(moment: dict) -> bool:
+    """The learner's own move left the opponent with no legal move (and not in check)."""
+    after = moment.get("fen_after")
+    try:
+        return bool(after) and chess.Board(after).is_stalemate()
+    except ValueError:
+        return False
+
+
+STALEMATE_TIP = ("When you're winning, check before every move that your opponent will still have "
+                 "a legal move — or that your move is checkmate.")
+
+
 def headline(moment: dict) -> str:
     motif = moment.get("motif")
     finding = (moment.get("findings") or [{}])[0]
+    # The game ended in a draw because of this move: that is the story, not the missed tactic.
+    if moment.get("category") != "habit" and _stalemates(moment):
+        if motif == "missed_checkmate":
+            return "Stalemate! You had checkmate, but this move ends the game in a draw."
+        return "This move stalemates your opponent, so the game ends in a draw."
     if motif in HEADLINES:
         return HEADLINES[motif]
     what = CONCEPT_WHAT.get(moment.get("concept") or "") or MISSED_WHAT.get(motif or "")
@@ -109,6 +127,8 @@ def headline(moment: dict) -> str:
 
 
 def tip(moment: dict) -> str:
+    if moment.get("category") != "habit" and _stalemates(moment):
+        return STALEMATE_TIP
     return TIPS.get(moment.get("motif") or "", TIPS["tactical_oversight"])
 
 

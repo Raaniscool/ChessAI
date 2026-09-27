@@ -163,10 +163,18 @@ def to_record(parsed: ParsedGame) -> GameRecord:
     )
 
 
+# PGN placeholders for an unknown player: never a real person, so never "the learner".
+PLACEHOLDER_NAMES = {"", "?", "??", "-", "unknown", "anonymous", "white", "black", "nn", "n.n."}
+
+
+def _real_name(name: str | None) -> bool:
+    return (name or "").strip().lower() not in PLACEHOLDER_NAMES
+
+
 def _common_player(games: list[GameRecord]) -> str | None:
     if len(games) < 2:
         return None
-    names = [{g.white.lower(), g.black.lower()} for g in games]
+    names = [{n.lower() for n in (g.white, g.black) if _real_name(n)} for g in games]
     common = set.intersection(*names)
     if len(common) != 1:
         return None
@@ -208,9 +216,18 @@ class ChessComImporter:
 
         name = (username or "").strip() or _common_player([r for _, r in records])
         if not name and records:
-            players = sorted({p for _, r in records for p in (r.white, r.black)}, key=str.lower)
+            players = sorted({p for _, r in records for p in (r.white, r.black) if _real_name(p)}, key=str.lower)
+            if not players:
+                raise PgnError("these games don't name their players, so I can't tell which side you played")
             raise PlayerNeeded(players)
         for game, record in records:
+            if record.white.lower() == record.black.lower() == name.lower():
+                # both sides have the same name (a self-analysis or a PGN with "?" for both
+                # players): there is no way to tell which moves were the learner's
+                result.errors.append(ParseIssue(
+                    game.index, f"{record.white} is the name on both sides of this game, so I can't tell "
+                                "which moves are yours (skipped)", record.white, record.black))
+                continue
             if record.white.lower() == name.lower():
                 record.player, record.player_color = record.white, "white"
             elif record.black.lower() == name.lower():
