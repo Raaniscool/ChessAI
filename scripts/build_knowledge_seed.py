@@ -2,8 +2,8 @@
 
     python scripts/build_knowledge_seed.py [--depth 14] [--puzzles-per-concept 3] [--dry-run]
 
-    # add only the harder tier to the library as it is (nothing else is rebuilt or touched):
-    python scripts/build_knowledge_seed.py --only-harder [--harder-per-concept 5]
+    # (re)build only the difficulty tiers on top of the library as it is (nothing else is touched):
+    python scripts/build_knowledge_seed.py --tiers [--starter-per-concept 3] [--harder-per-concept 5]
 
 Sources (never Qwen):
   * curated records    backend/app/knowledge/sources/data/curated/{basics,checkmates,endgames,mistakes}.json
@@ -11,9 +11,13 @@ Sources (never Qwen):
   * opening database   lichess-org/chess-openings (CC0) + curated teaching text (curated/openings.json)
   * Lichess puzzles    real game positions (CC0) from planner/data/puzzles.json, as tactics and
                        as mistakes ("walked into a fork", "hung a piece")
+  * starter tier       simple positions built by the app's own generator (constructors only, fixed
+                       seed, no Qwen) for tactics whose easiest real-game puzzle is still too hard
+                       for a beginner -> examples/<category>/procedural.json
   * harder tier        longer / combination Lichess puzzles (sources/data/lichess_puzzles/
                        pool_harder.json) -> examples/<category>/lichess_harder.json, so a strong
                        learner isn't limited to the easiest positions of each idea
+  Both tiers stay inside the per-concept balance cap; the starter tier is filled first.
 
 Every candidate runs through the full verification pipeline (rules, concept validator,
 Stockfish, solution, explanation consistency, duplicates) against the entries accepted so
@@ -50,11 +54,12 @@ def main() -> int:
     ap.add_argument("--mistakes-per-concept", type=int, default=3)
     ap.add_argument("--harder-per-concept", type=int, default=5)
     ap.add_argument("--dry-run", action="store_true", help="verify and report, write nothing")
-    ap.add_argument("--only-harder", action="store_true",
-                    help="verify the harder tier against the current library and write only lichess_harder.json")
+    ap.add_argument("--starter-per-concept", type=int, default=3)
+    ap.add_argument("--tiers", action="store_true",
+                    help="rebuild only the starter + harder tiers against the current library")
     args = ap.parse_args()
-    if args.only_harder:
-        return add_harder(args)
+    if args.tiers:
+        return add_tiers(args)
 
     with tempfile.TemporaryDirectory() as tmp:  # an empty library with the real concept graph
         shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
@@ -135,18 +140,64 @@ def build(library: KnowledgeLibrary, engine, args) -> list[dict]:
     for cand in lichess_puzzles.mistake_candidates(library, per_concept=args.mistakes_per_concept,
                                                    exclude=used_puzzles):
         run(cand, "lichess_puzzles")
+    starter_stage(library, engine, run, args.starter_per_concept, args.depth)
     harder_stage(library, run, args.harder_per_concept)
     return results
 
 
 MAX_PER_CONCEPT = 15  # balance: no idea dominates the library (tests/test_knowledge_engine.py)
+# tactics the generator can build simple positions for; a starter is added only when the easiest
+# verified example of the concept is rated above STARTER_ABOVE (i.e. too hard for a beginner)
+STARTER_CONCEPTS = ("knight_fork", "queen_fork", "pawn_fork", "skewer", "absolute_pin", "hanging_piece",
+                    "back_rank_mate")
+STARTER_ABOVE = 850
+STARTER_MAX_RATING = 950  # a starter position must itself be easy
+STARTER_SEED = 20260927
+
+
+def starter_stage(library, engine, run, per_concept: int, depth: int) -> None:
+    """Easy constructed positions, each through the full pipeline via run() (fixed seed: reproducible)."""
+    import random
+    from app.knowledge.difficulty import puzzle_rating
+    from app.knowledge.generation.generator import PLANS, Rejected, _constructed, _source, evaluate
+
+    for concept in STARTER_CONCEPTS:
+        existing = [e for e in library.examples_for(concept) if e.key_ply is not None and e.concept == concept]
+        total = sum(1 for e in library.verified() if e.concept == concept)
+        if existing and min(puzzle_rating(e) for e in existing) <= STARTER_ABOVE:
+            print(f"starter      {concept:18s} not needed (easiest {min(puzzle_rating(e) for e in existing)})")
+            continue
+        constructor = next(c for t, c in PLANS[concept] if t == concept)
+        rng = random.Random(f"{STARTER_SEED}:{concept}")
+        kept = tries = 0
+        while kept < min(per_concept, MAX_PER_CONCEPT - total) and tries < 60:
+            tries += 1
+            proposal = _constructed(constructor, rng, rng.choice(["white", "black"]))
+            if proposal is None:
+                continue
+            source = _source("procedural", proposal, None)
+            source["import_date"] = IMPORT_DATE
+            try:  # evaluate(): idea check + Stockfish discrimination + line, then the pipeline
+                report = evaluate(proposal, concept, library, engine, depth=depth, tier="global", source=source,
+                                  method="seed_builder:procedural")
+            except Rejected as exc:
+                print(f"rejected      procedural {concept}: {exc.stage}: {exc.reason[:120]}")
+                continue
+            if report.status != "verified" or puzzle_rating(report.example) > STARTER_MAX_RATING:
+                continue
+            record = report.example.to_record()
+            record["tags"] = list(dict.fromkeys([*record.get("tags", []), "starter"]))
+            if run(record, "procedural") == "verified":
+                kept += 1
+                total += 1
 
 
 def harder_stage(library, run, per_concept: int) -> None:
     """The harder tier, after everything else so the easier entries win duplicate checks."""
     kept: Counter = Counter()
     total = Counter(ex.concept for ex in library.verified())
-    for cand in lichess_puzzles.candidates(library, per_concept=1000, path=lichess_puzzles.POOL_HARDER):
+    for cand in _hardest_first(library, lichess_puzzles.candidates(library, per_concept=1000,
+                                                                    path=lichess_puzzles.POOL_HARDER)):
         if kept[cand["concept"]] >= per_concept or total[cand["concept"]] >= MAX_PER_CONCEPT:
             continue
         cand["tags"] = list(dict.fromkeys([*cand.get("tags", []), "harder"]))
@@ -155,10 +206,27 @@ def harder_stage(library, run, per_concept: int) -> None:
             total[cand["concept"]] += 1
 
 
-def add_harder(args) -> int:
-    """Verify the harder tier against the library as it is and write only its own files."""
+TIER_FILES = ("procedural.json", "lichess_harder.json")
+
+
+def _hardest_first(library, cands: list[dict]) -> list[dict]:
+    """Slots under the balance cap are scarce: spend them on the most demanding positions."""
+    from app.knowledge.difficulty import puzzle_rating
+    from app.knowledge.schema import KnowledgeError, parse_example
+
+    def rating(cand: dict) -> int:
+        try:
+            return puzzle_rating(parse_example({**cand, "status": "candidate"}, library.concepts, "tier",
+                                               tier="global"))
+        except (KnowledgeError, ValueError, KeyError):
+            return 0
+    return sorted(cands, key=lambda c: (-rating(c), c["id"]))
+
+
+def add_tiers(args) -> int:
+    """Verify the starter + harder tiers against the library as it is and write only their files."""
     examples = KNOWLEDGE / "examples"
-    old_files = list(examples.rglob("lichess_harder.json"))
+    old_files = [p for name in TIER_FILES for p in examples.rglob(name)]
     with tempfile.TemporaryDirectory() as tmp:  # the library without any previous harder tier
         shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
         for path in examples.rglob("*.json"):
@@ -178,13 +246,15 @@ def add_harder(args) -> int:
             if rep.status == "verified":
                 record["verification"]["verified_at"] = IMPORT_DATE
                 library.add(rep.example)
-            results.append({"status": rep.status, "record": record, "reasons": rep.reasons, "id": cand.get("id")})
+            results.append({"status": rep.status, "record": record, "reasons": rep.reasons, "id": cand.get("id"),
+                            "importer": importer})
             print(f"{rep.status:13s} {cand.get('id', '?'):40s} {time.time() - t:5.1f}s", flush=True)
             for reason in rep.reasons:
                 print(f"      - {reason[:200]}", flush=True)
             return rep.status
 
         try:
+            starter_stage(library, engine, run, args.starter_per_concept, args.depth)
             harder_stage(library, run, args.harder_per_concept)
         finally:
             engine.close()
@@ -195,8 +265,9 @@ def add_harder(args) -> int:
     if args.dry_run:
         return 0
     by_file: dict[Path, list[dict]] = defaultdict(list)
-    for rec in verified:
-        by_file[examples / rec["category"] / "lichess_harder.json"].append(rec)
+    for r in results:
+        if r["status"] == "verified":
+            by_file[examples / r["record"]["category"] / f"{r['importer']}.json"].append(r["record"])
     for old in old_files:
         old.unlink()
     for path, records in sorted(by_file.items()):
@@ -209,12 +280,15 @@ def add_harder(args) -> int:
     report["totals"]["verified"] = len(everything)
     report["by_category"] = dict(Counter(e.category for e in everything))
     report["by_concept"] = dict(sorted(Counter(e.concept for e in everything).items()))
-    report["harder_tier"] = {
-        "totals": dict(Counter(r["status"] for r in results)),
-        "by_concept": dict(sorted(Counter(rec["concept"] for rec in verified).items())),
-        "not_verified": [{"id": r["id"], "status": r["status"], "reasons": r["reasons"]}
-                         for r in results if r["status"] != "verified"],
-    }
+    for name, importer in (("starter_tier", "procedural"), ("harder_tier", "lichess_harder")):
+        mine = [r for r in results if r["importer"] == importer]
+        report[name] = {
+            "totals": dict(Counter(r["status"] for r in mine)),
+            "by_concept": dict(sorted(Counter(r["record"]["concept"] for r in mine
+                                              if r["status"] == "verified").items())),
+            "not_verified": [{"id": r["id"], "status": r["status"], "reasons": r["reasons"]}
+                             for r in mine if r["status"] != "verified"],
+        }
     report_path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     return 0
 

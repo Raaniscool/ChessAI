@@ -236,6 +236,21 @@ def test_every_tactic_has_room_for_a_stronger_learner(seed):
         assert e.path.endswith("lichess_harder.json")
 
 
+def test_beginners_get_simple_positions_for_the_common_tactics(seed):
+    """The starter tier: real-game forks start around 1000, too hard for a 600 player; the app's
+    generator built simpler positions, each through the same pipeline (never Qwen)."""
+    from app.knowledge.difficulty import puzzle_rating
+    for concept in ("knight_fork", "queen_fork", "pawn_fork", "absolute_pin", "skewer"):
+        ratings = [puzzle_rating(e) for e in seed.examples_for(concept) if e.key_ply is not None]
+        assert min(ratings) <= 950, (concept, min(ratings))
+    starter = [e for e in seed.verified() if "starter" in e.tags]
+    assert len(starter) >= 8
+    for e in starter:
+        assert e.status == "verified" and e.tier == "global" and e.path.endswith("procedural.json")
+        assert e.source["source_type"] == "procedural" and "qwen" not in e.source["reference"].lower()
+        assert puzzle_rating(e) <= 950 and e.hints
+
+
 @pytest.mark.parametrize("concept", REQUIRED)
 def test_seed_covers_required_concepts(seed, concept):
     assert seed.examples_for(concept), f"no verified example for {concept}"

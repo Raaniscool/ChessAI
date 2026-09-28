@@ -2,7 +2,7 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 334,
+  "verified": 341,
   "rejected": 20,
   "needs_review": 35
  },
@@ -12,10 +12,10 @@
   "endgames": 6,
   "mistakes": 20,
   "openings": 10,
-  "tactics": 201
+  "tactics": 208
  },
  "by_concept": {
-  "absolute_pin": 14,
+  "absolute_pin": 15,
   "anastasia_mate": 10,
   "arabian_mate": 10,
   "back_rank_mate": 15,
@@ -41,7 +41,7 @@
   "ignoring_development": 1,
   "italian_game": 2,
   "king_safety_mistake": 2,
-  "knight_fork": 14,
+  "knight_fork": 15,
   "ladder_mate": 1,
   "legal_moves": 1,
   "legals_mate": 1,
@@ -51,10 +51,10 @@
   "opposition": 2,
   "overloaded_piece": 15,
   "passed_pawn": 1,
-  "pawn_fork": 1,
+  "pawn_fork": 3,
   "poisoned_pawn": 1,
   "promotion": 15,
-  "queen_fork": 5,
+  "queen_fork": 8,
   "queen_mate": 1,
   "relative_pin": 2,
   "removing_defender": 14,
@@ -6030,12 +6030,12 @@
  ],
  "harder_tier": {
   "totals": {
-   "verified": 66,
-   "rejected": 5,
-   "needs_review": 11
+   "needs_review": 11,
+   "verified": 59,
+   "rejected": 5
   },
   "by_concept": {
-   "absolute_pin": 4,
+   "absolute_pin": 2,
    "back_rank_mate": 4,
    "deflection": 2,
    "discovered_attack": 1,
@@ -6043,72 +6043,23 @@
    "double_check": 5,
    "fork": 1,
    "hanging_piece": 5,
-   "knight_fork": 4,
+   "knight_fork": 2,
    "overloaded_piece": 5,
    "promotion": 4,
    "queen_fork": 3,
    "relative_pin": 2,
    "removing_defender": 4,
    "sacrifice": 5,
-   "skewer": 5,
+   "skewer": 2,
    "trapped_piece": 4,
    "zwischenzug": 4
   },
   "not_verified": [
    {
-    "id": "lichess_3krbf",
-    "status": "rejected",
-    "reasons": [
-     "concept: Pin: no pin is created or exploited"
-    ]
-   },
-   {
-    "id": "lichess_6rncu",
-    "status": "rejected",
-    "reasons": [
-     "concept: Pin: no pin is created or exploited"
-    ]
-   },
-   {
-    "id": "lichess_0aipv",
-    "status": "rejected",
-    "reasons": [
-     "concept: Discovered attack: no discovered attack: no move uncovers a new threat by another piece"
-    ]
-   },
-   {
-    "id": "lichess_024ua",
-    "status": "needs_review",
-    "reasons": [
-     "engine: after 22...dxe5 the learner is only -37 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
-    "id": "lichess_0s8jo",
-    "status": "needs_review",
-    "reasons": [
-     "engine: after 23.Bxg5 the learner is only 15 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
-    "id": "lichess_2y93s",
-    "status": "needs_review",
-    "reasons": [
-     "engine: after 25...N6xe5 the learner is only 0 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
     "id": "lichess_3odkn",
     "status": "needs_review",
     "reasons": [
      "engine: after 19...e4 the learner is only 149 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
-    "id": "lichess_0nehe",
-    "status": "needs_review",
-    "reasons": [
-     "engine: after 9.Bxg7 the learner is only -34 cp better — the tactic doesn't clearly win"
     ]
    },
    {
@@ -6119,13 +6070,6 @@
     ]
    },
    {
-    "id": "lichess_89xcs",
-    "status": "needs_review",
-    "reasons": [
-     "engine: after 21.c3 the learner is only 32 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
     "id": "lichess_vx1nc",
     "status": "needs_review",
     "reasons": [
@@ -6133,24 +6077,10 @@
     ]
    },
    {
-    "id": "lichess_3ytck",
-    "status": "rejected",
-    "reasons": [
-     "concept: Sacrifice: the sacrifice is never paid back (no mate, no material regained)"
-    ]
-   },
-   {
-    "id": "lichess_6cyr6",
+    "id": "lichess_89xcs",
     "status": "needs_review",
     "reasons": [
-     "engine: after 27...Bxe5 the learner is only 47 cp better — the tactic doesn't clearly win"
-    ]
-   },
-   {
-    "id": "lichess_eiloh",
-    "status": "rejected",
-    "reasons": [
-     "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
+     "engine: after 21.c3 the learner is only 32 cp better — the tactic doesn't clearly win"
     ]
    },
    {
@@ -6161,12 +6091,95 @@
     ]
    },
    {
+    "id": "lichess_3ytck",
+    "status": "rejected",
+    "reasons": [
+     "concept: Sacrifice: the sacrifice is never paid back (no mate, no material regained)"
+    ]
+   },
+   {
+    "id": "lichess_eiloh",
+    "status": "rejected",
+    "reasons": [
+     "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
+    ]
+   },
+   {
+    "id": "lichess_2y93s",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 25...N6xe5 the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0nehe",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 9.Bxg7 the learner is only -34 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0s8jo",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 23.Bxg5 the learner is only 15 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_024ua",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 22...dxe5 the learner is only -37 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_6rncu",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
     "id": "lichess_mlg2k",
     "status": "needs_review",
     "reasons": [
      "engine: after 24...d3+ the learner is only 57 cp better — the tactic doesn't clearly win"
     ]
+   },
+   {
+    "id": "lichess_3krbf",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_6cyr6",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Bxe5 the learner is only 47 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0aipv",
+    "status": "rejected",
+    "reasons": [
+     "concept: Discovered attack: no discovered attack: no move uncovers a new threat by another piece"
+    ]
    }
   ]
+ },
+ "starter_tier": {
+  "totals": {
+   "verified": 14
+  },
+  "by_concept": {
+   "absolute_pin": 3,
+   "knight_fork": 3,
+   "pawn_fork": 2,
+   "queen_fork": 3,
+   "skewer": 3
+  },
+  "not_verified": []
  }
 }
