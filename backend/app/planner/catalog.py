@@ -320,10 +320,8 @@ class Catalog:
         if scored:
             scored.sort(key=lambda s: (-s[0], s[1]))
             found = [s[2] for s in scored]
-            wants_black = "black" in tokens
-            wants_white = "white" in tokens
-            if wants_black != wants_white:
-                side = "black" if wants_black else "white"
+            side = _side_asked(tokens)
+            if side:
                 preferred = [t for t in found if t.category != "opening" or t.side == side]
                 found = preferred or found
             return found
@@ -336,8 +334,11 @@ class Catalog:
             for alias in meta.get("aliases", []):
                 if _phrase_in(_normalize(alias), tokens):
                     topics = self.by_category(category)
-                    if category == "opening":  # don't dump 15 openings: pick beginner ones
-                        topics = [t for t in topics if t.level == "beginner"][:4]
+                    if category == "opening":  # don't dump 15 openings: beginner ones, for the side asked
+                        side = _side_asked(tokens)
+                        if side:  # "openings for Black" is not a request for the Italian Game
+                            topics = [t for t in topics if t.side == side] or topics
+                        topics = ([t for t in topics if t.level == "beginner"] or topics)[:4]
                     return topics
 
         for alias in self.general.get("aliases", []):
@@ -397,3 +398,11 @@ def get_catalog() -> Catalog:
     if _catalog is None:
         _catalog = Catalog()
     return _catalog
+
+
+def _side_asked(tokens: list[str]) -> str | None:
+    """"white" or "black" when exactly one side is named in the request."""
+    black, white = "black" in tokens, "white" in tokens
+    if black == white:
+        return None
+    return "black" if black else "white"
