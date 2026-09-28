@@ -120,10 +120,36 @@ def resolve_concepts(library: KnowledgeLibrary, text: str) -> tuple[list[str], b
             span = _phrase_span(_normalize(alias), tokens)
             if span:
                 covered |= span
+    matched, covered = _piece_variety(library, matched, tokens, covered)
     leftover = [t for i, t in enumerate(tokens) if i not in covered and t not in FILLER
                 and not t.isdigit()]
     specific = any(library.concepts[c].parents for c in matched)
     return matched, (specific or not leftover) and not _qualified(library, matched, tokens, covered, text)
+
+
+_PIECES = ("king", "queen", "rook", "bishop", "knight", "pawn")
+
+
+def _piece_variety(library: KnowledgeLibrary, matched: list[str], tokens: list[str],
+                   covered: set[int]) -> tuple[list[str], set[int]]:
+    """"Forks with the queen" is the queen fork, not forks in general: when the request names a
+    piece elsewhere and a matched concept has a child that is exactly that piece's version of it
+    (id = piece + the parent's words, with verified examples), the child is what was asked for."""
+    at = {i: t[:-1] if t.endswith("s") and t[:-1] in _PIECES else t for i, t in enumerate(tokens) if i not in covered}
+    pieces = {t for t in at.values() if t in _PIECES}
+    if len(pieces) != 1:
+        return matched, covered
+    piece = next(iter(pieces))
+    out: list[str] = []
+    for cid in matched:
+        parent_words = set(cid.split("_")) | set(_normalize(library.concepts[cid].name))
+        child = next((c for c in library.children.get(cid, [])
+                      if library.count_for(c) and piece in c.split("_")
+                      and set(c.split("_")) - {piece} <= parent_words), None)
+        out.append(child or cid)
+        if child:
+            covered = covered | {i for i, t in at.items() if t == piece}
+    return list(dict.fromkeys(out)), covered
 
 
 _PIECE_WORDS = {"king", "queen", "rook", "bishop", "knight", "pawn", "piece", "white", "black", "kings", "queens",
