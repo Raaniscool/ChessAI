@@ -255,6 +255,23 @@ def _learner_level(default: str | None = "beginner") -> str | None:
         return default
 
 
+def _learner_targets(weaknesses: list[dict]) -> dict[str, int]:
+    """{concept: puzzle rating to aim for} for each weakness, from the learner model — empty while
+    the tutor knows nothing about the learner (the library's defaults are used then)."""
+    try:
+        from .learner import get_profile
+        from .learner.personalize import personalized
+        from .learner.views import lesson_shape
+        profile = get_profile()
+        if not personalized(profile):
+            return {}
+        library = _knowledge()
+        return {w["concept"]: lesson_shape(profile, w["concept"], library)["target_rating"]
+                for w in weaknesses if w.get("concept") in library.concepts}
+    except Exception:  # pragma: no cover - personalization must never break training
+        return {}
+
+
 def learn_from_history(report: dict, selected: list[dict], username: str | None) -> None:
     """Game History findings feed the learner model (weaknesses, a rating from real games).
     The profile must never break the analysis, so failures are only logged."""
@@ -452,7 +469,8 @@ def training(body: TrainingRequest):
     generated = {w["key"]: personal_puzzles.unseen_for(w, _knowledge(), shown) for w in chosen}
     try:
         record = create_training_plan(chosen, moments, len(docs), _knowledge(), usage=get_usage(),
-                                      level=body.level or _learner_level(None), generated=generated)
+                                      level=body.level or _learner_level(None), generated=generated,
+                                      targets={} if body.level else _learner_targets(chosen))
     except TrainingError as exc:
         return _error(422, str(exc))
     used = [eid for u in record["lessons"] for eid in (u.get("origin") or {}).get("generated", [])]

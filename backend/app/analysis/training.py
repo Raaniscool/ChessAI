@@ -179,10 +179,13 @@ def create_puzzle_plan(weakness: dict, examples: list, total_games: int, library
 
 def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total_games: int, library,
                          usage=None, catalog=None, level: str | None = None, record_usage: bool = True,
-                         generated: dict[str, list] | None = None) -> dict:
+                         generated: dict[str, list] | None = None,
+                         targets: dict[str, int] | None = None) -> dict:
     """A plan record ({plan, course, lessons}) — registered and saved like any other plan.
 
-    `generated`: {weakness key: [verified personal puzzles not shown yet]}."""
+    `generated`: {weakness key: [verified personal puzzles not shown yet]}.
+    `targets`: {concept: puzzle rating} from the learner model — the library examples are chosen
+    near it (and the follow-up practice a step above) instead of by the coarse level alone."""
     if not weaknesses:
         raise TrainingError("choose at least one weakness to train")
     catalog = catalog or get_catalog()
@@ -213,9 +216,13 @@ def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total
 
         retrieval = None
         if concept and library.count_for(concept_id):
+            target = (targets or {}).get(concept_id)
             retrieval = retrieve(library, RetrievalRequest(concepts=[concept_id], level=level,
                                                            count=LIBRARY_EXAMPLES,
-                                                           practice_count=FOLLOW_UP_EXAMPLES), usage)
+                                                           practice_count=FOLLOW_UP_EXAMPLES,
+                                                           target_rating=target,
+                                                           practice_rating=target + 120 if target else None),
+                                 usage)
         steps = [intro]
         if retrieval and retrieval.found:
             for k, (example, role) in enumerate(retrieval.sequence, start=1):

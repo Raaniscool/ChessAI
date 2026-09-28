@@ -77,12 +77,30 @@ def test_back_rank_mate_seen_in_one_game_is_not_recurring(fork_analyses):
 
 
 # --- training plans ------------------------------------------------------------------------
-def make_plan(fork_analyses, keys=("knight_fork",)):
+def make_plan(fork_analyses, keys=("knight_fork",), targets=None):
     library = get_knowledge()
     found = recurring_weaknesses(fork_analyses, library)
     chosen = [w for w in found["weaknesses"] + found["seen_once"] if w["key"] in keys]
     return create_training_plan(chosen, moments_of(fork_analyses), found["total_games"], library,
-                                record_usage=False)
+                                record_usage=False, targets=targets)
+
+
+def test_training_from_games_is_pitched_at_the_learners_rating(fork_analyses):
+    """The same weakness in the games of a 700 and a 1900 player → different library positions,
+    the stronger player's harder on average."""
+    from app.knowledge.difficulty import puzzle_rating
+    library = get_knowledge()
+    concept = next(w for w in recurring_weaknesses(fork_analyses, library)["weaknesses"]
+                   if w["key"] == "knight_fork")["concept"]
+
+    def ratings(target):
+        record = make_plan(fork_analyses, targets={concept: target})
+        used = [s["example"] for s in record["lessons"][0]["steps"] if s.get("example")]
+        return [puzzle_rating(library.entries[e]) for e in dict.fromkeys(used)]
+
+    low, high = ratings(700), ratings(1900)
+    assert low and high and low != high
+    assert sum(high) / len(high) > sum(low) / len(low)
 
 
 def test_training_plan_follows_the_teaching_sequence(fork_analyses):
