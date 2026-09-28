@@ -715,3 +715,65 @@ def test_api_something_else(api):
 def test_api_without_library_flag_never_asks(api):
     res = api.post("/api/plans", json={"goal": "knight and bishop endgames"})
     assert res.status_code == 200 and "clarify" not in res.json()
+
+
+# ---------------------------------------------------------------- latency
+class SlowTeacher(FakeTeacher):
+    def __init__(self, replies, delay):
+        super().__init__(replies)
+        self.delay = delay
+
+    def complete(self, messages, max_tokens=None):
+        import time
+        time.sleep(self.delay)
+        return super().complete(messages, max_tokens)
+
+
+def _good_reply():
+    return json.dumps({"title": "T", "summary": "s", "units": [
+        {"part": "C1", "role": "learn", "title": "See", "objective": "o", "items": ["r1", "r2"]},
+        {"part": "C1", "role": "practice", "title": "Try", "objective": "o", "items": ["r3"]}]})
+
+
+def test_a_slow_qwen_doesnt_hold_up_a_verified_plan(tmp_path, monkeypatch):
+    import time
+    from app.config import get_settings
+    monkeypatch.setattr(get_settings(), "qwen_plan_budget", 0.3)
+    intent, _ = material_intent()
+    t0 = time.monotonic()
+    res = build_custom_plan(intent, use_qwen=True, teacher=SlowTeacher([_good_reply()], delay=3.0),
+                            plan_library=PlanLibrary(tmp_path / "p"), review=ReviewQueue(tmp_path / "r"))
+    took = time.monotonic() - t0
+    assert res.status == "verified" and res.candidate.proposer == "composer"
+    assert took < 2.5, took  # didn't wait the 3 s for Qwen
+    assert res.record["plan"]["custom"]["status"] == "verified"
+
+
+def test_a_quick_qwen_answer_is_still_preferred(tmp_path, monkeypatch):
+    from app.config import get_settings
+    monkeypatch.setattr(get_settings(), "qwen_plan_budget", 5.0)
+    intent, _ = material_intent()
+    res = build_custom_plan(intent, use_qwen=True, teacher=SlowTeacher([_good_reply()], delay=0.2),
+                            plan_library=PlanLibrary(tmp_path / "p"), review=ReviewQueue(tmp_path / "r"))
+    assert res.status == "verified" and res.candidate.proposer == "qwen"
+
+
+def test_the_plan_is_composed_once_while_qwen_organises_it(tmp_path, monkeypatch):
+    import app.planner.custom.pipeline as pipeline
+    calls = []
+    real = pipeline.compose
+    monkeypatch.setattr(pipeline, "compose", lambda *a, **k: calls.append(1) or real(*a, **k))
+    intent, _ = material_intent()
+    res = build_custom_plan(intent, use_qwen=True, teacher=FakeTeacher([_good_reply()]),
+                            plan_library=PlanLibrary(tmp_path / "p"), review=ReviewQueue(tmp_path / "r"))
+    assert res.status == "verified" and len(calls) == 1
+
+
+def test_a_repeated_request_reuses_the_stored_plan_without_asking_qwen(tmp_path):
+    intent, _ = material_intent()
+    lib = PlanLibrary(tmp_path / "p")
+    build_custom_plan(intent, use_qwen=True, teacher=FakeTeacher([_good_reply()]), plan_library=lib,
+                      review=ReviewQueue(tmp_path / "r"))
+    again = FakeTeacher([_good_reply()])
+    res = build_custom_plan(intent, use_qwen=True, teacher=again, plan_library=lib, review=ReviewQueue(tmp_path / "r"))
+    assert res.status == "reused" and again.prompts == []

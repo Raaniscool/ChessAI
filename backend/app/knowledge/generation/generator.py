@@ -22,8 +22,10 @@ import hashlib
 import logging
 import random
 import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
 from datetime import date
+from types import SimpleNamespace
 
 import chess
 
@@ -280,68 +282,92 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
             weights.append(1.0 / (1 + used))
         return rng.choices(plans, weights=weights, k=1)[0]
 
-    while len(result.accepted) < count:
-        if result.attempts >= max_attempts:
-            result.stopped = "attempt limit"
-            break
-        if time.monotonic() - started > time_budget:
-            result.stopped = "time budget"
-            break
-        result.attempts += 1
-        target, cname = pick()
-        side = rng.choice(["white", "black"])
-        via_qwen = bool(use_qwen) and cname in QWEN_HINTS and result.attempts % 3 == 1
-        proposal = None
-        if via_qwen:
-            proposal = _qwen_proposal(library, target, cname, side, teacher, result)
-            if proposal is None and result.stopped == "qwen unavailable":
-                use_qwen, result.stopped = False, ""
-        if proposal is None:
-            via_qwen = False
-            proposal = _constructed(cname, rng, side)
-            if proposal is None:
-                continue
-        if proposal.fen in seen or chess.Board(proposal.fen).board_fen() in (avoid_positions or ()):
-            continue
-        seen.add(proposal.fen)
-        source_kind = "qwen_generated" if via_qwen else "procedural"
-        source = _source(source_kind, proposal, personal)
-        entry = {"concept": target, "motif": proposal.motif, "signature": proposal.signature,
-                 "source": source_kind, "fen": proposal.fen, "tier": tier,
-                 "target_weakness": (personal or {}).get("target_weakness")}
-        try:
-            report = evaluate(proposal, target, library, engine, depth=depth, tier=tier, source=source,
-                              method=f"generator:{source_kind}")
-        except Rejected as exc:
-            _reject(result, gen_log, entry, exc.stage, exc.reason)
-            continue
-        except Exception as exc:  # engine crash, timeouts: this candidate only...
-            log.warning("generation candidate failed: %s", exc)
-            _reject(result, gen_log, entry, "engine", f"analysis failed: {exc}")
-            if _engine_gone(exc):  # ...unless the engine itself is gone: the rest would fail too
-                result.stopped = "Stockfish stopped working"
+    # Latency: a Qwen proposal (seconds on local hardware) runs in a background thread while the
+    # constructors keep producing candidates. It's checked like any other candidate once it
+    # arrives, and dropped if enough verified positions were found first.
+    qwen_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="qwen-gen") if use_qwen else None
+    qwen_job = None
+    try:
+        while len(result.accepted) < count:
+            if result.attempts >= max_attempts:
+                result.stopped = "attempt limit"
                 break
-            continue
-        if report.status == "verified":
-            dup = _duplicate_of(report.example, library, result.accepted)
-            if dup:
-                _reject(result, gen_log, entry, "duplicate", dup)
+            if time.monotonic() - started > time_budget:
+                result.stopped = "time budget"
+                break
+            result.attempts += 1
+            target, cname = pick()
+            side = rng.choice(["white", "black"])
+            via_qwen = False
+            proposal = None
+            if use_qwen and qwen_job is None and cname in QWEN_HINTS and result.attempts % 3 == 1:
+                probe = SimpleNamespace(rejected=[], stopped="")
+                qwen_job = (qwen_pool.submit(_qwen_proposal, library, target, cname, side, teacher, probe),
+                            target, cname, probe)
+            if qwen_job is not None:
+                try:  # a quick answer is used right away, a slow one on a later attempt
+                    got = qwen_job[0].result(timeout=QWEN_WAIT)
+                except FutureTimeout:
+                    got = _PENDING
+                except Exception as exc:  # a broken proposal is just a failed attempt
+                    log.warning("Qwen proposal failed: %s", exc)
+                    got = None
+                if got is not _PENDING:
+                    _, q_target, q_cname, probe = qwen_job
+                    qwen_job = None
+                    result.rejected.extend(probe.rejected)
+                    if probe.stopped == "qwen unavailable":
+                        use_qwen = False
+                    elif got is not None:
+                        proposal, via_qwen, target, cname = got, True, q_target, q_cname
+            if proposal is None:
+                proposal = _constructed(cname, rng, side)
+                if proposal is None:
+                    continue
+            if proposal.fen in seen or chess.Board(proposal.fen).board_fen() in (avoid_positions or ()):
                 continue
-            if save:
-                library.save_entry(report.example)
-            result.accepted.append(report.example)
-            gen_log.record({**entry, "outcome": "verified", "id": report.example.id})
-            if on_progress:
-                on_progress(report.example)
-        elif report.status == "needs_review" and via_qwen and report.example is not None:
-            if save:
-                library.save_entry(report.example)
-            result.needs_review.append(report.example)
-            gen_log.record({**entry, "outcome": "needs_review", "id": report.example.id})
-        else:
-            failed = next((s for s in report.stages if s.outcome in ("fail", "uncertain")), None)
-            _reject(result, gen_log, entry, failed.name if failed else "pipeline",
-                    failed.detail if failed else report.status)
+            seen.add(proposal.fen)
+            source_kind = "qwen_generated" if via_qwen else "procedural"
+            source = _source(source_kind, proposal, personal)
+            entry = {"concept": target, "motif": proposal.motif, "signature": proposal.signature,
+                     "source": source_kind, "fen": proposal.fen, "tier": tier,
+                     "target_weakness": (personal or {}).get("target_weakness")}
+            try:
+                report = evaluate(proposal, target, library, engine, depth=depth, tier=tier, source=source,
+                                  method=f"generator:{source_kind}")
+            except Rejected as exc:
+                _reject(result, gen_log, entry, exc.stage, exc.reason)
+                continue
+            except Exception as exc:  # engine crash, timeouts: this candidate only...
+                log.warning("generation candidate failed: %s", exc)
+                _reject(result, gen_log, entry, "engine", f"analysis failed: {exc}")
+                if _engine_gone(exc):  # ...unless the engine itself is gone: the rest would fail too
+                    result.stopped = "Stockfish stopped working"
+                    break
+                continue
+            if report.status == "verified":
+                dup = _duplicate_of(report.example, library, result.accepted)
+                if dup:
+                    _reject(result, gen_log, entry, "duplicate", dup)
+                    continue
+                if save:
+                    library.save_entry(report.example)
+                result.accepted.append(report.example)
+                gen_log.record({**entry, "outcome": "verified", "id": report.example.id})
+                if on_progress:
+                    on_progress(report.example)
+            elif report.status == "needs_review" and via_qwen and report.example is not None:
+                if save:
+                    library.save_entry(report.example)
+                result.needs_review.append(report.example)
+                gen_log.record({**entry, "outcome": "needs_review", "id": report.example.id})
+            else:
+                failed = next((s for s in report.stages if s.outcome in ("fail", "uncertain")), None)
+                _reject(result, gen_log, entry, failed.name if failed else "pipeline",
+                        failed.detail if failed else report.status)
+    finally:
+        if qwen_pool is not None:
+            qwen_pool.shutdown(wait=False, cancel_futures=True)
     result.elapsed = time.monotonic() - started
     return result
 
@@ -369,7 +395,11 @@ def _constructed(cname: str, rng: random.Random, side: str, tries: int = 40) -> 
     return None
 
 
-def _qwen_proposal(library, target: str, cname: str, side: str, teacher, result: GenerationResult):
+QWEN_WAIT = 0.05   # seconds an attempt waits for a pending Qwen proposal before building its own
+_PENDING = object()
+
+
+def _qwen_proposal(library, target: str, cname: str, side: str, teacher, result):
     from ...teacher.qwen import TeacherUnavailable
     from .qwen_proposer import QwenProposalError, propose
 

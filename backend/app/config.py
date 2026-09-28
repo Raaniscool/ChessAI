@@ -127,6 +127,9 @@ class Settings:
     # Planner: "auto" = ask Qwen only when the catalog can't answer (instant plans
     # for known topics), "always" = Qwen organizes every plan, "never".
     qwen_planner: str = (_env("QWEN_PLANNER", "auto") or "auto").lower()
+    # Seconds a verified plan waits for Qwen's reorganised version before it's shown as it is
+    # (planner.custom.pipeline). Repeat requests reuse the stored plan instantly.
+    qwen_plan_budget: float = float(_env("QWEN_PLAN_BUDGET", "8") or "8")
     # Load the model into memory when the server starts so the first reply isn't the slowest.
     qwen_warmup: bool = (_env("QWEN_WARMUP", "1") or "1").lower() not in ("0", "false", "no", "off")
 

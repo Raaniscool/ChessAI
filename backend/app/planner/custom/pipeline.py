@@ -111,6 +111,16 @@ def build_custom_plan(intent: LearningIntent, *, level: str | None = None, libra
         plan_library.retire(template["id"], "; ".join(i.message for i in report.errors[:3]) or report.status, learner)
 
     # 2. propose → validate → regenerate
+    if proposers is None and use_qwen:
+        fast = _compose_and_organize(intent, ctx, personal, learner, teacher, generate, review, plan_library,
+                                     library, catalog, promote)
+        if fast.done is not None:
+            return fast.done
+        attempts, feedback, exclude, last = fast.attempts, fast.feedback, fast.exclude, fast.last
+        # what's left: the composer once more without the positions that failed
+        proposers = [lambda i, c, fb, ex: compose(i, c, exclude_refs=ex, generate=generate) if ex else None]
+        return _propose_loop(intent, ctx, proposers, personal, learner, review, plan_library, library, catalog,
+                             promote, depth, attempts, feedback, exclude, last)
     if proposers is None:
         proposers = []
         if use_qwen:
@@ -118,10 +128,110 @@ def build_custom_plan(intent: LearningIntent, *, level: str | None = None, libra
             proposers += [lambda i, c, fb, ex: qwen_propose(i, c, feedback=fb, teacher=teacher, generate=generate)] * 2
         proposers += [lambda i, c, fb, ex: compose(i, c, generate=generate),
                       lambda i, c, fb, ex: compose(i, c, exclude_refs=ex, generate=generate) if ex else None]
+    return _propose_loop(intent, ctx, proposers, personal, learner, review, plan_library, library, catalog,
+                         promote, depth, [], [], set(), None)
+
+
+def _verified_result(cand, report, attempts, plan_library, library, catalog, promote) -> CustomResult:
+    stored = None
+    if promote:
+        from ...knowledge.plan_library import PromotionError
+        try:
+            stored = plan_library.promote(cand, report)
+        except PromotionError as exc:
+            log.info("verified plan not stored: %s", exc)
+    record = build_record(cand, report, library=library, catalog=catalog, status="verified",
+                          template=stored, attempts=attempts)
+    return CustomResult("verified", record, report, attempts, stored, cand)
+
+
+@dataclass
+class _Fast:
+    done: CustomResult | None
+    attempts: list
+    feedback: list
+    exclude: set
+    last: tuple | None
+
+
+def _compose_and_organize(intent, ctx, personal, learner, teacher, generate, review, plan_library, library,
+                          catalog, promote) -> _Fast:
+    """Latency: the plan is composed once; Qwen reorganises it in a background thread while
+    Stockfish verifies the composed version. Qwen's plan is preferred when it verifies within
+    the time budget (it's retried once with the validator's feedback, as before). When the budget
+    runs out and the composed plan is verified, the learner gets that one instead of waiting.
+    Every candidate — Qwen's or not — goes through the same validation."""
+    import copy
+    import time
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+    from ...config import get_settings
+    from .qwen_plans import organize, qwen_teacher
+
     attempts: list[dict] = []
     feedback: list[str] = []
     exclude: set[str] = set()
-    last: tuple[CandidatePlan, ValidationReport] | None = None
+    last = None
+    deadline = time.monotonic() + max(0.0, get_settings().qwen_plan_budget)
+    base = compose(intent, ctx, generate=generate)
+    base.personal = base.personal or personal
+    base.learner = base.learner or learner
+    teacher = qwen_teacher(teacher)
+    pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="qwen-plan") if teacher is not None else None
+
+    def ask(fb):
+        return pool.submit(organize, copy.deepcopy(base), intent, ctx, feedback=fb, teacher=teacher)
+
+    try:
+        future = ask([]) if pool is not None and base.units else None
+        base_report = validate(base, ctx) if base.units else None
+        base_ok = base_report is not None and base_report.status == "verified"
+        for round_ in range(2):
+            if future is None:
+                break
+            try:
+                cand = future.result(timeout=max(0.0, deadline - time.monotonic()) if base_ok else None)
+            except FutureTimeout:
+                log.info("Qwen plan not ready within %.1fs: using the verified composed plan",
+                         get_settings().qwen_plan_budget)
+                break
+            except Exception as exc:  # a broken proposer is just a failed attempt
+                log.warning("plan proposer failed: %s", exc)
+                break
+            if cand is None:
+                break
+            cand.personal = cand.personal or personal
+            cand.learner = cand.learner or learner
+            report = validate(cand, ctx)
+            attempts.append({"proposer": cand.proposer, "status": report.status,
+                             "issues": [f"{i.check}: {i.message}" for i in report.errors + report.uncertain][:6]})
+            if report.status == "verified":
+                return _Fast(_verified_result(cand, report, attempts, plan_library, library, catalog, promote),
+                             attempts, feedback, exclude, last)
+            review.add(cand, report, "needs review" if report.status == "needs_review" else "rejected")
+            feedback = [i.message for i in report.errors + report.uncertain]
+            exclude |= {i.item for i in report.issues if i.item and i.severity in ("error", "uncertain")}
+            last = (cand, report)
+            out_of_time = base_ok and time.monotonic() >= deadline
+            future = ask(feedback) if round_ == 0 and not out_of_time else None
+        if base_report is not None:
+            attempts.append({"proposer": base.proposer, "status": base_report.status,
+                             "issues": [f"{i.check}: {i.message}" for i in
+                                        base_report.errors + base_report.uncertain][:6]})
+            if base_ok:
+                return _Fast(_verified_result(base, base_report, attempts, plan_library, library, catalog, promote),
+                             attempts, feedback, exclude, last)
+            review.add(base, base_report, "needs review" if base_report.status == "needs_review" else "rejected")
+            feedback = [i.message for i in base_report.errors + base_report.uncertain]
+            exclude |= {i.item for i in base_report.issues if i.item and i.severity in ("error", "uncertain")}
+            last = (base, base_report)
+        return _Fast(None, attempts, feedback, exclude, last)
+    finally:
+        if pool is not None:
+            pool.shutdown(wait=False, cancel_futures=True)  # a late Qwen answer is simply dropped
+
+
+def _propose_loop(intent, ctx, proposers, personal, learner, review, plan_library, library, catalog, promote,
+                  depth, attempts, feedback, exclude, last) -> CustomResult:
     for proposer in proposers:
         try:
             cand = proposer(intent, ctx, feedback, exclude)
@@ -136,16 +246,7 @@ def build_custom_plan(intent: LearningIntent, *, level: str | None = None, libra
         attempts.append({"proposer": cand.proposer, "status": report.status,
                          "issues": [f"{i.check}: {i.message}" for i in report.errors + report.uncertain][:6]})
         if report.status == "verified":
-            stored = None
-            if promote:
-                from ...knowledge.plan_library import PromotionError
-                try:
-                    stored = plan_library.promote(cand, report)
-                except PromotionError as exc:
-                    log.info("verified plan not stored: %s", exc)
-            record = build_record(cand, report, library=library, catalog=catalog, status="verified",
-                                  template=stored, attempts=attempts)
-            return CustomResult("verified", record, report, attempts, stored, cand)
+            return _verified_result(cand, report, attempts, plan_library, library, catalog, promote)
         review.add(cand, report, "needs review" if report.status == "needs_review" else "rejected")
         feedback = [i.message for i in report.errors + report.uncertain]
         exclude |= {i.item for i in report.issues if i.item and i.severity in ("error", "uncertain")}

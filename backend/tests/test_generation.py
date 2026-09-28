@@ -359,3 +359,20 @@ def test_parries_threat_validator():
         _parries(fen, "Ke2")  # ignores the threat: the knight is still en prise
     with pytest.raises(validators.Fail):
         _parries("4k3/8/8/8/4N3/8/8/4K3 w - - 0 1", "Nc3")  # nothing was threatened
+
+
+def test_a_slow_qwen_proposal_doesnt_block_generation(tmp_path, engine):
+    import time
+    lib = make_library(tmp_path)
+    good = json.dumps({"fen": "2r3k1/5ppp/8/3N4/8/8/5PPP/6K1 w - - 0 1", "solution": "Ne7+"})
+
+    class Slow(FakeTeacher):
+        def complete(self, messages, max_tokens=None):
+            time.sleep(4)
+            return super().complete(messages, max_tokens)
+
+    t0 = time.monotonic()
+    result = gen.generate("knight_fork", lib, engine, count=1, seed=2, use_qwen=True, teacher=Slow(good),
+                          max_attempts=6, gen_log=_log(tmp_path))
+    assert len(result.accepted) == 1 and result.accepted[0].source["source_type"] == "procedural"
+    assert time.monotonic() - t0 < 4  # a constructed position was verified while Qwen was still thinking

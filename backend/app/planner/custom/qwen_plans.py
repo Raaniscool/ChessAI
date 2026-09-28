@@ -137,21 +137,29 @@ def _concept_for(comp: dict, claims: dict) -> str | None:
     return None
 
 
-def propose(intent, ctx, *, feedback: list[str] | None = None, teacher=None, generate=None) -> CandidatePlan | None:
-    """A Qwen-organised candidate, or None when Qwen isn't available or answers nonsense."""
+def qwen_teacher(teacher=None):
+    """The Qwen teacher to organise plans with, or None when Qwen isn't set up."""
     from ...config import get_settings
     from ...teacher.qwen import QwenTeacher, TeacherUnavailable
+
+    if teacher is not None:
+        return teacher
+    if not get_settings().qwen_configured():
+        return None
+    try:
+        return QwenTeacher()
+    except TeacherUnavailable:
+        return None
+
+
+def organize(base: CandidatePlan, intent, ctx, *, feedback: list[str] | None = None,
+             teacher=None) -> CandidatePlan | None:
+    """Qwen reorganises a composed plan (order, grouping, objectives). No engine use: safe to run
+    in a background thread while the composed plan is being verified."""
+    from ...teacher.qwen import TeacherUnavailable
     from ..planner import extract_json
 
-    if teacher is None:
-        if not get_settings().qwen_configured():
-            return None
-        try:
-            teacher = QwenTeacher()
-        except TeacherUnavailable:
-            return None
-    base = compose(intent, ctx, generate=generate)
-    if not base.units:
+    if teacher is None or not base.units:
         return None
     if all(u.role in ("topic", "opening", "definition") for u in base.units):
         return None  # nothing to organise: catalog lessons already come in order
@@ -166,3 +174,11 @@ def propose(intent, ctx, *, feedback: list[str] | None = None, teacher=None, gen
     keep = [u for u in base.units if u.role in ("topic", "opening", "definition")]
     cand.units = keep + [u for u in cand.units if u.role not in ("topic",)]
     return cand
+
+
+def propose(intent, ctx, *, feedback: list[str] | None = None, teacher=None, generate=None) -> CandidatePlan | None:
+    """A Qwen-organised candidate, or None when Qwen isn't available or answers nonsense."""
+    teacher = qwen_teacher(teacher)
+    if teacher is None:
+        return None
+    return organize(compose(intent, ctx, generate=generate), intent, ctx, feedback=feedback, teacher=teacher)
