@@ -780,6 +780,8 @@ async function sendChat() {
   const message = input.value.trim()
   if (!message) return
   input.value = ""
+  // "What's a fork?" — answered at once from the library (no AI call, no lesson built).
+  if (MAYBE_DEFINITION.test(message) && await quickAnswer(message)) return
   // "I want to learn ___" (or anything typed before a lesson starts) builds a plan.
   if (!state.sessionId || isLearnRequest(message)) {
     await requestPlan(message)
@@ -819,6 +821,28 @@ async function sendChat() {
   }
 }
 
+const MAYBE_DEFINITION = /^\s*(?:(?:so|ok|okay|hey|please)[,\s]+)?(what|whats|define|definition|meaning|explain what|tell me what)\b/i
+
+async function quickAnswer(message) {
+  let res
+  try { res = await api("/api/knowledge/answer", "POST", {message}) } catch (_) { return false }
+  const a = res && res.answer
+  if (!a) return false
+  addMsg(message, "user")
+  const div = addMsg(`📖 <b>${escapeHtml(a.term)}</b> — ${escapeHtml(a.text)}`, "assistant", true)
+  div.classList.add("quick-answer")
+  if (!a.verified) {
+    const note = document.createElement("div")
+    note.className = "muted"
+    note.textContent = "From my glossary — I don't have checked example positions for this yet."
+    div.appendChild(note)
+  }
+  div.appendChild(suggestionChips([a.lesson_goal], [a.examples ? `Make me a lesson on ${a.term.toLowerCase()}` :
+    `Show me what you can teach about ${a.term.toLowerCase()}`]))
+  narrator.auto(div, "explanations")
+  return true
+}
+
 // ---------- learning plans ----------
 
 const LEARN_REQUEST = /^\s*(i\s*(really\s*)?(want|would like|'d like|wanna|need)\s*(to\s*)?(learn|study|practice|practise|get better at|improve|master)|teach me|help me (learn|with|improve|understand)|show me how|how do i (play|learn)|can you teach me|learn\b|plan\b)/i
@@ -838,8 +862,8 @@ async function requestPlan(goal, body = null) {
   const pending = addMsg("🧭 Looking for verified examples and building your lesson…", "system")
   // Without library examples the server builds new positions and checks each with Stockfish.
   const slow = setTimeout(() => {
-    pending.textContent = "🧭 Still working: if my library has no checked examples of this, I build new " +
-      "positions and check every one with Stockfish first (up to ~20 seconds)…"
+    pending.textContent = "🧭 Still working: I'm checking every position with Stockfish before you see it — " +
+      "new material takes a few seconds the first time…"
   }, 3000)
   const btn = document.getElementById("btn-chat")
   btn.disabled = true

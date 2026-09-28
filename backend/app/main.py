@@ -9,6 +9,7 @@ from pathlib import Path
 
 import json
 import logging
+import time
 import threading
 from contextlib import asynccontextmanager
 
@@ -64,10 +65,22 @@ async def revalidate_frontend(request: Request, call_next):
     fetching a newer app.js (or the other way round), and the page breaks with errors
     like "Cannot read properties of null". Static files carry an ETag, so the re-check
     is a cheap 304 when nothing changed."""
+    started = time.perf_counter()
     response = await call_next(request)
     if not request.url.path.startswith("/api/"):
         response.headers["Cache-Control"] = "no-cache"
+    else:
+        # Latency is visible (browser dev tools → Timing) and slow requests are logged.
+        # For streamed replies this is the time to the first byte.
+        ms = (time.perf_counter() - started) * 1000
+        response.headers["Server-Timing"] = f"app;dur={ms:.0f}"
+        if ms > SLOW_REQUEST_MS:
+            logging.getLogger("chessai").info("slow request: %s %s took %.1fs", request.method,
+                                              request.url.path, ms / 1000)
     return response
+
+
+SLOW_REQUEST_MS = 3000
 
 
 # --- error handling -------------------------------------------------------
@@ -292,6 +305,16 @@ def knowledge_intent(body: IntentRequest) -> dict:
 
     concepts = lesson_request(get_knowledge(), body.message[:300])
     return {"lesson_request": bool(concepts), "concepts": concepts}
+
+
+@app.post("/api/knowledge/answer")
+def knowledge_answer(body: IntentRequest) -> dict:
+    """An instant answer to "what is a fork?" from the library (no AI call), or null."""
+    from .knowledge.answers import quick_answer
+    from .knowledge.glossary import get_glossary
+    from .knowledge.library import get_knowledge
+
+    return {"answer": quick_answer(body.message[:300], get_knowledge(), get_glossary())}
 
 
 @app.get("/api/plans")

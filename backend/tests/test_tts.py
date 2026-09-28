@@ -235,3 +235,10 @@ def test_speak_endpoint_tells_the_browser_to_fall_back(api):
     fake.fail = True
     r = c.post("/api/tts/speak", json={"text": "Hello"})
     assert r.status_code == 503 and r.json()["fallback"] == "browser"
+
+
+def test_api_responses_carry_server_timing(api):
+    c, _ = api
+    r = c.get("/api/tts")
+    assert r.headers["server-timing"].startswith("app;dur=")
+    assert "server-timing" not in c.get("/").headers  # page files: no timing noise

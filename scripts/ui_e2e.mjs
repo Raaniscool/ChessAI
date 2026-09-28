@@ -107,6 +107,18 @@ async function finishDemo(label) {
   await waitFor(() => !$("btn-play").classList.contains("hidden") && continueShown(), label, 40000)
 }
 
+// 0c) "What's a fork?" is answered at once from the library — no plan built
+{
+  const plansBefore = (await planIds()).length
+  $("chat-input").value = "What is a fork?"
+  await sendChat()
+  await waitFor(() => document.querySelector("#messages .quick-answer"), "quick answer", 10000)
+  const qa = document.querySelector("#messages .quick-answer")
+  check(/Fork/.test(qa.textContent) && /attacking two/.test(qa.textContent) && qa.querySelector(".chip"),
+    "a definition question gets an instant library answer with a lesson offer: " + qa.textContent.slice(0, 70))
+  check((await planIds()).length === plansBefore, "a definition question doesn't build a plan")
+}
+
 // 1) Planner from the chat box (before any lesson)
 $("chat-input").value = "I want to learn the Sicilian"
 await sendChat()
