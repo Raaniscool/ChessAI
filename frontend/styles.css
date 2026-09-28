@@ -499,3 +499,21 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
   .side-panel { top: auto; bottom: 0; right: 0; left: 0; width: auto; max-height: 80vh;
     border-radius: var(--radius) var(--radius) 0 0; }
 }
+
+/* ---------- phones ---------- */
+@media (max-width: 600px) {
+  header { padding: 10px 12px; gap: 8px; }
+  .logo { font-size: 26px; }
+  header h1 { font-size: 17px; }
+  .tabs { order: 3; width: 100%; overflow-x: auto; }  /* its own row, never pushed off-screen */
+  .tab { flex: 1; padding: 8px 10px; white-space: nowrap; }
+  .speech-controls select { max-width: 120px; }
+  .layout { padding-left: 8px; padding-right: 8px; gap: 10px; }
+  .board-pane { padding: 8px; }
+  .lesson-pane { padding: 12px; min-height: 380px; height: 70vh; }
+  /* 16px inputs: iOS zooms the whole page into any smaller input when it's tapped */
+  #chat-input, #ga-username, #ga-pgn, .moment-ask input, .clarify-other input,
+  .onb-row input, .onb-row select, .speech-controls select { font-size: 16px; }
+  .chip, .btn { min-height: 36px; }  /* comfortable tap targets */
+  .side-panel { max-height: 88vh; }
+}
