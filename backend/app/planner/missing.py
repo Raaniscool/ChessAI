@@ -42,6 +42,7 @@ class Resolution:
     broader: str | None       # concept whose examples cover the term only in general
     related: list[str]        # concept ids worth practising next
     via: str                  # "text" | "qwen"
+    practice: dict | None = None  # glossary skill terms: which broader positions practise it
 
 
 def _qwen_map(goal: str, library, glossary, teacher=None) -> tuple[str, str] | None:
@@ -124,7 +125,8 @@ def resolve(goal: str, library, glossary, use_qwen: bool = True, teacher=None,
     if term is not None:
         return Resolution(term=term.term, concept=None, text=term.definition, text_source="glossary",
                           broader=term.broader if term.broader in library.concepts else None,
-                          related=[c for c in term.related if c in library.concepts], via=via)
+                          related=[c for c in term.related if c in library.concepts], via=via,
+                          practice=term.practice)
     if concept is not None:
         c = library.concepts[concept]
         return Resolution(term=c.name, concept=concept, text=c.summary, text_source="concept",
@@ -147,6 +149,49 @@ def _broader_with_examples(library, concept_id: str) -> str | None:
     return None
 
 
+LEVEL_TARGET = {"beginner": 900, "intermediate": 1300, "advanced": 1700}  # mid-band (learner.rating.LEVEL_BANDS)
+SKILL_EXAMPLES = 4
+
+
+REACH = 250  # a skill position more than this above the learner's target is out of reach
+
+
+def skill_examples(library, concept: str, practice: dict, target: int, usage=None,
+                   count: int = SKILL_EXAMPLES) -> tuple[list, int]:
+    """Verified global positions of `concept` (and its children) that practise a skill, and the
+    number of the learner's own moves each needs. At least `min_learner_moves` — relaxed (never
+    below 2) when no such position is within reach of the target, since longer lines are
+    inherently harder. Nearest the target, unseen first, one concept at a time so the set
+    isn't four of the same trick."""
+    from ..knowledge.difficulty import _learner_moves, puzzle_rating
+
+    seen = set(usage.last_used()) if usage is not None and hasattr(usage, "last_used") else set()
+    candidates: dict[str, object] = {}
+    for cid in [concept, *library.descendants(concept)]:
+        for ex in library.examples_for(cid):
+            if ex.status == "verified" and ex.tier != "personal" and _learner_moves(ex) >= 2:
+                candidates[ex.id] = ex
+    need = int(practice.get("min_learner_moves", 2))
+    while True:
+        usable = [e for e in candidates.values() if _learner_moves(e) >= need]
+        close = any(puzzle_rating(e) <= target + REACH for e in usable)
+        if close or need <= 2:
+            break
+        need -= 1
+    pools: dict[str, list] = {}
+    for ex in usable:
+        pools.setdefault(ex.concepts[0] if ex.concepts else ex.concept, []).append(ex)
+    for pool in pools.values():
+        pool.sort(key=lambda e: (e.id in seen, abs(puzzle_rating(e) - target), e.id))
+    order = sorted(pools, key=lambda c: (pools[c][0].id in seen, abs(puzzle_rating(pools[c][0]) - target), c))
+    picked = []
+    while len(picked) < count and any(pools[c] for c in order):
+        for cid in order:
+            if pools[cid] and len(picked) < count:
+                picked.append(pools[cid].pop(0))
+    return sorted(picked, key=puzzle_rating), need
+
+
 def _text_lesson(lesson_id: str, title: str, text: str, related_names: list[str]) -> dict:
     from ..lessons.schema import parse_lesson
 
@@ -162,7 +207,8 @@ def _text_lesson(lesson_id: str, title: str, text: str, related_names: list[str]
 
 def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str | None = None,
                   use_qwen: bool = True, teacher=None, usage=None, generate_budget: float = GENERATE_BUDGET,
-                  on_progress=None, engine_factory=None, clarify: bool = False) -> dict | None:
+                  on_progress=None, engine_factory=None, clarify: bool = False,
+                  target_rating: int | None = None) -> dict | None:
     """A plan for a request the verified library and the catalog couldn't serve."""
     from ..knowledge.generation import generate, supported
     from ..knowledge.glossary import get_glossary
@@ -232,8 +278,27 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
              [lesson], GENERATED_VERIFIED_BY, concepts=[concept.id], example_ids=[e.id for e in generated],
              generated=True)
 
+    # 3a. a skill ("calculation"): the broader idea's verified positions that train it
+    skill = []
+    if res.practice and res.broader and not generated:
+        target = target_rating or LEVEL_TARGET.get(level or "", LEVEL_TARGET["intermediate"])
+        skill, need = skill_examples(library, res.broader, res.practice, target, usage)
+    if skill:
+        what = res.practice.get("title") or f"{res.term.lower()} practice"
+        intro = f"{res.text}\n\n{res.practice.get('note', '')}".strip()
+        seq = [(skill[0], "guided")] + [(e, "practice") for e in skill[1:]]
+        names = list(dict.fromkeys(library.concepts[c].name for e in skill for c in e.concepts[:1]
+                                   if c in library.concepts)) or [library.concepts[res.broader].name]
+        lesson = knowledge_lesson(f"plan_{plan_id}_03", f"{res.term}: {what}", intro, seq,
+                                  f"That's the {res.term.lower()} practice done. Want another round?", names)
+        unit(f"{res.term}: {what}", CATEGORY.get(library.concepts[res.broader].category, "tactic"),
+             f"verified positions chosen because each needs {need}+ moves "
+             "of your own — practice for the skill itself.",
+             [lesson], KNOWLEDGE_VERIFIED_BY, concepts=[res.broader], example_ids=[e.id for e in skill])
+        usage.record_used(skill)
+
     # 3. a broader idea's verified examples, labelled as broader
-    if res.broader and not generated:
+    if res.broader and not generated and not skill:
         broad = library.concepts[res.broader]
         retrieval = retrieve(library, RetrievalRequest(concepts=[res.broader], level=level, count=2), usage)
         if retrieval.found and retrieval.sequence:

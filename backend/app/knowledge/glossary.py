@@ -23,6 +23,9 @@ class Term:
     aliases: tuple[str, ...] = ()
     broader: str | None = None
     related: tuple[str, ...] = field(default_factory=tuple)
+    # A skill rather than a pattern ("calculation"): which verified positions of the broader
+    # concept practise it, e.g. {"min_learner_moves": 3, "note": "..."}.
+    practice: dict | None = field(default=None, compare=False, hash=False)
 
 
 class Glossary:
@@ -33,7 +36,8 @@ class Glossary:
     def load(cls, path: Path = GLOSSARY_FILE) -> "Glossary":
         data = json.loads(path.read_text(encoding="utf-8"))
         return cls([Term(id=t["id"], term=t["term"], definition=t["definition"], aliases=tuple(t.get("aliases", [])),
-                         broader=t.get("broader"), related=tuple(t.get("related", []))) for t in data["terms"]])
+                         broader=t.get("broader"), related=tuple(t.get("related", [])),
+                         practice=t.get("practice")) for t in data["terms"]])
 
     def match(self, text: str) -> Term | None:
         """The term named in `text` (the longest alias wins), or None."""

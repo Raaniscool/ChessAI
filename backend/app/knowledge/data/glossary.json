@@ -59,8 +59,10 @@
   {"id": "fianchetto", "term": "Fianchetto", "aliases": ["fianchetto", "fianchettoed bishop"],
    "definition": "A fianchetto develops a bishop to the long diagonal by moving the knight's pawn one square: g3 and Bg2 (or b3 and Bb2) for White, g6 and Bg7 (or b6 and Bb7) for Black.",
    "broader": "openings", "related": ["openings", "king_safety"]},
-  {"id": "calculation", "term": "Calculation", "aliases": ["calculation", "calculating", "calculate variations", "visualization", "visualisation"],
+  {"id": "calculation", "term": "Calculation", "aliases": ["calculation", "calculating", "calculate", "calculate variations", "visualization", "visualisation", "think ahead", "thinking ahead", "see further ahead"],
    "definition": "Calculation is working out moves in your head before you play them. A simple method: list the forcing moves (checks, captures and threats), look at the opponent's best answer to each, and only then choose.",
-   "broader": "tactics", "related": ["tactics", "missed_threat", "zwischenzug"]}
+   "broader": "tactics", "related": ["tactics", "missed_threat", "zwischenzug"],
+   "practice": {"min_learner_moves": 3, "title": "positions that need calculating",
+                "note": "Each of these takes more than one move of your own to finish, so you have to see the whole line, not just the first move. Before each move, list the checks, captures and threats, and ask what your opponent will answer."}}
  ]
 }

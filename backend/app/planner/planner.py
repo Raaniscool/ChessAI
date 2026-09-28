@@ -309,15 +309,15 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     if not units:
         from ..config import get_settings
         subject = _subject(goal)
-        if related:
-            message = (f"I don't have verified lessons on “{subject}” yet, and I won't give you a plan "
-                       "for something else. Related topics I can teach:")
-        else:
-            message = f"I don't have verified lessons on “{subject}” yet. Here's what I can teach:"
+        # The suggestion chips are shown right after the message, so the list sentence comes last.
+        message = f"I don't have verified lessons on “{subject}” yet"
+        message += ", and I won't give you a plan for something else." if related else "."
         if not get_settings().qwen_configured():
-            message += " (With Qwen connected I can also build lessons for openings that aren't in my library.)"
+            message += " With Qwen connected I can also build lessons for openings that aren't in my library."
         suggestions = [f"I want to learn {t.title}" for t in related[:4]]
         suggestions += [s for s in _suggestions(catalog) if s not in suggestions]
+        if suggestions:
+            message += " Related topics I can teach:" if related else " Some things I can teach:"
         raise PlanError(message, suggestions[:6])
 
     if repertoire:
@@ -436,7 +436,7 @@ def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_
     # vs the king-and-queen topic's "stalemate" alias) is not a request for that topic.
     if library_first and _glossary_outranks_catalog(cleaned, catalog or get_catalog()):
         record = _fallback(cleaned, level or _profile_level(profile), catalog, use_qwen, engine,
-                           clarify=intent is not None, teacher=teacher)
+                           clarify=intent is not None, teacher=teacher, target=_profile_target(profile))
         if record is not None:
             return record
     # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
@@ -457,7 +457,7 @@ def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_
         # Nothing verified in the library or the catalog: never a dead end for something we
         # recognise (generated + engine-checked positions, a broader idea, a labelled definition).
         record = _fallback(cleaned, level or _profile_level(profile), catalog, use_qwen, engine,
-                           clarify=intent is not None, teacher=teacher)
+                           clarify=intent is not None, teacher=teacher, target=_profile_target(profile))
         if record is None:
             raise  # nothing recognisable in the request: keep the answer + suggestions
         return record
@@ -470,7 +470,16 @@ def _glossary_outranks_catalog(goal: str, catalog: Catalog) -> bool:
     return bool(found) and found[1] > catalog.best_alias_size(goal)
 
 
-def _fallback(goal: str, level, catalog, use_qwen: bool, engine, clarify: bool = False, teacher=None) -> dict | None:
+def _profile_target(profile) -> int | None:
+    from ..learner.personalize import personalized
+    if not personalized(profile):
+        return None
+    from ..learner.views import target_rating
+    return target_rating(profile, purpose="practice")
+
+
+def _fallback(goal: str, level, catalog, use_qwen: bool, engine, clarify: bool = False, teacher=None,
+              target: int | None = None) -> dict | None:
     from .intent import ClarificationNeeded
     from .missing import fallback_plan
 
@@ -478,7 +487,7 @@ def _fallback(goal: str, level, catalog, use_qwen: bool, engine, clarify: bool =
 
     try:  # the engine is started only if positions are actually generated
         return fallback_plan(goal, catalog=catalog, engine=engine, engine_factory=get_engine, level=level,
-                             use_qwen=use_qwen, clarify=clarify, teacher=teacher)
+                             use_qwen=use_qwen, clarify=clarify, teacher=teacher, target_rating=target)
     except ClarificationNeeded:
         raise  # Qwen saw several readings: the learner chooses
     except Exception as exc:  # the fallback must never turn a clean "not available" into a crash
