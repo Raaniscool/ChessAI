@@ -556,11 +556,21 @@ def _subject(goal: str) -> str:
     return cleaned[:60] or goal[:60]
 
 
+_CATEGORY_TITLE = {"opening": "Openings", "tactic": "Tactics", "endgame": "Endgames", "strategy": "Strategy"}
+
+
 def _default_title(goal: str, ordered: list[tuple[Topic, str | None]]) -> str:
     main = [t for t, required_by in ordered if required_by is None]
     if len(main) == 1:
         return f"Learn: {main[0].title}"
-    return f"Plan: {_subject(goal)}"
+    subject = _subject(goal)
+    cats = {t.category for t in main}
+    # "I keep losing in the endgame" / "help me get better at tactics": name the subject, don't echo
+    if re.match(r"^(i|i'm|im|help|how|my|what|why)\b", subject, re.I) and len(cats) == 1 and \
+            next(iter(cats)) in _CATEGORY_TITLE:
+        subject = _CATEGORY_TITLE[next(iter(cats))]
+    subject = re.sub(r"\b(white|black)\b", lambda m: m.group(1).capitalize(), subject)
+    return f"Plan: {subject[:1].upper()}{subject[1:]}"
 
 
 def _default_summary(units: list[dict]) -> str:
