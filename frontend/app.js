@@ -821,7 +821,7 @@ async function sendChat() {
   }
 }
 
-const MAYBE_DEFINITION = /^\s*(?:(?:so|ok|okay|hey|please)[,\s]+)?(what|whats|define|definition|meaning|explain what|tell me what)\b/i
+const MAYBE_DEFINITION = /^\s*(?:(?:so|ok|okay|hey|please)[,\s]+)?(what|whats|define|definition|meaning|explain what|tell me what|how (does|do|can) (?!i\b|you\b|we\b))/i
 
 async function quickAnswer(message) {
   let res
@@ -837,8 +837,10 @@ async function quickAnswer(message) {
     note.textContent = "From my glossary — I don't have checked example positions for this yet."
     div.appendChild(note)
   }
-  div.appendChild(suggestionChips([a.lesson_goal], [a.examples ? `Make me a lesson on ${a.term.toLowerCase()}` :
-    `Show me what you can teach about ${a.term.toLowerCase()}`]))
+  if (a.source !== "rules") {
+    div.appendChild(suggestionChips([a.lesson_goal], [a.examples ? `Make me a lesson on ${a.term.toLowerCase()}` :
+      `Show me what you can teach about ${a.term.toLowerCase()}`]))
+  }
   narrator.auto(div, "explanations")
   return true
 }

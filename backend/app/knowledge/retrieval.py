@@ -40,6 +40,8 @@ lesson lessons example examples position positions puzzle puzzles exercise exerc
 pattern patterns kind kinds type types way ways idea ideas common typical classic famous
 avoid stop making make prevent spot spotting find finding play playing
 chess game games quiz test try now today
+is are was were be explain explained tell told work works working mean means meaning
+define definition whats rules rule
 """.split())
 
 _REQUEST = re.compile(

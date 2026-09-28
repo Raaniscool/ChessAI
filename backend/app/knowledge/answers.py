@@ -13,7 +13,11 @@ import re
 MAX_QUESTION = 90
 _DEFINITION = re.compile(
     r"^\s*(?:(?:so|ok|okay|hey|please)[,\s]+)?(?:what(?:'s|’s| is| are| does| do)|whats|define|definition of|"
-    r"meaning of|explain what|tell me what|what do you mean by|what is meant by)\b", re.IGNORECASE)
+    r"meaning of|explain what|tell me what|what do you mean by|what is meant by|"
+    r"how (?:does|do|can) (?!i\b|you\b|we\b)[\w' -]{2,40}? (?:move|moves|work|works|capture|captures))\b", re.IGNORECASE)
+_GENERIC_RULES = {"captures", "legal_moves"}  # "how do pawns capture?" is about pawns, not captures in general
+_PIECE_MOVE = re.compile(r"\b(king|queen|rook|bishop|knight|pawn)s?\b[\w' ]{0,12}\b(move|moves|capture|captures|go|jump)\b",
+                         re.IGNORECASE)
 _NOT_DEFINITION = re.compile(
     r"\b(why|best|better|should|this position|this move|here|my move|my game|next move|play (?:now|here)|"
     r"evaluation|eval|win(?:ning)?\?|which move|how do i|how can i)\b", re.IGNORECASE)
@@ -29,7 +33,16 @@ def quick_answer(message: str, library, glossary) -> dict | None:
     """{term, text, source: "library"|"glossary", concept, verified, lesson_goal} or None."""
     if not is_definition_question(message):
         return None
-    for cid in library.match_concepts(message)[:1]:
+    piece = _PIECE_MOVE.search(message)
+    if piece and not set(library.match_concepts(message)) - _GENERIC_RULES:
+        from ..learner.personalize import PIECES  # the same hand-written rule text lessons use
+        name = piece.group(1).lower()
+        text = PIECES[name]
+        return {"term": f"How the {name} moves", "text": text[0].upper() + text[1:] + ".", "source": "rules",
+                "concept": None, "verified": True, "examples": 0,
+                "lesson_goal": None}
+    matched = library.match_concepts(message)
+    for cid in ([c for c in matched if c not in _GENERIC_RULES] or matched)[:1]:
         concept = library.concepts[cid]
         summary = concept.summary.strip()
         if not summary:
