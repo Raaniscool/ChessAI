@@ -187,3 +187,84 @@ loader, profile state transitions, plan-limit enforcement.
 - **Phase 3:** puzzle system (shared by tutor hints + mined puzzles) + more detectors (forks, pins, endgames).
 - **Phase 4–5:** game-analysis UX deepens, trends, re-analysis loop, plan gating UI → the full feedback loop:
   *play → analyze → weaknesses → training → results → better training.*
+
+## 7. What was built: the personal coach
+
+The proposal above is implemented as `backend/app/learner/`, and every planner uses it.
+
+**Onboarding (optional, one card):** rating and platform, or an experience level when the
+rating is unknown (new / rules / casual / club / strong). Also an optional Chess.com username,
+goals and explanation style. The tutor works fully without a username. With one, the thank-you
+message offers **🔍 Analyze my recent games**, which fetches and analyzes them in one click. A
+skipped onboarding counts as no evidence, not as "beginner".
+
+**Learner profile** (`profile.py`, `GET /api/profile`):
+- rating estimate and per-concept status (new / practicing / learned / mastered / weak /
+  needs_review) with a rating for each concept;
+- puzzle and lesson results, hint and reveal use, recurring weaknesses from analyzed games,
+  recent topics, explanation style and TTS preferences.
+
+Every attempt updates it through `record_attempt`. Game findings enter as weaknesses only when
+they recur across several games.
+
+**Difficulty** (`views.py`): `target_rating` = the concept's own rating, or the overall one, plus
+a purpose offset:
+
+| Purpose | Offset |
+|---|---|
+| learn | −190 |
+| practice | −80 |
+| review | −120 |
+| challenge | +60 |
+| simplify | −330 |
+
+`lesson_shape` then decides how many worked examples come before practice (fewer as skill
+grows), whether to use calculation-length lines, and whether to use real-game positions (for
+ideas solved in puzzles but missed in games). Library tiers span roughly 700–1700, so a
+beginner's knight forks are one-movers while a club player gets longer lines.
+
+**In-lesson adaptation** (`adapt.py`, at most 2 changes per lesson):
+- easy success → a harder position;
+- repeated failure → an easier one or a prerequisite;
+- found the key move but lost the line → a calculation position.
+
+**Plans follow the learner** (`personalize.order_topics`): weak and due topics come first, with a
+note explaining why; mastered topics go last, or are listed as "left out" when the plan is full.
+Nothing unrequested is added. Review lessons that would be far too easy are dropped
+(`REVIEW_TOO_EASY`).
+
+**Explanation length** (`teacher/importance.py`): each moment is critical, important, supporting
+or obvious. The word budget per level is:
+
+| Importance | Word budget |
+|---|---|
+| critical | 70 |
+| important | 45 |
+| supporting | 20 |
+| obvious | 8 |
+
+The budget is scaled by the learner's style (brief ×0.6, detailed ×1.5). Obvious moves get a
+line, not a paragraph, and they skip the AI call entirely.
+
+**Lessons read like a coach** (`knowledge_lessons.Said`): later examples don't repeat what the
+lesson already said (the concept summary, template sentences, the provenance note). Role lines
+("Your turn…") appear only when the task changes. The intro gives the reason for the lesson's
+shape without counting the examples twice.
+
+**Questions and skills:**
+- "What is en passant?" and "how does castling work?" are treated as lesson requests, so they get
+  the verified lesson.
+- "How does the knight move?" gets an instant rules answer.
+- A glossary term can declare a *skill* practice filter. Calculation uses it to select verified
+  positions that need 2–3+ of the learner's own moves, near their level, across different tactics.
+
+**Speed:**
+- Library plans take 0.01–0.1 s, and custom plans without Qwen take 0.5–2 s.
+- Qwen organizes plans in the background within `QWEN_PLAN_BUDGET` (8 s), so the learner is never
+  kept waiting on it.
+- `POST /api/knowledge/answer` answers definitions instantly.
+- Every `/api/*` response carries `Server-Timing`, and requests over 3 s are logged.
+
+Tests: `test_learner.py`, `test_adaptive_lessons.py`, `test_lesson_wording.py`,
+`test_questions_and_skills.py`, `test_importance.py`, `test_request_matching.py`, and the UI e2e
+onboarding flow.

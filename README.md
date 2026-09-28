@@ -67,7 +67,7 @@ frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
 frontend/analysis.js   # Game Analysis screen (game-format.js, history-view.js: pure display helpers)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
-docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/GAME_ANALYSIS.md
+docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/GAME_ANALYSIS.md, docs/PERSONALIZATION.md, docs/TTS.md
 requirements.txt
 package.json           # Stockfish WASM engine dependency
 ```
@@ -171,6 +171,8 @@ The app never makes you wait for the language model to see a result:
 **Game analysis:** ✅ Chess.com PGN import, Stockfish game analysis with verified motifs, game history analysis across your last N games (tiered, scored patterns), interactive review, and personalized training plans ([docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md)). Chess.com games are fetched by username. Plans contain only what you asked for, in stages. Personalized, Stockfish-verified puzzles for your recurring weaknesses, and a fallback that never leaves a lesson request empty. Test suite: **1034 passing** (+ 34 frontend). The original proposal is in [docs/PERSONALIZATION.md](docs/PERSONALIZATION.md).
 
 **Understanding requests + custom plans:** ✅ Ambiguous requests ("knight and bishop endgames", "the Philidor", "the Sicilian as White", …) get a short question with genuinely different choices plus "Something else"; answers are remembered, and clear requests are never questioned. When the library has no ready-made plan, a custom plan is built from verified content (new positions are generated and checked by Stockfish when needed), validated for legality, engine correctness, teaching order, topic consistency, personalization and duplication, and only then shown; verified plans are stored with provenance (shared, or kept with the learner when personalized). See [docs/INTENT_AND_CUSTOM_PLANS.md](docs/INTENT_AND_CUSTOM_PLANS.md). Test suite: **1161 passing** (+ 38 frontend, 88 UI e2e checks).
+
+**Personal coach:** ✅ Optional onboarding (rating or experience; Chess.com username optional, with one-click analysis of your recent games), a learner profile that updates from every puzzle, lesson and analyzed game, lessons whose difficulty, length and order follow you, in-lesson adaptation (harder / easier / prerequisite / calculation), explanation length by importance, and natural read-aloud with real voices and text fallback ([docs/PERSONALIZATION.md](docs/PERSONALIZATION.md) §7, [docs/TTS.md](docs/TTS.md)). Test suite: **1327 passing** (+ 56 frontend, 102 UI e2e checks).
 
 The proven MVP loop:
 
