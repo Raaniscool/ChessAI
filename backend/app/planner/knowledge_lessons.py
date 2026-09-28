@@ -55,18 +55,92 @@ def _credit(example) -> str:
     return ""
 
 
-def _header(example, number: int, total: int, role: str) -> str:
-    text = f"Example {number} of {total}: {example.title}."
+class Said:
+    """What the lesson has already told the learner, so later examples don't repeat it: the
+    concept summary, template sentences ("White can only save one of them..."), the same
+    provenance note under every generated position. Color words are ignored when comparing
+    ("Black can only save one" repeats "White can only save one"); squares are not, so every
+    concrete sentence ("Nd2+ attacks the king on f3 and the queen on b3") survives."""
+
+    _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9])")
+    _COLOR = re.compile(r"\b(white|black)('s)?\b")
+
+    def __init__(self, *texts: str):
+        self.sentences: set[str] = set()
+        self.credits: set[str] = set()
+        self.role: str | None = None  # the previous example's role ("Your turn..." only when it changes)
+        for text in texts:
+            self.fresh(text or "")
+
+    def _keys(self, sentence: str) -> set[str]:
+        """The sentence, and — for "Knight fork: knights are the best..." — the part after a short
+        label, so the concept summary counts as said however it was introduced."""
+        key = self._COLOR.sub("side", re.sub(r"\s+", " ", sentence.strip().lower()))
+        head, sep, rest = key.partition(": ")
+        if sep and len(head.split()) <= 4 and len(rest.split()) >= 4:
+            return {key, rest}
+        return {key}
+
+    def fresh(self, text: str, keep_one: bool = True) -> str:
+        """`text` without the sentences already said (paragraphs kept; at least one sentence
+        survives when keep_one). "Black to move." is never dropped."""
+        out_paras, first = [], None
+        for para in text.split("\n\n"):
+            kept = []
+            for sentence in self._SENTENCE.split(para.strip()):
+                if not sentence:
+                    continue
+                first = first or sentence
+                keys = self._keys(sentence)
+                if keys & self.sentences and "to move" not in sentence.lower():
+                    continue
+                self.sentences |= keys
+                kept.append(sentence)
+            if kept:
+                out_paras.append(" ".join(kept))
+        if not out_paras and keep_one and first:
+            return first
+        return "\n\n".join(out_paras)
+
+    def credit(self, example) -> str:
+        """Provenance once per kind per lesson (a Lichess puzzle's own link is always shown)."""
+        text = _credit(example)
+        kind = (example.source or {}).get("source_type")
+        if not text or (kind != "lichess_puzzle" and kind in self.credits):
+            return ""
+        self.credits.add(kind)
+        return text
+
+
+def _title(example, concept_names: list[str]) -> str:
+    """ "Knight fork: win the queen" -> "win the queen" inside a knight-fork lesson."""
+    head, sep, rest = example.title.partition(":")
+    if sep and rest.strip() and head.strip().lower() in {n.lower() for n in concept_names}:
+        return rest.strip()
+    return example.title
+
+
+def _header(example, number: int, total: int, role: str, concept_names: list[str] | None = None,
+            said: Said | None = None) -> str:
+    text = f"Example {number} of {total} — {_title(example, concept_names or [])}."
     if example.description:
-        text += f" {example.description}"
+        description = said.fresh(example.description, keep_one=False) if said else example.description
+        if description:
+            text += f" {description}"
+    if said is not None:
+        repeated = said.role == role
+        said.role = role
+        if repeated:
+            return text
     return f"{text}\n\n{ROLE_TEXT[role]}"
 
 
-def _explanation(example) -> str:
-    parts = [example.explanation or example.description]
-    credit = _credit(example)
-    if credit:
-        parts.append(credit)
+def _explanation(example, said: Said | None = None) -> str:
+    text = example.explanation or example.description
+    if said:
+        parts = [said.fresh(text or ""), said.credit(example)]
+    else:
+        parts = [text, _credit(example)]
     return "\n\n".join(p for p in parts if p)
 
 
@@ -135,16 +209,18 @@ def _demo(example, rep, start: int, end: int, text: str, with_highlights: bool) 
     return step
 
 
-def example_steps(example, role: str, number: int, total: int, concept_names: list[str]) -> list[dict]:
-    """Lesson steps presenting one verified example in the given role."""
+def example_steps(example, role: str, number: int, total: int, concept_names: list[str],
+                  said: Said | None = None) -> list[dict]:
+    """Lesson steps presenting one verified example in the given role. `said` (one per lesson)
+    keeps later examples from repeating what earlier steps already told the learner."""
     rep = example.replay()
     n = len(example.moves)
-    header = _header(example, number, total, role)
-    closing = {"type": "teach", "text": _explanation(example),
-               "board": _board(rep.final.fen(), example), "example": example.id}
     key = example.key_ply
-    if role == "demonstration" or key is None:
-        header = header.replace(ROLE_TEXT[role], ROLE_TEXT["demonstration"])
+    shown = "demonstration" if role == "demonstration" or key is None else role
+    header = _header(example, number, total, shown, concept_names, said)
+    closing = {"type": "teach", "text": _explanation(example, said),
+               "board": _board(rep.final.fen(), example), "example": example.id}
+    if shown == "demonstration":
         return [_demo(example, rep, 0, n, header, True), closing]
 
     steps: list[dict] = []
@@ -214,8 +290,9 @@ def knowledge_lesson(lesson_id: str, title: str, intro: str, sequence: list[tupl
     if reminder:
         intro = f"{intro}\n\n{reminder}"
     steps: list[dict] = [{"type": "teach", "text": intro, "board": {"fen": examples[0].start_fen}}]
+    said = Said(intro)
     for number, (example, role) in enumerate(sequence, start=1):
-        steps += example_steps(example, role, number, len(sequence), concept_names)
+        steps += example_steps(example, role, number, len(sequence), concept_names, said)
     lesson = {
         "id": lesson_id,
         "title": title,
@@ -228,6 +305,10 @@ def knowledge_lesson(lesson_id: str, title: str, intro: str, sequence: list[tupl
     }
     parse_lesson(lesson, course_id="_generated")  # same validation as hand-written lessons
     return lesson
+
+
+def completion_text(subject: str) -> str:
+    return f"That's the {subject.lower()} lesson done. Want another round, or shall we move on?"
 
 
 def _names(library, concepts: list[str]) -> list[str]:
@@ -360,7 +441,7 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
     examples_lesson = knowledge_lesson(
         f"{prefix}a", f"{subject}: see it in real lines" if opening else f"{subject}: understand the idea",
         intro, retrieval.sequence,
-        f"Lesson complete — you've seen {subject.lower()} in action.", names, reminder=reminder)
+        completion_text(subject), names, reminder=reminder)
     review_lesson = None
     review_text = _review_intro(retrieval, shape, subject)
     if review_text:

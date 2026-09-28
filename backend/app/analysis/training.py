@@ -27,7 +27,7 @@ from ..knowledge.retrieval import RetrievalRequest, retrieve
 from ..lessons.schema import parse_lesson
 from ..planner.catalog import get_catalog
 from ..planner.generator import move_hints, topic_lessons
-from ..planner.knowledge_lessons import CATEGORY, _distinct_titles, example_steps
+from ..planner.knowledge_lessons import CATEGORY, Said, _distinct_titles, completion_text, example_steps
 from . import review
 
 MAX_WEAKNESSES = 3
@@ -143,8 +143,10 @@ def _generated_lesson(lesson_id: str, subject: str, weakness: dict, examples: li
              f"{total_games} analyzed game{'s' if total_games != 1 else ''}). They are not from your games: ChessAI "
              "made them, and Stockfish checked that each one works and really needs the idea.")
     steps = [{"type": "teach", "text": intro, "board": {"fen": examples[0].start_fen}}]
+    said = Said(intro)
+    said.credits |= {"procedural", "qwen_generated"}  # the intro already says who made them
     for k, example in enumerate(examples, start=1):
-        steps += example_steps(example, "practice", k, len(examples), names)
+        steps += example_steps(example, "practice", k, len(examples), names, said)
     return _lesson(lesson_id, f"{subject}: new puzzles for you", steps,
                    f"Done — {len(examples)} new {subject.lower()} puzzle{'s' if len(examples) != 1 else ''} solved.",
                    names, personal=True, origin={"type": PLANNER, "weakness": weakness["key"],
@@ -225,15 +227,16 @@ def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total
                                  usage)
         steps = [intro]
         if retrieval and retrieval.found:
+            said = Said(intro.get("text", ""))
             for k, (example, role) in enumerate(retrieval.sequence, start=1):
-                steps += example_steps(example, role, k, len(retrieval.sequence), names)
+                steps += example_steps(example, role, k, len(retrieval.sequence), names, said)
             used_examples += retrieval.examples
         if steps == [intro]:
             intro["text"] += ("\n\nThe lesson library has no verified examples of this yet, so we'll work "
                               "with positions from your own games.")
         if len(steps) > 1 or not picked:
             unit_lessons.append(_lesson(f"{prefix}a", f"{subject}: learn the pattern", steps,
-                                        f"You've seen {subject.lower()} in action.", names,
+                                        completion_text(subject), names,
                                         origin={"type": PLANNER, "weakness": weakness["key"]}))
         if picked:
             own_steps = [] if unit_lessons else [intro]

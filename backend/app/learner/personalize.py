@@ -106,11 +106,11 @@ def reason(shape: dict, profile: LearnerProfile, concept: str | None, name: str)
     elif shape["status"] in ("practicing", "learned"):
         text = f"You've practised {subject} before, so these positions are a step up."
     elif shape["level"] == "advanced":
-        text = "One quick example, then straight to positions you solve yourself."
+        text = "You're a strong player, so we'll keep the watching short."
     elif shape["demos"] >= 2:
-        text = f"Since this is new, I'll show you {shape['demos']} examples before you try one."
+        text = "Since this is new, we'll take it step by step."
     else:
-        text = "I'll show you one example, then you'll find the key move yourself."
+        text = "You know the basics, so we'll keep the watching short."
     if weakness and not shape["realistic"]:
         games = weakness.get("game_count")
         total = weakness.get("total_games")
