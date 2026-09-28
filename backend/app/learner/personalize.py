@@ -136,3 +136,31 @@ def plan_note(profile: LearnerProfile, shape: dict, roles: list[str], why: str) 
     return {"rating": profile.rating, "level": shape["level"], "status": shape["status"],
             "gaps": shape["gaps"], "target_rating": shape["target_rating"], "roles": roles, "reason": why,
             "purpose": shape["purpose"]}
+
+
+def order_topics(topics: list, profile: LearnerProfile | None, library) -> tuple[list, dict[str, str]]:
+    """A plan of several requested topics, in the order this learner needs them.
+
+    Topics the learner has struggled with (or that are due for review) come first; topics they
+    have mastered go last, as a quick check. Nothing is added or dropped — only what was asked
+    for — and a learner the tutor knows nothing about keeps the catalog's order.
+    Returns (topics, {topic_id: why it is where it is})."""
+    if not personalized(profile) or not profile.concepts or len(topics) < 2:
+        return topics, {}
+    by_topic: dict[str, list[str]] = {}
+    for cid, concept in library.concepts.items():
+        for tid in concept.topics:
+            by_topic.setdefault(tid, []).append(cid)
+    rank, notes = {}, {}
+    for topic in topics:
+        views = [concept_view(profile, cid, library) for cid in by_topic.get(topic.id, []) if cid in profile.concepts]
+        if any(v["status"] == "weak" for v in views):
+            rank[topic.id], notes[topic.id] = 0, "This gave you trouble before, so we start here."
+        elif any(v["needs_review"] for v in views):
+            rank[topic.id], notes[topic.id] = 0, "It's been a while since you practised this — a refresher first."
+        elif views and all(v["status"] == "mastered" for v in views):
+            rank[topic.id], notes[topic.id] = 2, "You've mastered this, so it's a quick check at the end."
+        else:
+            rank[topic.id] = 1
+    ordered = sorted(topics, key=lambda t: rank[t.id])  # stable: the catalog's order within each group
+    return ordered, notes

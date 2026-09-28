@@ -936,7 +936,7 @@ function renderPlan(res) {
     `<li>${escapeHtml(s.title)}: <span class="muted">${escapeHtml(s.reason)}</span></li>`).join("")
   const div = addMsg(
     `🧭 <b>${escapeHtml(plan.title)}</b><br>${escapeHtml(plan.summary)}<ol class="plan-units">${units}</ol>` +
-    (skipped ? `<div class="muted">Left out because I couldn't verify them:</div><ul class="plan-units">${skipped}</ul>` : ""),
+    (skipped ? `<div class="muted">Left out of this plan:</div><ul class="plan-units">${skipped}</ul>` : ""),
     "assistant", true)
   const badge = verificationBadge(plan)
   if (badge) {

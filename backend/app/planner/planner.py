@@ -220,8 +220,11 @@ def _suggestions(catalog: Catalog) -> list[str]:
 
 
 def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True,
-                engine=None) -> dict:
-    """Build a plan record: {"plan": {...}, "course": {...}, "lessons": [lesson dicts]}."""
+                engine=None, profile=None) -> dict:
+    """Build a plan record: {"plan": {...}, "course": {...}, "lessons": [lesson dicts]}.
+
+    With a learner `profile`, several requested topics are ordered for the learner (weak first,
+    mastered last — learner.personalize.order_topics); a blank profile changes nothing."""
     catalog = catalog or get_catalog()
     goal = " ".join((goal or "").split())[:MAX_GOAL_LENGTH]
     if len(goal) < 2:
@@ -249,6 +252,11 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
         related = others + [t for t in related if t not in others]
     # Only what was asked for becomes a unit. Prerequisites ("Opening principles" before the
     # Sicilian) are suggested next to the plan, never added to it.
+    personal_notes: dict[str, str] = {}
+    if profile is not None and not repertoire:
+        from ..knowledge.library import get_knowledge
+        from ..learner.personalize import order_topics
+        chosen, personal_notes = order_topics(chosen, profile, get_knowledge())
     ordered = [(t, None) for t in chosen][:MAX_UNITS]
     chosen_set = {t.id for t in chosen}
     prerequisites = [{"topic_id": t.id, "title": t.title, "for": required_by}
@@ -258,7 +266,9 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     plan_id = uuid.uuid4().hex[:8]
     units: list[dict] = []
     lessons: list[dict] = []
-    skipped: list[dict] = []
+    # a mastered topic that no longer fits (weak ones went first) is named, not silently dropped
+    skipped: list[dict] = [{"title": t.title, "reason": "You've already mastered this."}
+                           for t in chosen[MAX_UNITS:] if "mastered" in personal_notes.get(t.id, "")]
 
     def add_unit(title, category, reason, verified_by, new_lessons, topic_id=None):
         units.append({
@@ -274,6 +284,8 @@ def create_plan(goal: str, catalog: Catalog | None = None, use_qwen: bool = True
     for n, (topic, _) in enumerate(ordered, start=1):
         reason = (qwen.reasons.get(topic.id) if qwen else "") or (
             f"Your answer {repertoire.description}: {topic.summary}" if repertoire else _default_reason(topic))
+        if topic.id in personal_notes:
+            reason = f"{personal_notes[topic.id]} {reason}"
         add_unit(topic.title, topic.category, reason, "catalog + Stockfish",
                  topic_lessons(f"plan_{plan_id}_{n:02d}", topic), topic.id)
 
@@ -429,7 +441,7 @@ def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_
             return record
     # the same cleaned, length-capped goal (a pasted essay used to become the plan title)
     try:
-        return create_plan(cleaned, catalog=catalog, use_qwen=use_qwen, engine=engine)
+        return create_plan(cleaned, catalog=catalog, use_qwen=use_qwen, engine=engine, profile=profile)
     except PlanError as err:
         if not library_first or len(cleaned) < 2:
             raise

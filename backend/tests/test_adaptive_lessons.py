@@ -371,3 +371,32 @@ def test_review_says_harder_only_when_it_is_and_is_dropped_when_far_too_easy():
         if lesson["title"].endswith(": review"):
             ratings_ = [puzzle_rating(LIB.get(s["example"])) for s in lesson["steps"] if s.get("example")]
             assert max(ratings_) >= target - 350, (ratings_, target)
+
+
+# --- broad requests follow the learner (catalog plans) -----------------------------------------
+def _tactics_plan(profile):
+    from app.planner.planner import create_plan
+    return create_plan("help me get better at tactics", use_qwen=False, profile=profile)["plan"]
+
+
+def test_a_broad_plan_starts_with_what_the_learner_struggles_with_and_ends_with_what_they_master():
+    p = learner(rating=1100, experience="casual")
+    for _ in range(5):
+        p.record_attempt("absolute_pin", 1200, solved=False, first_try=False, revealed=True)
+        p.record_attempt("back_rank_mate", 800, solved=True, first_try=True)
+    p.record_attempt("back_rank_mate", 800, solved=True, first_try=True)
+    from app.planner.catalog import get_catalog
+    asked = {t.id for t in get_catalog().search("help me get better at tactics")}
+    plan = _tactics_plan(p)
+    ids = [u["topic_id"] for u in plan["units"]]
+    assert set(ids) <= asked                      # only what was asked for
+    assert ids[0] == "pins" and "trouble" in plan["units"][0]["reason"], ids
+    if "back_rank_mate" in ids:                   # mastered: last, as a quick check...
+        assert ids[-1] == "back_rank_mate" and "mastered" in plan["units"][-1]["reason"]
+    else:                                         # ...or named as skipped when the plan is full
+        assert any(s["title"] == "Back-rank mate" and "mastered" in s["reason"] for s in plan["skipped"])
+
+
+def test_a_learner_the_tutor_knows_nothing_about_keeps_the_catalog_order():
+    plain = [u["topic_id"] for u in _tactics_plan(None)["units"]]
+    assert [u["topic_id"] for u in _tactics_plan(LearnerProfile())["units"]] == plain
