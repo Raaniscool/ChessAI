@@ -49,3 +49,59 @@ test("onboarding is offered once, only to someone new", () => {
   assert.equal(wantsOnboarding({new: false, onboarding: {}}), false)  // already learning: don't interrupt
   assert.equal(wantsOnboarding(null), false)
 })
+
+// --- the onboarding card in a DOM (jsdom, optional dev dependency) ---------------------------
+let JSDOM = null
+try { ({JSDOM} = await import("jsdom")) } catch (_) { /* optional */ }
+
+async function onboardingDom() {
+  const dom = new JSDOM(`<!doctype html><body><div id="messages"><div id="welcome"></div></div>
+    <aside id="coach-panel" hidden><div class="panel-body"></div></aside>
+    <aside id="settings-panel" hidden><div class="panel-body"></div></aside>
+    <input id="ga-username"></body>`, {url: "http://localhost/"})
+  for (const k of ["window", "document", "localStorage"]) globalThis[k] = dom.window[k]
+  const {setupCoach} = await import("../coach.js")
+  const calls = [], analyzed = [], msgs = []
+  const profile = {new: true, onboarding: {done: false}, rating: 800, level: "beginner", concepts: {},
+    preferences: {explanation: "balanced", tts: {}}}
+  const api = async (url, method, body) => {
+    calls.push({url, method, body})
+    if (!method) return {profile, suggestions: []}  // GET /api/profile: someone new
+    return {profile: {...profile, new: false, onboarding: {done: true}, rating: body.rating || 800}, suggestions: []}
+  }
+  const addMsg = text => { const d = dom.window.document.createElement("div"); d.textContent = text
+    dom.window.document.getElementById("messages").appendChild(d); msgs.push(d); return d }
+  const coach = setupCoach({api, narrator: {auto() {}}, requestPlan() {}, addMsg, escapeHtml: s => s,
+    messagesEl: dom.window.document.getElementById("messages"), analyzeGames: u => analyzed.push(u)})
+  return {dom, coach, calls, analyzed, msgs}
+}
+
+test("onboarding with a Chess.com username offers to analyze the games in one click", {skip: !JSDOM}, async () => {
+  const {dom, coach, calls, analyzed, msgs} = await onboardingDom()
+  assert.equal(await coach.offerOnboarding(), true)
+  const card = dom.window.document.querySelector(".onboarding-card")
+  card.querySelector(".onb-rating").value = "1300"
+  card.querySelector(".onb-username").value = "magnus_fan"
+  card.querySelector(".onb-save").click()
+  await new Promise(r => setTimeout(r, 10))
+  assert.equal(calls.at(-1).url, "/api/profile/onboarding")
+  assert.equal(calls.at(-1).body.username, "magnus_fan")
+  assert.equal(dom.window.document.getElementById("ga-username").value, "magnus_fan")
+  const go = msgs.at(-1).querySelector(".onb-analyze")
+  assert.ok(go, "a one-click offer to analyze the games")
+  go.click()
+  assert.deepEqual(analyzed, ["magnus_fan"])
+  assert.equal(go.disabled, true)
+})
+
+test("onboarding without a username works and offers no game analysis", {skip: !JSDOM}, async () => {
+  const {dom, coach, calls, msgs} = await onboardingDom()
+  await coach.offerOnboarding()
+  const card = dom.window.document.querySelector(".onboarding-card")
+  card.querySelector(".onb-rating").value = "900"
+  card.querySelector(".onb-save").click()
+  await new Promise(r => setTimeout(r, 10))
+  assert.equal(calls.at(-1).body.username, undefined)
+  assert.equal(msgs.at(-1).querySelector(".onb-analyze"), null)
+  assert.match(msgs.at(-1).textContent, /start around/)
+})

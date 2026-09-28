@@ -240,8 +240,16 @@ export function setupCoach(deps) {
   function thanks(body) {
     const p = state.profile
     let text = `Thanks! I'll start around ${p.rating} and adjust as I see how you do.`
-    if (body.username) text += " Open 🔍 Game Analysis whenever you like and I'll look for patterns in your games."
+    if (body.username) text += " Your recent games will show me what to work on — I can look at them now."
     const msg = deps.addMsg(text, "assistant")
+    if (body.username && deps.analyzeGames) {
+      const row = el("div", "suggestions coach-suggestions no-speech")
+      const go = el("button", "chip onb-analyze", "🔍 Analyze my recent games")
+      go.type = "button"
+      go.addEventListener("click", () => { go.disabled = true; deps.analyzeGames(body.username) })
+      row.appendChild(go)
+      msg.appendChild(row)
+    }
     if (state.suggestions.length) msg.appendChild(suggestionRow(state.suggestions))
   }
 

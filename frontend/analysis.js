@@ -889,6 +889,11 @@ export function setupGameAnalysis(ctx) {
     leave() {
       view.token++  // stop board animations; a running analysis carries on in the background
     },
+    // "Analyze my recent games" from the coach's onboarding: fetch + analyze for this username.
+    async fetchFor(username) {
+      el.username.value = username
+      await fetchGames()
+    },
     // What "Read aloud" should start with: the open moment, or the overview.
     readable() {
       return view.game ? view.readable : el.overview.querySelector(".ga-summary")

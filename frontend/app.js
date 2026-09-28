@@ -1161,7 +1161,9 @@ document.getElementById("chat-input").addEventListener("keydown", e => {
   welcome.appendChild(suggestionChips(STARTERS.map(t => `I want to learn ${t.toLowerCase()}`), STARTERS))
   makeSpeakable(welcome)
 }
-const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escapeHtml})
+const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escapeHtml,
+  // the username from onboarding: one click from "thanks" to the learner's games being analyzed
+  analyzeGames: async username => { await switchView("games"); await gameAnalysis.fetchFor(username) }})
 coach.init({
   readCurrent() {
     const last = state.view === "games" ? gameAnalysis.readable()
