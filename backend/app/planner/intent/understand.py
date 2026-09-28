@@ -517,7 +517,11 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
             intent.components = []
     if intent.clarified:
         intent.source = "remembered" if all(c.get("remembered") for c in intent.clarified) else "clarified"
-    intent.suggested = weak  # type: ignore[attr-defined]
+    # Openings only the Lichess database names ("the Dutch Defense"): exact names first, then single
+    # partial matches. The planner builds a Stockfish-screened custom plan from them when neither
+    # the library nor the catalog has lessons — a recognised opening is never a dead end.
+    named = [component_for(m.entry, lexicon) for m in _best_entries(subjects) if m.entry.kind == "opening_db"]
+    intent.suggested = named + [w for w in weak if w.key() not in {c.key() for c in named}]  # type: ignore[attr-defined]
     return intent
 
 
