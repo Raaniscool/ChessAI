@@ -25,6 +25,7 @@ from .generator import move_hints, topic_lessons
 KNOWLEDGE_VERIFIED_BY = "Knowledge Library (python-chess + Stockfish verified)"
 MAX_TOPIC_UNITS = 2
 PRACTICE_EXAMPLES = 3
+REVIEW_TOO_EASY = 350  # personalized: no review lesson whose hardest position is this far below the target
 
 # Library category -> planner category (plan icons, reasons).
 CATEGORY = {"openings": "opening", "tactics": "tactic", "checkmates": "tactic",
@@ -295,6 +296,28 @@ def _personal_request(goal: str, library, level: str | None, profile) -> tuple[d
     return settings, out["shape"]
 
 
+def _review_intro(retrieval, shape: dict | None, subject: str) -> str | None:
+    """The review lesson's opening line — honest about how hard it is — or None to leave it out.
+
+    The review only says "a little harder" when its positions really are (by puzzle rating). A
+    strong learner can use up the library's hardest positions in the first lesson; then a review of
+    much easier ones would be a sudden easy stretch, so it is left out rather than padded."""
+    if not retrieval.practice:
+        return None
+    from statistics import mean
+
+    from ..knowledge.difficulty import puzzle_rating
+    practice = [puzzle_rating(e) for e in retrieval.practice]
+    if shape is not None and max(practice) < shape["target_rating"] - REVIEW_TOO_EASY:
+        return None
+    solved = [puzzle_rating(e) for e, role in retrieval.sequence if role != "demonstration"] or \
+             [puzzle_rating(e) for e, _ in retrieval.sequence]
+    text = f"Review time: solve these {subject.lower()} positions on your own, with no demonstration first."
+    if solved and mean(practice) > mean(solved) + 50:
+        text += " They are a little harder."
+    return text + " Use hints if you get stuck."
+
+
 def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None = None,
                           catalog=None, record_usage: bool = True, profile=None) -> dict | None:
     """A plan record built from verified library examples, or None when the library
@@ -339,11 +362,10 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
         intro, retrieval.sequence,
         f"Lesson complete — you've seen {subject.lower()} in action.", names, reminder=reminder)
     review_lesson = None
-    if retrieval.practice:
+    review_text = _review_intro(retrieval, shape, subject)
+    if review_text:
         review_lesson = knowledge_lesson(
-            f"{prefix}b", f"{subject}: review",
-            f"Review time: solve these {subject.lower()} positions on your own, with no demonstration first. "
-            "They are a little harder. Use hints if you get stuck.",
+            f"{prefix}b", f"{subject}: review", review_text,
             [(e, "practice") for e in retrieval.practice],
             f"Review complete — {subject} added to your toolkit.", names)
 

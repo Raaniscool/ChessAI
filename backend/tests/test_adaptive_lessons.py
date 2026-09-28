@@ -326,3 +326,48 @@ def test_skipping_onboarding_keeps_the_default_lesson_shape():
     assert not p.is_new and not personalized(p)  # not offered again, but nothing to personalize from
     p.set_onboarding(experience="casual")
     assert personalized(p)
+
+
+# --- the same request, three learners (difficulty tiers of the library) -----------------------
+def _solved(record):
+    """Puzzle ratings of the positions the learner solves in the main lesson (not demonstrations)."""
+    lesson = record["lessons"][0]
+    ids = [s["example"] for s in lesson["steps"] if s.get("example") and s.get("type") == "exercise"]
+    return [puzzle_rating(LIB.get(e)) for e in dict.fromkeys(ids)]
+
+
+@pytest.mark.parametrize("goal", ["teach me knight forks", "teach me pins", "teach me skewers"])
+def test_same_request_three_learners_three_difficulties(goal):
+    beginner = plan(goal, learner(rating=600, experience="casual"))
+    club = plan(goal, learner(rating=1200, experience="casual"))
+    strong = plan(goal, learner(rating=1800, experience="strong"))
+    b, c, s = mean(_solved(beginner)), mean(_solved(club)), mean(_solved(strong))
+    assert b < s and c < s, (goal, b, c, s)
+    assert b <= c + 60, (goal, b, c)          # (the club player may land on the same band)
+    assert max(_solved(beginner)) < min(_solved(strong)), goal  # no overlap between the extremes
+    assert set(beginner["plan"]["knowledge"]["example_ids"]) != set(strong["plan"]["knowledge"]["example_ids"])
+
+
+def test_a_beginners_first_positions_are_simple():
+    record = plan("teach me knight forks", learner(rating=600, experience="casual"))
+    first = [puzzle_rating(LIB.get(e)) for e in record["plan"]["knowledge"]["example_ids"][:2]]
+    assert max(first) <= 950, first
+
+
+def test_review_says_harder_only_when_it_is_and_is_dropped_when_far_too_easy():
+    for rating, exp in ((600, "casual"), (1200, "casual"), (1800, "strong")):
+        record = plan("teach me knight forks", learner(rating=rating, experience=exp))
+        review = next((l for l in record["lessons"] if l["title"].endswith(": review")), None)
+        if review is None:
+            continue
+        intro = review["steps"][0]["text"]
+        practice = [puzzle_rating(LIB.get(s["example"])) for s in review["steps"] if s.get("example")]
+        solved = _solved(record)
+        if "a little harder" in intro:
+            assert mean(practice) > mean(solved), (rating, practice, solved)
+    strong = plan("teach me knight forks", learner(rating=1800, experience="strong"))
+    target = strong["plan"]["personalization"]["target_rating"]
+    for lesson in strong["lessons"]:
+        if lesson["title"].endswith(": review"):
+            ratings_ = [puzzle_rating(LIB.get(s["example"])) for s in lesson["steps"] if s.get("example")]
+            assert max(ratings_) >= target - 350, (ratings_, target)
