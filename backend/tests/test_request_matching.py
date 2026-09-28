@@ -38,13 +38,21 @@ def test_position_never_means_opposition(goal):
     ("teach me the greek gift sacrifice", "sacrifice"),
     ("teach me epaulette mate", "checkmate"),
     ("teach me mate in two", "checkmate"),
-    ("teach me relative pins", "pin"),  # a real concept, but with no verified examples yet
 ])
 def test_a_named_variety_is_not_answered_with_the_generic_concept(goal, generic):
     library = get_knowledge()
     concepts, confident = resolve_concepts(library, goal)
     assert not (confident and generic in concepts), (goal, concepts)
     assert lesson_request(library, goal) == []
+
+
+def test_a_named_variety_with_verified_examples_is_answered_with_itself():
+    """Relative pins had no verified examples at first (so the request wasn't answered with generic
+    pins); the harder tier added some — now it is answered precisely, still never as plain "pin"."""
+    library = get_knowledge()
+    concepts, confident = resolve_concepts(library, "teach me relative pins")
+    assert confident and concepts == ["relative_pin"]
+    assert lesson_request(library, "teach me relative pins") == ["relative_pin"]
 
 
 @pytest.mark.parametrize("goal, concept", [

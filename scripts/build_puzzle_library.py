@@ -6,6 +6,12 @@ Only the chess content (position, moves, theme tags, Lichess puzzle id) is used.
 
     python scripts/build_puzzle_library.py CSV_DIR [--per-theme 7] [--depth 16] [--themes a,b]
 
+    # a harder tier (longer solutions and combinations) for stronger learners:
+    python scripts/build_puzzle_library.py CSV_DIR --harder \
+        --out backend/app/knowledge/sources/data/lichess_puzzles/pool_harder.json --per-theme 6 \
+        --exclude backend/app/planner/data/puzzles.json \
+        --exclude backend/app/knowledge/sources/data/lichess_puzzles/pool.json
+
     # the larger pool the Knowledge Library draws from (the planner's puzzles.json is untouched):
     python scripts/build_puzzle_library.py CSV_DIR --out backend/app/knowledge/sources/data/lichess_puzzles/pool.json \
         --themes fork,pin,... --per-theme 25 --max-candidates 90 --exclude backend/app/planner/data/puzzles.json
@@ -83,6 +89,40 @@ def to_ucis(fen: str, sans: list[str]) -> list[str] | None:
     return ucis
 
 
+# Lichess themes that mark a puzzle as more than the bare pattern: the idea has to be prepared
+# (a sacrifice, a decoy, an in-between move) or found among quiet moves.
+COMBINATION_THEMES = {"attraction", "deflection", "sacrifice", "intermezzo", "quietMove", "clearance",
+                      "capturingDefender", "interference", "xRayAttack", "discoveredAttack", "defensiveMove"}
+
+
+def harder_first(theme: str):
+    """Order for the --harder tier: three-move solutions and combinations (another tactical theme
+    besides the one being built) first, deterministic by id within each group."""
+    def key(rec: dict) -> tuple:
+        learner_moves = len(rec["ucis"]) // 2
+        combo = bool((COMBINATION_THEMES - {theme}) & set(rec["themes"]))
+        return (-(learner_moves >= 3) - combo, rec["id"])
+    return key
+
+
+def varied(recs: list[dict]) -> list[dict]:
+    """Interleave by the piece that makes the learner's first move, so one theme's tier isn't
+    six queen forks: knight, bishop, rook, queen, pawn, king ideas take turns (order kept within each)."""
+    groups: dict[int, list[dict]] = {}
+    for rec in recs:
+        board = chess.Board(rec["fen"])
+        board.push_uci(rec["ucis"][0])
+        piece = board.piece_at(chess.Move.from_uci(rec["ucis"][1]).from_square)
+        groups.setdefault(piece.piece_type if piece else 0, []).append(rec)
+    out: list[dict] = []
+    queues = [groups[k] for k in sorted(groups)]
+    while any(queues):
+        for q in queues:
+            if q:
+                out.append(q.pop(0))
+    return out
+
+
 def simplicity(rec: dict) -> tuple:
     learner_moves = len(rec["ucis"]) // 2
     pieces = len(chess.Board(rec["fen"]).piece_map())
@@ -143,7 +183,7 @@ def _mates(board: chess.Board, move: chess.Move) -> bool:
 
 
 def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing: dict,
-          max_candidates: int = MAX_CANDIDATES, exclude: set[str] | None = None) -> dict:
+          max_candidates: int = MAX_CANDIDATES, exclude: set[str] | None = None, harder: bool = False) -> dict:
     cmd = get_settings().engine_cmd
     if not cmd:
         sys.exit("No engine: run `npm install` or set ENGINE_CMD")
@@ -189,10 +229,13 @@ def build(csv_dir: Path, themes: list[str], per_theme: int, depth: int, existing
                         got.append(puzzle)
                 return got
 
-            kept = pick(easy, EASY_COUNT)
-            kept += pick(longer, per_theme - len(kept))
-            if len(kept) < per_theme:  # not enough longer ones: top up with easy ones
-                kept += pick(easy[EASY_COUNT:], per_theme - len(kept))
+            if harder:  # no one-movers; the most demanding verified solutions first
+                kept = pick(varied(sorted(longer, key=harder_first(theme))), per_theme)
+            else:
+                kept = pick(easy, EASY_COUNT)
+                kept += pick(longer, per_theme - len(kept))
+                if len(kept) < per_theme:  # not enough longer ones: top up with easy ones
+                    kept += pick(easy[EASY_COUNT:], per_theme - len(kept))
             kept.sort(key=lambda p: len(p["moves"]))
             library[theme] = kept
             print(f"{theme:18s} kept {len(kept)}/{tried} tried ({time.monotonic() - started:.0f}s)", flush=True)
@@ -211,6 +254,8 @@ def main() -> None:
     ap.add_argument("--max-candidates", type=int, default=MAX_CANDIDATES, help="puzzles tried per difficulty tier")
     ap.add_argument("--exclude", type=Path, action="append", default=[],
                     help="skip puzzle ids already in this puzzles file (repeatable)")
+    ap.add_argument("--harder", action="store_true",
+                    help="build the harder tier: longer solutions and combinations, no one-movers")
     args = ap.parse_args()
     out = args.out
 
@@ -220,12 +265,14 @@ def main() -> None:
     existing = json.loads(out.read_text(encoding="utf-8"))["themes"] if out.exists() else {}
     exclude = {p["id"] for path in args.exclude
                for ps in json.loads(path.read_text(encoding="utf-8"))["themes"].values() for p in ps}
-    library = build(args.csv_dir, themes, args.per_theme, args.depth, existing, args.max_candidates, exclude)
+    library = build(args.csv_dir, themes, args.per_theme, args.depth, existing, args.max_candidates, exclude,
+                    harder=args.harder)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
         "source": "Lichess puzzle database (https://database.lichess.org/#puzzles)",
         "license": "CC0 1.0 (public domain)",
         "verified_with": f"Stockfish, depth {args.depth}, unique best move at every learner move",
+        **({"tier": "harder: longer solutions and combinations"} if args.harder else {}),
         "themes": {k: library[k] for k in sorted(library)},
     }, indent=1) + "\n", encoding="utf-8")
     print(f"wrote {out} ({out.stat().st_size // 1024} KB)")

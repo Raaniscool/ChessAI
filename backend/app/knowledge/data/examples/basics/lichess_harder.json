@@ -1,0 +1,570 @@
+[
+ {
+  "id": "lichess_05bpr",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Promote a pawn.",
+  "start_fen": "1k6/1P4R1/8/K3p3/4rb2/4n3/8/8 b - - 0 71",
+  "moves": [
+   "Nc4+",
+   "Ka6",
+   "Nd6",
+   "Rg8+",
+   "Kc7",
+   "b8=Q+"
+  ],
+  "final_fen": "1Q4R1/2k5/K2n4/4p3/4rb2/8/8/8 b - - 0 74",
+  "key_move": "72.Ka6",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "71...Nc4+": "The opponent's last move. Something is now possible — look closely.",
+   "72.Ka6": "The pawn promotes to a queen on b8.",
+   "74.b8=Q+": "White comes out 8 points of material ahead."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on b8. White comes out 8 points of material ahead.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "74.b8=Q+",
+    "square": "b8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "05BPR",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/05BPR",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "Ka6",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 228,
+     "best_move": "Ka6",
+     "best_cp": 228,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_2zwxc",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. Black to move: Promote a pawn.",
+  "start_fen": "8/8/8/8/8/R4pk1/6n1/5K2 w - - 7 71",
+  "moves": [
+   "Ra8",
+   "Ne3+",
+   "Ke1",
+   "f2+",
+   "Kd2",
+   "f1=Q"
+  ],
+  "final_fen": "R7/8/8/8/8/4n1k1/3K4/5q2 w - - 0 74",
+  "key_move": "71...Ne3+",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "71.Ra8": "The opponent's last move. Something is now possible — look closely.",
+   "71...Ne3+": "The pawn promotes to a queen on f1.",
+   "73...f1=Q": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on f1. Black comes out 8 points of material ahead.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "73...f1=Q",
+    "square": "f1",
+    "promoted_to": "queen",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2ZwXc",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2ZwXc",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "Ne3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 616,
+     "best_move": "Ne3+",
+     "best_cp": 616,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_3myjl",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Promote a pawn.",
+  "start_fen": "8/3p1RP1/p1b1p3/1pP5/6r1/P3K1k1/8/8 b - - 2 45",
+  "moves": [
+   "Kh4",
+   "Rf4",
+   "e5",
+   "Rxg4+",
+   "Kxg4",
+   "g8=Q+"
+  ],
+  "final_fen": "6Q1/3p4/p1b5/1pP1p3/6k1/P3K3/8/8 b - - 0 48",
+  "key_move": "46.Rf4",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "45...Kh4": "The opponent's last move. Something is now possible — look closely.",
+   "46.Rf4": "The pawn promotes to a queen on g8.",
+   "48.g8=Q+": "White comes out 8 points of material ahead."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on g8. White comes out 8 points of material ahead.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "48.g8=Q+",
+    "square": "g8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "3MyjL",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/3MyjL",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "Rf4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 413,
+     "best_move": "Rf4",
+     "best_cp": 413,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_4wf4q",
+  "status": "verified",
+  "title": "Promotion",
+  "concept": "promotion",
+  "category": "basics",
+  "subcategory": "promotion",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Promote a pawn.",
+  "start_fen": "3k4/8/2PP2B1/1r6/K1b5/8/8/8 b - - 2 56",
+  "moves": [
+   "Rb6",
+   "c7+",
+   "Kd7",
+   "Bf5+",
+   "Kxd6",
+   "c8=Q"
+  ],
+  "final_fen": "2Q5/8/1r1k4/5B2/K1b5/8/8/8 b - - 0 59",
+  "key_move": "57.c7+",
+  "prompt": "What would you play here? Promote a pawn.",
+  "hints": [
+   "What stands between your pawn and the last rank?",
+   "A pawn is close to the last rank."
+  ],
+  "notes": {
+   "56...Rb6": "The opponent's last move. Something is now possible — look closely.",
+   "57.c7+": "The pawn promotes to a queen on c8.",
+   "59.c8=Q": "White comes out 7 points of material ahead."
+  },
+  "explanation": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen. The pawn promotes to a queen on c8. White comes out 7 points of material ahead.",
+  "tags": [
+   "promotion",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "promotion": {
+    "move": "59.c8=Q",
+    "square": "c8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4wF4Q",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4wF4Q",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "skipped",
+     "detail": "rules-only concept: no engine check needed"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "rules concept; Stockfish: best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "skipped",
+    "profile": "none",
+    "reasons": [
+     "rules-only concept: no engine check needed"
+    ],
+    "key_move": {
+     "move": "c7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 279,
+     "best_move": "c7+",
+     "best_cp": 279,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ }
+]

@@ -28,6 +28,8 @@ from . import provenance
 PUZZLES = Path(__file__).resolve().parents[2] / "planner" / "data" / "puzzles.json"
 TOPICS = Path(__file__).resolve().parents[2] / "planner" / "data" / "topics.json"
 POOL = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool.json"
+# longer solutions and combinations, so stronger learners get positions that stretch them
+POOL_HARDER = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_harder.json"
 LICENSE = "CC0-1.0"
 
 # Lichess theme -> library concept (refined from the facts where possible)

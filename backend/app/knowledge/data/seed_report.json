@@ -2,46 +2,46 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 268,
+  "verified": 334,
   "rejected": 20,
   "needs_review": 35
  },
  "by_category": {
-  "basics": 22,
-  "checkmates": 67,
+  "basics": 26,
+  "checkmates": 71,
   "endgames": 6,
   "mistakes": 20,
-  "tactics": 143,
-  "openings": 10
+  "openings": 10,
+  "tactics": 201
  },
  "by_concept": {
-  "absolute_pin": 10,
+  "absolute_pin": 14,
   "anastasia_mate": 10,
   "arabian_mate": 10,
-  "back_rank_mate": 11,
+  "back_rank_mate": 15,
   "boden_mate": 10,
   "cannot_castle": 2,
   "captures": 1,
   "caro_kann": 5,
   "castling": 2,
   "check": 1,
-  "deflection": 9,
-  "discovered_attack": 10,
-  "discovered_check": 11,
-  "double_check": 10,
+  "deflection": 11,
+  "discovered_attack": 11,
+  "discovered_check": 15,
+  "double_check": 15,
   "early_queen": 1,
   "en_passant": 2,
   "evans_gambit": 1,
   "fools_mate": 1,
-  "fork": 10,
+  "fork": 11,
   "fried_liver": 1,
-  "hanging_piece": 10,
+  "hanging_piece": 15,
   "hanging_queen": 1,
   "hung_piece": 6,
   "ignoring_development": 1,
   "italian_game": 2,
   "king_safety_mistake": 2,
-  "knight_fork": 10,
+  "knight_fork": 14,
   "ladder_mate": 1,
   "legal_moves": 1,
   "legals_mate": 1,
@@ -49,25 +49,26 @@
   "mate_in_one": 10,
   "missed_threat": 1,
   "opposition": 2,
-  "overloaded_piece": 10,
+  "overloaded_piece": 15,
   "passed_pawn": 1,
   "pawn_fork": 1,
   "poisoned_pawn": 1,
-  "promotion": 11,
-  "queen_fork": 2,
+  "promotion": 15,
+  "queen_fork": 5,
   "queen_mate": 1,
-  "removing_defender": 10,
+  "relative_pin": 2,
+  "removing_defender": 14,
   "repeated_moves": 1,
   "rook_mate": 1,
-  "sacrifice": 10,
+  "sacrifice": 15,
   "scholars_mate": 1,
-  "skewer": 10,
+  "skewer": 15,
   "smothered_mate": 12,
   "stalemate": 2,
-  "trapped_piece": 10,
+  "trapped_piece": 14,
   "two_knights_defense": 1,
   "walked_into_fork": 6,
-  "zwischenzug": 10
+  "zwischenzug": 14
  },
  "needs_review": [
   {
@@ -6026,5 +6027,146 @@
     "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
    ]
   }
- ]
+ ],
+ "harder_tier": {
+  "totals": {
+   "verified": 66,
+   "rejected": 5,
+   "needs_review": 11
+  },
+  "by_concept": {
+   "absolute_pin": 4,
+   "back_rank_mate": 4,
+   "deflection": 2,
+   "discovered_attack": 1,
+   "discovered_check": 4,
+   "double_check": 5,
+   "fork": 1,
+   "hanging_piece": 5,
+   "knight_fork": 4,
+   "overloaded_piece": 5,
+   "promotion": 4,
+   "queen_fork": 3,
+   "relative_pin": 2,
+   "removing_defender": 4,
+   "sacrifice": 5,
+   "skewer": 5,
+   "trapped_piece": 4,
+   "zwischenzug": 4
+  },
+  "not_verified": [
+   {
+    "id": "lichess_3krbf",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_6rncu",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_0aipv",
+    "status": "rejected",
+    "reasons": [
+     "concept: Discovered attack: no discovered attack: no move uncovers a new threat by another piece"
+    ]
+   },
+   {
+    "id": "lichess_024ua",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 22...dxe5 the learner is only -37 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0s8jo",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 23.Bxg5 the learner is only 15 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_2y93s",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 25...N6xe5 the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_3odkn",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 19...e4 the learner is only 149 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0nehe",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 9.Bxg7 the learner is only -34 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_5iqmw",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Nd5 the learner is only 26 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_89xcs",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 21.c3 the learner is only 32 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_vx1nc",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Qd8 the learner is only 111 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_3ytck",
+    "status": "rejected",
+    "reasons": [
+     "concept: Sacrifice: the sacrifice is never paid back (no mate, no material regained)"
+    ]
+   },
+   {
+    "id": "lichess_6cyr6",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Bxe5 the learner is only 47 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_eiloh",
+    "status": "rejected",
+    "reasons": [
+     "concept: Zwischenzug (in-between move): no in-between move: the expected recapture is never delayed by a forcing move"
+    ]
+   },
+   {
+    "id": "lichess_q9dra",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 9...d5 the learner is only -6 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_mlg2k",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 24...d3+ the learner is only 57 cp better — the tactic doesn't clearly win"
+    ]
+   }
+  ]
+ }
 }

@@ -2,12 +2,18 @@
 
     python scripts/build_knowledge_seed.py [--depth 14] [--puzzles-per-concept 3] [--dry-run]
 
+    # add only the harder tier to the library as it is (nothing else is rebuilt or touched):
+    python scripts/build_knowledge_seed.py --only-harder [--harder-per-concept 5]
+
 Sources (never Qwen):
   * curated records    backend/app/knowledge/sources/data/curated/{basics,checkmates,endgames,mistakes}.json
                        rules (FIDE Laws), classic traps and textbook endgames, each with provenance
   * opening database   lichess-org/chess-openings (CC0) + curated teaching text (curated/openings.json)
   * Lichess puzzles    real game positions (CC0) from planner/data/puzzles.json, as tactics and
                        as mistakes ("walked into a fork", "hung a piece")
+  * harder tier        longer / combination Lichess puzzles (sources/data/lichess_puzzles/
+                       pool_harder.json) -> examples/<category>/lichess_harder.json, so a strong
+                       learner isn't limited to the easiest positions of each idea
 
 Every candidate runs through the full verification pipeline (rules, concept validator,
 Stockfish, solution, explanation consistency, duplicates) against the entries accepted so
@@ -42,8 +48,13 @@ def main() -> int:
     ap.add_argument("--depth", type=int, default=14)
     ap.add_argument("--puzzles-per-concept", type=int, default=3)
     ap.add_argument("--mistakes-per-concept", type=int, default=3)
+    ap.add_argument("--harder-per-concept", type=int, default=5)
     ap.add_argument("--dry-run", action="store_true", help="verify and report, write nothing")
+    ap.add_argument("--only-harder", action="store_true",
+                    help="verify the harder tier against the current library and write only lichess_harder.json")
     args = ap.parse_args()
+    if args.only_harder:
+        return add_harder(args)
 
     with tempfile.TemporaryDirectory() as tmp:  # an empty library with the real concept graph
         shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
@@ -124,7 +135,88 @@ def build(library: KnowledgeLibrary, engine, args) -> list[dict]:
     for cand in lichess_puzzles.mistake_candidates(library, per_concept=args.mistakes_per_concept,
                                                    exclude=used_puzzles):
         run(cand, "lichess_puzzles")
+    harder_stage(library, run, args.harder_per_concept)
     return results
+
+
+MAX_PER_CONCEPT = 15  # balance: no idea dominates the library (tests/test_knowledge_engine.py)
+
+
+def harder_stage(library, run, per_concept: int) -> None:
+    """The harder tier, after everything else so the easier entries win duplicate checks."""
+    kept: Counter = Counter()
+    total = Counter(ex.concept for ex in library.verified())
+    for cand in lichess_puzzles.candidates(library, per_concept=1000, path=lichess_puzzles.POOL_HARDER):
+        if kept[cand["concept"]] >= per_concept or total[cand["concept"]] >= MAX_PER_CONCEPT:
+            continue
+        cand["tags"] = list(dict.fromkeys([*cand.get("tags", []), "harder"]))
+        if run(cand, "lichess_harder") == "verified":
+            kept[cand["concept"]] += 1
+            total[cand["concept"]] += 1
+
+
+def add_harder(args) -> int:
+    """Verify the harder tier against the library as it is and write only its own files."""
+    examples = KNOWLEDGE / "examples"
+    old_files = list(examples.rglob("lichess_harder.json"))
+    with tempfile.TemporaryDirectory() as tmp:  # the library without any previous harder tier
+        shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
+        for path in examples.rglob("*.json"):
+            if path not in old_files:
+                target = Path(tmp) / "examples" / path.relative_to(examples)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(path, target)
+        library = KnowledgeLibrary(data_dir=Path(tmp), load_runtime=False)
+        results: list[dict] = []
+        engine = get_engine()
+
+        def run(cand: dict, importer: str) -> str:
+            t = time.time()
+            rep = verify_candidate(cand, library, engine=engine, depth=args.depth, tier="global",
+                                   method="seed_builder")
+            record = rep.example.to_record() if rep.example is not None else cand
+            if rep.status == "verified":
+                record["verification"]["verified_at"] = IMPORT_DATE
+                library.add(rep.example)
+            results.append({"status": rep.status, "record": record, "reasons": rep.reasons, "id": cand.get("id")})
+            print(f"{rep.status:13s} {cand.get('id', '?'):40s} {time.time() - t:5.1f}s", flush=True)
+            for reason in rep.reasons:
+                print(f"      - {reason[:200]}", flush=True)
+            return rep.status
+
+        try:
+            harder_stage(library, run, args.harder_per_concept)
+        finally:
+            engine.close()
+        everything = library.verified()
+    verified = [r["record"] for r in results if r["status"] == "verified"]
+    print(f"\n{dict(Counter(r['status'] for r in results))}  by concept: "
+          f"{dict(sorted(Counter(r['concept'] for r in verified).items()))}")
+    if args.dry_run:
+        return 0
+    by_file: dict[Path, list[dict]] = defaultdict(list)
+    for rec in verified:
+        by_file[examples / rec["category"] / "lichess_harder.json"].append(rec)
+    for old in old_files:
+        old.unlink()
+    for path, records in sorted(by_file.items()):
+        records.sort(key=lambda rec: (rec["concept"], rec["difficulty"], rec["id"]))
+        path.write_text(json.dumps(records, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {len(records):3d} -> {path.relative_to(ROOT)}")
+    report_path = KNOWLEDGE / "seed_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    # the headline numbers describe the whole library; the tier's own outcome is kept separately
+    report["totals"]["verified"] = len(everything)
+    report["by_category"] = dict(Counter(e.category for e in everything))
+    report["by_concept"] = dict(sorted(Counter(e.concept for e in everything).items()))
+    report["harder_tier"] = {
+        "totals": dict(Counter(r["status"] for r in results)),
+        "by_concept": dict(sorted(Counter(rec["concept"] for rec in verified).items())),
+        "not_verified": [{"id": r["id"], "status": r["status"], "reasons": r["reasons"]}
+                         for r in results if r["status"] != "verified"],
+    }
+    report_path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    return 0
 
 
 if __name__ == "__main__":

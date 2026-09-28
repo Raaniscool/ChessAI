@@ -220,6 +220,22 @@ def test_seed_library_is_balanced(seed):
         assert per[concept] >= 8, (concept, per[concept])
 
 
+def test_every_tactic_has_room_for_a_stronger_learner(seed):
+    """The harder tier: the common tactics span a real range, so a 1600 player isn't handed the
+    same 1000-rated positions as a beginner. Every harder entry is a verified real-game puzzle."""
+    from app.knowledge.difficulty import puzzle_rating
+    for concept in ("fork", "knight_fork", "pin", "skewer", "deflection", "zwischenzug", "sacrifice",
+                    "trapped_piece", "removing_defender"):
+        ratings = [puzzle_rating(e) for e in seed.examples_for(concept) if e.key_ply is not None]
+        assert max(ratings) >= 1450 and max(ratings) - min(ratings) >= 350, (concept, min(ratings), max(ratings))
+    harder = [e for e in seed.verified() if "harder" in e.tags]
+    assert len(harder) >= 40
+    for e in harder:
+        assert e.status == "verified" and e.tier == "global"
+        assert e.source["source_type"] == "lichess_puzzle" and e.source["source_license"] == "CC0-1.0"
+        assert e.path.endswith("lichess_harder.json")
+
+
 @pytest.mark.parametrize("concept", REQUIRED)
 def test_seed_covers_required_concepts(seed, concept):
     assert seed.examples_for(concept), f"no verified example for {concept}"
