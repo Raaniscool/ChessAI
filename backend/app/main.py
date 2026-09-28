@@ -40,7 +40,10 @@ def _warm_up_qwen() -> None:
 
     def run():
         from .teacher import QwenTeacher
-        ok = QwenTeacher(settings).warm_up()
+        try:
+            ok = QwenTeacher(settings).warm_up()
+        except Exception:  # noqa: BLE001 - settings changed or Ollama gone; warm-up is optional
+            ok = False
         logging.getLogger("chessai").info("Qwen warm-up %s", "done" if ok else "failed")
 
     threading.Thread(target=run, name="qwen-warmup", daemon=True).start()
