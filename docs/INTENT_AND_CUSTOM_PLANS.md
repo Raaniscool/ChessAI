@@ -122,13 +122,81 @@ review*. Neither is shown to the learner as correct.
 
 A crashing check counts as `uncertain`, so it can never let a plan through.
 
+### Specific material requests ("2 rooks against a queen")
+
+A material request is a **position specification**, not a topic. `MaterialSpec`
+(`intent/model.py`) keeps exact per-side counts and who owns what:
+
+| Request | id | learner has | opponent has |
+|---|---|---|---|
+| "2 rooks against a queen", "I have two rooks and they only have a queen" | `two_rooks_vs_queen` | R R | Q |
+| "rook against queen" | `rook_vs_queen` | R | Q |
+| "queen against two rooks" | `queen_vs_two_rooks` | Q | R R |
+| "rook and queen against a queen" | `queen_and_rook_vs_queen` | Q R | Q |
+
+These ids are never merged. `two_rooks_vs_queen` is never turned into rook-vs-queen,
+rook endings, queen endings or rook mates.
+
+```
+request ─► parser (counts, sides, notation) + Qwen interpreter (strict JSON schema, no FENs)
+              agree → confirm card for specific requests │ disagree → ask │ Qwen fails → parser
+                 ▼
+        MaterialSpec + objective (general by default; converting, coordinating the rooks,
+        avoiding perpetual check, attacking the king, trading safely, winning the queen …)
+                 ▼
+        library: exact per-side matches only ──► LIBRARY_COVERAGE = FULL / PARTIAL / NONE
+                 ▼ not enough
+        generator (knowledge/generation/material_positions.py): code builds the boards
+          → python-chess legality → exact material per side → Stockfish (decisive move,
+          defensive resources, no accidental trivial tactic) → difficulty → knowledge pipeline
+                 ▼
+        composer → validate (incl. request_satisfied) → show
+                 ▼ nothing verifiable
+        PlanError naming the request (never a different topic)
+```
+
+- **Interpretation** (`intent/material.py`, `intent/semantic.py`): the parser reads counts,
+  ownership words ("I have", "they only have", "up two rooks but they have a queen") and
+  notation (2R vs Q). Qwen's job is to say what the person means, in a strict schema:
+  `topic_type`, per-side counts of queens, rooks, bishops and knights, `material_relation`,
+  `side_to_train`, `requested_focus` and `needs_custom_generation`. It never outputs positions.
+  If the parser and Qwen agree on a specific request, the learner gets a confirm card ("You
+  have 2 rooks. Your opponent has 1 queen. …" with **Yes, that's exactly it** / **Change
+  something**). If they disagree, the learner is asked; neither reading is picked silently.
+  Simple requests ("rook endgames") are not confirmed.
+- **No fake coverage** (`custom/satisfy.py`, `ContentIndex.material`): a library position
+  counts only if the side to move has exactly the requested pieces and the other side has
+  exactly the opponent's. It must also be an endgame position (a tactic only when the focus is tactical), and
+  the material must hold at the start and at the key position. Sharing "rook" is not enough.
+- **Generation** is the normal path when coverage is short. Generated positions are saved to
+  the `generated` tier, so a repeated request is served from them. The badge then says
+  "N verified positions with exactly this material" rather than claiming they were in the
+  original library. The first build takes about 10 s.
+- **No silent weakening**: material plans never use the broader-idea fallback. If nothing
+  verifiable can be produced (for example, no Stockfish), the planner raises a `PlanError`
+  that names the request and says it won't swap in a different topic.
+- **request_satisfied** (family `request`) runs on every candidate. It checks the plan
+  title and every unit for the requested material, that every position satisfies the spec, and
+  that no unit is unrelated to it. `items_match_unit` uses the same strict check.
+- **Completion guard** (`lessons/requirements.py`): every lesson built for a material
+  request carries `requirements` (the spec, the objective and every checked start/key board).
+  When the learner finishes, `advance` re-checks them with `board_problems`, and every board
+  the lesson shows must be one of the checked boards. If anything fails, the response is
+  `status: "INVALID_LESSON"` with the problems, and no completion is reported.
+- **Debug view**: every material plan (and every `PlanError`) carries `plan.debug` with
+  USER REQUEST, INTERPRETED INTENT, LIBRARY COVERAGE, GENERATION, POSITION CONSTRAINTS and
+  VALIDATION (python-chess, Stockfish, material constraints, educational validation, request
+  satisfaction: PASS/FAIL). The UI shows it with `?debug=1` (or
+  `localStorage["chessai.debug"] = 1`).
+
 ### Regeneration and fallback (`pipeline.py`)
 
 Each rejected attempt goes to the **review queue** (`<data_dir>/knowledge/plan_review/`). The next
 proposer gets the error messages and the set of failed items to avoid. If every proposer
 fails, a plan for the **broader** idea (e.g. checkmate instead of K+B+N mates) is built and
-labelled as such. If that fails too, the planner falls back to the existing
-verified-library fallback. A request never errors just because the library lacks an exact plan.
+labelled as such. This never happens for exact versus-material requests (see above). If that fails too, the planner falls back to the existing
+verified-library fallback. A topic request never errors just because the library lacks an exact plan. An exact material
+request is generated instead, and it errors honestly rather than being weakened.
 
 ### Promotion (`knowledge/plan_library.py`)
 
@@ -159,6 +227,12 @@ Reused plans are re-validated every time. A stored plan whose content no longer 
   wrong concept/material matching, exclusions, text vs facts, personalization, duplicates,
   failed validation → review, regeneration, Qwen proposals (fake teacher), promotion and
   provenance, personal vs global separation, reuse and retirement, API round trip.
+- `backend/tests/test_material_requests.py`: per-side parsing of many phrasings, distinct
+  ids (R vs Q, 2R vs Q, Q vs 2R, R+Q vs Q, 2R vs 2Q, R+B vs Q, 2R vs Q+R), Qwen agree,
+  disagree and fail, confirm cards, strict retrieval (2R vs Q never gets R vs Q), exact-material
+  construction, generation with real Stockfish, honest failure without an engine,
+  substitution rejected by `request_satisfied`, the INVALID_LESSON completion guard and the
+  debug view.
 - `frontend/tests/plan-view.test.mjs` and `scripts/ui_e2e.mjs` section 8b: the question
   card, "Something else", the verified badge and "Ask me again".
 
@@ -166,8 +240,11 @@ Reused plans are re-validated every time. A stored plan whose content no longer 
 
 - Qwen's plan proposals and reading suggestions are tested with a fake teacher. Their
   real-world quality depends on the local model, but validation doesn't.
-- New positions are only generated for **material mates** (e.g. K+B+N vs K). Other
-  empty material pools fall back to the broader verified idea instead of inventing positions.
+- New positions are generated for **material mates** (e.g. K+B+N vs K) and for exact
+  **versus-material endgames** (2R vs Q and the like). Generated endgame exercises are
+  single-move "find the decisive move" positions. Multi-move technique lines are not
+  generated yet. One-sided material requests without an opponent ("rook endgames with two
+  rooks") still use the existing categories.
 - Text-vs-fact checking covers move mentions and win/draw wording. It doesn't understand
   free prose in general.
 - Ambiguity detection is lexicon-based. Phrasings outside the catalog, library, glossary and
