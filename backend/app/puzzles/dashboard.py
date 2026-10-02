@@ -39,17 +39,30 @@ def candidates(puzzles) -> list:
     return [p for p in puzzles if p.clear_start and (p.source or {}).get("type") != "user_game"]
 
 
-def available(pool, knowledge, concept: str) -> int:
+THEME_RELEVANCE = 0.95  # a theme's puzzles are about it (exact or "trains"), not merely using it
+
+
+def matching(pool, knowledge, concept: str, minimum: float = MIN_RELEVANCE) -> list:
     if concept not in knowledge.concepts:
-        return 0
+        return []
     wanted = targets(concept, knowledge)
-    return sum(1 for p in pool if relevance(p, concept, wanted)[0] >= MIN_RELEVANCE)
+    return [p for p in pool if relevance(p, concept, wanted)[0] >= minimum]
+
+
+def available(pool, knowledge, concept: str) -> int:
+    return len(matching(pool, knowledge, concept))
+
+
+def theme_pool(pool, knowledge, concept: str, count: int) -> list:
+    """Puzzles about the theme; related ones (a mate that uses a pin) only when those run out."""
+    strict = matching(pool, knowledge, concept, THEME_RELEVANCE)
+    return strict if len(strict) >= count else pool
 
 
 def themes(pool, knowledge) -> list[dict]:
     out = []
     for cid, label in THEMES:
-        n = available(pool, knowledge, cid)
+        n = len(matching(pool, knowledge, cid, THEME_RELEVANCE))
         if n >= MIN_THEME:
             out.append({"concept": cid, "label": label, "count": n})
     return out

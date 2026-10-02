@@ -111,7 +111,7 @@ def puzzle_set(body: SetRequest):
     from .knowledge.usage import get_usage
     from .learner import get_profile
     from .puzzles import get_puzzles, select
-    from .puzzles.dashboard import candidates, payload, personalized
+    from .puzzles.dashboard import candidates, payload, personalized, theme_pool
     from .puzzles.personal import _SeenUsage, debug_block, library_selection
 
     knowledge = _knowledge()
@@ -124,7 +124,8 @@ def puzzle_set(body: SetRequest):
         concept = body.concept
         if not concept or concept not in knowledge.concepts:
             return _error(404, f"unknown concept: {concept}")
-        selection = select(candidates(index.all()), knowledge, concept, count=body.count, profile=profile,
+        pool = theme_pool(candidates(index.all()), knowledge, concept, body.count)
+        selection = select(pool, knowledge, concept, count=body.count, profile=profile,
                            usage=_SeenUsage(usage, shown))
         title = f"Practice: {knowledge.concepts[concept].name}"
     else:
