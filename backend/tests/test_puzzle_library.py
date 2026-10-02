@@ -183,14 +183,15 @@ def test_stronger_learners_get_harder_sets(puzzles):
 def test_recent_puzzles_are_not_repeated_and_misses_come_back(puzzles):
     first = select(puzzles, LIB, "fork", count=5, profile=LearnerProfile(), usage=FakeUsage(), now=NOW)
     ids = [c.puzzle.id for c in first.chosen]
-    stats = {ids[0]: {"seen": True, "last_result": "solved_first_try", "last_resolved": ago(1)},
+    # the retry is the easiest one: two misses lower the level, so it still fits a slot
+    stats = {ids[3]: {"seen": True, "last_result": "solved_first_try", "last_resolved": ago(1)},
              ids[1]: {"seen": True, "last_result": None, "last_used": ago(0.2)},
              ids[2]: {"seen": True, "last_result": "failed", "last_resolved": ago(0.5)},
-             ids[3]: {"seen": True, "last_result": "failed", "last_resolved": ago(4)}}
+             ids[0]: {"seen": True, "last_result": "failed", "last_resolved": ago(4)}}
     again = select(puzzles, LIB, "fork", count=5, profile=LearnerProfile(), usage=FakeUsage(stats), now=NOW)
     chosen = {c.puzzle.id: c for c in again.chosen}
-    assert not {ids[0], ids[1], ids[2]} & set(chosen)  # solved/shown/missed too recently
-    assert ids[3] in chosen and any(r.startswith("Retry: you missed this 4 days ago") for r in chosen[ids[3]].reasons)
+    assert not {ids[3], ids[1], ids[2]} & set(chosen)  # solved/shown/missed too recently
+    assert ids[0] in chosen and any(r.startswith("Retry: you missed this 4 days ago") for r in chosen[ids[0]].reasons)
 
 
 def test_novelty_rules():

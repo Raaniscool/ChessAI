@@ -43,11 +43,34 @@ class Puzzle:
     verification_state: str = "verified"
     tier: str = "global"    # global | generated | personal
     weakness: str | None = None   # personal puzzles: the weakness they were made for
+    # Lichess-style profile (puzzles.profile): what the learner actually has to find
+    steps: tuple = field(default=(), compare=False, hash=False)   # per learner move: kind, accepted, reply
+    objective: str = "idea"         # mate | material | defense | idea (where the puzzle ends)
+    critical_moves: tuple[str, ...] = ()   # SAN of the real decisions
+    forced_moves: tuple[str, ...] = ()     # SAN of forced/obvious learner moves
+    decision_points: tuple[int, ...] = ()  # which learner moves (1-based) are critical
+    meaningful_moves: int = 1
+    trimmed: int = 0                # moves of the stored line cut after the objective
+    clear_start: bool = True        # the first move is a real decision
+    engine_profiled: bool = False
+    difficulty_basis: dict = field(default_factory=dict, compare=False, hash=False)
+    facts: dict = field(default_factory=dict, compare=False, hash=False)
+
+    @property
+    def primary_concept(self) -> str:
+        return self.concept
+
+    @property
+    def expected_solution_length(self) -> int:
+        return self.learner_moves
 
     def as_dict(self) -> dict:
         d = asdict(self)
-        for key in ("concepts", "solution", "accepted_first", "tags"):
+        for key in ("concepts", "solution", "accepted_first", "tags", "steps", "critical_moves", "forced_moves",
+                    "decision_points"):
             d[key] = list(d[key])
+        d["primary_concept"] = self.primary_concept
+        d["expected_solution_length"] = self.expected_solution_length
         return d
 
 
@@ -76,9 +99,40 @@ def uniqueness_of(verification: dict, accepted: list[str]) -> str:
     return "multiple" if (alternatives or accepted) else "unique"
 
 
-def from_example(example, library=None) -> Puzzle | None:
+NOT_PUZZLES = {"basics"}  # rule drills (how en passant works) are lessons, not puzzles
+MATE_FAMILY = {"checkmate", "mate_in_one", "back_rank_mate", "smothered_mate", "queen_mate", "anastasia_mate",
+               "arabian_mate", "boden_mate", "support_mate"}
+RATING_BANDS = ((700, 1), (1000, 2), (1400, 3), (1800, 4))
+
+
+def difficulty_of(rating: int) -> int:
+    return next((label for top, label in RATING_BANDS if rating < top), 5)
+
+
+def accepted_by_ply(example, ply: int) -> dict[int, list[str]]:
+    """{ply: [SAN]} moves verified as equally good at each learner move."""
+    engine = (example.verification or {}).get("engine") or {}
+    out = {ply: list(dict.fromkeys([*example.accepted, *((engine.get("key_move") or {}).get("alternatives") or [])]))}
+    for i, step in enumerate(engine.get("learner_moves") or [], start=1):
+        if step.get("alternatives"):
+            out[ply + 2 * i] = list(step["alternatives"])
+    return out
+
+
+def family_of(example, library=None) -> str:
+    concepts = {example.concept, *example.concepts}
+    if example.category == "checkmates" or concepts & MATE_FAMILY or (
+            library is not None and example.concept in library.concepts
+            and example.concept in library.descendants("checkmate")):
+        return "mate"
+    if example.concept in DEFENSIVE:  # "mistakes" entries punish a mistake: the learner attacks
+        return "defense"
+    return "tactic"
+
+
+def from_example(example, library=None, profiles=None) -> Puzzle | None:
     """The puzzle in a verified entry, or None (no key move, not replayable, not verified)."""
-    if example.status != "verified" or not example.key_move:
+    if example.status != "verified" or not example.key_move or example.category in NOT_PUZZLES:
         return None
     try:
         rep = example.replay()
@@ -87,10 +141,16 @@ def from_example(example, library=None) -> Puzzle | None:
         return None
     if ply is None or ply >= len(example.moves):
         return None
+    from .profile import build, signature
     board = rep.boards[ply]
-    solution = tuple(example.moves[ply:])
-    learner_moves = (len(solution) + 1) // 2
-    from ..knowledge.difficulty import puzzle_rating
+    data = profiles.get(example.id, signature(example.start_fen, example.moves, ply)) if profiles else None
+    try:
+        prof = build(example.start_fen, list(example.moves), ply, family=family_of(example, library),
+                     accepted=accepted_by_ply(example, ply), data=data)
+    except (ValueError, IndexError):
+        return None
+    solution = tuple(prof.solution)
+    learner_moves = len(prof.steps)
     concept = example.concept
     meta = (example.source or {}).get("personal") or {}
     name = library.concepts[concept].name if library is not None and concept in library.concepts else concept
@@ -100,8 +160,8 @@ def from_example(example, library=None) -> Puzzle | None:
         type=puzzle_type(example.category, concept, bool(example.mistake_move), learner_moves),
         concept=concept,
         concepts=tuple(dict.fromkeys([concept, *example.concepts, *example.related])),
-        difficulty=int(example.difficulty or 1),
-        rating=int(puzzle_rating(example)),
+        difficulty=difficulty_of(prof.rating),
+        rating=prof.rating,
         fen=board.fen(),
         side_to_move="white" if board.turn else "black",
         solution=solution,
@@ -116,4 +176,15 @@ def from_example(example, library=None) -> Puzzle | None:
         verification_state=example.status,
         tier=example.tier,
         weakness=meta.get("target_weakness"),
+        steps=tuple(asdict(st) for st in prof.steps),
+        objective=prof.objective,
+        critical_moves=tuple(st.san for st in prof.critical),
+        forced_moves=tuple(st.san for st in prof.forced),
+        decision_points=tuple(i for i, st in enumerate(prof.steps, start=1) if st.kind == "critical"),
+        meaningful_moves=len(prof.critical),
+        trimmed=prof.trimmed,
+        clear_start=prof.clear_start,
+        engine_profiled=prof.engine,
+        difficulty_basis=prof.basis,
+        facts=dict(example.facts or {}),
     )

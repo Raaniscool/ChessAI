@@ -24,6 +24,10 @@ def _fresh_learner(tmp_path_factory):
     # and a fresh game-analysis allowance (the data dir is shared by the whole session)
     # (unlimited here; test_analysis_quota.py turns limits on)
     set_quota(AnalysisQuota(tmp_path_factory.mktemp("quota") / "quota.json", enabled=False))
+    # engine data of generated puzzles: per test (the bundled library data is shared, read-only)
+    from app.puzzles.profile import EngineProfiles, set_engine_profiles
+    set_engine_profiles(EngineProfiles(runtime=tmp_path_factory.mktemp("profiles") / "engine_profiles.json"))
     yield
     set_store(None)
     set_quota(None)
+    set_engine_profiles(None)

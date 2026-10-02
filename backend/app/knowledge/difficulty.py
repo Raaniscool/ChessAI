@@ -59,6 +59,13 @@ def features(example) -> dict:
         return out
     board = rep.boards[key]
     move = board.parse_san(example.moves[key])
+    out.update(move_features(board, move))
+    out["mate"] = rep.final.is_checkmate()
+    return out
+
+
+def move_features(board: chess.Board, move: chess.Move) -> dict:
+    """What kind of move `move` is in `board` (check, capture, quiet, sacrifice, ...)."""
     mover = board.turn
     piece = board.piece_at(move.from_square)
     captured = board.piece_at(move.to_square)
@@ -76,14 +83,13 @@ def features(example) -> dict:
     forward = 1 if mover == chess.WHITE else -1
     rank_change = (chess.square_rank(move.to_square) - chess.square_rank(move.from_square)) * forward
     free_capture = bool(captured and taken_value >= 3 and not board.is_attacked_by(not mover, move.to_square))
-    out.update({
+    return {
         "check": gives_check, "capture": captured is not None, "promotion": move.promotion is not None,
         "quiet": not gives_check and captured is None and move.promotion is None,
         "sacrifice": sacrifice, "backward": rank_change < 0 and piece.piece_type not in (chess.KING, chess.PAWN),
         "free_capture": free_capture, "legal_moves": board.legal_moves.count(),
-        "pieces": len(board.piece_map()), "mate": rep.final.is_checkmate(),
-    })
-    return out
+        "pieces": len(board.piece_map()), "captured_value": taken_value, "moved_value": moved_value,
+    }
 
 
 def estimate(f: dict, label: int) -> int:

@@ -245,6 +245,15 @@ def _duplicate_of(example, library, accepted: list) -> str | None:
 
 
 # ------------------------------------------------------------------ orchestrator
+def _profile(example, engine) -> None:
+    """Store the engine's view of each learner move (puzzles.profile) while the engine is up."""
+    try:
+        from ...puzzles.profile import remember
+        remember(example, engine)
+    except Exception:  # the puzzle stays valid; the profile falls back to heuristics
+        pass
+
+
 def generate(concept: str, library, engine, *, count: int = 1, tier: str = "generated",
              personal: dict | None = None, seed: int | None = None, time_budget: float = 25.0,
              max_attempts: int = 40, use_qwen: bool | None = None, teacher=None, depth: int = 14,
@@ -352,6 +361,7 @@ def generate(concept: str, library, engine, *, count: int = 1, tier: str = "gene
                     continue
                 if save:
                     library.save_entry(report.example)
+                    _profile(report.example, engine)
                 result.accepted.append(report.example)
                 gen_log.record({**entry, "outcome": "verified", "id": report.example.id})
                 if on_progress:

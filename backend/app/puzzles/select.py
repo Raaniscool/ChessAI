@@ -178,7 +178,7 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
 
     pool: list[tuple[Puzzle, float, str, dict]] = []
     for p in puzzles:
-        if p.id in exclude:
+        if p.id in exclude or not p.clear_start:   # no clear first decision: not a puzzle
             continue
         rel, kind = relevance(p, concept, wanted)
         if rel < MIN_RELEVANCE:

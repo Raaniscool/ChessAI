@@ -14,24 +14,33 @@ from .model import Puzzle, from_example
 
 
 class PuzzleLibrary:
-    def __init__(self, knowledge):
+    def __init__(self, knowledge, profiles=None):
         self.knowledge = knowledge
+        self._profiles = profiles
         self._lock = threading.Lock()
         self._signature: int | None = None
         self._puzzles: dict[str, Puzzle] = {}
 
     def _current(self) -> dict[str, Puzzle]:
         entries = self.knowledge.entries
-        signature = hash(frozenset((eid, e.status, e.tier) for eid, e in entries.items()))
+        profiles = self.profiles
+        signature = hash((frozenset((eid, e.status, e.tier) for eid, e in entries.items()), profiles.version))
         with self._lock:
             if signature != self._signature:
                 built = {}
                 for example in entries.values():
-                    puzzle = from_example(example, self.knowledge)
+                    puzzle = from_example(example, self.knowledge, profiles)
                     if puzzle is not None:
                         built[puzzle.id] = puzzle
                 self._puzzles, self._signature = built, signature
             return self._puzzles
+
+    @property
+    def profiles(self):
+        if self._profiles is None:
+            from .profile import get_engine_profiles
+            return get_engine_profiles()
+        return self._profiles
 
     def all(self, include_personal: bool = True) -> list[Puzzle]:
         return [p for p in self._current().values() if include_personal or p.tier != "personal"]
@@ -46,6 +55,9 @@ class PuzzleLibrary:
             "by_type": dict(Counter(p.type for p in puzzles)),
             "by_tier": dict(Counter(p.tier for p in puzzles)),
             "by_uniqueness": dict(Counter(p.uniqueness for p in puzzles)),
+            "by_length": dict(Counter(p.learner_moves for p in puzzles)),
+            "engine_profiled": sum(1 for p in puzzles if p.engine_profiled),
+            "unclear_start": sum(1 for p in puzzles if not p.clear_start),
             "concepts": len({p.concept for p in puzzles}),
         }
 
