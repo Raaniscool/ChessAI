@@ -40,7 +40,7 @@ comes with tests. Rules that hold everywhere:
 
 ## Phases
 
-- **P1: game library and analysis limits.** Fetch up to 100, a picker with filters, "Analyze
+- **P1: game library and analysis limits. Done.** Fetch up to 100, a picker with filters, "Analyze
   last 25", analyze a chosen set, quota accounting and display, and the "Your Training" card.
 - **P2: Puzzle Library.** A separate package and index, puzzle metadata, attempt statistics,
   scored personalized selection, and verified imports.

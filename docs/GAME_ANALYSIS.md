@@ -1,7 +1,7 @@
 # Game Analysis (Chess.com games)
 
 Import your own Chess.com games, let Stockfish find the moments that mattered,
-see which mistakes **keep showing up across your last 10, 20, 30 or 50 games**,
+see which mistakes **keep showing up across your last 10, 25, 50 or 100 games (or games you pick)**,
 and train them with verified lessons plus positions from your own games.
 
 The rules are the same as everywhere else in the tutor:
@@ -16,11 +16,28 @@ The rules are the same as everywhere else in the tutor:
 ## Using it
 
 1. Click **🔍 Game Analysis** in the header.
-2. Type your Chess.com username and press **Fetch my last 10 games** (or Enter).
+2. Type your Chess.com username and press **Load my last 100 games** (or Enter).
    The app downloads your most recent finished games from Chess.com's official
-   public API, imports them and analyzes them together (the number follows the
-   history count, 10 by default). The username is remembered. Fetching again later
-   picks up new games; games you already have aren't imported twice.
+   public API and imports them. **Nothing is analyzed yet.** Then either press
+   **▶ Analyze** with "my last 25 games" (the default first analysis), or open
+   **Choose your own games**. There you can filter by opponent or opening, result, colour,
+   time control, dates, opponent rating, number of moves or analyzed/not, tick games,
+   and press **Analyze selected games**. The report then covers exactly those games. The
+   username is remembered. Loading again later picks up new games, and games you already
+   have aren't imported twice.
+   - **Analysis allowance** (`games/quota.py`): the first 25 games, then 10 new
+     games a day (free) or 20 (paid, `CHESSAI_TIER=paid`; no payments are handled).
+     A game is charged once, only when its analysis is saved. Re-analysis, downloads,
+     reports, lessons and puzzles are free, and games analyzed before limits existed
+     are never charged. A selection that doesn't fit is refused before any engine work,
+     with "choose N or fewer". `ANALYSIS_LIMITS=0` turns limits off for development.
+   - The **learner profile** always learns from all of your analyzed games (the last
+     100), so a report on a few hand-picked games never erases a weakness found
+     across many.
+   - **Your Training** sits above the report. It shows the main weakness ("found in X of
+     your Y analyzed games"), one clear next step (5 verified puzzles when the weakness
+     supports them, otherwise the training plan), a recommended lesson, and up to 3 other
+     weaknesses.
 3. No internet, or want a specific game? Open **Or paste games yourself (PGN)**:
    on Chess.com open a game, click **Share → PGN**, copy the text and paste one or
    several games, then **Import & analyze**. If the app can't tell which player you
@@ -264,14 +281,15 @@ Everything after `GameRecord` is platform-neutral.
 
 | Endpoint | What it does |
 |---|---|
-| `POST /api/games/fetch {username, count}` | Download the player's last `count` (10–100) standard games from Chess.com's public API and import them. Returns `fetched`, `new`, `imported`, `errors`. `404` unknown player / no games, `429` rate limited, `502/504` Chess.com unreachable |
+| `GET /api/games/quota` | The analysis allowance: `{tier, enabled, initial {allowance, used, left}, daily {allowance, used, left, resets_on}, left}` (also in `GET /api/games` and every `done` event) |
+| `POST /api/games/fetch {username, count=100}` | Download the player's last `count` (1–100) standard games from Chess.com's public API and import them. Returns `fetched`, `new`, `imported`, `errors`. `404` unknown player / no games, `429` rate limited, `502/504` Chess.com unreachable |
 | `POST /api/games/import {pgn, username?}` | Validate and store games. Returns `imported`, `new`, and per-game `errors`. `422 {needs_player, players}` when the side can't be told |
 | `GET /api/games` | Your games, with a summary of each analysis |
 | `POST /api/games/analyze {game_ids?, reanalyze?}` | NDJSON stream: `start`, `progress`, `game_done`, `error`, `skipped` (game deleted meanwhile), then `done {weaknesses}` (across the learner's analyzed games) |
 | `GET /api/games/{id}` | Game plus analysis, with a review card per moment |
 | `POST /api/games/{id}/moments/{ply}/explain {question?, level?}` | Streamed explanation (Qwen, checked against the facts; template fallback) |
-| `GET /api/games/history?count=10&username=` | The history report for the last `count` games (10–100), from cached analyses. No engine needed. `username` limits it to that player's games |
-| `POST /api/games/history/analyze {count, reanalyze?, username?}` | NDJSON: `select {requested, available, selected, cached, to_analyze}`, `start`, `progress`, `game_done`, `error` (per game), then `done {report}` |
+| `GET /api/games/history?count=10&username=&ids=` | The history report for the last `count` games (10–100), or exactly the games in `ids` (comma-separated), from cached analyses. No engine needed. `username` limits it to that player's games |
+| `POST /api/games/history/analyze {count \| game_ids, reanalyze?, username?}` | `429 {error, quota, needed}` if the new games don't fit the allowance. NDJSON: `select {requested, available, selected, cached, to_analyze}`, `start`, `progress`, `game_done`, `error` (per game), then `done {report}` |
 | `POST /api/games/history/explain {count, level?, username?}` | Streamed explanation of the report (Qwen, checked; template fallback) |
 | `GET /api/games/weaknesses?ids=&username=` | Concepts seen in 2+ games (low-level; the history report builds on it). Each has `new_puzzles` |
 | `POST /api/games/training {keys, game_ids?, username?, level?}` | Build a training plan; returns `course_id` and `first_lesson_id` |

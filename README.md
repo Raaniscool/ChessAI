@@ -38,11 +38,11 @@ Type what you want to learn in the chat box (*"I want to learn the Sicilian"*, *
 
 ## 🔍 Game Analysis — learn from your own Chess.com games
 
-Type your Chess.com username in the **Game Analysis** tab and press **Fetch my last 10 games**: your most recent games are downloaded from Chess.com's official public API and analyzed together (no copying PGNs; pasting still works as a fallback).
+Type your Chess.com username in the **Game Analysis** tab and press **Load my last 100 games**: your most recent games are downloaded from Chess.com's official public API (no copying PGNs; pasting still works as a fallback). Then analyze your last 25, or choose and filter the games yourself. Analysis allowance: the first 25 games, then 10 new games a day (20 with `CHESSAI_TIER=paid`; no payments are handled, and `ANALYSIS_LIMITS=0` turns limits off).
 - **Checking the games:** python-chess validates every move.
 - **Stockfish analysis:** Stockfish finds the moments that mattered, and the Knowledge Library's validators name them (missed forks, hung pieces, ignored threats, missed mates, opening habits…).
 - **Review:** step through each moment: the position before, your move, Stockfish's move and line, and a plain-language explanation. The optional 🧠 AI explanation is built only from verified facts. When the text mentions a line of moves, the board plays it (read aloud, pointed at, or clicked); only single squares are highlighted.
-- **Game history:** your last 10 (or 20, 30, 50, custom) games analyzed together. It shows which mistakes keep showing up ("♞ Missed knight fork: found in 4 of 10 games"), ranked by how often *and* how costly they were. A mistake from one game is never called a pattern, and recurring patterns need at least 10 games. Click a pattern to see every game and position; **Practice** turns it into a lesson plan: verified library examples first, then positions from your own games.
+- **Game history:** your last 25 (or 10, 50, 100, custom, or hand-picked) games analyzed together, with a **Your Training** card that names the main weakness and the next step. It shows which mistakes keep showing up ("♞ Missed knight fork: found in 4 of 10 games"), ranked by how often *and* how costly they were. A mistake from one game is never called a pattern, and recurring patterns need at least 10 games. Click a pattern to see every game and position; **Practice** turns it into a lesson plan: verified library examples first, then positions from your own games.
 
 Your games stay in `data/games/` and never enter the shared library. Details: [docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md).
 
