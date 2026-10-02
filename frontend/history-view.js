@@ -100,8 +100,15 @@ export function puzzleStatus(ev, made = 0) {
   if (ev.type === "status") return ev.text
   if (ev.type === "puzzle") return `${made} new puzzle${made === 1 ? "" : "s"} checked by Stockfish…`
   if (ev.type === "done") {
-    const n = ev.new + ev.reused
-    return `${n} puzzle${n === 1 ? "" : "s"} ready (new positions, not from your games).`
+    const lib = ev.library || 0
+    const n = lib + ev.new + ev.reused
+    const parts = []
+    if (lib) parts.push(`${lib} from the puzzle library`)
+    if (ev.reused) parts.push(`${ev.reused} made for you earlier`)
+    if (ev.new) parts.push(`${ev.new} built just now`)
+    const ready = `${n} puzzle${n === 1 ? "" : "s"} ready`
+    if (!lib) return `${ready} (new positions, not from your games).`
+    return `${ready}${parts.length > 1 ? `: ${parts.join(", ")}` : " from the puzzle library"} — none of them from your games.`
   }
   if (ev.type === "error") return ev.error
   return ""

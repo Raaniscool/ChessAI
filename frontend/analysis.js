@@ -776,7 +776,7 @@ export function setupGameAnalysis(ctx) {
   async function newPuzzles(p, gameIds, btn, count = 3) {
     btn.disabled = true
     let made = 0
-    setImportStatus(`🧩 Building new puzzles for “${escapeHtml(p.title)}”…`, "")
+    setImportStatus(`🧩 Choosing puzzles for “${escapeHtml(p.title)}”…`, "")
     try {
       await streamEvents("/api/games/puzzles", {key: p.key, count, game_ids: gameIds}, ev => {
         if (ev.type === "puzzle") made += 1

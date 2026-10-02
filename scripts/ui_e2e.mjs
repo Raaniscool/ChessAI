@@ -474,6 +474,23 @@ const rerun = (await (await realFetch(new URL("api/games/history/analyze", BASE)
   headers: {"Content-Type": "application/json"}, body: JSON.stringify({count: 10})})).text()).trim().split("\n").map(l => JSON.parse(l))
 check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyze === 0 &&
   rerun.at(-1).report.recurring.includes("knight_fork"), "running it again reuses all 10 analyses")
+// the Puzzle Library and targeted training: library puzzles first, easy -> hard, each with a reason
+{
+  const lib = await (await realFetch(new URL("api/puzzles", BASE))).json()
+  check(lib.total > 300 && lib.by_type.tactic > 0 && lib.by_type.checkmate > 0, `puzzle library: ${lib.total} verified puzzles`)
+  hist.querySelector(".ga-training .training-start").click()
+  await waitFor(() => document.querySelector(".puzzle-why"), "targeted training plan", 180000)
+  const why = [...document.querySelectorAll(".puzzle-why")].at(-1)
+  const card = why.closest(".msg") || why.parentElement
+  check(why.querySelectorAll("li").length === 5 && /Training: Missed knight fork/.test(card.textContent),
+    "Start training: 5 targeted puzzles for the main weakness")
+  check([...why.querySelectorAll("li")].every(li => /—/.test(li.textContent)) && /New to you/.test(why.textContent),
+    "every puzzle says why it was chosen")
+  check(/from the puzzle library/.test(card.textContent) && /not positions from your games/.test(card.textContent),
+    "the plan says where the puzzles came from")
+  $("tab-games").click()
+  await waitFor(() => document.querySelector(".history-count"), "back to the games view")
+}
 // custom count: fewer than 10 is refused in the browser
 const sel = document.querySelector(".history-count")
 sel.value = "custom"

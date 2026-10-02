@@ -72,6 +72,7 @@ export function debugEnabled(win = globalThis.window) {
 
 export function debugLines(debug) {
   if (!debug) return []
+  if (debug.kind === "puzzles") return puzzleDebugLines(debug)
   const out = []
   const intent = debug.interpreted_intent || {}
   const reading = intent.reading || {}
@@ -96,4 +97,38 @@ export function debugLines(debug) {
     if (v[k]) out.push([`VALIDATION · ${k}`, v[k] + (v[`${k} (why)`] ? ` — ${v[`${k} (why)`].join("; ")}` : "")])
   }
   return out
+}
+
+// Targeted puzzles for a weakness: where each puzzle came from and how it was checked.
+export function puzzleDebugLines(debug) {
+  const out = []
+  const w = debug.user_weakness || {}
+  out.push(["USER WEAKNESS", `${w.title || w.key} (${w.concept || "no concept"}) · ${w.games ?? "?"} of ${w.of ?? "?"} games` +
+    (w.tier ? ` · ${w.tier}` : "")])
+  const src = (debug.source || []).map(s => `${s.game_id} move ${s.move}${s.severity ? ` (${s.severity})` : ""}`)
+  out.push(["SOURCE", src.join("; ") || "—"])
+  const lm = debug.library_match || {}
+  out.push(["LIBRARY MATCH", `${lm.chosen || 0} chosen of ${lm.considered || 0} candidates` +
+    (lm.target_rating ? ` · target ≈${lm.target_rating}` : "") + (lm.level_note ? ` · ${lm.level_note}` : "") +
+    (lm.note ? ` · ${lm.note}` : "")])
+  for (const p of lm.puzzles || []) {
+    out.push(["LIBRARY MATCH · puzzle", `${p.id} · ${p.type} · ≈${p.rating} · ${p.match} · score ${p.score}`])
+  }
+  const g = debug.custom_generation || {}
+  out.push(["CUSTOM GENERATION", `${g.status || "—"} · needed ${g.needed ?? 0}, accepted ${g.generated ?? 0}` +
+    (g.attempts ? ` of ${g.attempts} candidates` : "") + (g.rejected ? ` · rejected ${g.rejected}` : "")])
+  for (const v of debug.puzzle_validation || []) {
+    const ok = v.status === "verified"
+    out.push(["PUZZLE VALIDATION", `${ok ? "PASS" : "FAIL"} ${v.id} (${v.origin}) · ${v.uniqueness}` +
+      (v.accepted && v.accepted.length ? ` · accepts ${v.accepted.join("/")}` : "") +
+      (v.moves ? ` · ${v.moves} move${v.moves === 1 ? "" : "s"}` : "") + (v.rating ? ` · ≈${v.rating}` : "")])
+  }
+  return out
+}
+
+// "Why this puzzle" lines for a targeted training plan (shown under the plan).
+export function puzzleReasons(plan) {
+  return ((plan && plan.puzzles) || []).map((p, i) => ({
+    n: i + 1, title: p.title, origin: p.origin, why: (p.reasons || []).join(" · "),
+  }))
 }

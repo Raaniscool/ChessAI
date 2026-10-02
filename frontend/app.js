@@ -9,7 +9,7 @@ import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 import {errorMessage, readEvents, reach} from "./net.js"
-import {OTHER, clarifyBody, debugEnabled, debugLines, optionLabel, understoodLine, verificationBadge} from "./plan-view.js"
+import {OTHER, clarifyBody, debugEnabled, debugLines, optionLabel, puzzleReasons, understoodLine, verificationBadge} from "./plan-view.js"
 import {setupCoach} from "./coach.js"
 
 // ---------- stale page guard ----------
@@ -989,6 +989,17 @@ function renderPlan(res) {
     line.className = "personal-note"
     line.textContent = "Personalized for you: " + personal
     div.appendChild(line)
+  }
+  const reasons = puzzleReasons(plan)
+  if (reasons.length) {
+    const list = document.createElement("ol")
+    list.className = "puzzle-why"
+    for (const r of reasons) {
+      const li = document.createElement("li")
+      li.innerHTML = `<b>${escapeHtml(r.title)}</b> <span class="muted">— ${escapeHtml(r.why)}</span>`
+      list.appendChild(li)
+    }
+    div.appendChild(list)
   }
   if (plan.debug) appendDebug(div, plan.debug)
   const understood = understoodLine(plan)

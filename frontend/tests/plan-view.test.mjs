@@ -1,6 +1,6 @@
 import {test} from "node:test"
 import assert from "node:assert/strict"
-import {clarifyBody, debugEnabled, debugLines, optionLabel, understoodLine, verificationBadge} from "../plan-view.js"
+import {clarifyBody, debugEnabled, debugLines, optionLabel, puzzleReasons, understoodLine, verificationBadge} from "../plan-view.js"
 
 const question = {key: "coordination:B+N:endgame", question: "What do you mean by “knight and bishop endgames”?",
   options: [{id: "separate", label: "Knight endgames and bishop endgames separately", icon: "♞ ♝"},
@@ -72,4 +72,32 @@ test("the debug panel lists every stage, and is opt-in", () => {
   assert.deepEqual(debugLines(null), [])
   assert.equal(debugEnabled({location: {search: "?debug=1"}, localStorage: {getItem: () => null}}), true)
   assert.equal(debugEnabled({location: {search: ""}, localStorage: {getItem: () => null}}), false)
+})
+
+test("targeted puzzles: the debug panel shows weakness, source, library match, generation and validation", () => {
+  const lines = debugLines({
+    kind: "puzzles",
+    user_weakness: {key: "hung_piece", title: "Hanging pieces", concept: "hung_piece", games: 6, of: 25, tier: "recurring"},
+    source: [{game_id: "chesscom-1", move: "14...Nxe4", severity: "blunder"}],
+    library_match: {considered: 22, chosen: 3, target_rating: 720, puzzles: [{id: "p1", type: "tactic", rating: 650, match: "trains", score: 0.81}]},
+    custom_generation: {status: "ran", needed: 2, generated: 2, attempts: 9, rejected: 7},
+    puzzle_validation: [{id: "p1", origin: "library", status: "verified", uniqueness: "unique", accepted: ["Nxe4"], moves: 1, rating: 650},
+      {id: "g1", origin: "generated", status: "candidate", uniqueness: "unchecked", accepted: []}],
+  })
+  const keys = lines.map(([k]) => k)
+  for (const k of ["USER WEAKNESS", "SOURCE", "LIBRARY MATCH", "CUSTOM GENERATION", "PUZZLE VALIDATION"]) assert.ok(keys.includes(k), k)
+  const get = k => lines.filter(([kk]) => kk === k).map(([, v]) => v)
+  assert.match(get("USER WEAKNESS")[0], /6 of 25 games · recurring/)
+  assert.match(get("SOURCE")[0], /chesscom-1 move 14\.\.\.Nxe4 \(blunder\)/)
+  assert.match(get("LIBRARY MATCH")[0], /3 chosen of 22 candidates · target ≈720/)
+  assert.match(get("CUSTOM GENERATION")[0], /ran · needed 2, accepted 2 of 9 candidates · rejected 7/)
+  const v = get("PUZZLE VALIDATION")
+  assert.ok(v[0].startsWith("PASS p1 (library) · unique · accepts Nxe4"))
+  assert.ok(v[1].startsWith("FAIL g1"))
+})
+
+test("why-this-puzzle lines", () => {
+  assert.deepEqual(puzzleReasons({}), [])
+  assert.deepEqual(puzzleReasons({puzzles: [{title: "Knight fork", origin: "library", reasons: ["Trains forks", "New to you"]}]}),
+    [{n: 1, title: "Knight fork", origin: "library", why: "Trains forks · New to you"}])
 })

@@ -61,6 +61,10 @@ test("new-puzzle progress wording", async () => {
   assert.equal(puzzleStatus({type: "puzzle"}, 2), "2 new puzzles checked by Stockfish…")
   assert.equal(puzzleStatus({type: "done", new: 2, reused: 1}), "3 puzzles ready (new positions, not from your games).")
   assert.equal(puzzleStatus({type: "done", new: 0, reused: 1}), "1 puzzle ready (new positions, not from your games).")
+  assert.equal(puzzleStatus({type: "done", library: 5, new: 0, reused: 0}),
+    "5 puzzles ready from the puzzle library — none of them from your games.")
+  assert.equal(puzzleStatus({type: "done", library: 3, new: 2, reused: 0}),
+    "5 puzzles ready: 3 from the puzzle library, 2 built just now — none of them from your games.")
   assert.equal(puzzleStatus({type: "error", error: "No engine"}), "No engine")
   assert.equal(puzzleStatus({type: "other"}), "")
 })
