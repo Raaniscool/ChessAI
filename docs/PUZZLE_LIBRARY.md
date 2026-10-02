@@ -192,12 +192,57 @@ has at least 3 puzzles for it.
 **Sets** (`POST /api/puzzles/set`):
 
 - Selection is `select.py`: level fit, novelty, no repeats.
-- Personalized sets use the library first. When fewer than 3 match, generation runs through the
-  full pipeline (at most 3 puzzles), and only `verified` results with a clear first move are
-  served.
-- Positions from the learner's games are excluded.
+- Personalized sets are built by `puzzles/sets.py` (below). Practice sets are the selection,
+  easy → hard.
+- Library copies of positions from the learner's games are excluded; the learner's own moment
+  appears only as the labelled "Your game" item.
 - Practice themes serve puzzles *about* the theme (exact or "trains" matches). Puzzles that only
   use the idea (a smothered mate that relies on a pin) come in only when those run out.
+
+**Personalized set composition** (`puzzles/sets.py`, 5 puzzles):
+
+| # | Role | Source | Notes |
+|---|---|---|---|
+| 1 | **Your game** | A: the learner's own mistake (`puzzles/from_game.py`) | re-verified by Stockfish, see below |
+| 2–4 | **Same pattern / Easier / Harder** | B: library puzzles of the exact skill; C: generation for the shortfall | role = rating vs the learner's target (±75) |
+| 5 | **Defend** | library defence puzzles, else one generated "stop the threat" puzzle | only for weaknesses the learner *walked into* (forks, hung pieces) |
+
+Each item carries one line for the solver, built from the evidence (no AI text), e.g.
+"Missed knight fork — you missed this 4 times in 3 recent games (a step harder)." or
+"Your own game vs alice — you played 11.Kd2 here. Find what you missed."
+
+**Your game** (`puzzles/from_game.py`). The weakness evidence holds the position before the
+learner's move, the move played and the engine's best move. Before it's served:
+
+1. python-chess: legal position, the learner to move, the played move legal.
+2. Stockfish, fresh (depth 14, multipv 5): the played move must still be ≥150cp worse than the
+   best; at most 3 moves may solve it (all accepted) and only if every other candidate is
+   clearly worse — otherwise it's rejected as "several moves are about as good".
+3. `puzzles/profile.py` with that engine data: critical/forced moves, the objective (the line is
+   trimmed there), the rating. A first move that is "open" is rejected.
+
+Verdicts are cached in `DATA_DIR/puzzles/game_puzzles.json` (accepted and rejected), so each
+moment costs Stockfish time once. Game puzzles are private: source type `user_game`, never
+in Practice, never written to the Knowledge Library. The same novelty rules apply (not shown
+today, not solved in the last 3 days, a miss returns the next day), and a repeated mistake in
+another game with the same position isn't served as "new". Results are recorded like any
+puzzle and feed the learner model.
+
+**Progression** (`puzzles/progression.py`). Each puzzle's critical decision puts it in a
+recognition stage:
+
+| Stage | Key move |
+|---|---|
+| spot | a check or capture with fewer than 4 plausible candidates |
+| choose | 4–6 plausible candidates, only one works |
+| deep | a quiet move, 7+ candidates, or more than one real decision |
+
+Focus = the first stage the learner hasn't mastered (≥3 puzzles, ≥75% first try). Selection
+gets +0.12 for the focus stage, +0.04 for the next one and −0.06 for mastered stages below. So
+someone who solves easy knight forks cleanly is moved to forks with several candidates, not
+just to higher-rated easy forks; missing those keeps the focus there. Weakness cards show
+"Next: Choose among candidates — You solve the ones where the key move is a check or capture
+(3/3 first try) …"; the ladder is in the debug block.
 
 **Skill targeting** (`puzzles/skill.py`; also used by "Start training"). A specific weakness is
 served only by puzzles of exactly that skill:
@@ -212,8 +257,9 @@ The shortfall goes to constrained generation for the exact concept, never to a g
 
 **Solver** (`frontend/puzzle-solver.js` rules, `frontend/puzzles.js` UI):
 
-- The header shows the side to move, the objective ("Mate in 2", "Win material"), the concept,
-  the difficulty and progress (2/5).
+- The header shows the side to move, the objective ("Mate in 2", "Win material"), the role
+  (Your game / Same pattern / Easier / Harder / Defend), the concept, the difficulty, progress
+  (2/5) and one "Why this puzzle" line.
 - The solution move animates the opponent's reply.
 - A wrong move gets ✗ and is taken back. The puzzle counts as failed, and you can still finish
   it or retry.
@@ -229,7 +275,7 @@ The shortfall goes to constrained generation for the exact concept, never to a g
 | Endpoint | Returns |
 |---|---|
 | `GET /api/puzzles/dashboard` | `personalized` (cards, main, profile box), `practice` themes with counts |
-| `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles, easy → hard (+ `debug` for weakness sets) |
+| `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles with `role`, `role_label`, `why`; `ladder`; `debug` for weakness sets (incl. `your_game` trail, `defend`, `roles`) |
 | `POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds, revealed}` | records the outcome; returns the concept rating change and stats |
 | `GET /api/puzzles` | counts by type, tier and uniqueness |
 | `GET /api/puzzles/select?concept=&count=5` | the selection for a concept: puzzles with `reasons`, `stats`, `slot_rating`, `match`, plus `target_rating`, `shortfall` |

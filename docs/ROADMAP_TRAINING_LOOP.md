@@ -51,8 +51,12 @@ comes with tests. Rules that hold everywhere:
   forced moves from Stockfish multipv, objective-based length, decision-based difficulty;
   a top-level **Puzzles tab** (Personalized with evidence / Practice by theme, focused
   solver, results feed personalization). See [PUZZLE_LIBRARY.md](PUZZLE_LIBRARY.md).
-- **P3: personalized puzzle generation.** Spec → generator → strict verification, the 5-level
-  progression, links to source mistakes, and puzzle debug.
+- **P3: personalized puzzle generation.** *Started:* personalized sets open with the learner's
+  own game moment (re-verified by Stockfish), then the same pattern easy → hard and a defensive
+  item; progression by recognition stage (spot → choose → deep) from puzzle stats; one-line
+  "why" per puzzle. *Remaining:* a fork-specific "prevent it" constructor (the defensive item
+  is a generic threat puzzle today), spec-driven generation from Qwen intents, and the
+  identify → threat → prevent → respond ladder for defensive weaknesses.
 - **P4: deep openings.** Branching opening trees, typical plans and mistakes, and lessons that
   select a slice.
 - **P5: profile page and continuous loop.** Skill states, trends, more detectors, and a
