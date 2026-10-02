@@ -65,7 +65,11 @@ def debug_block(weakness: dict, total_games: int, selection: Selection | None, g
         validation.append({"id": ex.id, "origin": origins.get(ex.id), "status": ex.status,
                            "uniqueness": p.uniqueness if p else "unchecked",
                            "accepted": list(p.accepted_first) if p else [], "moves": p.learner_moves if p else None,
-                           "rating": p.rating if p else None})
+                           "rating": p.rating if p else None,
+                           "objective": p.objective if p else None,
+                           "critical": list(p.critical_moves) if p else [],
+                           "forced": list(p.forced_moves) if p else [],
+                           "engine_profiled": p.engine_profiled if p else False})
     source = [{"game_id": e.get("game_id"), "severity": e.get("severity"),
                "move": f"{e.get('move_number')}{'.' if e.get('side') == 'white' else '...'}{e.get('san')}"}
               for e in weakness.get("evidence", [])[:3]]

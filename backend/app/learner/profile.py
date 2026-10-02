@@ -258,6 +258,7 @@ class LearnerProfile:
         self.weaknesses = [{
             "key": p["key"], "concept": p.get("concept"), "title": p.get("title"), "tier": p["tier"],
             "kind": p.get("kind"), "game_count": p.get("game_count"), "total_games": p.get("total_games"),
+            "occurrences": p.get("occurrences"),
             "significance": p.get("significance"), "updated": _iso()} for p in recurring][:10]
         for p in recurring:
             if p.get("concept") and p["tier"] == "recurring":
