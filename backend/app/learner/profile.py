@@ -97,6 +97,7 @@ class LearnerProfile:
     concepts: dict[str, ConceptState] = field(default_factory=dict)
     weaknesses: list[dict] = field(default_factory=list)
     game_observations: dict = field(default_factory=dict)
+    game_skill: dict = field(default_factory=dict)   # analysis.skill_evidence over all analyzed games
     stats: dict = field(default_factory=lambda: {
         "puzzles": {"attempts": 0, "solved": 0, "first_try": 0},
         "lessons": {"started": 0, "completed": 0}, "hints_used": 0, "reveals": 0})
@@ -252,7 +253,7 @@ class LearnerProfile:
         self.recent_topics = self.recent_topics[-MAX_RECENT_TOPICS:]
 
     def update_from_history(self, report: dict, *, ratings: list[int] | None = None,
-                            username: str | None = None) -> None:
+                            username: str | None = None, game_skill: dict | None = None) -> None:
         """Game History findings become part of the learner model (they are evidence, not verdicts)."""
         recurring = [p for p in report.get("patterns", []) if p.get("tier") in ("recurring", "occasional")]
         self.weaknesses = [{
@@ -279,6 +280,8 @@ class LearnerProfile:
                 self.skill = {"rating": R.normalize(recent, "chesscom"), "source": "games",
                               "evidence": self.skill.get("evidence", 0)}
             self.game_observations["rating"] = recent
+        if game_skill is not None:
+            self.game_skill = game_skill
         self.touch()
 
 

@@ -336,3 +336,14 @@ def test_fresh_skips_the_library(client, monkeypatch):
     monkeypatch.setattr(pp, "generate_for", lambda *a, **k: GenerationResult("knight_fork", attempts=3))
     events = ndjson(client.post("/api/games/puzzles", json={"key": "knight_fork", "count": 2, "fresh": True}))
     assert events[-1]["type"] == "error"  # only generated positions, and none passed
+
+
+def test_history_analysis_stores_skill_evidence_from_all_games(client):
+    """learner.difficulty reads profile.game_skill: computed over every analyzed game, not one."""
+    from app.learner import get_profile
+    _analyzed(client)
+    gs = get_profile().game_skill
+    assert gs["games"] == 2 and gs["moves"] > 0 and gs["errors"] >= 2   # both games' missed forks
+    assert set(gs["phases"]) == {"opening", "middlegame", "endgame"}
+    assert "items" in gs["chances"]
+    assert get_profile().as_dict()["game_skill"] == gs                       # persisted with the profile

@@ -340,7 +340,15 @@ def learn_from_history(report: dict, selected: list[dict], username: str | None)
             ratings.append(elo)
     try:
         from .learner import get_store
-        get_store().update("local", lambda p: p.update_from_history(report, ratings=ratings, username=username))
+        from .analysis.skill_evidence import summarize
+        try:
+            skill = summarize(selected)
+        except Exception:  # skill evidence must never block the weakness update
+            import logging
+            logging.getLogger(__name__).warning("couldn't compute skill evidence", exc_info=True)
+            skill = None
+        get_store().update("local", lambda p: p.update_from_history(report, ratings=ratings, username=username,
+                                                                     game_skill=skill))
     except Exception:  # pragma: no cover - defensive
         import logging
         logging.getLogger(__name__).warning("couldn't update the learner profile", exc_info=True)
