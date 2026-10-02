@@ -63,6 +63,7 @@ class Selection:
     considered: int = 0
     level_note: str | None = None
     requested: int = 0
+    partial: int = 0   # weakness sets: related-only matches that were not allowed to fill a slot
 
     @property
     def shortfall(self) -> int:
@@ -71,6 +72,7 @@ class Selection:
     def as_dict(self) -> dict:
         return {"concept": self.concept, "target_rating": self.target_rating, "considered": self.considered,
                 "requested": self.requested, "shortfall": self.shortfall, "level_note": self.level_note,
+                "partial": self.partial,
                 "puzzles": [c.as_dict() for c in self.chosen]}
 
 
@@ -168,7 +170,7 @@ def slots(target: int, count: int) -> list[int]:
 
 def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profile=None, usage=None,
            exclude: set[str] | frozenset = frozenset(), now: datetime | None = None,
-           concept_name: str | None = None) -> Selection:
+           concept_name: str | None = None, overrides: dict | None = None) -> Selection:
     from ..learner.views import target_rating
 
     now = now or datetime.now(timezone.utc)
@@ -180,7 +182,7 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
     for p in puzzles:
         if p.id in exclude or not p.clear_start:   # no clear first decision: not a puzzle
             continue
-        rel, kind = relevance(p, concept, wanted)
+        rel, kind = (overrides or {}).get(p.id) or relevance(p, concept, wanted)
         if rel < MIN_RELEVANCE:
             continue
         pool.append((p, rel, kind, stats_of(p.id)))

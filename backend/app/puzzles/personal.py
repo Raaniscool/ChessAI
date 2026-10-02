@@ -47,12 +47,18 @@ def library_selection(weakness: dict, knowledge, count: int, profile=None, usage
     concept = weakness.get("concept")
     if not concept or concept not in knowledge.concepts:
         return None
+    from .skill import split
     mine = own_boards(weakness)
     candidates = [p for p in get_puzzles(knowledge).all()
-                  if (p.source or {}).get("type") != "user_game" and p.fen.split(" ")[0] not in mine]
-    return select(candidates, knowledge, concept, count=count, profile=profile,
-                  usage=_SeenUsage(usage, shown or {}), exclude=exclude or set(),
-                  concept_name=weakness.get("title"))
+                  if (p.source or {}).get("type") != "user_game" and p.fen.split(" ")[0] not in mine
+                  and p.clear_start]
+    # a specific weakness is only served by puzzles of that exact skill (puzzles.skill)
+    candidates, overrides, partial = split(candidates, concept, knowledge)
+    selection = select(candidates, knowledge, concept, count=count, profile=profile,
+                       usage=_SeenUsage(usage, shown or {}), exclude=exclude or set(),
+                       concept_name=weakness.get("title"), overrides=overrides)
+    selection.partial = partial
+    return selection
 
 
 def debug_block(weakness: dict, total_games: int, selection: Selection | None, generation: dict,
@@ -79,6 +85,7 @@ def debug_block(weakness: dict, total_games: int, selection: Selection | None, g
                           "games": weakness.get("game_count"), "of": total_games, "tier": weakness.get("tier")},
         "source": source,
         "library_match": ({"considered": selection.considered, "chosen": len(selection.chosen),
+                           "partial_not_used": selection.partial,
                            "target_rating": selection.target_rating, "level_note": selection.level_note,
                            "puzzles": [{"id": c.puzzle.id, "rating": c.puzzle.rating, "match": c.match,
                                         "type": c.puzzle.type, "score": round(c.score, 3)} for c in selection.chosen]}
