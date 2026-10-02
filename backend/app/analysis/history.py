@@ -41,7 +41,7 @@ from .weaknesses import recurring_weaknesses
 
 MIN_HISTORY_GAMES = 10          # the full recurring-pattern analysis needs this many analyzed games
 DEFAULT_COUNT = 10
-PRESET_COUNTS = (10, 20, 30, 50)
+PRESET_COUNTS = (10, 25, 50, 100)
 MAX_COUNT = 100                 # analysis cost grows linearly; 100 recent games is plenty
 FETCH_COUNT = 100               # downloading is cheap: load the last 100, analyze a chosen subset
 FIRST_ANALYSIS = 25             # the suggested first analysis ("Analyze last 25 games")

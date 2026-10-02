@@ -8,7 +8,7 @@
     GET    /api/games/weaknesses?ids=a,b         -> patterns in >= 2 games + seen-once patterns (low level)
     POST   /api/games/fetch                      {username, count=100} -> fetch recent games from Chess.com's public API
     GET    /api/games/quota                      -> how many games can be analyzed now (first 25, then per day)
-    GET    /api/games/history?count=10&username= -> history report for the last N games (no engine work)
+    GET    /api/games/history?count=10&username=&ids= -> history report for the last N (or the chosen) games
     POST   /api/games/history/analyze            {count | game_ids, reanalyze?} -> NDJSON: analyze what's missing
                                                  (within the analysis allowance), then report
     POST   /api/games/history/explain            {count, level?} -> NDJSON: Qwen explains the report's findings
@@ -183,8 +183,8 @@ def fetch_games(body: FetchRequest):
 
 @router.get("")
 def list_games() -> dict:
-    return {"games": [{**_summary(d), "analysis": _analysis_summary(d.get("analysis"))}
-                      for d in store.list_docs()],
+    docs = sorted(store.list_docs(), key=lambda d: history.recency_key(d["game"]), reverse=True)  # newest first
+    return {"games": [{**_summary(d), "analysis": _analysis_summary(d.get("analysis"))} for d in docs],
             "quota": get_quota().status()}
 
 
@@ -237,9 +237,11 @@ def _history_report(count, failed: list[dict] | None = None, username: str | Non
 
 
 @router.get("/history")
-def history_report(count: int = history.DEFAULT_COUNT, username: str | None = None):
+def history_report(count: int = history.DEFAULT_COUNT, username: str | None = None, ids: str | None = None):
+    """The last `count` games, or exactly the chosen games (`ids=a,b,c`)."""
+    game_ids = [i for i in (ids or "").split(",") if i.strip()] or None
     try:
-        return _history_report(count, username=username)
+        return _history_report(count, username=username, game_ids=game_ids)
     except history.HistoryError as exc:
         return _error(422, str(exc))
 
@@ -272,7 +274,7 @@ def history_analyze(body: HistoryRequest):
                 failed.append({"game_id": event["game_id"], "error": event["error"]})
             yield event
         report = _history_report(n, failed, body.username, body.game_ids)
-        learn_from_history(report, selected, body.username)
+        _update_profile(body.username, failed)
         yield {"type": "done", "report": report, "quota": get_quota().status()}
 
     return _ndjson(events())
@@ -304,6 +306,23 @@ def _learner_targets(weaknesses: list[dict]) -> dict[str, int]:
                 for w in weaknesses if w.get("concept") in library.concepts}
     except Exception:  # pragma: no cover - personalization must never break training
         return {}
+
+
+def _update_profile(username: str | None, failed: list[dict] | None = None) -> None:
+    """The learner model learns from *all* of the player's analyzed games (the last MAX_COUNT),
+    not from whichever subset was just looked at: a report on 3 hand-picked games must not
+    erase a weakness found across 25."""
+    try:
+        _, everything, _ = _history_selection(history.MAX_COUNT, username)
+        for d in everything:
+            if not _current(d.get("analysis")):
+                d["analysis"] = None
+        analyzed = [d for d in everything if d.get("analysis")]
+        report = history.build_report(everything, _knowledge(), requested=len(everything),
+                                      available=len(everything), failed=failed)
+    except history.HistoryError:
+        return
+    learn_from_history(report, analyzed, username)
 
 
 def learn_from_history(report: dict, selected: list[dict], username: str | None) -> None:
@@ -397,6 +416,8 @@ def analyze(body: AnalyzeRequest):
 
     def events():
         yield from _analysis_events(todo, engine, billable)
+        if todo:
+            _update_profile(None)
         # Patterns are judged across all of the learner's analyzed games, not just this batch:
         # a mistake in today's game may repeat one from last week.
         yield {"type": "done", "weaknesses": _weaknesses(), "quota": get_quota().status()}

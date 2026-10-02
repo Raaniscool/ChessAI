@@ -143,3 +143,18 @@ def test_fetch_defaults_to_100_and_accepts_small_counts():
     assert history.validate_fetch_count(1) == 1
     with pytest.raises(history.HistoryError):
         history.validate_fetch_count(101)
+
+
+def test_a_small_chosen_set_never_erases_what_the_profile_learned(client):
+    """The report shows the chosen games; the learner model keeps learning from all of them."""
+    from app.learner import get_profile
+    kinds = {i: "fork" if i in (3, 5, 7, 9) else "clean" for i in range(1, 11)}
+    import_games(client, kinds)
+    ndjson(client.post("/api/games/history/analyze", json={"count": 10, "username": "RaanTest"}))
+    assert any(w["concept"] == "knight_fork" for w in get_profile().weaknesses)
+    clean = [gid(1), gid(2), gid(4)]
+    done = ndjson(client.post("/api/games/history/analyze", json={"game_ids": clean, "username": "RaanTest"}))[-1]
+    assert done["report"]["games_analyzed"] == 3 and not done["report"]["recurring"]  # the report: exactly those
+    profile = get_profile()
+    assert any(w["concept"] == "knight_fork" for w in profile.weaknesses)             # the profile: everything
+    assert profile.game_observations["games_analyzed"] == 10
