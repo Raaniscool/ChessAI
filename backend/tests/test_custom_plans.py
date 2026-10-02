@@ -75,7 +75,9 @@ def ctx_for(intent, engine=None, personal=None, level=None, plan_library=None, l
                    plan_library=plan_library, learner=learner)
 
 
-def material_intent(pieces=("N", "B"), relation="versus", head="endgame"):
+def material_intent(pieces=("B", "N"), relation="together", head="endgame"):
+    # plan-structure tests need a subject with verified library coverage; knight-vs-bishop
+    # (two-sided) has none under exact per-side matching, so it is generated on request instead
     spec = MaterialSpec(pieces, relation, head)
     return LearningIntent("test", [Component("material", spec.label(), spec.label(), spec)]), spec
 
@@ -118,12 +120,13 @@ def test_missing_library_plan_becomes_a_verified_custom_plan(tmp_path):
         parse_lesson(lesson, course_id="_t")
 
 
-def test_every_reading_of_an_ambiguous_request_gives_its_own_plan(tmp_path):
+def test_every_reading_of_an_ambiguous_request_gives_its_own_plan(tmp_path, engine):
     titles = {}
     for choice in ("separate", "together", "versus"):
         intent = understand("knight and bishop endgames", answers={"coordination:B+N:endgame": {"choice": choice}})
+        # knight against bishop has no exact verified library positions: they're generated (needs Stockfish)
         res = build_custom_plan(intent, use_qwen=False, plan_library=PlanLibrary(tmp_path / choice),
-                                review=ReviewQueue(tmp_path / "review"))
+                                review=ReviewQueue(tmp_path / "review"), engine=engine)
         assert res.status == "verified", (choice, res.attempts)
         titles[choice] = [u["title"] for u in res.record["plan"]["units"]]
     assert titles["separate"] == ["Knight endgames", "Bishop endgames"]
@@ -252,8 +255,9 @@ def test_exercise_where_every_move_is_equal_is_rejected():
 
 
 def test_new_position_without_engine_needs_review_not_trust():
-    intent, _ = material_intent()
-    cand = one_unit_plan(intent, [proposed(KNIGHT_BISHOP, ["Kd2"])])
+    intent, spec = material_intent(("N", "B"), "versus")
+    cand = one_unit_plan(intent, [proposed(KNIGHT_BISHOP, ["Kd2"])], title=f"{spec.label()}: learn the idea")
+    cand.title = f"Plan: {spec.label()}"  # a plan for exact material must name it (request_satisfied)
     report = validate(cand, ctx_for(intent, engine=None))
     assert report.status == "needs_review"
 
@@ -334,9 +338,11 @@ def test_units_need_objectives():
 # ---------------------------------------------------------------- consistency (lesson/concept matching)
 def test_item_without_the_requested_material_is_rejected():
     intent, spec = material_intent(("N", "B"), "versus")
-    rook_vs_bishop = get_content_index().material(MaterialSpec(("R", "B"), "versus"))[0]
-    cand = one_unit_plan(intent, [_item(_pool(spec)[0], "demonstration"), _item(rook_vs_bishop, "guided")])
-    assert "items_match_unit" in issues(validate(cand, ctx_for(intent)), "consistency")
+    knight_vs_bishop = proposed(KNIGHT_BISHOP, ["Kd2"], role="demonstration")
+    rook_vs_bishop = proposed("8/8/3b4/4k3/8/8/2R5/4K3 w - - 0 1", ["Kd2"], role="guided")
+    report = validate(one_unit_plan(intent, [knight_vs_bishop, rook_vs_bishop]), ctx_for(intent))
+    bad = [i for i in report.issues if i.check == "items_match_unit" and i.severity == "error"]
+    assert [i.item for i in bad] == [rook_vs_bishop.ref]
 
 
 def test_item_about_another_concept_is_rejected():
@@ -549,7 +555,7 @@ def test_successful_verification_runs_every_family():
     from app.planner.custom.validate import CHECKS
     families = {f for _, f, _ in CHECKS}
     assert families == {"legality", "provenance", "correctness", "education", "consistency", "duplication",
-                        "personalization"}
+                        "personalization", "request"}
     assert set(report.checks) == {n for n, _, _ in CHECKS}
 
 
@@ -601,12 +607,12 @@ def test_learner_plans_stay_out_of_the_shared_library(tmp_path):
                                                         "units": [{"items": [{"ref": "mygen_x"}]}]}})
 
 
-def test_equivalent_request_reuses_the_verified_plan(tmp_path):
+def test_equivalent_request_reuses_the_verified_plan(tmp_path, engine):
     lib = PlanLibrary(tmp_path / "plans")
     a = understand("knight vs bishop endgames")
-    first = build_custom_plan(a, use_qwen=False, plan_library=lib, review=ReviewQueue(tmp_path / "r"))
+    first = build_custom_plan(a, use_qwen=False, plan_library=lib, review=ReviewQueue(tmp_path / "r"), engine=engine)
     b = understand("knight against bishop endings")
-    second = build_custom_plan(b, use_qwen=False, plan_library=lib, review=ReviewQueue(tmp_path / "r"))
+    second = build_custom_plan(b, use_qwen=False, plan_library=lib, review=ReviewQueue(tmp_path / "r"), engine=engine)
     assert first.status == "verified" and second.status == "reused"
     assert second.record["plan"]["custom"]["template_id"] == first.template["id"]
 

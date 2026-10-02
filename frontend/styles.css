@@ -438,6 +438,14 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
   background: var(--bg); color: var(--text); }
 .clarify-note:empty { display: none; }
 .clarify-details { margin: 6px 0 0; padding-left: 20px; }
+.plan-debug { margin-top: 8px; font-size: 12px; border: 1px dashed #4a5563; border-radius: 6px; padding: 4px 8px; }
+.plan-debug summary { cursor: pointer; color: #9aa4ae; }
+.plan-debug dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 6px 0 2px; }
+.plan-debug dt { font-weight: 600; color: #9aa4ae; }
+.plan-debug dd { margin: 0; word-break: break-word; }
+.plan-debug dd.ok { color: #7bd88f; }
+.plan-debug dd.bad { color: #ff8a80; }
+.lesson-invalid { border-left: 3px solid #e0a040; }
 .clarify-details li { margin: 2px 0; }
 .clarify-note { margin-top: 6px; }
 .plan-badge { display: inline-block; margin-top: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px;

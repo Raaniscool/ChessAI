@@ -41,9 +41,10 @@ MAX_GOAL_LENGTH = 300
 class PlanError(ValueError):
     """The goal can't be turned into a plan; carries suggestions for the user."""
 
-    def __init__(self, message: str, suggestions: list[str] | None = None):
+    def __init__(self, message: str, suggestions: list[str] | None = None, debug: dict | None = None):
         super().__init__(message)
         self.suggestions = suggestions or []
+        self.debug = debug
 
 
 @dataclass
@@ -394,10 +395,16 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
             # teach one named subject best (library examples, catalog lessons, definition fallback)
             cleaned = single.label
         elif intent.structured:
-            record = _custom(intent, level or _profile_level(profile), catalog, use_qwen, engine, personal,
-                             learner, teacher)
+            record, result = _custom(intent, level or _profile_level(profile), catalog, use_qwen, engine, personal,
+                                     learner, teacher, with_result=True)
+            from .custom.debug import view as debug_view
             if record is not None:
+                record["plan"]["debug"] = debug_view(cleaned, intent, result)
                 return record
+            if intent.material_specs():
+                # An exact material request is never answered with a different topic: no
+                # keyword planner, no "broader" plan. Say what's missing instead.
+                raise _material_failure(cleaned, intent, result, debug_view(cleaned, intent, result))
     record = _plan_without_intent(cleaned, library_first, level, catalog, use_qwen, engine, intent, teacher,
                                   profile=profile if personalized(profile) else None)
     if intent is not None and (intent.clarified or intent.structured):
@@ -405,7 +412,7 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
     return record
 
 
-def _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher) -> dict | None:
+def _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher, with_result: bool = False):
     from ..engine import get_engine
     from .custom import build_custom_plan
 
@@ -414,10 +421,29 @@ def _custom(intent, level, catalog, use_qwen, engine, personal, learner, teacher
                                    use_qwen=use_qwen, teacher=teacher, personal=personal, learner=learner)
     except Exception as exc:  # the custom pipeline must never break planning
         log.warning("custom plan pipeline failed: %s", exc)
-        return None
+        return (None, None) if with_result else None
     if result.record is None:
         log.info("no verified custom plan for %r: %s", intent.goal, result.attempts)
-    return result.record
+    return (result.record, result) if with_result else result.record
+
+
+def _material_failure(goal: str, intent, result, debug: dict) -> PlanError:
+    """The honest answer when no verified positions exist for an exact material request."""
+    specs = intent.material_specs()
+    names = " and ".join(f"“{s.label().lower()}” ({s.short()})" for s in specs)
+    cov = (debug.get("library_coverage") or [{}])[0]
+    gen = ((debug.get("generation") or [{}])[0].get("details") or {})
+    why = gen.get("stopped") or ""
+    found = cov.get("verified_matches", 0)
+    text = (f"I couldn't build verified practice positions for exactly {names} this time. "
+            f"The library has {found or 'no'} verified position{'s' if found != 1 else ''} with exactly this "
+            "material for your side, and the positions I generated didn't pass every check"
+            + (f" ({why})" if why else "") + ". I won't swap in a different topic. You can try again — new "
+            "positions are generated each time — or change the request.")
+    suggestions = [goal]
+    if intent.objective and intent.objective != "general":
+        suggestions.append(f"{specs[0].label()} (general practice)")
+    return PlanError(text, suggestions, debug)
 
 
 def _profile_level(profile) -> str | None:

@@ -23,8 +23,6 @@ log = logging.getLogger(__name__)
 
 # Material says which pieces are on the board, not what the position teaches: a rules
 # example with a rook and a bishop is not a rook-against-bishop endgame.
-_ENDGAME_CATEGORIES = {"endgames", "tactics", "checkmates", "mistakes"}
-_MATE_CATEGORIES = {"checkmates", "tactics", "endgames"}
 LEVEL_DIFFICULTY = {"beginner": 2, "intermediate": 3, "advanced": 4}
 _CATEGORY_CONCEPT = {"endgame": "endgames", "tactic": "tactics", "opening": "openings", "strategy": "tactics"}
 
@@ -118,18 +116,19 @@ class ContentIndex:
         self.by_ref[item.ref] = item
 
     # ------------------------------------------------------------------ queries
-    def material(self, spec: MaterialSpec, exclude: set[str] = frozenset()) -> list[ContentItem]:
+    def material(self, spec: MaterialSpec, exclude: set[str] = frozenset(),
+                 objective: str | None = None) -> list[ContentItem]:
+        """Positions that satisfy the request exactly (custom.satisfy): the requested material
+        per side at the start and at the key move, the learner on the requested side, and an
+        endgame — never a position that merely shares a piece type."""
+        from .satisfy import categories_for, item_satisfies
         out, seen = [], set()
-        allowed = _MATE_CATEGORIES if spec.head == "mate" else _ENDGAME_CATEGORIES
+        allowed = categories_for(spec, objective)
         for it in self.items:
-            if it.ref in exclude or it.example.category not in allowed or not spec.matches(it.board):
+            if it.ref in exclude or it.example.category not in allowed or not spec.matches(it.board, it.board.turn):
+                continue  # cheap filters first
+            if item_satisfies(spec, it, objective):
                 continue
-            if spec.head == "mate":
-                if not it.final.is_checkmate():
-                    continue
-                winner = spec.winner(it.board)
-                if winner is None or winner != it.board.turn:
-                    continue  # the learner must be the side with the pieces
             if it.board_key() in seen:
                 continue
             seen.add(it.board_key())

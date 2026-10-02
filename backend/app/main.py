@@ -138,7 +138,10 @@ async def http_error_handler(request: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(PlanError)
 async def plan_error_handler(request: Request, exc: PlanError):
-    return JSONResponse(status_code=422, content={"error": str(exc), "suggestions": exc.suggestions})
+    content = {"error": str(exc), "suggestions": exc.suggestions}
+    if getattr(exc, "debug", None):
+        content["debug"] = exc.debug
+    return JSONResponse(status_code=422, content=content)
 
 
 @app.exception_handler(EngineUnavailable)
@@ -377,6 +380,14 @@ def advance_session(session_id: str) -> dict:
     step = manager.advance(session)
     if step is None:
         lesson = manager.lesson(session)
+        from .lessons.requirements import INVALID, problems as requirement_problems
+        wrong = requirement_problems(lesson)
+        if wrong:  # never report success for a lesson that doesn't match what was asked
+            req = lesson.requirements
+            return {"completed": True, "status": INVALID, "completion_text": None, "problems": wrong[:3],
+                    "requested": req.get("label"),
+                    "message": f"This lesson didn't match your request ({req.get('label', 'the requested material')}), "
+                               "so it isn't counted as completed. Ask for it again and I'll build verified positions."}
         return {"completed": True, "completion_text": lesson.completion_text,
                 **manager.completion_summary(session)}
     return {"completed": False, "step": step}

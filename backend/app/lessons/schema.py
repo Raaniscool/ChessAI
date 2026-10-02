@@ -71,6 +71,7 @@ class Lesson:
     concepts: list[str]
     steps: list
     completion_text: str
+    requirements: dict = field(default_factory=dict)  # exact request the lesson must satisfy (lessons.requirements)
 
 
 @dataclass
@@ -223,6 +224,7 @@ def parse_lesson(data: dict, course_id: str) -> Lesson:
         concepts=list(data.get("concepts", [])),
         steps=steps,
         completion_text=completion_text,
+        requirements=dict(data.get("requirements") or {}),
     )
 
 

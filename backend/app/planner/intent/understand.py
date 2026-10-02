@@ -619,6 +619,13 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
             chosen.append((min(r.span) if r.span else 0, pick.components))
             if record is not None:
                 intent.interpretation = pick.label
+                specs = [c.material for c in pick.components if c.kind == "material" and c.material is not None]
+                if r.kind in ("confirm", "material_reading") and specs:
+                    # the reading itself, not the button text ("Yes, that's exactly it")
+                    from .material import objective_label
+                    focus = pick.objective if pick.objective not in (None, "general") else None
+                    intent.interpretation = specs[0].label() + (
+                        f" — {objective_label(focus, specs[0]).lower()}" if focus else "")
 
     if structured:
         for m in _best_entries([m for m in subjects if not (m.span & consumed)]):

@@ -251,3 +251,199 @@ def test_the_interpreter_is_not_called_for_unrelated_requests():
     calls = []
     understand("knight fork puzzles", interpreter=lambda g: calls.append(g))
     assert not calls
+
+
+# ------------------------------------------------------------------ retrieval: no fake coverage
+import random  # noqa: E402
+from types import SimpleNamespace  # noqa: E402
+
+from app.engine import EngineUnavailable, get_engine, set_engine  # noqa: E402
+from app.planner.custom.content import get_content_index  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def engine():
+    try:
+        eng = get_engine()
+    except EngineUnavailable:
+        pytest.skip("no engine available")
+    yield eng
+    set_engine(None)
+    eng.close()
+
+
+def _counts(board, color):
+    return sorted(p.symbol().upper() for p in board.piece_map().values()
+                  if p.color == color and p.piece_type not in (chess.KING, chess.PAWN))
+
+
+def test_retrieval_only_returns_exact_material_for_the_learner():
+    idx = get_content_index()
+    for it in idx.material(TWO_R_V_Q):
+        learner = it.board.turn
+        assert _counts(it.board, learner) == ["R", "R"] and _counts(it.board, not learner) == ["Q"]
+        assert it.example.category == "endgames"
+
+
+def test_two_rooks_vs_queen_never_retrieves_rook_vs_queen():
+    idx = get_content_index()
+    two = {it.ref for it in idx.material(TWO_R_V_Q)}
+    one = {it.ref for it in idx.material(R_V_Q)}
+    assert not two & one
+    for it in idx.material(R_V_Q):  # and rook-vs-queen means one rook, never a mate puzzle or tactic
+        assert it.example.category == "endgames"
+        assert sorted(_counts(it.board, chess.WHITE) + _counts(it.board, chess.BLACK)) == ["Q", "R"]
+
+
+# ------------------------------------------------------------------ construction (deterministic, no engine)
+from app.knowledge.generation.material_positions import construct, hanging, legal_reason  # noqa: E402
+
+
+@pytest.mark.parametrize("spec", [TWO_R_V_Q, MaterialSpec(("Q",), "versus", against=("R", "R"), owner="learner"),
+                                  MaterialSpec(("Q", "R"), "versus", against=("Q",), owner="learner"),
+                                  MaterialSpec(("R", "B"), "versus", against=("Q",), owner="learner")])
+def test_constructed_positions_have_exactly_the_requested_material(spec):
+    rng = random.Random(7)
+    good = 0
+    for _ in range(120):
+        learner = rng.choice([chess.WHITE, chess.BLACK])
+        board = construct(spec, rng, learner)
+        if board is None or legal_reason(board, spec):
+            continue
+        good += 1
+        assert board.is_valid() and not board.is_check() and board.turn == learner
+        assert spec.matches(board, learner) and not spec.matches(board, not learner)
+        assert not hanging(board)
+        assert len(board.pieces(chess.PAWN, chess.WHITE)) <= 3 and len(board.pieces(chess.PAWN, chess.BLACK)) <= 3
+    assert good >= 20
+
+
+# ------------------------------------------------------------------ the whole pipeline
+from app.knowledge.library import get_knowledge  # noqa: E402
+from app.knowledge.plan_library import PlanLibrary, ReviewQueue  # noqa: E402
+from app.planner.custom import build_custom_plan  # noqa: E402
+from app.planner.planner import PlanError, plan_for_goal  # noqa: E402
+
+GOAL = "I want to learn the 2 rooks and queen endgame, where I have 2 rooks and my opponent has 1 queen"
+YES = {CONFIRM: {"choice": "general"}}
+
+
+def test_specific_request_with_no_coverage_is_generated_and_verified(tmp_path, engine):
+    intent = understand(GOAL, answers=YES)
+    res = build_custom_plan(intent, use_qwen=False, engine=engine, plan_library=PlanLibrary(tmp_path / "p"),
+                            review=ReviewQueue(tmp_path / "r"))
+    assert res.status in ("verified", "reused"), res.attempts
+    plan = res.record["plan"]
+    assert plan["title"] == "Plan: Two rooks against a queen"
+    cov = plan["custom"]["coverage"][0]
+    assert cov["material"] == "two_rooks_vs_queen" and cov["library"] + cov["generated"] >= 3
+    lib = get_knowledge()
+    ids = [e for u in plan["units"] for e in u["example_ids"]]
+    assert len(ids) >= 3
+    for unit in plan["units"]:
+        assert unit["title"].startswith("Two rooks against a queen")
+        assert "rook against queen" not in unit["title"].lower()
+    for eid in ids:
+        ex = lib.get(eid)
+        rep = ex.replay()
+        learner = rep.boards[ex.key_ply or 0].turn
+        for b in (rep.boards[0], rep.boards[ex.key_ply or 0]):
+            assert _counts(b, learner) == ["R", "R"] and _counts(b, not learner) == ["Q"]
+        assert ex.status == "verified" and ex.concept == "material_endgames" and ex.category == "endgames"
+    from app.lessons.requirements import problems
+    from app.lessons.schema import parse_lesson
+    for lesson in res.record["lessons"]:
+        assert lesson["requirements"]["id"] == "two_rooks_vs_queen"
+        assert problems(parse_lesson(lesson, "custom")) == []  # the completion guard accepts the real lesson
+        assert "rook against queen" not in lesson["completion"]["text"].lower()
+    checks = plan["custom"]["checks"]
+    assert "request_satisfied" in checks and "items_match_unit" in checks
+
+
+def test_no_engine_means_an_honest_answer_not_another_topic(monkeypatch):
+    import app.engine as engine_module
+
+    def unavailable():
+        raise EngineUnavailable("no engine in this test")
+    monkeypatch.setattr(engine_module, "get_engine", unavailable)
+    spec = MaterialSpec(("N", "N"), "versus", against=("R", "R"), owner="learner")  # nothing verified exists
+    with pytest.raises(PlanError) as exc:
+        plan_for_goal("I have two knights and they have two rooks", use_qwen=False, clarify=True,
+                      memory=IntentMemory(), answers={f"confirm:{spec.slug()}:learner": {"choice": "general"}})
+    msg = str(exc.value)
+    assert "two knights against two rooks" in msg and "won't swap in a different topic" in msg
+    assert exc.value.debug["library_coverage"][0]["coverage"] == "NONE"
+    assert exc.value.debug["validation"]["request satisfaction"] in ("FAIL", "NOT RUN")
+
+
+def test_request_satisfaction_rejects_a_substituted_plan():
+    from app.planner.custom.candidate import CandidatePlan, Item, Unit
+    from app.planner.custom.validate import Context, validate
+    from app.planner.catalog import get_catalog
+    intent = understand(GOAL, answers=YES)
+    comp = intent.components[0]
+    r_vs_q = Item("proposed", "p_rq", "practice", "unverified", fen="8/8/3q4/4k3/8/8/2R5/4K3 w - - 0 1",
+                  moves=["Rc5+"], key_index=0, title="Rook against queen")
+    cand = CandidatePlan(GOAL, intent.as_dict(), "Plan: Rook against queen endgames", "",
+                         [Unit("Rook against queen endgames: practice", "o", comp.as_dict(), "practice", [r_vs_q])])
+    lib = get_knowledge()
+    report = validate(cand, Context(lib, get_catalog(), get_content_index(), intent, None))
+    failed = {i.check for i in report.errors}
+    assert report.status == "rejected"
+    assert {"items_match_unit", "request_satisfied"} <= failed
+
+
+def test_completion_is_refused_for_a_lesson_that_does_not_match_the_request():
+    from app.lessons.requirements import problems
+    rook_vs_queen = "8/8/3q4/4k3/8/8/2R5/4K3 w - - 0 1"
+    lesson = SimpleNamespace(steps=[SimpleNamespace(fen=rook_vs_queen)], requirements={
+        "kind": "material", "material": TWO_R_V_Q.as_dict(), "label": TWO_R_V_Q.label(), "objective": "general",
+        "positions": [{"id": "x", "start": rook_vs_queen, "fen": rook_vs_queen, "learner": "white",
+                       "category": "endgames"}]})
+    assert problems(lesson) and "2R vs Q" in problems(lesson)[0]
+    lesson.requirements["positions"][0].update(start=TWO_R_V_Q_WHITE, fen=TWO_R_V_Q_WHITE)
+    assert problems(lesson) == ["the lesson shows a position that wasn't checked against the request"]
+    lesson.steps = [SimpleNamespace(fen=TWO_R_V_Q_WHITE)]
+    assert problems(lesson) == []
+
+
+def test_the_api_reports_invalid_lesson_instead_of_completion(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import main
+    from app.lessons.requirements import INVALID
+    lesson = SimpleNamespace(completion_text="Lesson complete — rook against queen endgames.", steps=[],
+                             requirements={"kind": "material", "material": TWO_R_V_Q.as_dict(),
+                                           "label": TWO_R_V_Q.label(), "positions": []})
+
+    class Manager:
+        def get(self, sid):
+            return SimpleNamespace(id=sid)
+
+        def advance(self, session):
+            return None
+
+        def lesson(self, session):
+            return lesson
+
+        def completion_summary(self, session):
+            raise AssertionError("an invalid lesson is never summarised as completed")
+    monkeypatch.setattr(main, "get_manager", lambda: Manager())
+    res = TestClient(main.app).post("/api/sessions/abc/advance").json()
+    assert res["status"] == INVALID and res["completion_text"] is None
+    assert "Two rooks against a queen" in res["message"]
+
+
+def test_debug_view_shows_every_stage(tmp_path, engine):
+    from app.planner.custom.debug import view
+    intent = understand(GOAL, answers=YES)
+    res = build_custom_plan(intent, use_qwen=False, engine=engine, plan_library=PlanLibrary(tmp_path / "p"),
+                            review=ReviewQueue(tmp_path / "r"))
+    d = view(GOAL, intent, res)
+    assert d["user_request"] == GOAL
+    assert d["interpreted_intent"]["material"][0]["id"] == "two_rooks_vs_queen"
+    assert d["interpreted_intent"]["reading"]["agreement"] == "parser"
+    assert d["position_constraints"][0][:2] == ["learner: exactly 2 rooks", "opponent: exactly 1 queen"]
+    assert d["library_coverage"][0]["coverage"] in ("NONE", "PARTIAL", "FULL")
+    for stage in ("python-chess", "stockfish", "material constraints", "educational validation",
+                  "request satisfaction"):
+        assert d["validation"][stage] == "PASS", d["validation"]

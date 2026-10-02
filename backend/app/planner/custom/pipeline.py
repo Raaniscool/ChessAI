@@ -39,6 +39,9 @@ class CustomResult:
     candidate: CandidatePlan | None = None
 
 
+MATERIAL_BUDGET = 30.0  # seconds for exact-material endgame positions (each is fully verified)
+
+
 def _material_generator(ctx: Context, budget: float):
     """New verified mate positions for material specs whose pieces can force mate."""
     made: dict = {}
@@ -50,6 +53,8 @@ def _material_generator(ctx: Context, budget: float):
         return made[key]
 
     def _generate(spec, n: int):
+        if spec.relation == "versus" and spec.head == "endgame":
+            return _material_endgames(spec, n)
         if spec.head != "mate" or spec.relation not in ("together", "only") or not can_force_mate(spec.pieces):
             return []
         if ctx.personal:  # learner plans don't write into the shared generated tier
@@ -67,6 +72,30 @@ def _material_generator(ctx: Context, budget: float):
             log.warning("material generation failed: %s", exc)
             return []
         return result.accepted
+
+    def _material_endgames(spec, n: int):
+        """Exact-material practice positions (knowledge.generation.material_positions). They are
+        generic verified positions, not learner data, so they're kept for the next request."""
+        objective = ctx.intent.objective or "general"
+        engine = ctx.get_engine()
+        if engine is None:
+            log_[spec.slug()] = {"spec": spec.slug(), "objective": objective, "accepted": [], "attempts": 0,
+                                 "stopped": "Stockfish is not available, so nothing can be verified"}
+            return []
+        from ...knowledge.generation.material_positions import generate as generate_material
+        try:
+            res = generate_material(spec, ctx.library, engine, count=max(1, n), objective=objective,
+                                    time_budget=max(budget, MATERIAL_BUDGET), depth=ctx.depth)
+        except Exception as exc:  # generation never breaks planning; the plan says what's missing
+            log.warning("material endgame generation failed: %s", exc)
+            log_[spec.slug()] = {"spec": spec.slug(), "objective": objective, "accepted": [], "attempts": 0,
+                                 "stopped": f"generation failed: {exc}"}
+            return []
+        log_[spec.slug()] = res.as_dict()
+        return res.accepted
+
+    log_: dict = {}
+    generate_for.log = log_
     return generate_for
 
 
@@ -273,6 +302,10 @@ def _propose_loop(intent, ctx, proposers, personal, learner, review, plan_librar
 
 
 def _broader(intent: LearningIntent, library) -> Component | None:
+    # An exact material request is never weakened to "endgames" or "checkmates": without
+    # verified positions for exactly that material the planner says so (planner._custom).
+    if any(c.kind == "material" for c in intent.components):
+        return None
     for c in intent.components:
         if c.kind == "material":
             cid = "checkmate" if c.material.head == "mate" else "endgames"

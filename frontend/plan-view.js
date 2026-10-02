@@ -37,9 +37,19 @@ export function understoodLine(plan) {
 export function verificationBadge(plan) {
   const c = plan && plan.custom
   if (!c) return null
-  const who = c.proposer === "qwen" ? "Proposed by the AI tutor" : "Built from the verified library"
+  // exact-material requests say where the positions came from — never "from the library"
+  // when they were generated for this request
+  const cov = c.coverage || []
+  const generated = cov.reduce((n, x) => n + (x.generated || 0), 0)
+  let who = c.proposer === "qwen" ? "Proposed by the AI tutor" : "Built from the verified library"
+  if (cov.length && generated) {
+    who = cov.map(x => `${x.label}: ${x.library ? `${x.library} verified library position${x.library === 1 ? "" : "s"} + ` : "no verified library positions yet, so "}${x.generated} generated for this request`).join("; ")
+  } else if (cov.length) {
+    who = cov.map(x => `${x.label}: ${x.library} verified position${x.library === 1 ? "" : "s"} with exactly this material`).join("; ")
+  }
   if (c.status === "verified" || c.status === "reused") {
-    const how = c.engine ? "python-chess and Stockfish checked every position and move"
+    const how = cov.length ? "python-chess checked every position (legal, exactly the requested pieces for each side) and Stockfish checked every solution"
+      : c.engine ? "python-chess and Stockfish checked every position and move"
       : "every position comes from verified library content"
     return {kind: "verified", text: "✔ Custom plan — verified",
       detail: `${who}; ${how}, plus checks on order, difficulty and topic.` +
@@ -50,4 +60,40 @@ export function verificationBadge(plan) {
       detail: "I couldn't verify a plan for exactly what you asked, so this one covers the broader idea."}
   }
   return null
+}
+
+// Developer view (?debug=1 or localStorage "chessai.debug"): how the request became this plan.
+export function debugEnabled(win = globalThis.window) {
+  try {
+    if (win && new URLSearchParams(win.location.search).get("debug") === "1") return true
+    return !!(win && win.localStorage && win.localStorage.getItem("chessai.debug"))
+  } catch { return false }
+}
+
+export function debugLines(debug) {
+  if (!debug) return []
+  const out = []
+  const intent = debug.interpreted_intent || {}
+  const reading = intent.reading || {}
+  out.push(["USER REQUEST", debug.user_request || ""])
+  const mats = (intent.material || []).map(m => `${m.id} (${m.short}; owner: ${m.owner || "either side"})`)
+  out.push(["INTERPRETED INTENT", (mats.join(", ") || (intent.components || []).join(", ") || "—") +
+    (intent.objective ? ` · focus: ${intent.objective}` : "") +
+    (reading.agreement ? ` · read by: ${reading.agreement}` : "") +
+    (reading.qwen && reading.qwen.status && reading.qwen.status !== "ok" ? ` · Qwen: ${reading.qwen.status}` : "")])
+  for (const c of debug.library_coverage || []) {
+    out.push(["LIBRARY COVERAGE", `${c.material}: ${c.coverage} (${c.verified_matches} exact verified matches, ${c.needed} needed)`])
+  }
+  for (const g of debug.generation || []) {
+    const d = g.details || {}
+    const why = d.rejected ? Object.entries(d.rejected).slice(0, 3).map(([k, v]) => `${k} ×${v}`).join("; ") : ""
+    out.push(["GENERATION", `${g.material}: ${g.generated} accepted` + (d.attempts ? ` of ${d.attempts} candidates` : "") +
+      (d.stopped ? ` · stopped: ${d.stopped}` : "") + (why ? ` · rejected: ${why}` : "")])
+  }
+  for (const c of debug.position_constraints || []) out.push(["POSITION CONSTRAINTS", c.join(" · ")])
+  const v = debug.validation || {}
+  for (const k of ["python-chess", "stockfish", "material constraints", "educational validation", "request satisfaction"]) {
+    if (v[k]) out.push([`VALIDATION · ${k}`, v[k] + (v[`${k} (why)`] ? ` — ${v[`${k} (why)`].join("; ")}` : "")])
+  }
+  return out
 }

@@ -105,6 +105,7 @@ class CandidatePlan:
     learner: str | None = None
     skipped: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    coverage: list[dict] = field(default_factory=list)  # exact-material requests: library / generated counts
 
     def fingerprint(self) -> str:
         """Hash of the teaching content (not the wording of the title): what the validator
@@ -131,10 +132,12 @@ class CandidatePlan:
     def as_dict(self) -> dict:
         return {"goal": self.goal, "intent": self.intent, "title": self.title, "summary": self.summary,
                 "units": [u.as_dict() for u in self.units], "proposer": self.proposer, "level": self.level,
-                "personal": self.personal, "learner": self.learner, "skipped": self.skipped, "notes": self.notes}
+                "personal": self.personal, "learner": self.learner, "skipped": self.skipped, "notes": self.notes,
+                "coverage": self.coverage}
 
     @classmethod
     def from_dict(cls, d: dict) -> "CandidatePlan":
         return cls(d.get("goal", ""), d.get("intent", {}), d.get("title", ""), d.get("summary", ""),
                    [Unit.from_dict(u) for u in d.get("units", [])], d.get("proposer", "composer"), d.get("level"),
-                   d.get("personal"), d.get("learner"), d.get("skipped", []), d.get("notes", []))
+                   d.get("personal"), d.get("learner"), d.get("skipped", []), d.get("notes", []),
+                   d.get("coverage", []))

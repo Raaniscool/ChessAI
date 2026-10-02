@@ -95,6 +95,7 @@ def compose(intent: LearningIntent, ctx, *, exclude_refs: set[str] = frozenset()
     skipped: list[dict] = []
     notes: list[str] = []
     used: set[str] = set(exclude_refs)
+    coverage: list[dict] = []  # per material request: library / generated / needed
 
     for comp in intent.components:
         if comp.kind == "topic":
@@ -121,26 +122,49 @@ def compose(intent: LearningIntent, ctx, *, exclude_refs: set[str] = frozenset()
             units += made
         elif comp.kind == "material":
             spec = comp.material
-            pool = [i for i in content.material(spec, used)]
+            objective = intent.objective or "general"
+            # strict: exactly this material per side, the learner's side, an endgame (custom.satisfy)
+            pool = list(content.material(spec, used, objective if spec.head == "endgame" else None))
             pool = _level_filter(pool, level)
+            found = len(pool)
             fresh = []
-            if len(pool) < LEARN + 1 and generate is not None:
-                fresh = generate(spec, LEARN + 2 - len(pool)) or []
-            items_pool = pool
+            need = LEARN + 2 if spec.relation == "versus" else LEARN + 1
+            if found < need and generate is not None:
+                fresh = generate(spec, need - found) or []
+            items_pool = list(pool)
             if fresh:
                 from .content import ContentItem, _key_board
+                from .satisfy import item_satisfies
                 for ex in fresh:
                     board, final = _key_board(ex)
-                    items_pool.append(ContentItem(ex.id, "library", ex, board, final, tuple(ex.concepts or [ex.concept]),
-                                                  int(ex.difficulty or 3)))
+                    item = ContentItem(ex.id, "library", ex, board, final, tuple(ex.concepts or [ex.concept]),
+                                       int(ex.difficulty or 3))
+                    if not item_satisfies(spec, item, objective if spec.head == "endgame" else None):
+                        items_pool.append(item)
                 notes.append(f"{len(fresh)} new position{'s' if len(fresh) != 1 else ''} for “{comp.label}” "
                              "were generated and verified by python-chess + Stockfish for this plan.")
-            objective = (f"Recognise and play positions with {spec.label().lower()}."
-                         if spec.head == "endgame" else f"Deliver checkmate with {spec.label().lower().replace('checkmate with ', '')}.")
-            made = _learn_practice(comp.label or spec.label(), comp, items_pool, objective)
+            coverage.append({
+                "component": comp.key(), "material": spec.describe_dict(), "objective": objective,
+                "library": found, "generated": len(items_pool) - found, "needed": need,
+                "library_coverage": "full" if found >= need else ("partial" if found else "none"),
+                "generation": (getattr(generate, "log", {}) or {}).get(spec.slug()) if fresh or found < need else None,
+                "library_refs": [i.ref for i in pool][:12]})
+            unit_label = spec.label() if spec.relation == "versus" else (comp.label or spec.label())
+            if spec.head == "endgame" and spec.relation == "versus":
+                from ..intent.material import objective_label
+                from ..intent.model import group_words
+                aim = (f"Play positions where you have {group_words(spec.pieces, article=True)} against "
+                       f"{group_words(spec.against, article=True)}")
+                aim += (f", focusing on {objective_label(objective, spec).lower()}." if objective != "general"
+                        else ": find the move that keeps your advantage or saves the position.")
+            elif spec.head == "endgame":
+                aim = f"Recognise and play positions with {spec.label().lower()}."
+            else:
+                aim = f"Deliver checkmate with {spec.label().lower().replace('checkmate with ', '')}."
+            made = _learn_practice(unit_label, comp, items_pool, aim)
             if not made:
-                skipped.append({"key": comp.key(), "title": comp.label,
-                                "reason": "no verified positions with this material yet"})
+                skipped.append({"key": comp.key(), "title": unit_label,
+                                "reason": "no verified positions with exactly this material yet"})
             for u in made:
                 used |= {i.ref for i in u.items}
             units += made
@@ -188,7 +212,8 @@ def compose(intent: LearningIntent, ctx, *, exclude_refs: set[str] = frozenset()
             label += " — without " + ", ".join(names)
     return CandidatePlan(goal=intent.goal, intent=intent.as_dict(), title=f"Plan: {label}",
                          summary=_summary(units, skipped), units=units, proposer="composer", level=level,
-                         personal=ctx.personal, learner=ctx.learner, skipped=skipped, notes=notes)
+                         personal=ctx.personal, learner=ctx.learner, skipped=skipped, notes=notes,
+                         coverage=coverage)
 
 
 def _spread(pool: list[ContentItem]) -> list[ContentItem]:

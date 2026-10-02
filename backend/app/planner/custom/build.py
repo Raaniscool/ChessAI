@@ -122,8 +122,15 @@ def build_record(cand: CandidatePlan, report, *, library, catalog, status: str, 
             names = [unit.component.get("label") or unit.title]
             intro = unit.objective + (f"\n\n{unit.text}" if unit.text else "")
             intro += "\n\n" + _verification_line(unit)
-            new.append(knowledge_lesson(prefix, unit.title, intro, seq,
-                                        f"Lesson complete — {unit.title.split(':')[0].lower()}.", names))
+            lesson = knowledge_lesson(prefix, unit.title, intro, seq,
+                                      f"Lesson complete — {unit.title.split(':')[0].lower()}.", names)
+            if unit.component.get("kind") == "material" and unit.component.get("material"):
+                from ...lessons.requirements import material_requirements
+                from ..intent.model import MaterialSpec
+                spec = MaterialSpec.from_dict(unit.component["material"])
+                lesson["requirements"] = material_requirements(spec, (cand.intent or {}).get("objective"),
+                                                               [e for e, _ in seq])
+            new.append(lesson)
             extra = {"concepts": sorted({e.concept for e, _ in seq}), "example_ids": [e.id for e, _ in seq]}
         comp = unit.component
         units.append({"topic_id": comp.get("id") if comp.get("kind") == "topic" else None, "title": unit.title,
@@ -148,6 +155,9 @@ def build_record(cand: CandidatePlan, report, *, library, catalog, status: str, 
             "engine": report.engine if report else None, "attempts": attempts or [],
             "template_id": template["id"] if template else None, "tier": template["tier"] if template else None,
             "provenance": (template or {}).get("provenance"),
+            "coverage": [{"material": c["material"]["id"], "label": c["material"]["label"],
+                          "library_coverage": c["library_coverage"], "library": c["library"],
+                          "generated": c["generated"]} for c in cand.coverage],
         },
     }
     course = {"id": f"plan_{plan_id}", "title": plan["title"], "description": plan["summary"], "kind": "plan",
@@ -161,4 +171,7 @@ def _verification_line(unit: Unit) -> str:
         return "Every position comes from the verified Knowledge Library (checked by python-chess and Stockfish)."
     if vb == CATALOG_VERIFIED_BY:
         return "Every puzzle is from real games and was checked by Stockfish."
+    if vb == GENERATED_VERIFIED_BY and any(i.ref.startswith("gen_material_") for i in unit.items):
+        return ("These positions were generated for this request and verified: python-chess (legal, exactly the "
+                "requested pieces for each side) and Stockfish (the best move works, natural alternatives are worse).")
     return "Every position here was checked by python-chess (legal) and Stockfish (the solution works) before use."

@@ -622,19 +622,20 @@ def _items_match(cand, ctx):
         for it in u.items:
             name = it.title or it.ref
             if kind == "material" and it.fen:
+                # the same strict rule as retrieval (custom.satisfy): exact material per side at
+                # the start and at the key move, the learner on the requested side, an endgame
+                from .satisfy import board_problems, objective_problems
+                got = _replay(it)
+                if isinstance(got, str):
+                    continue  # the legality checks report it
+                boards, _ = got
                 b = _learner_board(it)
-                if b is None:
-                    continue
-                if not spec.matches(b):
+                category = getattr(it.example, "category", None)
+                problems = board_problems(spec, category, boards[0], b, boards[-1], ctx.intent.objective)
+                problems += objective_problems(ctx.intent.objective, it.example)
+                if problems:
                     yield Issue("items_match_unit", "consistency", "error",
-                                f"“{name}” doesn't have the material of “{u.title}” ({spec.label().lower()})", n, it.ref)
-                    continue
-                if spec.head == "mate":
-                    got = _replay(it)
-                    final = got[0][-1] if not isinstance(got, str) else None
-                    if final is None or not final.is_checkmate() or spec.winner(b) != b.turn:
-                        yield Issue("items_match_unit", "consistency", "error",
-                                    f"“{name}” isn't a checkmate by the side with {spec.label().lower()}", n, it.ref)
+                                f"“{name}” doesn't fit “{u.title}”: {problems[0]}", n, it.ref)
             elif kind == "concept" and it.fen:
                 fam = _family(lib, comp["id"])
                 if not _item_concepts(it) & fam:
@@ -652,6 +653,38 @@ def _items_match(cand, ctx):
                                 f"“{name}” isn't {comp.get('label')} from {comp.get('side')}'s side", n, it.ref)
             elif kind == "glossary" and it.kind != "definition":
                 yield Issue("items_match_unit", "consistency", "error", f"“{name}” isn't a definition", n, it.ref)
+
+
+@check("request_satisfied", "request")
+def _request_satisfied(cand, ctx):
+    """The plan is what was asked — checked before anything is shown. For each exact material
+    request: a unit exists for exactly that material (never a neighbouring one), every unit's
+    title names it, the plan's title doesn't name other material, and a requested focus is
+    the one the positions were verified for (items_match_unit checks each position)."""
+    from ..intent.model import Component
+    specs = {c.key(): c.material for c in ctx.intent.components
+             if c.kind == "material" and c.material is not None and c.material.relation == "versus"}
+    if not specs:
+        return
+    have = {}
+    for n, u in enumerate(cand.units):
+        key = Component.from_dict(u.component).key()
+        have.setdefault(key, []).append(n)
+        spec = specs.get(key)
+        if spec is not None and spec.label().lower() not in u.title.lower():
+            yield Issue("request_satisfied", "request", "error",
+                        f"the unit “{u.title}” doesn't say it teaches {spec.label().lower()}", n)
+    for key, spec in specs.items():
+        if key not in have:
+            yield Issue("request_satisfied", "request", "error",
+                        f"no unit teaches exactly {spec.label().lower()} ({spec.short()})")
+        elif not any(u.items for n in have[key] for u in [cand.units[n]]):
+            yield Issue("request_satisfied", "request", "error", f"the {spec.label().lower()} units have no positions")
+    if len(specs) == 1:
+        spec = next(iter(specs.values()))
+        if spec.label().lower() not in cand.title.lower() and cand.title.lower() != (ctx.intent.goal or "").lower():
+            yield Issue("request_satisfied", "request", "error",
+                        f"the plan's title “{cand.title}” doesn't name {spec.label().lower()}")
 
 
 @check("respects_exclusions", "consistency")

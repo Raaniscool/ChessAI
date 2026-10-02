@@ -9,7 +9,7 @@ import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
 import {errorMessage, readEvents, reach} from "./net.js"
-import {OTHER, clarifyBody, optionLabel, understoodLine, verificationBadge} from "./plan-view.js"
+import {OTHER, clarifyBody, debugEnabled, debugLines, optionLabel, understoodLine, verificationBadge} from "./plan-view.js"
 import {setupCoach} from "./coach.js"
 
 // ---------- stale page guard ----------
@@ -671,6 +671,11 @@ async function advanceLesson() {
 
 // The end of a lesson: how it went, in plain words, and where to go next.
 function renderCompletion(res) {
+  if (res.status === "INVALID_LESSON") {  // the server refused to count a lesson that didn't match the request
+    const div = addMsg(`⚠ ${res.message || "This lesson didn't match your request, so it isn't counted."}`)
+    div.classList.add("lesson-summary", "lesson-invalid")
+    return
+  }
   const summary = res.summary || {}
   const div = addMsg(`✅ ${res.completion_text}`)
   div.classList.add("lesson-summary")
@@ -884,12 +889,33 @@ async function requestPlan(goal, body = null) {
     const suggestions = (err.data && err.data.suggestions) || []
     const div = addMsg(escapeHtml(err.message), "assistant", true)
     if (suggestions.length) div.appendChild(suggestionChips(suggestions))
+    if (err.data && err.data.debug) appendDebug(div, err.data.debug)
   } finally {
     clearTimeout(slow)
     btn.disabled = false
   }
 }
 
+
+// Developer view of how a request became a plan (only with ?debug=1 / localStorage "chessai.debug").
+function appendDebug(div, debug) {
+  if (!debugEnabled()) return
+  const box = document.createElement("details")
+  box.className = "plan-debug no-speech"
+  const summary = document.createElement("summary")
+  summary.textContent = "Debug: how this request was handled"
+  const table = document.createElement("dl")
+  for (const [k, v] of debugLines(debug)) {
+    const dt = document.createElement("dt")
+    dt.textContent = k
+    const dd = document.createElement("dd")
+    dd.textContent = v
+    if (/^(PASS|FAIL|UNCERTAIN)/.test(v)) dd.className = v.startsWith("PASS") ? "ok" : "bad"
+    table.append(dt, dd)
+  }
+  box.append(summary, table)
+  div.appendChild(box)
+}
 
 // A question card: one button per reading, plus "Something else" with a text box.
 function renderClarify(question, goal) {
@@ -964,6 +990,7 @@ function renderPlan(res) {
     line.textContent = "Personalized for you: " + personal
     div.appendChild(line)
   }
+  if (plan.debug) appendDebug(div, plan.debug)
   const understood = understoodLine(plan)
   if (understood) {
     const line = document.createElement("div")
