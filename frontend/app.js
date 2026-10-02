@@ -11,6 +11,7 @@ import {setupGameAnalysis} from "./analysis.js"
 import {errorMessage, readEvents, reach} from "./net.js"
 import {OTHER, clarifyBody, debugEnabled, debugLines, optionLabel, puzzleReasons, understoodLine, verificationBadge} from "./plan-view.js"
 import {setupCoach} from "./coach.js"
+import {setupPuzzles} from "./puzzles.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -21,7 +22,10 @@ const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "les
   "btn-coach", "btn-settings", "coach-panel", "settings-panel",
   "welcome", "tab-lessons", "tab-games", "lessons-side", "games-side", "analysis-pane", "ga-games", "ga-pgn",
   "ga-username", "ga-fetch-btn", "ga-paste", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
-  "ga-back", "ga-prev", "ga-next", "ga-body"]
+  "ga-back", "ga-prev", "ga-next", "ga-body",
+  "tab-puzzles", "puzzles-side", "puzzles-pane", "pz-set", "pz-title", "pz-counter", "pz-dashboard", "pz-solver",
+  "pz-mode-personal", "pz-mode-practice", "pz-personal", "pz-practice", "pz-status", "pz-info", "pz-feedback",
+  "pz-explain", "pz-hint", "pz-solution", "pz-retry", "pz-next", "pz-back"]
 const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))
 if (missingIds.length) {
   const bar = document.createElement("div")
@@ -42,7 +46,7 @@ const state = {
   busy: false,
   demoPlaying: false,
   stream: null,            // AbortController of the AI text currently streaming
-  view: "lessons",         // "lessons" | "games"
+  view: "lessons",         // "lessons" | "games" | "puzzles"
 }
 
 // ---------- api ----------
@@ -196,7 +200,8 @@ function boardAcceptsMoves() {
 }
 
 document.getElementById("board").addEventListener("pointerdown", () => {
-  if (!state.step || boardAcceptsMoves()) return
+  // only the lesson view nudges; the other tabs own the board while they are shown
+  if (state.view !== "lessons" || !state.step || boardAcceptsMoves()) return
   if (state.demoPlaying) {
     setStatus("Watch the demonstration — you'll get your turn right after.")
     return
@@ -1147,41 +1152,62 @@ const gameAnalysis = setupGameAnalysis({
   },
 })
 
-let lessonBoard = null  // what the lesson view showed, restored when coming back
+const puzzles = setupPuzzles({
+  api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler, escapeHtml, setStatus,
+})
 
+let lessonBoard = null  // what the lesson view showed, restored when coming back
+let viewSwitch = 0      // a newer tab click wins: an older switch stops at its next await
+
+const VIEWS = {  // tab, sidebar block, pane of each top-level view
+  lessons: ["tab-lessons", "lessons-side", "lesson-pane"],
+  games: ["tab-games", "games-side", "analysis-pane"],
+  puzzles: ["tab-puzzles", "puzzles-side", "puzzles-pane"],
+}
+
+// Each view keeps its own state while hidden: a lesson, a game review and a half-solved
+// puzzle are all exactly where the learner left them.
 async function switchView(name) {
-  if (state.view === name) return
+  if (state.view === name || !VIEWS[name]) return
   narrator.stop()
-  const games = name === "games"
-  if (games) {
+  const token = ++viewSwitch
+  const current = () => token === viewSwitch && state.view === name
+  const from = state.view
+  if (from === "lessons") {
     // A lesson reply still streaming keeps going (its pane is only hidden).
     lessonBoard = {fen: board.getPosition(), orientation: board.getOrientation(),
       status: document.getElementById("board-status").textContent}
-  } else {
+  } else if (from === "games") {
     gameAnalysis.leave()
+  } else if (from === "puzzles") {
+    puzzles.leave()
   }
   state.view = name
-  for (const [id, on] of [["tab-lessons", !games], ["tab-games", games]]) {
-    const tab = document.getElementById(id)
+  for (const [view, [tabId, sideId, paneId]] of Object.entries(VIEWS)) {
+    const on = view === name
+    const tab = document.getElementById(tabId)
     tab.classList.toggle("active", on)
     tab.setAttribute("aria-selected", String(on))
+    document.getElementById(sideId).classList.toggle("hidden", !on)
+    document.getElementById(paneId).classList.toggle("hidden", !on)
   }
-  document.getElementById("lessons-side").classList.toggle("hidden", games)
-  document.getElementById("games-side").classList.toggle("hidden", !games)
-  document.querySelector(".lesson-pane:not(.analysis-pane)").classList.toggle("hidden", games)
-  document.getElementById("analysis-pane").classList.toggle("hidden", !games)
-  if (games) {
+  board.disableMoveInput()
+  if (name === "games") {
     await gameAnalysis.enter()
+  } else if (name === "puzzles") {
+    await puzzles.enter()
   } else {
-    board.disableMoveInput()
     if (lessonBoard) {
       await showPosition(lessonBoard.fen, {orientation: lessonBoard.orientation})
+      if (!current()) return
       setStatus(lessonBoard.status)
     }
     const step = state.step
     if (step && step.type === "exercise" && !step.accepted) {
       state.chess = new Chess(step.board.fen)
       await showPosition(step.board.fen, {orientation: step.side === "black" ? COLOR.black : COLOR.white})
+      if (!current()) return
+      board.disableMoveInput()
       board.enableMoveInput(moveInputHandler, step.side === "black" ? COLOR.black : COLOR.white)
     }
   }
@@ -1191,6 +1217,7 @@ async function switchView(name) {
 
 document.getElementById("tab-lessons").addEventListener("click", () => switchView("lessons"))
 document.getElementById("tab-games").addEventListener("click", () => switchView("games"))
+document.getElementById("tab-puzzles").addEventListener("click", () => switchView("puzzles"))
 
 document.getElementById("btn-play").addEventListener("click", playDemonstration)
 document.getElementById("btn-continue").addEventListener("click", () => { narrator.stop(); advanceLesson() })
@@ -1212,7 +1239,7 @@ const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escape
   analyzeGames: async username => { await switchView("games"); await gameAnalysis.fetchFor(username) }})
 coach.init({
   readCurrent() {
-    const last = state.view === "games" ? gameAnalysis.readable()
+    const last = state.view === "games" ? gameAnalysis.readable() : state.view === "puzzles" ? puzzles.readable()
       : [...messagesEl.querySelectorAll(".msg.assistant, .msg.system")].pop()
     if (last) narrator.speak(last)
   },

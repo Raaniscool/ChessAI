@@ -1089,12 +1089,15 @@ export function setupGameAnalysis(ctx) {
   return {
     // Called when the Game Analysis tab is shown.
     async enter() {
+      view.active = true
       board.disableMoveInput()
       await loadGames()
+      if (!view.active) return  // the learner already went to another tab
       if (view.game) renderMoment()
       else await renderOverview()
     },
     leave() {
+      view.active = false
       view.token++  // stop board animations; a running analysis carries on in the background
     },
     // "Analyze my recent games" from the coach's onboarding: fetch + analyze for this username.

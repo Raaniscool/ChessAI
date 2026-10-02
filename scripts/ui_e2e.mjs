@@ -42,6 +42,7 @@ Chessboard.prototype.enableMoveInput = function (...a) { board = this; return or
 const origSet = Chessboard.prototype.setPosition
 Chessboard.prototype.setPosition = function (...a) { board = this; return origSet.apply(this, a) }
 await import(`${ROOT}/app.js`)
+const {Chess} = await import(`${ROOT}/vendor/chess.mjs/Chess.js`)
 
 const $ = id => document.getElementById(id)
 const sleep = ms => new Promise(r => setTimeout(r, ms))
@@ -73,6 +74,66 @@ check(!/Italian Game/.test($("course-list").textContent), "sidebar doesn't menti
 check(!$("plan-input") && !$("btn-reset"), "no duplicate plan box, no free-move reset button")
 check(!/engine|plies|teacher/i.test($("health").textContent), "header status has no technical text when all is well")
 check(document.querySelectorAll("#welcome .chip").length >= 3, "welcome offers starter topics")
+
+// ---- Puzzles tab helpers: the solution comes from the API, the moves go through the board
+const visible = id => !$(id).classList.contains("hidden")
+const puzzleNow = () => { const a = $("pz-set").querySelector(".pz-item.active"); return a && a.dataset.id }
+const puzzleData = async id => (await realFetch(new URL(`api/puzzles/${id}`, BASE))).json()
+async function playStep(step, last) {
+  check(move(step.uci.slice(0, 2), step.uci.slice(2, 4)) === "ok", `puzzle move ${step.san} accepted by the board`)
+  if (last) await waitFor(() => visible("pz-next"), "puzzle finished", 10000)
+  else await waitFor(() => board.state.moveInputCallback && /Keep going/.test($("pz-feedback").textContent), "opponent replied", 10000)
+}
+async function wrongMove(p) {
+  const chess = new Chess(p.fen)
+  const avoid = new Set([p.steps[0].uci, ...p.steps[0].accepted, ...p.steps[0].good].map(u => u.slice(0, 4)))
+  const m = chess.moves({verbose: true}).find(x => { const c = new Chess(p.fen); c.move(x); return !avoid.has(x.from + x.to) && !c.in_checkmate() })
+  const before = board.getPosition()
+  check(move(m.from, m.to) === "ok", "a wrong move can be played")
+  await waitFor(() => /✗/.test($("pz-feedback").textContent), "wrong-move feedback", 5000)
+  await waitFor(() => board.getPosition() === before && board.state.moveInputCallback, "wrong move taken back", 5000)
+}
+
+// P) Puzzles tab — usable on its own, before any game analysis or lesson
+check(!!$("tab-puzzles") && /Puzzles/.test($("tab-puzzles").textContent) && $("tab-puzzles").parentElement === document.querySelector("nav.tabs"),
+  "puzzles 1: Puzzles is a top-level tab")
+$("tab-puzzles").click()
+await waitFor(() => visible("puzzles-pane") && $("pz-practice").querySelector(".pz-theme"), "puzzle dashboard")
+check(!visible("lesson-pane") && visible("pz-dashboard") && $("tab-puzzles").classList.contains("active"),
+  "puzzles 2: clicking the tab opens the puzzle dashboard")
+check(/Nothing to personalize yet/.test($("pz-personal").textContent), "no analysis yet: Personalized says so and points to Practice")
+$("pz-mode-practice").click()
+{
+  const pins = $("pz-practice").querySelector('.pz-theme[data-concept="pin"]')
+  check(visible("pz-practice") && pins && /Pins/.test(pins.textContent), "Practice lists themes (Pins: " + (pins && pins.textContent) + ")")
+  pins.click()
+  await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "solver open", 20000)
+  check(/(White|Black) to move/.test($("pz-info").textContent) && /^1\/\d+$/.test($("pz-counter").textContent) &&
+    $("pz-set").querySelectorAll(".pz-item").length >= 3, "puzzles 4+5: general practice works without analysis and opens the solver: " +
+    $("pz-info").textContent.replace(/\s+/g, " ").trim())
+  const id = puzzleNow()
+  const p = await puzzleData(id)
+  check(p.critical_moves.length >= 1 && p.expected_solution_length === p.steps.length, `puzzle ${id}: ${p.critical_moves.length} critical of ${p.steps.length} moves`)
+  await wrongMove(p)
+  $("pz-hint").click()
+  check(/💡/.test($("pz-feedback").textContent), "hint shows the idea: " + $("pz-feedback").textContent)
+  for (const [i, step] of p.steps.entries()) await playStep(step, i === p.steps.length - 1)
+  check(/counts as missed/.test($("pz-feedback").textContent) && visible("pz-explain") && /Solution:/.test($("pz-explain").textContent),
+    "after a mistake the finished puzzle counts as missed and shows the solution + explanation")
+  await sleep(300)
+  const stats = (await puzzleData(id)).stats
+  check(stats.attempts === 1 && stats.last_result === "failed", "puzzles 6: completing a puzzle records the result (" + JSON.stringify(stats).slice(0, 90) + ")")
+  // the next one, solved cleanly
+  $("pz-next").click()
+  await waitFor(() => /^2\//.test($("pz-counter").textContent) && board.state.moveInputCallback, "second puzzle")
+  const p2 = await puzzleData(puzzleNow())
+  for (const [i, step] of p2.steps.entries()) await playStep(step, i === p2.steps.length - 1)
+  check(/✓ Solved/.test($("pz-feedback").textContent), "a clean solve: " + $("pz-feedback").textContent)
+  $("pz-back").click()
+  await waitFor(() => visible("pz-dashboard"), "back to the dashboard")
+}
+$("tab-lessons").click()
+await waitFor(() => visible("lesson-pane") && !visible("puzzles-pane"), "lessons again")
 
 // 0b) Onboarding: a short optional card for a new learner, never a wall
 await waitFor(() => document.querySelector(".onboarding-card"), "onboarding card", 10000)
@@ -495,6 +556,53 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
     return n && n !== oldCount && h && /Your last 10 games/.test(h.textContent) &&
       [...hist.querySelectorAll("button")].some(b => /Explain my patterns/.test(b.textContent)) }, "back to the games view", 60000)
   await sleep(300)
+}
+// Puzzles tab, personalized: the weakness found in the games, results feeding back
+{
+  const msgCount = document.querySelectorAll("#messages .msg").length
+  $("tab-puzzles").click()
+  await waitFor(() => visible("pz-dashboard") && /Your main weakness/.test($("pz-personal").textContent), "personalized dashboard", 30000)
+  $("pz-mode-personal").click()
+  const profileBox = $("pz-personal").querySelector(".pz-profile")
+  check(/Missed knight fork/.test(profileBox.textContent) && /of your last 10 analyzed games/.test(profileBox.textContent) &&
+    /Recommended: 5 puzzles/.test(profileBox.textContent), "puzzles 3: personalized puzzles from the weakness data: " +
+    profileBox.textContent.replace(/\s+/g, " ").trim().slice(0, 140))
+  const before = (await (await realFetch(new URL("api/puzzles/dashboard", BASE))).json()).personalized.main
+  profileBox.querySelector("button").click()
+  await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "personalized set", 180000)
+  check(/Missed knight fork/.test($("pz-title").textContent) && /Knight fork/.test($("pz-info").textContent),
+    "the set trains the weakness: " + $("pz-title").textContent)
+  // half-way through the first puzzle: go to Analysis and Lessons, then come back
+  const id = puzzleNow()
+  const p = await puzzleData(id)
+  if (p.steps.length > 1) await playStep(p.steps[0], false)
+  const fen = board.getPosition()
+  $("tab-games").click()
+  await waitFor(() => visible("analysis-pane"), "analysis tab")
+  await sleep(500)
+  $("tab-lessons").click()
+  await waitFor(() => visible("lesson-pane"), "lessons tab")
+  check(document.querySelectorAll("#messages .msg").length === msgCount, "the lesson is untouched by the other tabs")
+  $("tab-puzzles").click()
+  await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "puzzle again")
+  await sleep(300)
+  check(puzzleNow() === id && board.getPosition() === fen && /^1\//.test($("pz-counter").textContent),
+    "puzzles 8: switching between Analysis, Lessons and Puzzles keeps the half-solved puzzle")
+  // two missed puzzles -> the weakness climbs and says how puzzles are going
+  $("pz-solution").click()
+  await waitFor(() => visible("pz-next"), "solution shown", 20000)
+  $("pz-next").click()
+  await waitFor(() => /^2\//.test($("pz-counter").textContent) && board.state.moveInputCallback, "second personalized puzzle")
+  $("pz-solution").click()
+  await waitFor(() => visible("pz-next"), "solution shown", 20000)
+  $("pz-back").click()
+  await waitFor(() => visible("pz-dashboard") && /Puzzles lately: 0 of 2 solved/.test($("pz-personal").textContent), "dashboard updated", 20000)
+  const after = (await (await realFetch(new URL("api/puzzles/dashboard", BASE))).json()).personalized.main
+  check(after.key === before.key && after.priority > before.priority && /Puzzles lately: 0 of 2/.test(after.progress),
+    `puzzles 7: results change personalization (priority ${before.priority} -> ${after.priority})`)
+  $("tab-games").click()
+  await waitFor(() => visible("analysis-pane") && document.querySelector(".history-count"), "games again", 60000)
+  await sleep(500)
 }
 // custom count: fewer than 10 is refused in the browser
 const sel = document.querySelector(".history-count")

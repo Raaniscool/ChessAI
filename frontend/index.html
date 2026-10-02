@@ -18,6 +18,8 @@
       <button id="tab-lessons" class="tab active" role="tab" aria-selected="true">📚 Lessons</button>
       <button id="tab-games" class="tab" role="tab" aria-selected="false"
               title="Import your Chess.com games and review your mistakes">🔍 Game Analysis</button>
+      <button id="tab-puzzles" class="tab" role="tab" aria-selected="false"
+              title="Solve puzzles: personalized to your weaknesses, or practice any theme">🧩 Puzzles</button>
     </nav>
     <div class="header-right">
       <div id="speech-controls" class="speech-controls hidden">
@@ -56,6 +58,10 @@
         <h2>Your games</h2>
         <div id="ga-games" class="course-list"></div>
       </div>
+      <div id="puzzles-side" class="hidden">
+        <h2>Puzzle set</h2>
+        <div id="pz-set" class="course-list"><p class="muted pz-set-empty">Start a set to see it here.</p></div>
+      </div>
     </aside>
 
     <main class="main">
@@ -64,7 +70,7 @@
         <div id="board-status" class="board-status"></div>
       </section>
 
-      <section class="lesson-pane">
+      <section id="lesson-pane" class="lesson-pane">
         <div class="lesson-header">
           <h2 id="lesson-title">Welcome</h2>
           <span id="step-indicator" class="step-indicator"></span>
@@ -84,6 +90,36 @@
           <input id="chat-input" type="text" placeholder="What do you want to learn? Or ask a question…"
                  autocomplete="off">
           <button id="btn-chat" class="btn primary">Send</button>
+        </div>
+      </section>
+
+      <section id="puzzles-pane" class="lesson-pane puzzles-pane hidden">
+        <div class="lesson-header">
+          <h2 id="pz-title">Puzzles</h2>
+          <span id="pz-counter" class="step-indicator"></span>
+        </div>
+        <div id="pz-dashboard" class="messages pz-body">
+          <div class="pz-modes" role="tablist" aria-label="Puzzle mode">
+            <button id="pz-mode-personal" class="pz-mode active" role="tab" aria-selected="true"
+                    title="Puzzles chosen from your weaknesses and results">🎯 Personalized</button>
+            <button id="pz-mode-practice" class="pz-mode" role="tab" aria-selected="false"
+                    title="Pick any theme — no game analysis needed">📚 Practice</button>
+          </div>
+          <div id="pz-personal" class="pz-section"></div>
+          <div id="pz-practice" class="pz-section hidden"></div>
+          <div id="pz-status" class="pz-status muted" aria-live="polite"></div>
+        </div>
+        <div id="pz-solver" class="pz-solver hidden">
+          <div id="pz-info" class="pz-info"></div>
+          <div id="pz-feedback" class="pz-feedback" aria-live="polite"></div>
+          <div id="pz-explain" class="pz-explain hidden"></div>
+          <div class="controls pz-controls">
+            <button id="pz-hint" class="btn">💡 Hint</button>
+            <button id="pz-solution" class="btn">Show solution</button>
+            <button id="pz-retry" class="btn hidden">↻ Retry</button>
+            <button id="pz-next" class="btn primary hidden">Next →</button>
+            <button id="pz-back" class="btn pz-back">← All puzzles</button>
+          </div>
         </div>
       </section>
 
