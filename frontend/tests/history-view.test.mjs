@@ -64,3 +64,23 @@ test("new-puzzle progress wording", async () => {
   assert.equal(puzzleStatus({type: "error", error: "No engine"}), "No engine")
   assert.equal(puzzleStatus({type: "other"}), "")
 })
+
+import {trainingPlan} from "../history-view.js"
+
+test("Your Training: the top pattern becomes the main weakness, with a clear reason", () => {
+  const p = (key, tier, game_count, o = {}) => ({key, tier, game_count, title: key, ...o})
+  const r = {games_analyzed: 25, game_ids: [], patterns: [
+    p("hanging", "recurring", 6, {new_puzzles: true}), p("fork", "recurring", 4), p("queen", "occasional", 2),
+    p("castle", "occasional", 2), p("pin", "occasional", 2), p("once", "one_time", 1)]}
+  const t = trainingPlan(r)
+  assert.equal(t.main.key, "hanging")
+  assert.equal(t.heading, "Main weakness")
+  assert.equal(t.found, "Found in 6 of your 25 analyzed games.")
+  assert.equal(t.puzzles, 5)
+  assert.deepEqual(t.others.map(o => o.key), ["fork", "queen", "castle"])  // at most 3, never one-off mistakes
+  const possible = trainingPlan({games_analyzed: 10, patterns: [p("fork", "occasional", 2)]})
+  assert.match(possible.heading, /Possible pattern/)
+  assert.equal(possible.puzzles, 0)
+  assert.match(trainingPlan({games_analyzed: 3, patterns: [p("once", "one_time", 1)]}).text, /nothing specific to fix yet/)
+  assert.equal(trainingPlan({games_analyzed: 0, patterns: []}), null)
+})

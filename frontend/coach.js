@@ -150,9 +150,20 @@ export function setupCoach(deps) {
     const ob = (state.profile && state.profile.onboarding) || {}
     const card = el("div", "msg assistant onboarding-card")
     card.appendChild(el("div", "onb-title", editing ? "Your chess, so I can pitch lessons right"
-      : "Quick question first (optional, 20 seconds): how strong are you?"))
+      : "Let's start with your games: what's your Chess.com username?"))
+    // the username comes first: your own games are the best guide to what to practise. It stays
+    // optional, and the tutor works fully without it (lessons, puzzles, pasted PGNs).
+    const userRow = el("div", "onb-row onb-user-row no-speech")
+    const user = el("input")
+    user.type = "text"; user.placeholder = "e.g. magnus_fan"; user.className = "onb-username"; user.autocomplete = "off"
+    user.setAttribute("aria-label", "Chess.com username")
+    user.value = ob.chesscom_username || ""
+    userRow.append(el("label", "", "Chess.com username"), user)
+    card.appendChild(userRow)
     card.appendChild(el("div", "muted onb-sub",
-      "I use this to choose how hard positions are and how much to explain. It changes as I see how you do."))
+      "I'll load your recent games (up to 100) and find what's worth practising. No Chess.com account? " +
+      "Leave it empty: everything else works without it."))
+    card.appendChild(el("div", "muted onb-label", "Your rating, if you know it (optional):"))
 
     const ratingRow = el("div", "onb-row no-speech")
     const rating = el("input")
@@ -187,16 +198,6 @@ export function setupCoach(deps) {
     const style = chipGroup(STYLES, {selected: [(state.profile && state.profile.preferences.explanation) || "balanced"]})
     style.classList.add("onb-style")
     card.appendChild(style)
-
-    const userRow = el("div", "onb-row no-speech")
-    const user = el("input")
-    user.type = "text"; user.placeholder = "optional"; user.className = "onb-username"; user.autocomplete = "off"
-    user.setAttribute("aria-label", "Chess.com username (optional)")
-    user.value = ob.chesscom_username || ""
-    userRow.append(el("label", "", "Chess.com username"), user)
-    card.appendChild(userRow)
-    card.appendChild(el("div", "muted onb-sub",
-      "Only if you like: I can then look at your recent games for things worth practising."))
 
     const note = el("div", "clarify-note onb-error")
     const actions = el("div", "onb-actions no-speech")
@@ -240,11 +241,11 @@ export function setupCoach(deps) {
   function thanks(body) {
     const p = state.profile
     let text = `Thanks! I'll start around ${p.rating} and adjust as I see how you do.`
-    if (body.username) text += " Your recent games will show me what to work on — I can look at them now."
+    if (body.username) text += " Your recent games will show me what to work on: load them and pick which to analyze."
     const msg = deps.addMsg(text, "assistant")
     if (body.username && deps.analyzeGames) {
       const row = el("div", "suggestions coach-suggestions no-speech")
-      const go = el("button", "chip onb-analyze", "🔍 Analyze my recent games")
+      const go = el("button", "chip onb-analyze", "🔍 Load my games")
       go.type = "button"
       go.addEventListener("click", () => { go.disabled = true; deps.analyzeGames(body.username) })
       row.appendChild(go)

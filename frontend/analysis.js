@@ -4,11 +4,15 @@
 
 import {analysisLine, evalForLearner, gameMeta, matchup, progressText, resultLabel, reviewItems, uciSquares}
   from "./game-format.js"
-import {PRESET_COUNTS, TIER_HEADINGS, evidenceLine, foundIn, historyProgress, parseCount, patternDetail, patternIcon,
-  practiceLabel, puzzleStatus, resultsLine, selectionText, MAX_COUNT, MIN_COUNT} from "./history-view.js"
+import {FIRST_ANALYSIS, PRESET_COUNTS, TIER_HEADINGS, evidenceLine, foundIn, historyProgress, parseCount, patternDetail,
+  patternIcon, practiceLabel, puzzleStatus, resultsLine, selectionText, trainingPlan, MAX_COUNT, MIN_COUNT} from "./history-view.js"
+import {EMPTY_FILTER, filterGames, isoDate, lastGames, opponentRating, quotaLine, selectionSummary, timeClasses}
+  from "./game-picker.js"
 
 const USERNAME_KEY = "chessai.chesscomUsername"
 const COUNT_KEY = "chessai.historyCount"
+const CHOSEN_KEY = "chessai.chosenGames"
+const FETCH_COUNT = 100  // downloading is cheap: load the last 100, then analyze the ones you choose
 
 // Storage can be missing or throw (private browsing): remembering the name is a nicety.
 const store = {
@@ -42,7 +46,10 @@ export function setupGameAnalysis(ctx) {
   const view = {
     games: [],          // summaries from GET /api/games
     history: null,      // GET /api/games/history: the last N games analyzed together
-    historyCount: Number(store.get(COUNT_KEY)) || 10,
+    historyCount: Number(store.get(COUNT_KEY)) || FIRST_ANALYSIS,
+    chosen: readChosen(),  // ids of a hand-picked set (the report then covers exactly those games)
+    quota: null,           // the analysis allowance (GET /api/games)
+    picker: {filter: {...EMPTY_FILTER}, selected: new Set(), open: false},
     historyBusy: false,
     historyStatus: null,  // progress of a history batch; survives re-rendering the overview
     game: null,         // GET /api/games/{id}
@@ -64,6 +71,18 @@ export function setupGameAnalysis(ctx) {
 
   // ---------------------------------------------------------------- helpers
   const show = (node, on = true) => node.classList.toggle("hidden", !on)
+
+  function readChosen() {
+    try {
+      const ids = JSON.parse(store.get(CHOSEN_KEY) || "null")
+      return Array.isArray(ids) && ids.length ? ids : null
+    } catch (_) { return null }
+  }
+
+  function setChosen(ids) {
+    view.chosen = ids && ids.length ? [...ids] : null
+    store.set(CHOSEN_KEY, JSON.stringify(view.chosen))
+  }
 
   function setImportStatus(html, kind = "") {
     el.status.className = `ga-status ${kind}`
@@ -87,11 +106,16 @@ export function setupGameAnalysis(ctx) {
 
   function historyQuery() {
     const user = historyUser()
-    return `count=${view.historyCount}` + (user ? `&username=${encodeURIComponent(user)}` : "")
+    return `count=${view.historyCount}` + (user ? `&username=${encodeURIComponent(user)}` : "") +
+      (view.chosen ? `&ids=${encodeURIComponent(view.chosen.join(","))}` : "")
+  }
+
+  function historyKey() {
+    return view.chosen ? `ids:${view.chosen.join(",")}` : `n:${view.historyCount}`
   }
 
   function updateFetchLabel() {
-    el.fetchBtn.textContent = `Fetch my last ${view.historyCount} games`
+    el.fetchBtn.textContent = `Load my last ${FETCH_COUNT} games`
   }
 
   function orientation() {
@@ -99,8 +123,9 @@ export function setupGameAnalysis(ctx) {
   }
 
   // ---------------------------------------------------------------- fetch from Chess.com
-  // The server downloads the games from Chess.com's public API and imports them like pasted
-  // PGNs; then the last N games are analyzed together (games analyzed before are reused).
+  // The server downloads the last 100 games from Chess.com's public API and imports them like
+  // pasted PGNs. Nothing is analyzed yet: the learner picks the games (last 25, or their own
+  // choice) and only those cost Stockfish time and analysis allowance.
   async function fetchGames() {
     const name = el.username.value.trim()
     if (!name) {
@@ -109,10 +134,10 @@ export function setupGameAnalysis(ctx) {
       return
     }
     store.set(USERNAME_KEY, name)
-    const count = view.historyCount
+    const count = FETCH_COUNT
     view.busy = true
     el.fetchBtn.disabled = el.importBtn.disabled = true
-    setImportStatus(`Fetching ${escapeHtml(name)}'s last ${count} games from Chess.com…`)
+    setImportStatus(`Loading ${escapeHtml(name)}'s last ${count} games from Chess.com…`)
     let res
     try {
       res = await api("/api/games/fetch", "POST", {username: name, count})
@@ -125,15 +150,15 @@ export function setupGameAnalysis(ctx) {
     }
     store.set(USERNAME_KEY, res.username)
     const skipped = res.errors.length
-    setImportStatus(`Found ${res.fetched} game${res.fetched === 1 ? "" : "s"} ` +
+    setImportStatus(`Loaded ${res.fetched} game${res.fetched === 1 ? "" : "s"} ` +
       `(${res.new ? `${res.new} new` : "all already imported"}).` +
-      (skipped ? ` ${skipped} couldn't be read and ${skipped === 1 ? "was" : "were"} skipped.` : ""),
+      (skipped ? ` ${skipped} couldn't be read and ${skipped === 1 ? "was" : "were"} skipped.` : "") +
+      ` Choose which to analyze below: start with your last ${FIRST_ANALYSIS}, or pick your own.`,
       skipped ? "warn" : "")
     view.history = null
+    view.picker.open = true
     await loadGames()
     await renderOverview()
-    const preset = PRESET_COUNTS.includes(count)
-    await runHistory(preset ? String(count) : "custom", String(count))
   }
 
   // ---------------------------------------------------------------- import + analyze
@@ -220,7 +245,9 @@ export function setupGameAnalysis(ctx) {
   // ---------------------------------------------------------------- overview
   async function loadGames() {
     try {
-      view.games = (await api("/api/games")).games
+      const res = await api("/api/games")
+      view.games = res.games
+      view.quota = res.quota || null
     } catch (err) {
       el.games.textContent = `Couldn't load your games: ${err.message}`
       return
@@ -266,6 +293,11 @@ export function setupGameAnalysis(ctx) {
     await loadHistory()
     if (view.game) return  // the learner opened a game meanwhile
     el.overview.innerHTML = ""
+    const training = trainingCard()
+    if (training) {
+      el.overview.appendChild(training)
+      makeSpeakable(training)
+    }
     const card = historyCard()
     el.overview.appendChild(card)
     makeSpeakable(card)
@@ -273,7 +305,8 @@ export function setupGameAnalysis(ctx) {
 
   // ---------------------------------------------------------------- game history (the last N games together)
   async function loadHistory(force = false) {
-    if (view.history && !force && view.history.requested === view.historyCount) return
+    if (view.history && !force && view.historyLoaded === historyKey()) return
+    view.historyLoaded = historyKey()
     try {
       view.history = await api(`/api/games/history?${historyQuery()}`)
     } catch (_) {
@@ -291,10 +324,14 @@ export function setupGameAnalysis(ctx) {
   function historyCard() {
     const r = view.history
     const card = el_("div", "ga-card ga-summary ga-history")
-    card.appendChild(el_("h3", "", r && r.games_analyzed
-      ? `Your last ${r.games_analyzed} game${r.games_analyzed === 1 ? "" : "s"}, analyzed together`
+    const n = r ? r.games_analyzed : 0
+    card.appendChild(el_("h3", "", n
+      ? (view.chosen ? `Your ${n} chosen game${n === 1 ? "" : "s"}, analyzed together`
+        : `Your last ${n} game${n === 1 ? "" : "s"}, analyzed together`)
       : "Your game history"))
     card.appendChild(historyControls())
+    if (view.quota) card.appendChild(el_("p", "quota-line muted no-speech", quotaLine(view.quota)))
+    card.appendChild(pickerSection())
     if (!view.historyStatus) view.historyStatus = el_("div", "history-status no-speech")
     card.appendChild(view.historyStatus)
     if (!r) return card
@@ -394,9 +431,166 @@ export function setupGameAnalysis(ctx) {
     return row
   }
 
+  // ---------------------------------------------------------------- your training (the next step)
+  function trainingCard() {
+    const r = view.history
+    const t = trainingPlan(r)
+    if (!t) return null
+    const card = el_("div", "ga-card ga-training")
+    card.appendChild(el_("h3", "", "Your Training"))
+    if (!t.main) {
+      card.appendChild(el_("p", "muted", t.text))
+      return card
+    }
+    const main = el_("div", "training-main")
+    main.append(el_("div", "training-label muted", t.heading),
+      el_("div", "training-title", `${patternIcon(t.main)} ${t.main.title}`), el_("p", "", t.found))
+    const go = el_("div", "training-actions no-speech")
+    if (t.puzzles) {
+      const start = button(`▶ Start training: ${t.puzzles} puzzles`, "primary training-start",
+        () => newPuzzles(t.main, r.game_ids, start, t.puzzles),
+        "Puzzles made for this weakness, each checked by Stockfish (new positions, not copies of your games)")
+      go.appendChild(start)
+    } else {
+      go.appendChild(button("▶ Start training", "primary training-start", () => startTraining([t.main.key], r.game_ids),
+        "Verified examples first, then positions from your own games"))
+    }
+    main.appendChild(go)
+    card.appendChild(main)
+    if (t.puzzles) {  // the lesson is a separate step only when puzzles are the main training
+      const lesson = el_("div", "training-lesson")
+      lesson.append(el_("div", "training-label muted", "Recommended lesson"), el_("p", "", t.lesson))
+      const row = el_("div", "training-actions no-speech")
+      row.appendChild(button("Start lesson", "training-lesson-btn", () => startTraining([t.main.key], r.game_ids)))
+      lesson.appendChild(row)
+      card.appendChild(lesson)
+    }
+    if (t.others.length) {
+      const others = el_("div", "training-others")
+      others.appendChild(el_("div", "training-label muted", "Other weaknesses"))
+      for (const o of t.others) {
+        const row = el_("div", "training-other")
+        row.append(el_("span", "", `${o.title} (${o.found})`),
+          button("Train", "training-other-btn no-speech", () => startTraining([o.key], r.game_ids)))
+        others.appendChild(row)
+      }
+      card.appendChild(others)
+    }
+    return card
+  }
+
+  // ---------------------------------------------------------------- choose your own games
+  // Filters and ticks only change this section (re-rendering the whole card would lose focus).
+  function pickerSection() {
+    const pk = view.picker
+    const played = view.games.filter(g => g.player_color)
+    const box = el_("details", "game-picker no-speech")
+    box.open = pk.open
+    box.addEventListener("toggle", () => { pk.open = box.open })
+    box.appendChild(el_("summary", "", `Choose your own games (${played.length} loaded)`))
+    if (!played.length) {
+      box.appendChild(el_("p", "muted", "Load your Chess.com games (or paste PGNs) to choose from them."))
+      return box
+    }
+    const filters = el_("div", "picker-filters")
+    const input = (key, type, placeholder, label, attrs = {}) => {
+      const i = el_("input", `pf-${key}`)
+      Object.assign(i, {type, placeholder, value: pk.filter[key] || "", ...attrs})
+      i.setAttribute("aria-label", label)
+      i.addEventListener("input", () => { pk.filter[key] = i.value; drawList() })
+      filters.appendChild(i)
+      return i
+    }
+    const select = (key, label, options) => {
+      const sel = el_("select", `pf-${key}`)
+      sel.setAttribute("aria-label", label)
+      for (const [value, text] of options) {
+        const o = el_("option", "", text)
+        o.value = value
+        sel.appendChild(o)
+      }
+      sel.value = pk.filter[key] || ""
+      sel.addEventListener("change", () => { pk.filter[key] = sel.value; drawList() })
+      filters.appendChild(sel)
+    }
+    input("text", "search", "Opponent or opening", "Search by opponent or opening")
+    select("result", "Result", [["", "Any result"], ["win", "Wins"], ["loss", "Losses"], ["draw", "Draws"]])
+    select("color", "Your colour", [["", "White or Black"], ["white", "As White"], ["black", "As Black"]])
+    select("timeClass", "Time control", [["", "Any time control"], ...timeClasses(played).map(t => [t, t[0].toUpperCase() + t.slice(1)])])
+    select("analyzed", "Analyzed", [["", "Analyzed or not"], ["no", "Not analyzed yet"], ["yes", "Already analyzed"]])
+    input("from", "date", "", "Played on or after")
+    input("to", "date", "", "Played on or before")
+    input("minRating", "number", "Opp. rating ≥", "Opponent rating at least", {min: 0, step: 50})
+    input("maxRating", "number", "Opp. rating ≤", "Opponent rating at most", {min: 0, step: 50})
+    input("minMoves", "number", "Moves ≥", "At least this many moves", {min: 0})
+    input("maxMoves", "number", "Moves ≤", "At most this many moves", {min: 0})
+    box.appendChild(filters)
+
+    const tools = el_("div", "picker-tools")
+    const shownCount = el_("span", "muted picker-shown")
+    tools.append(
+      button("Select all shown", "picker-all", () => { shown.forEach(g => pk.selected.add(g.id)); drawList() }),
+      button(`Select my last ${FIRST_ANALYSIS}`, "picker-last", () => {
+        pk.selected = new Set(lastGames(played, FIRST_ANALYSIS)); drawList()
+      }),
+      button("Clear", "picker-clear", () => { pk.selected.clear(); drawList() }),
+      button("Reset filters", "picker-reset", () => { pk.filter = {...EMPTY_FILTER}; renderOverview() }),
+      shownCount)
+    box.appendChild(tools)
+    const list = el_("div", "picker-list")
+    box.appendChild(list)
+    const actions = el_("div", "picker-actions")
+    const summary = el_("span", "picker-summary")
+    const run = button("▶ Analyze selected games", "primary picker-run", () => {
+      const ids = played.filter(g => pk.selected.has(g.id)).map(g => g.id)
+      if (ids.length) runChosen(ids)
+    }, "Stockfish analyzes the ticked games, then looks for patterns across them")
+    actions.append(summary, run)
+    box.appendChild(actions)
+
+    let shown = []
+    function drawList() {
+      shown = filterGames(played, pk.filter)
+      shownCount.textContent = `Showing ${shown.length} of ${played.length}`
+      list.innerHTML = ""
+      for (const g of shown) {
+        const row = el_("label", "picker-row" + (g.analysis ? " analyzed" : ""))
+        const tick = el_("input")
+        tick.type = "checkbox"
+        tick.checked = pk.selected.has(g.id)
+        tick.dataset.id = g.id
+        tick.addEventListener("change", () => {
+          tick.checked ? pk.selected.add(g.id) : pk.selected.delete(g.id)
+          drawSummary()
+        })
+        const opp = opponentRating(g)
+        row.append(tick,
+          el_("span", "pr-date", isoDate(g.date) || "?"),
+          el_("span", "pr-opp", `${g.opponent || "?"}${opp ? ` (${opp})` : ""}`),
+          el_("span", `pr-res res ${g.learner_result || "unfinished"}`, resultLabel(g)),
+          el_("span", "pr-meta muted", [g.player_color === "white" ? "White" : "Black", g.time_label || g.time_class,
+            g.opening, `${g.moves} moves`].filter(Boolean).join(" · ")),
+          el_("span", "pr-done muted", g.analysis ? "✓ analyzed" : ""))
+        list.appendChild(row)
+      }
+      if (!shown.length) list.appendChild(el_("p", "muted", "No games match these filters."))
+      drawSummary()
+    }
+    function drawSummary() {
+      const ids = played.filter(g => pk.selected.has(g.id)).map(g => g.id)
+      const sel = selectionSummary(ids, view.games, view.quota)
+      summary.textContent = sel.text
+      summary.classList.toggle("over", !sel.ok && ids.length > 0)
+      run.disabled = !sel.ok || view.historyBusy
+    }
+    drawList()
+    return box
+  }
+
   async function chooseCount(count) {
     view.historyCount = count
     store.set(COUNT_KEY, String(count))
+    setChosen(null)
     updateFetchLabel()
     await loadHistory(true)
     if (!view.game) renderOverview()
@@ -505,9 +699,21 @@ export function setupGameAnalysis(ctx) {
     }
     view.historyCount = parsed.count
     store.set(COUNT_KEY, String(parsed.count))
-    updateFetchLabel()
+    setChosen(null)
+    await runAnalysis({count: parsed.count})
+  }
+
+  // a hand-picked set: exactly these games are analyzed and reported together
+  async function runChosen(ids) {
+    setChosen(ids)
+    view.picker.open = false
+    await runAnalysis({game_ids: ids})
+  }
+
+  async function runAnalysis(selection) {
+    const status = view.historyStatus
     view.historyBusy = true
-    el.overview.querySelectorAll(".history-run").forEach(b => { b.disabled = true })
+    el.overview.querySelectorAll(".history-run, .picker-run").forEach(b => { b.disabled = true })
     status.innerHTML = `<div class="ga-progress"><div class="ga-progress-text">Choosing your games…</div>` +
       `<div class="ga-bar"><span></span></div></div>`
     const text = status.querySelector(".ga-progress-text")
@@ -515,7 +721,7 @@ export function setupGameAnalysis(ctx) {
     let intro = ""
     const failures = []
     try {
-      await streamEvents("/api/games/history/analyze", {count: parsed.count, username: historyUser()}, ev => {
+      await streamEvents("/api/games/history/analyze", {...selection, username: historyUser()}, ev => {
         if (ev.type === "select") { intro = selectionText(ev); text.textContent = intro }
         if (ev.type === "progress") {
           const p = historyProgress(ev)
@@ -526,6 +732,8 @@ export function setupGameAnalysis(ctx) {
         if (ev.type === "error") failures.push(ev)
         if (ev.type === "done") {
           view.history = ev.report
+          view.historyLoaded = historyKey()
+          if (ev.quota) view.quota = ev.quota
           fill.style.width = "100%"
           text.textContent = failures.length
             ? `Done. ${failures.length} game${failures.length === 1 ? "" : "s"} couldn't be analyzed and ` +
@@ -565,12 +773,12 @@ export function setupGameAnalysis(ctx) {
 
   // New puzzles for one weakness: generated on the server, each checked by Stockfish before
   // it is shown. Takes a while, so progress is streamed into the status line.
-  async function newPuzzles(p, gameIds, btn) {
+  async function newPuzzles(p, gameIds, btn, count = 3) {
     btn.disabled = true
     let made = 0
     setImportStatus(`🧩 Building new puzzles for “${escapeHtml(p.title)}”…`, "")
     try {
-      await streamEvents("/api/games/puzzles", {key: p.key, count: 3, game_ids: gameIds}, ev => {
+      await streamEvents("/api/games/puzzles", {key: p.key, count, game_ids: gameIds}, ev => {
         if (ev.type === "puzzle") made += 1
         const text = escapeHtml(puzzleStatus(ev, made))
         if (ev.type === "error") setImportStatus(text, "error")

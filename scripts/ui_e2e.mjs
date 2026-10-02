@@ -315,7 +315,7 @@ check($("lessons-side").classList.contains("hidden") && !$("games-side").classLi
 check(document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden"), "lesson pane hidden while analyzing games")
 check(!board || !board.isMoveInputEnabled(), "board is locked in Game Analysis")
 // fetch by username: the sandbox can't reach api.chess.com, so this checks the flow reports it clearly
-check(/Fetch my last \d+ games/.test($("ga-fetch-btn").textContent), "fetch button names the game count: " + $("ga-fetch-btn").textContent)
+check(/Load my last 100 games/.test($("ga-fetch-btn").textContent), "fetch loads the last 100 games: " + $("ga-fetch-btn").textContent)
 check(!$("ga-paste").open, "pasting PGN is the fallback, folded away")
 $("ga-username").value = ""
 $("ga-fetch-btn").click()
@@ -439,12 +439,28 @@ $("ga-pgn").value = MORE
 $("ga-import-btn").click()
 await waitFor(() => /Imported 8 games/.test($("ga-status").textContent) && /Analysis done/.test($("ga-status").textContent), "8 more games analyzed", 300000)
 await waitFor(() => document.querySelector(".history-count"), "history controls")
-check(document.querySelector(".history-count").value === "10", "10 games is the default")
+check(document.querySelector(".history-count").value === "25", "the last 25 games is the default first analysis")
+check(/You can analyze \d+ more games? now/.test(document.querySelector(".quota-line").textContent),
+  "the analysis allowance is shown: " + document.querySelector(".quota-line").textContent.slice(0, 70))
+{
+  const pick = document.querySelector(".history-count")
+  pick.value = "10"
+  pick.dispatchEvent(new w.Event("change"))
+  await waitFor(() => document.querySelector(".history-count") && document.querySelector(".history-count").value === "10", "10 chosen")
+}
 document.querySelector(".history-run").click()
 await waitFor(() => /Done: 10 games analyzed together/.test(document.querySelector(".history-status").textContent) &&
   document.querySelector(".weakness.recurring"), "history of 10 games", 120000)
 const hist = $("ga-overview")
-check(/Your last 10 games, analyzed together/.test(hist.querySelector("h3").textContent), "history covers the last 10 games")
+check(/Your last 10 games, analyzed together/.test(hist.querySelector(".ga-history h3").textContent), "history covers the last 10 games")
+{
+  const tc = hist.querySelector(".ga-training")
+  check(tc && /Your Training/.test(tc.textContent) && /Main weakness/.test(tc.textContent) &&
+    /Missed knight fork/.test(tc.querySelector(".training-title").textContent) &&
+    /Found in 4 of your 10 analyzed games/.test(tc.textContent), "Your Training names the main weakness and why")
+  check(tc && tc.querySelector(".training-start") && /Start training/.test(tc.querySelector(".training-start").textContent),
+    "Your Training offers one clear next step")
+}
 check(!/isn't enough game history/.test(hist.textContent), "10 games: enough history")
 const rec = hist.querySelector(".weakness.recurring")
 check(/Missed knight fork/.test(rec.textContent) && /Found in 4 of 10 games/.test(rec.textContent),
@@ -470,7 +486,28 @@ const explainBtn = [...hist.querySelectorAll("button")].find(b => /Explain my pa
 explainBtn.click()
 await waitFor(() => { const o = hist.querySelector(".history-explain"); return o && o.textContent.length > 30 && !explainBtn.disabled }, "history explanation", 120000)
 check(/knight fork/i.test(hist.querySelector(".history-explain").textContent), "explanation: " + hist.querySelector(".history-explain").textContent.slice(0, 80))
-try { w.localStorage.removeItem("chessai.historyCount") } catch (_) { /* none */ }
+// choose your own games: filter, tick, and exactly those are analyzed together
+{
+  const picker = () => document.querySelector(".game-picker")
+  picker().open = true
+  const search = picker().querySelector(".pf-text")
+  search.value = "quietplayer"
+  search.dispatchEvent(new w.Event("input"))
+  check(picker().querySelectorAll(".picker-row").length === 6 && /Showing 6 of 10/.test(picker().textContent),
+    "filtering by opponent shows their 6 games")
+  for (const box of [...picker().querySelectorAll(".picker-row input")].slice(0, 3)) {
+    box.checked = true
+    box.dispatchEvent(new w.Event("change"))
+  }
+  check(/3 games selected \(3 already analyzed\)\. Nothing new to analyze/.test(picker().querySelector(".picker-summary").textContent),
+    "selection summary: " + picker().querySelector(".picker-summary").textContent)
+  check(!picker().querySelector(".picker-run").disabled, "analyze selected is enabled")
+  picker().querySelector(".picker-run").click()
+  await waitFor(() => /Your 3 chosen games, analyzed together/.test($("ga-overview").querySelector(".ga-history h3").textContent),
+    "report covers exactly the chosen games", 60000)
+  check(/3\s*games analyzed/.test($("ga-overview").querySelector(".history-stats").textContent), "chosen set: 3 games analyzed")
+}
+try { w.localStorage.removeItem("chessai.historyCount"); w.localStorage.removeItem("chessai.chosenGames") } catch (_) { /* none */ }
 for (const id of await gameIds()) if (!gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
 
 // Coach panel: what the coach knows, and editing my details (at the end: it changes the level)

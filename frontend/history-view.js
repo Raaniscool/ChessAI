@@ -1,7 +1,8 @@
 // Pure helpers for the Game History panel (no DOM): what the words and numbers say.
 // The server decides every pattern, tier and score; this only formats them.
 
-export const PRESET_COUNTS = [10, 20, 30, 50]
+export const PRESET_COUNTS = [10, 25, 50, 100]
+export const FIRST_ANALYSIS = 25  // the suggested first analysis: "Analyze my last 25 games"
 export const MIN_COUNT = 10
 export const MAX_COUNT = 100
 
@@ -104,4 +105,28 @@ export function puzzleStatus(ev, made = 0) {
   }
   if (ev.type === "error") return ev.error
   return ""
+}
+
+// "Your Training": turn the report into one clear next step. The main weakness is the
+// highest-ranked pattern the server found in more than one game (the server ranks by tier, then
+// frequency × severity); a pattern seen in only 2 games is offered as "possible", never as a verdict.
+export const TRAINING_PUZZLES = 5
+
+export function trainingPlan(r) {
+  if (!r || !r.games_analyzed) return null
+  const ranked = (r.patterns || []).filter(p => p.tier === "recurring" || p.tier === "occasional")
+  const n = r.games_analyzed
+  if (!ranked.length) {
+    return {main: null, text: `No mistake came back in more than one of your ${n} analyzed game${n === 1 ? "" : "s"}, ` +
+      "so there's nothing specific to fix yet. Analyze more games and I'll look again."}
+  }
+  const [main, ...others] = ranked
+  return {
+    main,
+    heading: main.tier === "recurring" ? "Main weakness" : "Possible pattern (not confirmed yet)",
+    found: `Found in ${main.game_count} of your ${n} analyzed game${n === 1 ? "" : "s"}.`,
+    puzzles: main.new_puzzles ? TRAINING_PUZZLES : 0,
+    lesson: `${main.title}: verified examples first, then positions from your own games`,
+    others: others.slice(0, 3).map(p => ({key: p.key, title: p.title, found: `${p.game_count} of ${n} games`, tier: p.tier})),
+  }
 }

@@ -527,3 +527,41 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
   .chip, .btn { min-height: 36px; }  /* comfortable tap targets */
   .side-panel { max-height: 88vh; }
 }
+
+/* Game picker: choose which downloaded games to analyze */
+.quota-line { font-size: 13px; margin: 4px 0 8px; }
+.game-picker { margin: 8px 0 12px; border: 1px solid var(--panel-2); border-radius: var(--radius); padding: 8px 12px; }
+.game-picker > summary { cursor: pointer; font-weight: 600; }
+.picker-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.picker-filters input, .picker-filters select {
+  background: var(--panel-2); color: var(--text); border: 1px solid #3a434d; border-radius: 6px;
+  padding: 5px 8px; font-size: 13px; min-width: 0;
+}
+.picker-filters .pf-text { flex: 1 1 180px; }
+.picker-filters input[type="number"] { width: 118px; }
+.picker-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+.picker-tools .btn { padding: 4px 10px; font-size: 12px; margin: 0; }
+.picker-shown { font-size: 12px; margin-left: auto; }
+.picker-list { max-height: 320px; overflow-y: auto; border-top: 1px solid var(--panel-2); border-bottom: 1px solid var(--panel-2); }
+.picker-row { display: grid; grid-template-columns: 22px 92px minmax(110px, 1fr) 54px minmax(140px, 2fr) 80px;
+  align-items: center; gap: 6px; padding: 5px 2px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #2a3037; }
+.picker-row:hover { background: var(--panel-2); }
+.picker-row .pr-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-row.analyzed .pr-done { color: var(--accent-2); }
+.picker-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.picker-summary { font-size: 13px; color: var(--muted); }
+.picker-summary.over { color: var(--warn); }
+@media (max-width: 760px) {
+  .picker-row { grid-template-columns: 22px 1fr 54px; }
+  .picker-row .pr-date, .picker-row .pr-meta, .picker-row .pr-done { display: none; }
+}
+
+/* Your Training: the next step after an analysis */
+.ga-training h3 { margin-top: 0; }
+.training-label { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.training-title { font-size: 20px; font-weight: 700; margin: 2px 0; }
+.training-main p, .training-lesson p { margin: 4px 0 8px; }
+.training-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.training-lesson, .training-others { border-top: 1px solid var(--panel-2); margin-top: 10px; padding-top: 8px; }
+.training-other { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; }
+.training-other .btn { padding: 3px 12px; font-size: 12px; margin: 0; }
