@@ -6,9 +6,11 @@
     DELETE /api/games/{id}
     POST   /api/games/analyze                    {game_ids?, reanalyze?} -> NDJSON progress, then weaknesses
     GET    /api/games/weaknesses?ids=a,b         -> patterns in >= 2 games + seen-once patterns (low level)
-    POST   /api/games/fetch                      {username, count} -> fetch recent games from Chess.com's public API
+    POST   /api/games/fetch                      {username, count=100} -> fetch recent games from Chess.com's public API
+    GET    /api/games/quota                      -> how many games can be analyzed now (first 25, then per day)
     GET    /api/games/history?count=10&username= -> history report for the last N games (no engine work)
-    POST   /api/games/history/analyze            {count, reanalyze?} -> NDJSON: analyze what's missing, then report
+    POST   /api/games/history/analyze            {count | game_ids, reanalyze?} -> NDJSON: analyze what's missing
+                                                 (within the analysis allowance), then report
     POST   /api/games/history/explain            {count, level?} -> NDJSON: Qwen explains the report's findings
     POST   /api/games/{id}/moments/{ply}/explain {question?} -> NDJSON: Qwen explains verified facts
     POST   /api/games/training                   {keys, game_ids?, level?} -> personal plan (like /api/plans)
@@ -33,6 +35,7 @@ from .games import store
 from .games.importers import PlayerNeeded, chesscom_api, get_importer
 from .games.model import GameRecord
 from .games.pgn import PgnError
+from .games.quota import QuotaExceeded, get_quota
 
 router = APIRouter(prefix="/api/games")
 
@@ -55,6 +58,7 @@ class ExplainRequest(BaseModel):
 
 class HistoryRequest(BaseModel):
     count: int = history.DEFAULT_COUNT
+    game_ids: list[str] | None = None  # a chosen set instead of the last `count` games
     reanalyze: bool = False
     level: str | None = None
     username: str | None = None
@@ -62,7 +66,7 @@ class HistoryRequest(BaseModel):
 
 class FetchRequest(BaseModel):
     username: str
-    count: int = history.DEFAULT_COUNT
+    count: int = history.FETCH_COUNT
 
 
 class TrainingRequest(BaseModel):
@@ -180,7 +184,27 @@ def fetch_games(body: FetchRequest):
 @router.get("")
 def list_games() -> dict:
     return {"games": [{**_summary(d), "analysis": _analysis_summary(d.get("analysis"))}
-                      for d in store.list_docs()]}
+                      for d in store.list_docs()],
+            "quota": get_quota().status()}
+
+
+@router.get("/quota")
+def analysis_quota() -> dict:
+    return get_quota().status()
+
+
+def _billable(todo: list[dict]) -> list[str]:
+    """Games that cost allowance: never analyzed before. A game with any earlier analysis (even
+    from an older analyzer version, or from before limits existed) is re-analyzed for free."""
+    return [d["game"]["id"] for d in todo if not d.get("analysis")]
+
+
+def _check_quota(todo: list[dict]):
+    """(billable ids, None) or (None, 429 response) when the new games don't fit."""
+    try:
+        return set(get_quota().check(_billable(todo))), None
+    except QuotaExceeded as exc:
+        return None, _error(429, str(exc), quota=exc.status, needed=exc.needed)
 
 
 def _summary(doc: dict) -> dict:
@@ -188,15 +212,22 @@ def _summary(doc: dict) -> dict:
 
 
 # --- game history: the last N games, analyzed together ----------------------------------------
-def _history_selection(count, username: str | None = None) -> tuple[int, list[dict], int]:
-    n = history.validate_count(count)
+def _history_selection(count, username: str | None = None,
+                       game_ids: list[str] | None = None) -> tuple[int, list[dict], int]:
     docs, _ = history.one_player(store.list_docs(), username)
-    selected = history.select_recent(docs, n)
-    return n, selected, sum(1 for d in docs if d["game"].get("player_color"))
+    available = sum(1 for d in docs if d["game"].get("player_color"))
+    if game_ids:  # the learner's own choice: exactly those games (of this player), newest first
+        selected = history.select_chosen(docs, game_ids)
+        if not selected:
+            raise history.HistoryError("none of the chosen games were found — import them first")
+        return len(selected), selected, available
+    n = history.validate_count(count)
+    return n, history.select_recent(docs, n), available
 
 
-def _history_report(count, failed: list[dict] | None = None, username: str | None = None) -> dict:
-    n, selected, available = _history_selection(count, username)
+def _history_report(count, failed: list[dict] | None = None, username: str | None = None,
+                    game_ids: list[str] | None = None) -> dict:
+    n, selected, available = _history_selection(count, username, game_ids)
     for d in selected:  # a stale analysis doesn't count until it's redone
         if not _current(d.get("analysis")):
             d["analysis"] = None
@@ -217,10 +248,13 @@ def history_report(count: int = history.DEFAULT_COUNT, username: str | None = No
 def history_analyze(body: HistoryRequest):
     """Analyze the last N games: cached analyses are reused, so only new games cost engine time."""
     try:
-        n, selected, available = _history_selection(body.count, body.username)
+        n, selected, available = _history_selection(body.count, body.username, body.game_ids)
     except history.HistoryError as exc:
         return _error(422, str(exc))
     todo = [d for d in selected if body.reanalyze or not _current(d.get("analysis"))]
+    billable, refused = _check_quota(todo)
+    if refused:
+        return refused
     engine = None
     if todo:
         try:
@@ -233,13 +267,13 @@ def history_analyze(body: HistoryRequest):
                "selected": [d["game"]["id"] for d in selected], "cached": len(selected) - len(todo),
                "to_analyze": len(todo)}
         failed = []
-        for event in _analysis_events(todo, engine):
+        for event in _analysis_events(todo, engine, billable):
             if event["type"] == "error":
                 failed.append({"game_id": event["game_id"], "error": event["error"]})
             yield event
-        report = _history_report(n, failed, body.username)
+        report = _history_report(n, failed, body.username, body.game_ids)
         learn_from_history(report, selected, body.username)
-        yield {"type": "done", "report": report}
+        yield {"type": "done", "report": report, "quota": get_quota().status()}
 
     return _ndjson(events())
 
@@ -351,6 +385,9 @@ def analyze(body: AnalyzeRequest):
         wanted = set(body.game_ids)
         docs = [d for d in docs if d["game"]["id"] in wanted]
     todo = [d for d in docs if body.reanalyze or not _current(d.get("analysis"))]
+    billable, refused = _check_quota(todo)
+    if refused:
+        return refused
     engine = None
     if todo:  # nothing to analyze = no engine needed (cached results work offline)
         try:
@@ -359,15 +396,15 @@ def analyze(body: AnalyzeRequest):
             return _error(503, str(exc))
 
     def events():
-        yield from _analysis_events(todo, engine)
+        yield from _analysis_events(todo, engine, billable)
         # Patterns are judged across all of the learner's analyzed games, not just this batch:
         # a mistake in today's game may repeat one from last week.
-        yield {"type": "done", "weaknesses": _weaknesses()}
+        yield {"type": "done", "weaknesses": _weaknesses(), "quota": get_quota().status()}
 
     return _ndjson(events())
 
 
-def _analysis_events(todo: list[dict], engine):
+def _analysis_events(todo: list[dict], engine, billable: set[str] | None = None):
     """Analyze games one by one (each saved as soon as it's done, so an interrupted batch
     keeps its finished games). One broken game never stops the others."""
     analyzer = GameAnalyzer(engine) if todo else None
@@ -385,6 +422,8 @@ def _analysis_events(todo: list[dict], engine):
                     yield {**event, "index": index, "count": len(todo)}
                 else:
                     store.save_analysis(game.id, event["analysis"])
+                    if billable and game.id in billable:  # charged only once it's actually analyzed
+                        get_quota().charge(game.id)
                     yield {"type": "game_done", "index": index, "count": len(todo), "game_id": game.id,
                            "summary": _analysis_summary(event["analysis"])}
         except store.GameNotFound:  # deleted while Stockfish was working on it: nothing to save

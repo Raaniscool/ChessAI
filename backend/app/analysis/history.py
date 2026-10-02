@@ -43,6 +43,8 @@ MIN_HISTORY_GAMES = 10          # the full recurring-pattern analysis needs this
 DEFAULT_COUNT = 10
 PRESET_COUNTS = (10, 20, 30, 50)
 MAX_COUNT = 100                 # analysis cost grows linearly; 100 recent games is plenty
+FETCH_COUNT = 100               # downloading is cheap: load the last 100, analyze a chosen subset
+FIRST_ANALYSIS = 25             # the suggested first analysis ("Analyze last 25 games")
 RECURRING_MIN_GAMES = 3
 RECURRING_SHARE = 0.15
 OCCASIONAL_MIN_GAMES = 2
@@ -74,8 +76,14 @@ def validate_count(count) -> int:
 
 
 def validate_fetch_count(count) -> int:
-    """How many games to download: the same bounds as a history analysis."""
-    return validate_count(count)
+    """How many games to download (1..MAX_COUNT). Downloading costs no engine time."""
+    try:
+        n = int(count)
+    except (TypeError, ValueError):
+        raise HistoryError("the number of games must be a whole number") from None
+    if not 1 <= n <= MAX_COUNT:
+        raise HistoryError(f"choose between 1 and {MAX_COUNT} games to download")
+    return n
 
 
 def games_of(docs: list[dict], username: str | None) -> list[dict]:
@@ -139,6 +147,15 @@ def select_recent(docs: list[dict], count: int) -> list[dict]:
 
 
 # ------------------------------------------------------------------------ scoring
+def select_chosen(docs: list[dict], game_ids: list[str]) -> list[dict]:
+    """The learner's chosen games (at most MAX_COUNT), newest first. Unknown ids are ignored."""
+    wanted = set(game_ids)
+    chosen = [d for d in docs if d["game"]["id"] in wanted]
+    if len(wanted) > MAX_COUNT:
+        raise HistoryError(f"choose at most {MAX_COUNT} games")
+    return sorted(chosen, key=lambda d: recency_key(d["game"]), reverse=True)
+
+
 def recurring_threshold(n_games: int) -> int:
     return max(RECURRING_MIN_GAMES, math.ceil(RECURRING_SHARE * n_games))
 

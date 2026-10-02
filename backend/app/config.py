@@ -110,6 +110,10 @@ class Settings:
     # Game analysis: a quick pass over every position at this depth, then each candidate
     # mistake is re-checked at ENGINE_DEPTH before it is shown (40 moves ~ 30-60 s on a laptop).
     game_analysis_depth: int = int(_env("GAME_ANALYSIS_DEPTH", "12") or "12")
+    # game-analysis allowance (no payments here: the tier is configuration). Free: the first 25
+    # games, then 10 new games a day; paid: 20 a day. ANALYSIS_LIMITS=0 turns limits off (dev).
+    analysis_tier: str = (_env("CHESSAI_TIER", "free") or "free").lower()
+    analysis_limits: bool = (_env("ANALYSIS_LIMITS", "1") or "1").lower() not in ("0", "false", "no", "off")
 
     # --- Qwen / AI teacher (OpenAI-compatible endpoint) ---
     # Works with Ollama (/v1), LM Studio, vLLM, llama.cpp server, etc.

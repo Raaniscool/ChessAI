@@ -18,7 +18,12 @@ import pytest  # noqa: E402
 def _fresh_learner(tmp_path_factory):
     """Every test starts with a brand-new learner, so one test's results never
     change the difficulty another test's lessons are built at."""
+    from app.games.quota import AnalysisQuota, set_quota
     from app.learner import LearnerStore, set_store
     set_store(LearnerStore(tmp_path_factory.mktemp("learners")))
+    # and a fresh game-analysis allowance (the data dir is shared by the whole session)
+    # (unlimited here; test_analysis_quota.py turns limits on)
+    set_quota(AnalysisQuota(tmp_path_factory.mktemp("quota") / "quota.json", enabled=False))
     yield
     set_store(None)
+    set_quota(None)

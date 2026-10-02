@@ -175,7 +175,7 @@ def test_fetch_then_history_analysis_covers_that_players_games(client, api):
     ({"archives": 404}, {"username": "RaanTest", "count": 10}, 404, "no Chess.com player"),
     ({"archives": 429}, {"username": "RaanTest", "count": 10}, 429, "rate-limiting"),
     ({}, {"username": "bad name", "count": 10}, 422, "username"),
-    ({}, {"username": "RaanTest", "count": 3}, 422, "at least 10"),
+    ({}, {"username": "RaanTest", "count": 101}, 422, "between 1 and 100"),  # downloads: 1..100 (analysis has its own rules)
 ])
 def test_fetch_endpoint_errors(client, api, status, body, code, text):
     api.status = status
