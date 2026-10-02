@@ -11,6 +11,10 @@
                                                   generation when the library runs short
     POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds,
                                    revealed}   -> records the outcome (puzzle stats + learner model)
+    POST /api/puzzles/adapt {mode, concept?, weakness?, done, remaining, set_ids}
+                                               -> swaps the remaining puzzles of a running set that
+                                                  fell out of the learner's zone (session adaptation)
+    GET  /api/puzzles/difficulty               -> the learner's difficulty profile with its evidence
     GET  /api/puzzles/select?concept=&count=5  -> the most useful puzzles for a concept right now
     GET  /api/puzzles/{id}                     -> one puzzle (metadata + the learner's stats)
 """
@@ -46,7 +50,11 @@ def select_puzzles(concept: str, count: int = Query(5, ge=1, le=10)):
     if concept not in knowledge.concepts:
         return JSONResponse(status_code=404, content={"error": f"unknown concept: {concept}"})
     candidates = [p for p in get_puzzles(knowledge).all() if (p.source or {}).get("type") != "user_game"]
-    return select(candidates, knowledge, concept, count=count, profile=get_profile(), usage=get_usage()).as_dict()
+    from .learner.difficulty import for_learner
+    profile, usage = get_profile(), get_usage()
+    cal = for_learner(knowledge, profile, usage).target(concept, knowledge)
+    return select(candidates, knowledge, concept, count=count, profile=profile, usage=usage,
+                  calibration=cal).as_dict()
 
 
 MIN_LIBRARY_BEFORE_GENERATING = 3  # fewer library matches than this -> build verified puzzles
@@ -74,6 +82,20 @@ class ResultRequest(BaseModel):
 
 def _error(status: int, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content={"error": message})
+
+
+@router.get("/difficulty")
+def difficulty(concept: str | None = None) -> dict:
+    """The learner's difficulty profile (per skill, with evidence) and, for `concept`, the target."""
+    from .learner.difficulty import for_learner
+    knowledge = _knowledge()
+    dp = for_learner(knowledge)
+    out = dp.as_dict()
+    if concept:
+        if concept not in knowledge.concepts:
+            return _error(404, f"unknown concept: {concept}")
+        out["target"] = dp.target(concept, knowledge)
+    return out
 
 
 @router.get("/dashboard")
@@ -142,6 +164,7 @@ def puzzle_set(body: SetRequest):
     from .puzzles.from_game import pick as pick_game
     from .puzzles.personal import _SeenUsage, debug_block, library_selection, own_boards
     from .puzzles.progression import ladder
+    from .learner.difficulty import for_learner
 
     knowledge = _knowledge()
     profile, usage, log = get_profile(), get_usage(), get_log()
@@ -158,7 +181,9 @@ def puzzle_set(body: SetRequest):
         pool = theme_pool(candidates(index.all()), knowledge, concept, body.count)
         seen = _SeenUsage(usage, shown)
         lad = ladder(pool, seen.puzzle_stats)
-        selection = select(pool, knowledge, concept, count=body.count, profile=profile, usage=seen, bonus=lad.bonus)
+        calibration = for_learner(knowledge, profile, usage).target(concept, knowledge)
+        selection = select(pool, knowledge, concept, count=body.count, profile=profile, usage=seen, bonus=lad.bonus,
+                           calibration=calibration)
         selection.ladder = lad.as_dict()
         title = f"Practice: {knowledge.concepts[concept].name}"
         items = [{"puzzle": c.puzzle, "example": knowledge.get(c.puzzle.id), "reasons": c.reasons,
@@ -229,6 +254,7 @@ def puzzle_set(body: SetRequest):
     log.mark_shown([it["puzzle"].id for it in items if it["origin"] not in ("library", "your_game")])
     out = {"mode": body.mode, "concept": concept, "title": title, "weakness": weakness and weakness["key"],
            "ladder": selection.ladder if selection else None,
+           "difficulty": _difficulty_brief(selection.calibration if selection else None),
            "puzzles": [payload(it["puzzle"], it["example"], knowledge, it["reasons"], it["origin"],
                                role=it["role"], why=it.get("why")) for it in items]}
     if weakness is not None:
@@ -236,6 +262,100 @@ def puzzle_set(body: SetRequest):
         out["debug"] = debug_block(weakness, total_games, selection, generation, examples,
                                    {it["puzzle"].id: it["origin"] for it in items}, knowledge=knowledge,
                                    extra={**extra_debug, "roles": {it["puzzle"].id: it["role"] for it in items}})
+    return out
+
+
+def _difficulty_brief(cal: dict | None) -> dict | None:
+    """What the solver may show about difficulty: one line, the target and zone (no evidence dump)."""
+    if not cal:
+        return None
+    return {"target": cal["target"], "zone": cal["zone"], "summary": cal.get("summary"), "skill": cal.get("skill"),
+            "level": cal.get("skill_level")}
+
+
+class AdaptRequest(BaseModel):
+    mode: Literal["personalized", "practice"] = "personalized"
+    concept: str | None = None
+    weakness: str | None = None
+    username: str | None = None
+    done: list[dict] = Field(default_factory=list)       # finished puzzles of this set, in order
+    remaining: list[str] = Field(default_factory=list)   # ids not opened yet, in order
+    set_ids: list[str] = Field(default_factory=list)     # everything in the set (never re-served)
+
+
+@router.post("/adapt")
+def adapt(body: AdaptRequest):
+    """Keep a running set in the productive zone: after two instant solves the remaining puzzles
+    that are now too easy are swapped for harder ones (and vice versa after two tough ones).
+    Deterministic (learner.difficulty.session_shift); puzzles already in range stay."""
+    from .knowledge.generation.log import get_log
+    from .knowledge.usage import get_usage
+    from .learner import get_profile
+    from .learner.difficulty import for_learner, session_shift
+    from .puzzles import get_puzzles, select
+    from .puzzles import sets
+    from .puzzles.dashboard import candidates, payload, theme_pool
+    from .puzzles.personal import _SeenUsage, library_selection
+    from .puzzles.progression import ladder
+
+    shift, reason = session_shift(body.done)
+    out = {"shift": shift, "reason": reason, "replace": {}}
+    if not shift or not body.remaining:
+        return out
+    knowledge = _knowledge()
+    profile, usage, shown = get_profile(), get_usage(), get_log().shown()
+    index = get_puzzles(knowledge)
+    weakness = None
+    if body.mode == "practice":
+        concept = body.concept
+    else:
+        if not body.weakness:
+            return out
+        if body.weakness.startswith("puzzles:"):
+            weakness = {"key": body.weakness, "concept": body.weakness.split(":", 1)[1], "title": None, "evidence": []}
+        else:
+            weakness, _n = _weakness(body.weakness, body.username)
+        concept = weakness and weakness.get("concept")
+    if not concept or concept not in knowledge.concepts:
+        return out
+    cal = for_learner(knowledge, profile, usage).target(concept, knowledge, shift)
+    out["difficulty"] = _difficulty_brief(cal)
+    low, high = cal["zone"]
+    swap = []
+    for pid in body.remaining:
+        p = index.get(pid)
+        if p is None or pid.startswith("game:") or (weakness is not None and p.type == "defense"
+                                                    and weakness.get("concept") not in sets.DEFENSIVE):
+            continue   # your game / the defensive item keep their place
+        if (shift > 0 and p.rating < low) or (shift < 0 and p.rating > high):
+            swap.append(p)
+    if not swap:
+        return out
+    exclude = set(body.set_ids) | set(body.remaining) | {d.get("id") for d in body.done if d.get("id")}
+    if weakness is not None:
+        weakness.setdefault("title", None)
+        weakness["title"] = weakness["title"] or knowledge.concepts[concept].name
+        weakness.setdefault("evidence", [])
+        selection = library_selection(weakness, knowledge, len(swap), profile=profile, usage=usage, shown=shown,
+                                      exclude=exclude, calibration=cal)
+    else:
+        pool = theme_pool(candidates(index.all()), knowledge, concept, len(swap))
+        seen = _SeenUsage(usage, shown)
+        selection = select(pool, knowledge, concept, count=len(swap), profile=profile, usage=seen,
+                           exclude=exclude, bonus=ladder(pool, seen.puzzle_stats).bonus, calibration=cal)
+    fresh = [c for c in (selection.chosen if selection else [])
+             if knowledge.get(c.puzzle.id) is not None and low <= c.puzzle.rating <= high]
+    replaced = []
+    for old, c in zip(sorted(swap, key=lambda p: p.rating), sorted(fresh, key=lambda c: c.puzzle.rating)):
+        role = sets.role_for(c.puzzle, cal["target"]) if weakness is not None else "practice"
+        why = sets.why(weakness, role, c.puzzle) if weakness is not None else None
+        out["replace"][old.id] = payload(c.puzzle, knowledge.get(c.puzzle.id), knowledge, c.reasons,
+                                         "personal" if c.puzzle.tier == "personal" else "library", role=role, why=why)
+        replaced.append(c.puzzle)
+    try:
+        usage.record_used(replaced)
+    except OSError:
+        pass
     return out
 
 

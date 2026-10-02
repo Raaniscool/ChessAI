@@ -10,10 +10,12 @@ Deterministic and documented, so every choice has a reason a learner can read.
      0.5   a concept the Knowledge Library lists as related
      x0.7  when the match is only a secondary concept of the puzzle
    Puzzles below 0.5 are never chosen.
-2. Level: the learner's rating for the concept (learner.views.target_rating, "practice"),
-   nudged by recent results on these puzzles (fast clean solves raise it, hints/misses/slow
-   solves lower it). The set spans target-150 .. target+150, one "slot" per puzzle, so it
-   runs easy -> medium -> hard. A puzzle more than 600 points away from its slot is never used.
+2. Level: the Puzzles tab passes `calibration` (learner.difficulty: rating prior + game
+   evidence + puzzle results, per skill and concept). The set then spans target-100 (warm-up)
+   .. target+150 (challenge), and puzzles below the learner's floor (target-250, trivial) are
+   left out while enough others exist. Without a calibration (older callers) the level is the
+   concept rating (learner.views.target_rating, "practice") nudged by recent results, and the
+   set spans target-150 .. target+150. A puzzle more than 600 points from its slot is never used.
 3. Novelty / spaced retry: new puzzles first; a puzzle missed at least a day ago comes back
    as a retry. Never repeated: puzzles shown in the last day, solved in the last 3 days, or
    missed earlier the same day. Solved 3-14 days ago ranks low, older comes back as review.
@@ -41,6 +43,7 @@ MIN_RELEVANCE = 0.5
 MIN_NOVELTY = 0.1     # below this a puzzle is too recent to repeat (generation fills the gap)
 QUALITY = {"unique": 1.0, "multiple": 0.85, "unchecked": 0.6}
 RECENT_WINDOW = 3     # resolved puzzles needed before the level is nudged
+CAL_LOW, CAL_HIGH = 100, 150   # calibrated sets: slots from target-100 (warm-up) to target+150 (challenge)
 
 
 @dataclass
@@ -67,6 +70,8 @@ class Selection:
     requested: int = 0
     partial: int = 0   # weakness sets: related-only matches that were not allowed to fill a slot
     ladder: dict | None = None   # puzzles.progression: the recognition stage being trained
+    calibration: dict | None = None   # learner.difficulty: the target and its evidence
+    trivial_skipped: int = 0     # puzzles below the learner's floor left out
 
     @property
     def shortfall(self) -> int:
@@ -75,7 +80,8 @@ class Selection:
     def as_dict(self) -> dict:
         return {"concept": self.concept, "target_rating": self.target_rating, "considered": self.considered,
                 "requested": self.requested, "shortfall": self.shortfall, "level_note": self.level_note,
-                "partial": self.partial, "ladder": self.ladder,
+                "partial": self.partial, "ladder": self.ladder, "calibration": self.calibration,
+                "trivial_skipped": self.trivial_skipped,
                 "puzzles": [c.as_dict() for c in self.chosen]}
 
 
@@ -174,9 +180,18 @@ def slots(target: int, count: int) -> list[int]:
     return [round(target - SPREAD + i * step) for i in range(count)]
 
 
+def calibrated_slots(target: int, count: int) -> list[int]:
+    """warm-up (pattern) -> moderate -> harder -> harder variation -> challenge."""
+    if count <= 1:
+        return [target]
+    step = (CAL_HIGH + CAL_LOW) / (count - 1)
+    return [round(target - CAL_LOW + i * step) for i in range(count)]
+
+
 def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profile=None, usage=None,
            exclude: set[str] | frozenset = frozenset(), now: datetime | None = None,
-           concept_name: str | None = None, overrides: dict | None = None, bonus=None) -> Selection:
+           concept_name: str | None = None, overrides: dict | None = None, bonus=None,
+           calibration: dict | None = None) -> Selection:
     from ..learner.views import target_rating
 
     now = now or datetime.now(timezone.utc)
@@ -195,15 +210,30 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
 
     recent = sorted((s for _p, _r, _k, s in pool if s.get("last_resolved")),
                     key=lambda s: s["last_resolved"], reverse=True)[:6]
-    target, note = level(base, recent)
+    if calibration is not None:
+        # learner.difficulty: rating prior + game evidence + puzzle results (already includes the
+        # recent results, so no extra nudge here)
+        target, note = int(calibration["target"]), calibration.get("summary")
+        slot_ratings = calibrated_slots(target, count)
+    else:
+        target, note = level(base, recent)
+        slot_ratings = slots(target, count)
     selection = Selection(concept=concept, target_rating=target, considered=len(pool), level_note=note,
-                          requested=count)
+                          requested=count, calibration=calibration)
+    if calibration is not None and calibration.get("floor") is not None:
+        # don't serve trivial puzzles while enough at the learner's level exist
+        floor = int(calibration["floor"])
+        fresh = [x for x in pool if novelty(x[3], now)[0] >= MIN_NOVELTY]
+        above = [x for x in fresh if x[0].rating >= floor]
+        if len(above) >= count:
+            selection.trivial_skipped = len(fresh) - len(above)
+            pool = [x for x in pool if x[0].rating >= floor]
     name = concept_name or (knowledge.concepts[concept].name if concept in knowledge.concepts else concept)
 
     used_ids: set[str] = set()
     used_boards: set[str] = set()
     used_concepts: dict[str, int] = {}
-    for slot in slots(target, count):
+    for slot in slot_ratings:
         best: tuple[float, Puzzle, float, str, dict, str | None] | None = None
         for p, rel, kind, st in pool:
             board = p.fen.split(" ")[0]

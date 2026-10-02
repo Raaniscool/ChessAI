@@ -44,7 +44,8 @@ def own_boards(weakness: dict) -> set[str]:
 
 
 def library_selection(weakness: dict, knowledge, count: int, profile=None, usage=None,
-                      shown: dict[str, str] | None = None, exclude: set[str] | None = None) -> Selection | None:
+                      shown: dict[str, str] | None = None, exclude: set[str] | None = None,
+                      calibration: dict | None = None, session_shift: int = 0) -> Selection | None:
     """The best verified library puzzles for this weakness (None when it has no concept)."""
     concept = weakness.get("concept")
     if not concept or concept not in knowledge.concepts:
@@ -58,9 +59,13 @@ def library_selection(weakness: dict, knowledge, count: int, profile=None, usage
     candidates, overrides, partial = split(candidates, concept, knowledge)
     seen = _SeenUsage(usage, shown or {})
     lad = ladder(candidates, seen.puzzle_stats)
+    if calibration is None:   # how hard, for this learner and this skill (learner.difficulty)
+        from ..learner.difficulty import for_learner
+        calibration = for_learner(knowledge, profile, usage).target(concept, knowledge, session_shift)
     selection = select(candidates, knowledge, concept, count=count, profile=profile,
                        usage=seen, exclude=exclude or set(),
-                       concept_name=weakness.get("title"), overrides=overrides, bonus=lad.bonus)
+                       concept_name=weakness.get("title"), overrides=overrides, bonus=lad.bonus,
+                       calibration=calibration)
     selection.partial = partial
     selection.ladder = lad.as_dict()
     return selection
@@ -92,10 +97,12 @@ def debug_block(weakness: dict, total_games: int, selection: Selection | None, g
         "source": source,
         "library_match": ({"considered": selection.considered, "chosen": len(selection.chosen),
                            "partial_not_used": selection.partial, "ladder": selection.ladder,
+                           "trivial_skipped": selection.trivial_skipped,
                            "target_rating": selection.target_rating, "level_note": selection.level_note,
                            "puzzles": [{"id": c.puzzle.id, "rating": c.puzzle.rating, "match": c.match,
                                         "type": c.puzzle.type, "score": round(c.score, 3)} for c in selection.chosen]}
                           if selection is not None else {"considered": 0, "chosen": 0, "note": "no concept for this weakness"}),
+        "difficulty": selection.calibration if selection is not None else None,
         "custom_generation": generation,
         "puzzle_validation": validation,
         **(extra or {}),
