@@ -47,6 +47,10 @@ comes with tests. Rules that hold everywhere:
   selection (easy → hard, a reason per puzzle, no repeats, spaced retries), library-first
   "Start training" with generation only for the shortfall, puzzle debug block, and
   `/api/puzzles`. See [PUZZLE_LIBRARY.md](PUZZLE_LIBRARY.md).
+- **Puzzle redesign. Done.** Lichess-style puzzles (`puzzles/profile.py`): critical vs
+  forced moves from Stockfish multipv, objective-based length, decision-based difficulty;
+  a top-level **Puzzles tab** (Personalized with evidence / Practice by theme, focused
+  solver, results feed personalization). See [PUZZLE_LIBRARY.md](PUZZLE_LIBRARY.md).
 - **P3: personalized puzzle generation.** Spec → generator → strict verification, the 5-level
   progression, links to source mistakes, and puzzle debug.
 - **P4: deep openings.** Branching opening trees, typical plans and mistakes, and lessons that

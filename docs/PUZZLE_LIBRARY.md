@@ -15,9 +15,12 @@ for them.
 | `id` | the Knowledge Library entry id |
 | `type` | `tactic`, `checkmate`, `calculation` (3+ learner moves), `defense` (stop a threat / save a piece), `endgame`, `opening`, `mistake_correction` |
 | `concept`, `concepts`, `required_skill` | entry concepts + related concepts |
-| `difficulty` (1–5), `rating` | entry label; `knowledge.difficulty.puzzle_rating` |
+| `difficulty` (1–5), `rating` | from the puzzle's decisions (see *Puzzle profile* below) |
 | `fen`, `side_to_move` | the board at the key move, replayed with python-chess |
-| `solution` | SAN from the key move on (learner moves and the replies) |
+| `solution` | SAN from the key move up to where the objective is met (trimmed; see below) |
+| `steps` | per learner move: `kind` (critical / forced / open), accepted and "good" moves, the opponent's reply |
+| `critical_moves`, `critical_decision_points`, `forced_moves`, `meaningful_moves` | the real decisions (SAN, 1-based learner move numbers), the forced/obvious moves, how many decisions |
+| `primary_concept`, `objective`, `expected_solution_length` | the concept; `mate` / `material` / `defense` / `idea`; learner moves in the trimmed solution |
 | `accepted_first` | the key move + every accepted alternative |
 | `uniqueness` | `unique`: Stockfish found no equally good alternative at any learner move. `multiple`: it did, and those moves are accepted. `unchecked`: no engine record |
 | `main_idea`, `tags`, `source` (type, id, licence, url) | entry |
@@ -26,6 +29,65 @@ for them.
 The index (`PuzzleLibrary`) rebuilds itself when the Knowledge Library changes (new
 generated/personal entries, status changes). That takes ~0.2 s for ~320 puzzles, then
 it's cached.
+
+## Puzzle profile (`puzzles/profile.py`)
+
+Puzzles work like Lichess puzzles: find the important idea, see the opponent's reply, and
+stop once the idea has worked. Nothing is lengthened, and there is no fixed move count.
+
+**Each learner move** is classified from Stockfish's top 5 moves (multipv 5, depth 12):
+
+| Kind | When |
+|---|---|
+| `critical` | a clear best move (the next-best move is ≥150 cp worse), or a checkmate |
+| `forced` | the only legal move, or an obvious follow-up after the idea: taking the target, escaping a check with ≤3 moves, a recapture. A move that gives material away is never obvious |
+| `open` | another move is about as good (within 120 cp, or a mate that's just as fast) |
+
+- The verified key move is always the decision; only follow-ups can be forced.
+- Any checkmate solves a puzzle, so other mating moves are accepted.
+- Moves within 150 cp, or a slower mate, are kept as "good": the solver says "good, but there's
+  a stronger move" and lets you try again without a penalty.
+- Without engine data, python-chess heuristics classify the moves, and moves after the
+  objective never extend the puzzle.
+
+**Where it ends:**
+
+| Objective | Ends |
+|---|---|
+| `mate` | at mate. Mate-family puzzles only, so mate is what's being tested |
+| `material` | at the first learner move after which the material gain is secured. A fork ends fork → reply → take the target |
+| `defense` | right after the move that meets the threat |
+| `idea` | at the last decision |
+
+A later critical decision always stays in the puzzle. After trimming, 4 of the 302 library
+lines are shorter.
+
+**Difficulty** comes from the decisions, never from the move count:
+
+- Each decision is rated from:
+  - quiet move vs check/capture
+  - sacrifice
+  - backward move
+  - free capture
+  - number of plausible candidates (checks, captures, and engine moves within 300 cp)
+  - how far ahead the payoff is
+  - how crowded the position is
+- The puzzle rating is the hardest decision plus 30% of the others. Forced moves and filler
+  add nothing.
+- The learner side of this (results, time, hints, whether the critical move was found first)
+  moves the learner's level through `learner.record_attempt` and the selection level nudge.
+
+**Engine data:**
+
+- Library puzzles: precomputed in `puzzles/data/engine_profiles.json`
+  (`python scripts/build_puzzle_profiles.py`, about 1 minute; it only updates missing or stale
+  entries, matched by a line signature).
+- Generated puzzles: stored at generation time in `DATA_DIR/puzzles/engine_profiles.json`.
+
+**Not served:**
+
+- Rule drills (`basics`): they're lessons, not puzzles.
+- Puzzles whose first move isn't a clear decision (`clear_start: false`; currently 3).
 
 ## Stats per puzzle
 
@@ -103,10 +165,72 @@ The plan carries a **debug** block, shown with `?debug=1`:
 - CUSTOM GENERATION (needed, accepted, candidates, rejected, status)
 - PUZZLE VALIDATION (per puzzle: status, uniqueness, accepted moves, length, rating)
 
+## Puzzles tab
+
+The Puzzles tab is a top-level tab next to Lessons and Game Analysis. It works without any
+analysis or lesson.
+
+**Personalized** (`GET /api/puzzles/dashboard`, `puzzles/dashboard.py`). Weakness cards with
+their evidence:
+
+- **from games:** recurring/occasional patterns in the learner profile, e.g. "Missed knight
+  fork: 6 times in 4 of your last 10 analyzed games".
+- **from puzzles:** "You solved 1 of your last 4 pin puzzles" (at least 3 recent attempts with an
+  average score below 0.5).
+
+How cards are ranked:
+
+- Priority = share of games × tier weight (recurring 1, occasional 0.6) × a factor from recent
+  puzzle scores. All recent puzzles failed gives ×1.35; all clean gives ×0.55 and the card reads
+  "improving". Every result changes what's recommended next.
+- The top card is the profile box (main weakness, evidence, "5 puzzles on …, easy to hard").
+
+**Practice.** Themes are concepts from the concept graph: Forks, Pins, Skewers, Discovered
+attacks, Checkmates, Hanging pieces, Endgames and others. A theme is listed only if the library
+has at least 3 puzzles for it.
+
+**Sets** (`POST /api/puzzles/set`):
+
+- Selection is `select.py`: level fit, novelty, no repeats.
+- Personalized sets use the library first. When fewer than 3 match, generation runs through the
+  full pipeline (at most 3 puzzles), and only `verified` results with a clear first move are
+  served.
+- Positions from the learner's games are excluded.
+- Practice themes serve puzzles *about* the theme (exact or "trains" matches). Puzzles that only
+  use the idea (a smothered mate that relies on a pin) come in only when those run out.
+
+**Skill targeting** (`puzzles/skill.py`; also used by "Start training"). A specific weakness is
+served only by puzzles of exactly that skill:
+
+| Match | Fills a weakness slot? |
+|---|---|
+| the weakness concept itself, the generator's "trains" mapping, a personal puzzle built for it | yes |
+| a broader concept ("fork") whose **verified facts** prove the skill (the forking piece is a knight) | yes |
+| a related concept, a puzzle that only also uses the idea, a broader concept without proof, a label the facts contradict | no (counted as `partial_not_used` in the debug block) |
+
+The shortfall goes to constrained generation for the exact concept, never to a generic stand-in.
+
+**Solver** (`frontend/puzzle-solver.js` rules, `frontend/puzzles.js` UI):
+
+- The header shows the side to move, the objective ("Mate in 2", "Win material"), the concept,
+  the difficulty and progress (2/5).
+- The solution move animates the opponent's reply.
+- A wrong move gets ✗ and is taken back. The puzzle counts as failed, and you can still finish
+  it or retry.
+- Hints: 1 = the idea, 2 = which piece. Show solution plays the rest of the line.
+- After a solve or fail it shows the solution line, a short verified explanation and the source.
+- Results go to `POST /api/puzzles/{id}/result`, which updates the per-puzzle stats and the
+  learner model.
+- Each tab keeps its state: a half-solved puzzle is still there after visiting Lessons or
+  Analysis.
+
 ## API
 
 | Endpoint | Returns |
 |---|---|
+| `GET /api/puzzles/dashboard` | `personalized` (cards, main, profile box), `practice` themes with counts |
+| `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles, easy → hard (+ `debug` for weakness sets) |
+| `POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds, revealed}` | records the outcome; returns the concept rating change and stats |
 | `GET /api/puzzles` | counts by type, tier and uniqueness |
 | `GET /api/puzzles/select?concept=&count=5` | the selection for a concept: puzzles with `reasons`, `stats`, `slot_rating`, `match`, plus `target_rating`, `shortfall` |
 | `GET /api/puzzles/{id}` | one puzzle + the learner's stats |
