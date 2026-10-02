@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass, field
 
 from ..catalog import _normalize
+from .material import PositionRequest, extract as extract_position
 from .model import PIECE_LETTER
 
 _PIECE_WORDS = {w: l for n, l in PIECE_LETTER.items() for w in (n, n + "s")}
@@ -28,7 +29,8 @@ HEAD_WORDS = {
 _JOIN_AND = {"and", "plus", "with"}
 _JOIN_VS = {"vs", "versus", "against", "v"}
 _JOIN_OR = {"or"}
-_ARTICLES = {"a", "an", "the", "one", "single", "lone"}
+_ARTICLES = {"a", "an", "the", "one", "single", "lone", "1"}
+_COUNTS = {"two": 2, "2": 2, "three": 3, "3": 3}  # "2 rooks and a queen" keeps both rooks
 TOGETHER = {"together", "both", "combined", "cooperating", "cooperation", "coordinating", "coordination",
             "teamwork", "jointly", "working"}
 SEPARATE = {"separately", "separate", "individually", "each", "respectively", "independently", "apart"}
@@ -80,6 +82,7 @@ class Parsed:
     separate: bool = False
     material: list[MaterialPhrase] = field(default_factory=list)
     exclude_phrases: list[str] = field(default_factory=list)
+    position: PositionRequest | None = None              # per-side material ("I have two rooks, they a queen")
 
 
 def _group_at(tokens: list[str], i: int) -> tuple[str, list[str], int] | None:
@@ -93,8 +96,8 @@ def _group_at(tokens: list[str], i: int) -> tuple[str, list[str], int] | None:
         return "pair", ["B", "B"], 2
     if t[i] == "pair" and nxt == "of" and nxt2 in ("bishops", "knights", "rooks"):
         return "pair", [_PIECE_WORDS[nxt2]] * 2, 3
-    if t[i] == "two" and nxt in ("bishops", "knights", "rooks"):
-        return "pair", [_PIECE_WORDS[nxt]] * 2, 2
+    if t[i] in _COUNTS and nxt in ("bishops", "knights", "rooks", "queens"):
+        return "pair", [_PIECE_WORDS[nxt]] * _COUNTS[t[i]], 2
     if t[i] in ("opposite", "same") and nxt in ("colored", "coloured", "color", "colour") and nxt2 in ("bishop", "bishops"):
         return t[i], ["B", "B"], 3
     return None
@@ -128,9 +131,15 @@ def _material(tokens: list[str]) -> list[MaterialPhrase]:
                 j += 1
             while j < n and tokens[j] in _ARTICLES:
                 j += 1
+            times = 1
+            if join and j + 1 < n and tokens[j] in _COUNTS and tokens[j + 1] in _PIECE_WORDS:
+                times = _COUNTS[tokens[j]]
+                j += 1
             if join and j < n and tokens[j] in _PIECE_WORDS:
-                pieces.append(_PIECE_WORDS[tokens[j]])
-                joins.append(join)
+                pieces += [_PIECE_WORDS[tokens[j]]] * times
+                joins += [join] + ["and"] * (times - 1)
+                if grp == "pair":  # "two rooks and a queen" is no longer just a pair
+                    grp = None
                 i = j + 1
                 continue
             break
@@ -177,6 +186,7 @@ def parse(goal: str) -> Parsed:
     p.together = any(t in TOGETHER for t in tokens)
     p.separate = any(t in SEPARATE for t in tokens)
     p.material = _material(tokens)
+    p.position = extract_position(tokens)
     for m in _EXCLUDE_RE.finditer(goal):
         phrase = m.group(1).strip(" -'")
         if phrase and phrase.lower() not in ("sure", "idea", "clue", "matter", "problem", "one"):

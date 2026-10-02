@@ -376,8 +376,12 @@ def plan_for_goal(goal: str, library_first: bool = True, level: str | None = Non
     intent = None
     if clarify and library_first and len(cleaned) >= 2:
         from .intent import IntentMemory, understand
+        interpreter = None
+        if use_qwen:  # Qwen reads requests that describe material; the parser reads them too
+            from .intent.semantic import qwen_interpreter
+            interpreter = qwen_interpreter(teacher)
         intent = understand(cleaned, answers=answers, memory=memory if memory is not None else IntentMemory(),
-                            reclarify=reclarify)
+                            reclarify=reclarify, interpreter=interpreter)
         level = intent.level or level
         cleaned = " ".join(intent.goal.split())[:MAX_GOAL_LENGTH] or cleaned
         if personal and not intent.components and personal.get("concept"):

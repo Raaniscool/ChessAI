@@ -175,6 +175,10 @@ class MaterialSpec:
             mine = group_words(self.pieces)
             return f"{mine[0].upper()}{mine[1:]} against {group_words(self.against, article=True)}{kind}"
         if self.relation == "together":
+            if len(set(self.pieces)) < len(self.pieces):  # "two rooks and a queen", never "a rook and a rook"
+                joined = group_words(self.pieces, article=True)
+                return (f"Checkmate with {joined} together" if self.head == "mate"
+                        else f"Endgames where one side has {joined}")
             joined = " and ".join(f"{'a ' if n != 'king' else ''}{n}" for n in names)
             if self.head == "mate":
                 return f"Checkmate with {joined} together"
@@ -317,18 +321,22 @@ class Interpretation:
     components: list[Component]
     icon: str = ""
     level: str | None = None
+    objective: str | None = None  # the focus chosen with a material reading ("convert", "hold", ...)
 
     def signature(self) -> str:
-        return "|".join(sorted(c.key() for c in self.components)) + f"|{self.level or ''}"
+        return "|".join(sorted(c.key() for c in self.components)) + f"|{self.level or ''}|{self.objective or ''}"
 
     def as_dict(self) -> dict:
-        return {"id": self.id, "label": self.label, "icon": self.icon,
-                "components": [c.as_dict() for c in self.components], "level": self.level}
+        out = {"id": self.id, "label": self.label, "icon": self.icon,
+               "components": [c.as_dict() for c in self.components], "level": self.level}
+        if self.objective:
+            out["objective"] = self.objective
+        return out
 
     @classmethod
     def from_dict(cls, d: dict) -> "Interpretation":
         return cls(d["id"], d["label"], [Component.from_dict(c) for c in d.get("components", [])],
-                   d.get("icon", ""), d.get("level"))
+                   d.get("icon", ""), d.get("level"), d.get("objective"))
 
 
 OTHER = "other"
@@ -343,13 +351,18 @@ class Question:
     text: str                # "What do you mean by “knight and bishop endgames”?"
     options: list[Interpretation]
     allow_other: bool = True
+    other_label: str = "Something else — let me explain"
+    details: list[str] = field(default_factory=list)  # lines shown under the question ("You have two rooks.")
 
     def as_dict(self) -> dict:
         opts = [{"id": o.id, "label": o.label, "icon": o.icon} for o in self.options]
         if self.allow_other:
-            opts.append({"id": OTHER, "label": "Something else — let me explain", "icon": "✏️"})
-        return {"key": self.key, "kind": self.kind, "term": self.term, "question": self.text, "options": opts,
-                "allow_other": self.allow_other}
+            opts.append({"id": OTHER, "label": self.other_label, "icon": "✏️"})
+        out = {"key": self.key, "kind": self.kind, "term": self.term, "question": self.text, "options": opts,
+               "allow_other": self.allow_other}
+        if self.details:
+            out["details"] = list(self.details)
+        return out
 
     def option(self, choice: str) -> Interpretation | None:
         return next((o for o in self.options if o.id == choice), None)
@@ -368,6 +381,8 @@ class LearningIntent:
     interpretation: str | None = None                     # label of the reading used
     clarified: list[dict] = field(default_factory=list)   # answers that led here
     source: str = "parsed"                                # parsed | clarified | remembered | qwen
+    objective: str | None = None                          # material focus: convert | hold | coordinate | ...
+    reading: dict = field(default_factory=dict)           # how the request was read (parser / Qwen), for debug
 
     @property
     def structured(self) -> bool:
@@ -377,18 +392,26 @@ class LearningIntent:
         """Same meaning → same signature (used to find an equivalent verified plan)."""
         data = {"c": sorted(c.key() for c in self.components), "x": sorted(self.exclude),
                 "s": self.side or "", "l": self.level or ""}
+        if self.objective and self.objective != "general":
+            data["o"] = self.objective
         return hashlib.sha1(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
 
+    def material_specs(self) -> list["MaterialSpec"]:
+        return [c.material for c in self.components if c.kind == "material" and c.material is not None]
+
     def as_dict(self) -> dict:
-        return {"goal": self.goal, "components": [c.as_dict() for c in self.components], "level": self.level,
-                "side": self.side, "exclude": self.exclude, "interpretation": self.interpretation,
-                "clarified": self.clarified, "source": self.source, "signature": self.signature()}
+        out = {"goal": self.goal, "components": [c.as_dict() for c in self.components], "level": self.level,
+               "side": self.side, "exclude": self.exclude, "interpretation": self.interpretation,
+               "clarified": self.clarified, "source": self.source, "signature": self.signature()}
+        if self.objective:
+            out["objective"] = self.objective
+        return out
 
     @classmethod
     def from_dict(cls, d: dict) -> "LearningIntent":
         return cls(d.get("goal", ""), [Component.from_dict(c) for c in d.get("components", [])], d.get("level"),
                    d.get("side"), list(d.get("exclude", [])), d.get("interpretation"), list(d.get("clarified", [])),
-                   d.get("source", "parsed"))
+                   d.get("source", "parsed"), d.get("objective"))
 
 
 class ClarificationNeeded(Exception):

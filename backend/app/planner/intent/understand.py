@@ -35,7 +35,7 @@ from ..catalog import _FILLER, _normalize
 from .lexicon import GENERIC, Entry, Lexicon, Match, distinctive, get_lexicon, side_of_family
 from .memory import IntentMemory
 from .model import (ICON, LETTER_NAME, OTHER, ClarificationError, ClarificationNeeded, Component,
-                    Interpretation, LearningIntent, MaterialSpec, Question, can_force_mate)
+                    Interpretation, LearningIntent, MaterialSpec, Question, can_force_mate, group_words)
 from .parse import MaterialPhrase, Parsed, parse
 
 _NEGATION = {"without", "except", "for", "excluding", "but", "not", "no", "skip", "skipping", "the", "any", "about"}
@@ -67,6 +67,13 @@ class _Reading:
     text: str = ""
     remember: bool = True
     exclude: list[str] = field(default_factory=list)
+    details: list[str] = field(default_factory=list)
+
+    def question(self, options: list[Interpretation]) -> Question:
+        q = Question(self.key, self.kind, self.term, self.text, options, details=list(self.details))
+        if self.kind == "confirm":
+            q.other_label = "Change something"
+        return q
 
 
 # ---------------------------------------------------------------------- components
@@ -105,6 +112,95 @@ def _single_piece(letter: str, head: str, lexicon: Lexicon) -> Component:
 
 def _material_component(spec: MaterialSpec) -> Component:
     return Component("material", spec.label(), spec.label(), spec)
+
+
+# ---------------------------------------------------------------------- per-side material
+def _spec_option(spec: MaterialSpec, oid: str | None = None, objective: str | None = None,
+                 label: str | None = None) -> Interpretation:
+    return Interpretation(oid or spec.slug(), label or spec.label(), [_material_component(spec)], spec.icon(),
+                          objective=objective)
+
+
+OBJECTIVE_SPAN = {"avoid", "avoiding", "perpetual", "perpetuals", "check", "checks", "advantage", "safely", "convert",
+                  "converting", "conversion", "coordinate", "coordinating", "coordination", "hold", "holding",
+                  "draw", "drawing", "defend", "defending", "trade", "trading", "exchange", "exchanging", "attack",
+                  "attacking", "king", "simplify", "simplifying", "save", "saving", "survive"}
+
+
+def _same_material(a: MaterialSpec, b: MaterialSpec) -> bool:
+    """Same groups; a parser reading with no stated owner ("rook vs queen") agrees with either."""
+    if a == b:
+        return True
+    if a.relation != "versus" or b.relation != "versus" or a.bishops != b.bishops:
+        return False
+    if a.owner is not None and b.owner is not None:
+        return False  # both state who has what, and it differs
+    return {a.pieces, a.against} == {b.pieces, b.against}
+
+
+def _position(p: Parsed, goal: str, interpreter) -> tuple[_Reading | None, frozenset[int], dict]:
+    """The per-side material of the request (two rooks against a queen), read deterministically
+    and — when an interpreter is given and the words call for it — by Qwen. Returns the reading
+    (single option, a confirmation card, or a question when the two disagree), the token span it
+    explains, and a record of how it was read (the plan's debug view)."""
+    from .material import objective_in, objective_label, objectives_for, wants_interpretation
+    parsed = p.position
+    info: dict = {"parser": parsed.as_dict() if parsed else None, "qwen": None, "agreement": None}
+    d = parsed.spec if parsed is not None and not parsed.conflict else None
+    q = None
+    if interpreter is not None and (parsed is not None or wants_interpretation(p.tokens)):
+        result = interpreter(goal)
+        info["qwen"] = result.as_dict() if result is not None else {"status": "unavailable"}
+        intent = getattr(result, "intent", None)
+        q = intent.spec if intent is not None else None
+    if d is None and q is None:
+        if parsed is not None and parsed.conflict:
+            info["agreement"] = "conflict"
+        return None, frozenset(), info
+    span: set[int] = set()
+    if parsed is not None:
+        for g in parsed.groups:
+            span |= set(range(g.start, g.end))
+    span |= {i for i, t in enumerate(p.tokens) if t in ("endgame", "endgames", "ending", "endings", "position",
+                                                         "positions")}
+    for mp in p.material:  # "the 2 rooks and queen endgame" is the same request, not another subject
+        span |= set(range(mp.start, mp.end))
+    term = parsed.words if parsed is not None else goal.strip()
+    stated = objective_in(p.tokens)
+    if stated:  # "... and avoid perpetual checks" is the focus, not another subject
+        span |= {i for i, t in enumerate(p.tokens) if t in OBJECTIVE_SPAN}
+    if d is not None and q is not None and not _same_material(d, q):
+        info["agreement"] = "disagree"
+        key = f"reading:{d.slug()}:{d.owner or 'any'}|{q.slug()}:{q.owner or 'any'}"
+        opts = [_spec_option(d, f"parser:{d.slug()}", stated, " ".join(d.describe())),
+                _spec_option(q, f"qwen:{q.slug()}", stated, " ".join(q.describe()))]
+        return (_Reading(key, "material_reading", term, frozenset(span), opts,
+                         f"I can read “{term}” two ways. Which one do you mean?"), frozenset(span), info)
+    spec = d or q
+    info["agreement"] = "agree" if d is not None and q is not None else ("parser" if d is not None else "qwen")
+    info["spec"] = spec.describe_dict()
+    confirm = spec.specific() or d is None or (parsed is not None and parsed.guessed)
+    if not confirm:
+        return (_Reading(None, "position", term, frozenset(span), [_spec_option(spec, objective=stated)]),
+                frozenset(span), info)
+    if stated:
+        objectives = [stated]
+        first = f"Yes — {objective_label(stated, spec).lower()}"
+    else:
+        objectives = objectives_for(spec)
+        first = "Yes, that's exactly it"
+    opts = [_spec_option(spec, objectives[0], objectives[0], first)]
+    opts += [_spec_option(spec, o, o, f"Yes — focus on {objective_label(o, spec).lower()}") for o in objectives[1:]]
+    text = "I understand your request as:"
+    details = spec.describe() + ["You want to practise endgames" + (
+        f", focusing on {objective_label(stated, spec).lower()}." if stated else ".")]
+    if parsed is not None and parsed.guessed:
+        details.append("(You didn't say how many — I assumed two. Change it if that's wrong.)")
+    if d is None:
+        details.append("(Read by the language model — please check it.)")
+    reading = _Reading(f"confirm:{spec.slug()}:{spec.owner or 'any'}", "confirm", term, frozenset(span), opts, text)
+    reading.details = details
+    return reading, frozenset(span), info
 
 
 # ---------------------------------------------------------------------- detectors
@@ -153,15 +249,24 @@ def _coordination(p: Parsed, lexicon: Lexicon) -> list[_Reading]:
                                       [Component("material", written, written, together_spec)],
                                       "".join(ICON[x] for x in pieces))
             versus = None
+            directional: list[Interpretation] = []
             if len(distinct) == 2 and len(pieces) == 2 and head == "endgame":
                 vs_spec = MaterialSpec(pieces, "versus", "endgame")
                 versus = Interpretation("versus", vs_spec.label(), [_material_component(vs_spec)], vs_spec.icon())
+            elif len(distinct) == 2 and head == "endgame" and "P" not in distinct:
+                # "2 rooks and queen endgame": counts matter — offer each side explicitly
+                for mine in distinct:
+                    a = tuple(x for x in pieces if x == mine)
+                    b = tuple(x for x in pieces if x != mine)
+                    spec = MaterialSpec(a, "versus", "endgame", against=b, owner="learner")
+                    directional.append(_spec_option(spec, f"versus:{spec.slug()}",
+                                                    label=f"{spec.label()} (you have {group_words(a, article=True)})"))
             if "or" in mp.joins or p.separate and not p.together:
                 options = [separate]
             elif p.together and not p.separate:
                 options = [together]
             else:
-                options = [separate, together] + ([versus] if versus else [])
+                options = [separate, together] + ([versus] if versus else []) + directional
                 if head == "mate":  # chess decides which readings exist
                     options = [o for o in options
                                if (o.id == "separate" and all(can_force_mate((x,)) for x in distinct))
@@ -361,8 +466,11 @@ def _answer_for(key: str | None, answers: dict, memory: IntentMemory | None, rec
 
 def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory | None = None,
                reclarify: bool = False, catalog=None, library=None, lexicon: Lexicon | None = None,
-               _depth: int = 0) -> LearningIntent:
-    """Structure `goal`; raise ClarificationNeeded when it has several different readings."""
+               interpreter=None, _depth: int = 0) -> LearningIntent:
+    """Structure `goal`; raise ClarificationNeeded when it has several different readings.
+
+    `interpreter` (goal → semantic.Interpreted, e.g. semantic.qwen_interpreter()) reads
+    requests that describe material; its reading is compared with the deterministic one."""
     from ...knowledge.library import get_knowledge
     from ..catalog import get_catalog
 
@@ -381,7 +489,7 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
             if _depth < 2:
                 inner = understand(text, answers={k: v for k, v in answers.items() if k != qkey}, memory=memory,
                                    reclarify=reclarify, catalog=catalog, library=library, lexicon=lexicon,
-                                   _depth=_depth + 1)
+                                   interpreter=interpreter, _depth=_depth + 1)
                 inner.clarified.insert(0, {"key": qkey, "kind": "interpretation", "term": goal, "choice": OTHER,
                                            "text": text, "original": goal, "remembered": remembered})
                 if memory is not None and not remembered:
@@ -401,7 +509,9 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
     exact = lexicon.exact(p.tokens)
 
     excluded, excl_span, negated = _exclusions(p, lexicon, library)
+    position, position_span, reading_info = _position(p, goal, interpreter)
     material_span = frozenset().union(*[frozenset(range(m.start, m.end)) for m in p.material]) if p.material else frozenset()
+    material_span |= position_span
     # A subject inside the exclusion phrase or inside a material phrase isn't a separate subject.
     subjects = [m for m in exact if not (m.span & excl_span) and not (m.span & material_span)
                 and m.entry.target not in excluded]
@@ -409,7 +519,12 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
                 or m.entry.kind in ("topic", "concept")]
 
     readings: list[_Reading] = []
-    readings += _coordination(p, lexicon)
+    if position is not None:
+        readings.append(position)
+        # the same pieces as a coordination question ("2 rooks and queen endgame") are explained
+        readings += [r for r in _coordination(p, lexicon) if not (r.span <= position_span)]
+    else:
+        readings += _coordination(p, lexicon)
     lex_readings, weak = _lexical(p, lexicon, subjects, material_span | excl_span)
     readings += lex_readings
     readings += _side(p, catalog, lexicon, subjects)
@@ -444,19 +559,19 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
                 readings.append(_Reading("vague", "vague", goal.strip(), frozenset(), opts,
                                          "What would you like to work on?", remember=False))
 
-    intent = LearningIntent(goal, side=p.side)
+    intent = LearningIntent(goal, side=p.side, reading=reading_info)
     chosen: list[tuple[int, list[Component]]] = []
     consumed: set[int] = set(material_span | excl_span)
     structured = bool(excluded)
     for r in readings:
         opts = _distinct(r.options)
-        if len(opts) == 1 or r.key is None:
+        if (len(opts) == 1 and r.kind != "confirm") or r.key is None:
             pick = opts[0]
             record = None
         else:
             answer, remembered = _answer_for(r.key, answers, memory if r.remember else None, reclarify)
             if answer is None:
-                raise ClarificationNeeded(Question(r.key, r.kind, r.term, r.text, opts), goal)
+                raise ClarificationNeeded(r.question(opts), goal)
             if answer.get("choice") == OTHER:
                 text = (answer.get("text") or "").strip()
                 if not text:
@@ -465,7 +580,7 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
                     raise ClarificationError("I still can't tell what you mean — try naming the topic directly.")
                 inner = understand(text, answers={k: v for k, v in answers.items() if k != r.key}, memory=memory,
                                    reclarify=reclarify, catalog=catalog, library=library, lexicon=lexicon,
-                                   _depth=_depth + 1)
+                                   interpreter=interpreter, _depth=_depth + 1)
                 inner.clarified.insert(0, {"key": r.key, "kind": r.kind, "term": r.term, "choice": OTHER,
                                            "text": text, "original": goal, "remembered": remembered})
                 inner.source = "remembered" if remembered else "clarified"
@@ -475,7 +590,7 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
             pick = next((o for o in opts if o.id == answer.get("choice")), None)
             if pick is None:
                 if remembered:  # the options changed since: ask again
-                    raise ClarificationNeeded(Question(r.key, r.kind, r.term, r.text, opts), goal)
+                    raise ClarificationNeeded(r.question(opts), goal)
                 raise ClarificationError(f"“{answer.get('choice')}” is not one of the choices.")
             record = {"key": r.key, "kind": r.kind, "term": r.term, "choice": pick.id, "label": pick.label,
                       "remembered": remembered}
@@ -484,6 +599,8 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
                 memory.put(r.key, pick.id, pick.label, None, r.term)
         if pick.level:
             intent.level = pick.level
+        if pick.objective:
+            intent.objective = pick.objective
         if r.kind in ("level", "conflict_level"):
             continue
         consumed |= set(r.span)
@@ -497,7 +614,7 @@ def understand(goal: str, *, answers: dict | None = None, memory: IntentMemory |
                 chosen.append((min(r.span) if r.span else 0, pick.components))
             continue
         if record is not None or any(c.kind in ("material", "opening_as") for c in pick.components) \
-                or r.kind in ("family", "side", "coordination", "relation"):
+                or r.kind in ("family", "side", "coordination", "relation", "position", "confirm", "material_reading"):
             structured = True
             chosen.append((min(r.span) if r.span else 0, pick.components))
             if record is not None:

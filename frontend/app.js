@@ -893,14 +893,20 @@ async function requestPlan(goal, body = null) {
 
 // A question card: one button per reading, plus "Something else" with a text box.
 function renderClarify(question, goal) {
-  const div = addMsg(`🤔 <b>${escapeHtml(question.question)}</b>`, "assistant", true)
+  // a confirmation card lists what was understood ("You have two rooks.") under the question
+  const details = (question.details || []).map(d => `<li>${escapeHtml(d)}</li>`).join("")
+  const icon = question.kind === "confirm" ? "✅" : "🤔"
+  const div = addMsg(`${icon} <b>${escapeHtml(question.question)}</b>` +
+    (details ? `<ul class="clarify-details">${details}</ul>` : ""), "assistant", true)
   div.classList.add("clarify-card")
   const row = document.createElement("div")
   row.className = "clarify-options no-speech"
   const other = document.createElement("form")
   other.className = "clarify-other no-speech"
   other.hidden = true
-  other.innerHTML = `<input type="text" maxlength="200" placeholder="Tell me what you'd like to learn">` +
+  const hint = question.kind === "confirm" ? "What should change? e.g. “I have a rook and a queen”"
+    : "Tell me what you'd like to learn"
+  other.innerHTML = `<input type="text" maxlength="200" placeholder="${escapeHtml(hint)}">` +
     `<button class="btn primary" type="submit">Send</button>`
   const note = document.createElement("div")
   note.className = "muted clarify-note"
