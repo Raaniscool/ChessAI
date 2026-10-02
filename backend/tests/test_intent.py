@@ -70,7 +70,8 @@ def test_clear_requests_are_not_asked(goal):
 def test_clear_material_requests_become_structured(goal, component):
     intent = understand(goal)
     assert intent.structured
-    assert [c.material.as_dict() for c in intent.components] == [component]
+    # compare meanings: the legacy one-against-one dicts still load as the same spec
+    assert [c.material for c in intent.components] == [MaterialSpec.from_dict(component)]
 
 
 def test_markers_settle_coordination():
@@ -122,7 +123,7 @@ def test_multiple_choice_options_are_distinct_and_have_something_else():
 @pytest.mark.parametrize("choice, keys", [
     ("separate", ["topic:knight_endgames", "topic:bishop_endgames"]),
     ("together", ['material:{"head": "endgame", "pieces": ["B", "N"], "relation": "together"}']),
-    ("versus", ['material:{"head": "endgame", "pieces": ["N", "B"], "relation": "versus"}']),
+    ("versus", ['material:{"against": ["B"], "head": "endgame", "pieces": ["N"], "relation": "versus"}']),
 ])
 def test_choosing_an_option_gives_that_structure(choice, keys):
     intent = understand("knight and bishop endgames", answers={"coordination:B+N:endgame": {"choice": choice}})
@@ -162,8 +163,7 @@ def test_level_conflict_choice_sets_level():
 def test_something_else_reinterprets_the_learners_words():
     intent = understand("knight and bishop endgames",
                         answers={"coordination:B+N:endgame": {"choice": OTHER, "text": "knight against bishop"}})
-    assert [c.material.as_dict() for c in intent.components] == [
-        {"pieces": ["N", "B"], "relation": "versus", "head": "endgame"}]
+    assert [c.material for c in intent.components] == [MaterialSpec(("N",), "versus", against=("B",))]
     assert intent.clarified[0]["choice"] == OTHER and intent.clarified[0]["original"] == "knight and bishop endgames"
 
 

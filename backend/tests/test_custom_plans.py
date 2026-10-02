@@ -458,7 +458,7 @@ def test_failed_validation_is_never_presented_and_goes_to_review(tmp_path):
     intent, _ = material_intent()
     review = ReviewQueue(tmp_path / "review")
     lib = PlanLibrary(tmp_path / "plans")
-    intent.components = [Component("material", "x", "x", MaterialSpec(("R", "P"), "versus"))]  # nothing verified
+    intent.components = [Component("material", "x", "x", MaterialSpec(("N", "N"), "versus", against=("R", "R")))]  # nothing verified
     res = build_custom_plan(intent, use_qwen=False, proposers=[_bad], plan_library=lib, review=review)
     assert res.status in ("failed", "fallback")
     assert not lib.templates()
