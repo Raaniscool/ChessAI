@@ -111,6 +111,9 @@ $("pz-mode-practice").click()
   check(/(White|Black) to move/.test($("pz-info").textContent) && /^1\/\d+$/.test($("pz-counter").textContent) &&
     $("pz-set").querySelectorAll(".pz-item").length >= 3, "puzzles 4+5: general practice works without analysis and opens the solver: " +
     $("pz-info").textContent.replace(/\s+/g, " ").trim())
+  const level = $("pz-info").querySelector(".pz-level")
+  check(level && /^Aimed at your pins? level|^Aimed at your (tactics|pattern recognition|calculation) level/.test(level.textContent),
+    "calibration: the first card says which level the set is aimed at: " + (level && level.textContent))
   const id = puzzleNow()
   const p = await puzzleData(id)
   check(p.critical_moves.length >= 1 && p.expected_solution_length === p.steps.length, `puzzle ${id}: ${p.critical_moves.length} critical of ${p.steps.length} moves`)

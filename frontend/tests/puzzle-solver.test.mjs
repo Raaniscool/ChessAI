@@ -1,7 +1,7 @@
 // Puzzle solving rules: solution + reply, mates, accepted/good moves, mistakes, hints, results.
 import test from "node:test"
 import assert from "node:assert/strict"
-import {cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
+import {applyAdapt, pendingIds, cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
   from "../puzzle-solver.js"
 
 // 1.Nc7+ (critical) Kd7 2.Nxa8 (forced)
@@ -104,4 +104,15 @@ test("personalized items say what they are for and why, in one line", () => {
     "Next: Choose among candidates — You solve the obvious ones (3/3 first try)")
   assert.equal(focusLine({focus: {label: "Spot it", note: null}}), "")
   assert.equal(focusLine({}), "")
+})
+
+test("session adaptation only swaps unopened puzzles after the current one", () => {
+  const set = ["a", "b", "c", "d", "e"].map(id => ({id}))
+  const results = {a: "solved", b: "solved", d: "failed"}   // d was opened out of order
+  assert.deepEqual(pendingIds(set, results, 1), ["c", "e"])
+  const {set: next, changed} = applyAdapt(set, results, 1, {a: {id: "x"}, c: {id: "y"}, d: {id: "z"}, e: {id: "w"}})
+  assert.equal(changed, 2)
+  assert.deepEqual(next.map(p => p.id), ["a", "b", "y", "d", "w"])
+  assert.equal(applyAdapt(set, results, 1, {}).changed, 0)
+  assert.equal(applyAdapt(set, results, 4, {e: {id: "w"}}).changed, 0)   // nothing after the last
 })

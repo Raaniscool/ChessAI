@@ -1,7 +1,8 @@
 // Puzzles tab: a dashboard (Personalized / Practice) and a board-focused solver.
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
-import {cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, resultBody, retry, reveal, sameMove,
+import {applyAdapt, cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, pendingIds, resultBody, retry,
+  reveal, sameMove,
   shouldRecord} from "./puzzle-solver.js"
 
 const REPLY_DELAY = 450
@@ -21,6 +22,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   const view = {
     mode: "personal", screen: "dashboard", dashboard: null, set: [], title: "", pos: 0, attempt: null,
     chess: null, inputOpen: false, token: 0, active: false, results: {}, summary: null,
+    body: null, done: [], difficulty: null, adaptNote: null,
   }
 
   const puzzle = () => view.set[view.pos]
@@ -141,6 +143,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     view.title = res.title
     view.results = {}
     view.summary = null
+    view.body = body
+    view.done = []
+    view.difficulty = res.difficulty || null
+    view.adaptNote = null
     view.pos = 0
     view.screen = "solver"
     show(el.dashboard, false)
@@ -175,7 +181,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       <span>${escapeHtml(h.concept)}</span><span>${escapeHtml(h.difficulty)}</span>
       ${p.steps.length > 1 ? `<span class="pz-dots">${p.steps.map((_s, i) =>
         `<i class="${i < view.attempt.index ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>
-      ${h.why ? `<div class="pz-why"><b>Why this puzzle:</b> ${escapeHtml(h.why)}</div>` : ""}`
+      ${h.why ? `<div class="pz-why"><b>Why this puzzle:</b> ${escapeHtml(h.why)}</div>` : ""}
+      ${view.adaptNote && view.adaptNote.pos === view.pos ? `<div class="pz-adapt">${escapeHtml(view.adaptNote.text)}</div>`
+        : view.pos === 0 && view.difficulty && view.difficulty.summary
+          ? `<div class="pz-level">${escapeHtml(view.difficulty.summary)}</div>` : ""}`
   }
 
   function feedback(text, kind = "") {
@@ -292,7 +301,33 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       await api(`/api/puzzles/${encodeURIComponent(a.id)}/result`, "POST", resultBody(a))
     } catch (_) {
       a.recorded = false  // try again on the next chance
+      return
     }
+    view.done.push({id: a.id, ...resultBody(a)})
+    await adapt()
+  }
+
+  // Keep the rest of the set in the productive zone: two instant solves -> the remaining puzzles
+  // that are now too easy are swapped for harder ones; two tough ones -> the reverse. Best effort.
+  async function adapt() {
+    const set = view.set
+    const remaining = pendingIds(set, view.results, view.pos)
+    if (!view.body || view.done.length < 2 || !remaining.length) return
+    let res
+    try {
+      res = await api("/api/puzzles/adapt", "POST", {mode: view.body.mode, concept: view.body.concept,
+        weakness: view.body.weakness, username: view.body.username, done: view.done, remaining,
+        set_ids: set.map(p => p.id)})
+    } catch (_) {
+      return
+    }
+    if (set !== view.set || !res || !res.replace) return   // a different set started meanwhile
+    const {set: next, changed} = applyAdapt(view.set, view.results, view.pos, res.replace)
+    if (!changed) return
+    view.set = next
+    if (res.difficulty) view.difficulty = res.difficulty
+    view.adaptNote = {pos: view.pos + 1, text: res.reason}
+    renderSetList()
   }
 
   function onHint() {

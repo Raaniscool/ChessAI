@@ -137,3 +137,21 @@ export function focusLine(card) {
 export function cardLine(card) {
   return [card.evidence, card.progress].filter(Boolean).join(" · ")
 }
+
+// Session adaptation (POST /api/puzzles/adapt): the puzzles still ahead, and the set after the
+// server swapped some of them. Only unopened puzzles after the current one are ever replaced.
+export function pendingIds(set, results, pos) {
+  return set.slice(pos + 1).filter(p => !results[p.id]).map(p => p.id)
+}
+
+export function applyAdapt(set, results, pos, replace) {
+  const ahead = new Set(pendingIds(set, results, pos))
+  let changed = 0
+  const next = set.map(p => {
+    const fresh = replace && replace[p.id]
+    if (!fresh || !ahead.has(p.id)) return p
+    changed++
+    return fresh
+  })
+  return {set: next, changed}
+}
