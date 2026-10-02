@@ -44,6 +44,8 @@ Type your Chess.com username in the **Game Analysis** tab and press **Load my la
 - **Review:** step through each moment: the position before, your move, Stockfish's move and line, and a plain-language explanation. The optional 🧠 AI explanation is built only from verified facts. When the text mentions a line of moves, the board plays it (read aloud, pointed at, or clicked); only single squares are highlighted.
 - **Game history:** your last 25 (or 10, 50, 100, custom, or hand-picked) games analyzed together, with a **Your Training** card that names the main weakness and the next step. It shows which mistakes keep showing up ("♞ Missed knight fork: found in 4 of 10 games"), ranked by how often *and* how costly they were. A mistake from one game is never called a pattern, and recurring patterns need at least 10 games. Click a pattern to see every game and position; **Practice** turns it into a lesson plan: verified library examples first, then positions from your own games.
 
+- **Start training:** 5 puzzles for your main weakness from the [Puzzle Library](docs/PUZZLE_LIBRARY.md), chosen for your level, never repeated too soon, easy → hard, each with a reason ("Knight fork trains the skill behind walking into a fork · Right at your level · New to you"). New Stockfish-verified positions are generated only when the library doesn't have enough.
+
 Your games stay in `data/games/` and never enter the shared library. Details: [docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md).
 
 ## Repository layout
@@ -67,7 +69,7 @@ frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
 frontend/analysis.js   # Game Analysis screen (game-format.js, history-view.js: pure display helpers)
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
-docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/GAME_ANALYSIS.md, docs/PERSONALIZATION.md, docs/TTS.md
+docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/PUZZLE_LIBRARY.md, docs/GAME_ANALYSIS.md, docs/PERSONALIZATION.md, docs/TTS.md
 requirements.txt
 package.json           # Stockfish WASM engine dependency
 ```

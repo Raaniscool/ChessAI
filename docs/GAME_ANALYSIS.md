@@ -222,6 +222,14 @@ each chosen pattern (from the history report, using the same games):
 4. **New puzzles for you** (when some exist): personalized positions, below.
 5. A related **catalog lesson** (e.g. Forks, Rook endgames) as a follow-up.
 
+### Targeted puzzles (Start training)
+
+**Start training** on the Your Training card asks for 5 puzzles for the main weakness. They
+come from the [Puzzle Library](PUZZLE_LIBRARY.md) first: verified puzzles that train the
+weakness, at your level, new or due for a retry, ordered easy → hard, each with a "why this
+puzzle" line. New positions are generated (below) only when the library doesn't have
+enough. Your own positions are never served back as puzzles.
+
 ### Personalized puzzles (new positions, not copies of your games)
 
 Each pattern card with `new_puzzles: true` has a **New puzzles for this** button
@@ -293,7 +301,7 @@ Everything after `GameRecord` is platform-neutral.
 | `POST /api/games/history/explain {count, level?, username?}` | Streamed explanation of the report (Qwen, checked; template fallback) |
 | `GET /api/games/weaknesses?ids=&username=` | Concepts seen in 2+ games (low-level; the history report builds on it). Each has `new_puzzles` |
 | `POST /api/games/training {keys, game_ids?, username?, level?}` | Build a training plan; returns `course_id` and `first_lesson_id` |
-| `POST /api/games/puzzles {key, count 1–5, game_ids?, username?}` | NDJSON: `status`, `puzzle` (per verified position), then `done {plan, course_id, first_lesson_id, new, reused, rejected, attempts}` or `error`. `422` for a weakness that can't be generated, `503` with no engine and nothing to reuse |
+| `POST /api/games/puzzles {key, count 1–5, game_ids?, username?, fresh?}` | Targeted training: Puzzle Library first (easy → hard, at your level), only the shortfall generated. NDJSON: `status`, `puzzle` (per generated position), then `done {plan, course_id, first_lesson_id, library, reused, new, rejected, attempts}` (the plan has `puzzles` with reasons and a `debug` block) or `error`. `422` when there are no library puzzles and nothing can be generated, `503` with no engine and no library puzzles. `fresh: true`: generated positions only |
 | `DELETE /api/games/{id}` | Delete a game and its analysis |
 
 **One learner at a time.** Weaknesses, history and training never mix players. `username`
