@@ -899,6 +899,20 @@
    ]
   },
   {
+   "id": "material_endgames",
+   "name": "Endgames with given material",
+   "category": "endgames",
+   "summary": "Practical endgame positions with an exact material balance for each side (for example two rooks against a queen), generated and verified on request.",
+   "aliases": [],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "material"
+   },
+   "engine": "practical"
+  },
+  {
    "id": "queen_mate",
    "name": "King and queen mate",
    "category": "endgames",

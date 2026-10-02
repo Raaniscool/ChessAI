@@ -1070,3 +1070,19 @@ def v_all(ctx: Ctx, params: dict) -> dict:
         spec = dict(spec)
         facts[spec["type"]] = run(spec.pop("type"), ctx, spec)
     return facts
+
+
+@validator("material")
+def exact_material(ctx: Ctx, params: dict) -> dict:
+    """Exact per-side material (planner.intent.MaterialSpec in params["material"]): at the
+    start and when the learner moves, the learner owns exactly `pieces`, the opponent exactly
+    `against` — counts included, nothing extra. Two rooks against a queen is never satisfied
+    by one rook, an extra queen, or the learner holding the queen."""
+    from ..planner.intent.model import MaterialSpec
+    spec = MaterialSpec.from_dict(params["material"])
+    learner = ctx.learner
+    key = ctx.key_ply if ctx.key_ply is not None else 0
+    for ply, where in ((0, "the start"), (key, "the key move")):
+        if not spec.matches(ctx.replay.boards[ply], learner):
+            raise Fail(f"at {where} the material is not {spec.short()} for the learner")
+    return {"material": spec.slug(), "learner": "white" if learner == chess.WHITE else "black"}

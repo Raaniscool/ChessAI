@@ -309,5 +309,41 @@ def _defence(example, rep, engine, depth) -> EngineReport:
     return EngineReport("pass", "defence", [], details)
 
 
-_PROFILES = {"defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
+PRACTICAL_ACCEPT_CP = 40   # the key move may be this much below Stockfish's best
+PRACTICAL_GAP_CP = 100     # ...and some natural alternative must be at least this much worse
+PRACTICAL_DECIDED_CP = 900
+
+
+def _practical(example, rep, engine, depth) -> EngineReport:
+    """A practical position (material endgames): not a forced mate, not already decided, the
+    key move is (nearly) Stockfish's best, and the choice matters — an alternative is clearly
+    worse. Accepted alternatives are checked by the solution stage."""
+    if example.key_ply is None:
+        return EngineReport("fail", "practical", ["no key move"])
+    board = rep.boards[example.key_ply]
+    side = board.turn
+    lines = engine.analyse_lines(board, depth=depth, multipv=4, fresh=True)
+    if not lines:
+        return EngineReport("fail", "practical", ["engine returned no lines"])
+    scores = [l.score.for_side(side == chess.WHITE) for l in lines]
+    best = scores[0]
+    details = {"depth": depth, "side": "white" if side else "black", "best_cp": best,
+               "best_move": lines[0].san}
+    if abs(best) >= PRACTICAL_DECIDED_CP * 10:
+        return EngineReport("fail", "practical", ["a forced mate — a tactic, not a practical position"], details)
+    if abs(best) > PRACTICAL_DECIDED_CP:
+        return EngineReport("fail", "practical", [f"already decided ({best} cp)"], details)
+    key = rep.moves[example.key_ply]
+    key_cp = next((s for l, s in zip(lines, scores) if l.move == key), None)
+    if key_cp is None:
+        key_cp, _ = eval_cp(engine, rep.boards[example.key_ply + 1], side, depth)
+    details["key_cp"] = key_cp
+    if best - key_cp > PRACTICAL_ACCEPT_CP:
+        return EngineReport("fail", "practical", [f"the key move is {best - key_cp} cp below the best"], details)
+    if not any(best - s >= PRACTICAL_GAP_CP for s in scores[1:]):
+        return EngineReport("fail", "practical", ["every move is about as good — nothing to find"], details)
+    return EngineReport("pass", "practical", [], details)
+
+
+_PROFILES = {"practical": _practical, "defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
              "endgame_win": _endgame_win, "endgame_draw": _endgame_draw}

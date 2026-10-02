@@ -21,7 +21,7 @@ from .positions import Replay, ReplayError, replay
 CATEGORIES = ("basics", "tactics", "checkmates", "openings", "endgames", "mistakes")
 STATUSES = ("candidate", "verifying", "verified", "rejected", "needs_review", "deprecated")
 PRESENTATION_MODES = ("demonstration", "interactive", "hint", "practice", "deep_dive")
-ENGINE_PROFILES = ("none", "tactic", "mate", "opening", "mistake", "principle", "endgame_win", "endgame_draw",
+ENGINE_PROFILES = ("none", "practical", "tactic", "mate", "opening", "mistake", "principle", "endgame_win", "endgame_draw",
                    "defence")
 SOURCE_TYPES = ("curated", "lichess_puzzle", "lichess_openings", "historical_game", "rules_reference",
                 "endgame_theory", "qwen_generated", "user_submitted", "user_game",
