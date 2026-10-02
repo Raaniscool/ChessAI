@@ -27,7 +27,11 @@ def _fresh_learner(tmp_path_factory):
     # engine data of generated puzzles: per test (the bundled library data is shared, read-only)
     from app.puzzles.profile import EngineProfiles, set_engine_profiles
     set_engine_profiles(EngineProfiles(runtime=tmp_path_factory.mktemp("profiles") / "engine_profiles.json"))
+    # the learner's own game puzzles (puzzles.from_game): per test
+    from app.puzzles.from_game import GamePuzzleStore, set_game_puzzles
+    set_game_puzzles(GamePuzzleStore(tmp_path_factory.mktemp("game_puzzles") / "game_puzzles.json"))
     yield
     set_store(None)
     set_quota(None)
     set_engine_profiles(None)
+    set_game_puzzles(None)

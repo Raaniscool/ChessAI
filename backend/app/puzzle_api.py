@@ -84,7 +84,9 @@ def dashboard() -> dict:
 
     knowledge = _knowledge()
     pool = candidates(get_puzzles(knowledge).all())
-    return {"personalized": personalized(get_profile(), knowledge, pool), "practice": themes(pool, knowledge),
+    from .knowledge.usage import get_usage
+    return {"personalized": personalized(get_profile(), knowledge, pool, usage=get_usage()),
+            "practice": themes(pool, knowledge),
             "library": {"puzzles": len(pool)}}
 
 
@@ -105,14 +107,41 @@ def _weakness(key: str, username: str | None) -> tuple[dict | None, int]:
     return None, 0
 
 
+class _LazyEngine:
+    """Stockfish, started only if something actually needs a fresh analysis."""
+
+    def __init__(self):
+        self._engine = None
+        self.unavailable = False
+
+    def get(self):
+        from .engine.service import EngineUnavailable, get_engine
+        if self._engine is None and not self.unavailable:
+            try:
+                self._engine = get_engine()
+            except EngineUnavailable:
+                self.unavailable = True
+        return self._engine
+
+    def analyse_lines(self, *args, **kwargs):
+        engine = self.get()
+        if engine is None:
+            from .engine.service import EngineUnavailable
+            raise EngineUnavailable("Stockfish is not available")
+        return engine.analyse_lines(*args, **kwargs)
+
+
 @router.post("/set")
 def puzzle_set(body: SetRequest):
     from .knowledge.generation.log import get_log
     from .knowledge.usage import get_usage
     from .learner import get_profile
     from .puzzles import get_puzzles, select
+    from .puzzles import sets
     from .puzzles.dashboard import candidates, payload, personalized, theme_pool
-    from .puzzles.personal import _SeenUsage, debug_block, library_selection
+    from .puzzles.from_game import pick as pick_game
+    from .puzzles.personal import _SeenUsage, debug_block, library_selection, own_boards
+    from .puzzles.progression import ladder
 
     knowledge = _knowledge()
     profile, usage, log = get_profile(), get_usage(), get_log()
@@ -120,14 +149,23 @@ def puzzle_set(body: SetRequest):
     shown = log.shown()
     weakness, total_games, generation = None, 0, {"needed": 0, "generated": 0, "rejected": 0, "attempts": 0,
                                                   "status": "not needed"}
+    items: list[dict] = []
+    extra_debug: dict = {}
     if body.mode == "practice":
         concept = body.concept
         if not concept or concept not in knowledge.concepts:
             return _error(404, f"unknown concept: {concept}")
         pool = theme_pool(candidates(index.all()), knowledge, concept, body.count)
-        selection = select(pool, knowledge, concept, count=body.count, profile=profile,
-                           usage=_SeenUsage(usage, shown))
+        seen = _SeenUsage(usage, shown)
+        lad = ladder(pool, seen.puzzle_stats)
+        selection = select(pool, knowledge, concept, count=body.count, profile=profile, usage=seen, bonus=lad.bonus)
+        selection.ladder = lad.as_dict()
         title = f"Practice: {knowledge.concepts[concept].name}"
+        items = [{"puzzle": c.puzzle, "example": knowledge.get(c.puzzle.id), "reasons": c.reasons,
+                  "origin": "personal" if c.puzzle.tier == "personal" else "library", "role": "practice",
+                  "why": None} for c in selection.chosen if c.puzzle.clear_start]
+        items = [it for it in items if it["example"] is not None]
+        items.sort(key=lambda it: (it["puzzle"].rating, it["puzzle"].id))
     else:
         key = body.weakness
         if not key:
@@ -144,62 +182,102 @@ def puzzle_set(body: SetRequest):
         concept = weakness["concept"]
         weakness.setdefault("title", None)
         weakness["title"] = weakness["title"] or knowledge.concepts[concept].name
-        selection = library_selection({**weakness, "evidence": weakness.get("evidence", [])}, knowledge,
-                                      body.count, profile=profile, usage=usage, shown=shown)
+        weakness.setdefault("evidence", [])
         title = weakness["title"]
-    chosen = [c for c in (selection.chosen if selection else []) if c.puzzle.clear_start]
-    items = [(c.puzzle, knowledge.get(c.puzzle.id), c.reasons, "personal" if c.puzzle.tier == "personal"
-              else "library") for c in chosen]
-    items = [it for it in items if it[1] is not None]
-    if weakness is not None and not key.startswith("puzzles:") and body.generate \
-            and len(items) < min(body.count, MIN_LIBRARY_BEFORE_GENERATING):
-        items, generation = _generate(weakness, knowledge, items, body, index)
+        engine = _LazyEngine()
+        # A. the learner's own mistake, re-verified (only for weaknesses found in their games)
+        game_puzzle, trail = (pick_game(weakness, engine if body.generate else None, usage)
+                              if weakness["evidence"] else (None, []))
+        extra_debug["your_game"] = {"used": game_puzzle.id if game_puzzle else None, "trail": trail}
+        if game_puzzle is not None:
+            items.append({"puzzle": game_puzzle, "example": None, "role": "your_game", "origin": "your_game",
+                          "reasons": ["The position from your game, re-checked by Stockfish"]})
+        wants_defend = sets.walked_into(weakness) and body.count >= 4 and not key.startswith("puzzles:")
+        skill_count = max(1, body.count - len(items) - (1 if wants_defend else 0))
+        # B. verified library puzzles of exactly this skill (easy -> hard, progression-aware)
+        selection = library_selection(weakness, knowledge, skill_count, profile=profile, usage=usage, shown=shown)
+        target = selection.target_rating if selection else 1200
+        for c in (selection.chosen if selection else []):
+            ex = knowledge.get(c.puzzle.id)
+            if ex is not None and c.puzzle.clear_start:
+                items.append({"puzzle": c.puzzle, "example": ex, "reasons": c.reasons, "role": sets.role_for(c.puzzle, target),
+                              "origin": "personal" if c.puzzle.tier == "personal" else "library"})
+        skill_items = [it for it in items if it["role"] in ("same", "easier", "harder")]
+        # C. strictly verified new puzzles when the library runs short
+        if not key.startswith("puzzles:") and body.generate \
+                and len(skill_items) < min(skill_count, MIN_LIBRARY_BEFORE_GENERATING):
+            generated, generation = _generate(weakness, knowledge, skill_count - len(skill_items), body, index)
+            items += [{**it, "role": sets.role_for(it["puzzle"], target)} for it in generated]
+        # the defensive version, for weaknesses the learner walked into
+        if wants_defend:
+            avoid = own_boards(weakness) | {it["puzzle"].fen.split(" ")[0] for it in items}
+            defend, extra_debug["defend"] = sets.defend_item(
+                weakness, knowledge, index, usage, shown, target, avoid,
+                engine=engine if body.generate else None, username=body.username)
+            if defend is not None:
+                items.append({**defend, "reasons": ["The defensive side of the same weakness"]})
+        for it in items:
+            it["why"] = sets.why(weakness, it["role"], it["puzzle"])
+        items = sets.order(items)
     if not items:
         return _error(422, f"No verified puzzles for {title.lower()} right now — you've seen them all recently. "
                            "Try another theme, or come back tomorrow.")
-    items.sort(key=lambda it: (it[0].rating, it[0].id))
-    examples = [ex for _p, ex, _r, _o in items]
     try:
-        usage.record_used(examples)
+        usage.record_used([it["puzzle"] for it in items])
     except OSError:
         pass
-    log.mark_shown([ex.id for _p, ex, _r, o in items if o != "library"])
+    log.mark_shown([it["puzzle"].id for it in items if it["origin"] not in ("library", "your_game")])
     out = {"mode": body.mode, "concept": concept, "title": title, "weakness": weakness and weakness["key"],
-           "puzzles": [payload(p, ex, knowledge, reasons, origin) for p, ex, reasons, origin in items]}
+           "ladder": selection.ladder if selection else None,
+           "puzzles": [payload(it["puzzle"], it["example"], knowledge, it["reasons"], it["origin"],
+                               role=it["role"], why=it.get("why")) for it in items]}
     if weakness is not None:
+        examples = [it["example"] or it["puzzle"] for it in items]
         out["debug"] = debug_block(weakness, total_games, selection, generation, examples,
-                                   {ex.id: o for _p, ex, _r, o in items}, knowledge=knowledge)
+                                   {it["puzzle"].id: it["origin"] for it in items}, knowledge=knowledge,
+                                   extra={**extra_debug, "roles": {it["puzzle"].id: it["role"] for it in items}})
     return out
 
 
-def _generate(weakness: dict, knowledge, items: list, body: SetRequest, index):
-    """Top up a short personalized set with new puzzles — only ones that passed the full pipeline."""
+def _generate(weakness: dict, knowledge, need: int, body: SetRequest, index) -> tuple[list[dict], dict]:
+    """New puzzles for a short personalized set — only ones that passed the full pipeline."""
     from .analysis import personal_puzzles
     from .engine.service import EngineUnavailable, get_engine
 
-    need = min(MAX_GENERATED, body.count - len(items))
+    need = min(MAX_GENERATED, need)
     generation = {"needed": need, "generated": 0, "rejected": 0, "attempts": 0, "status": "ran"}
+    out: list[dict] = []
+    if need <= 0:
+        generation["status"] = "not needed"
+        return out, generation
     if not personal_puzzles.supported_weakness(weakness):
         generation["status"] = "unsupported weakness"
-        return items, generation
+        return out, generation
     try:
         engine = get_engine()
     except EngineUnavailable:
         generation["status"] = "engine unavailable"
-        return items, generation
+        return out, generation
     try:
         result = personal_puzzles.generate_for(weakness, knowledge, engine, count=need, username=body.username)
     except Exception as exc:  # generation failing must not lose the library puzzles
         generation["status"] = f"failed: {exc}"
-        return items, generation
+        return out, generation
     generation.update(generated=len(result.accepted), rejected=len(result.rejected), attempts=result.attempts)
     for ex in result.accepted:
         if ex.status != "verified":   # never serve anything that didn't pass every check
             continue
         p = index.get(ex.id)
         if p is not None and p.clear_start:
-            items.append((p, ex, [f"Built for your {weakness['title'].lower()} weakness", "New to you"], "generated"))
-    return items, generation
+            out.append({"puzzle": p, "example": ex, "origin": "generated",
+                        "reasons": [f"Built for your {weakness['title'].lower()} weakness", "New to you"]})
+    return out, generation
+
+def _find(puzzle_id: str):
+    """A library puzzle, or one of the learner's own game puzzles (puzzles.from_game)."""
+    from .puzzles import get_puzzles
+    from .puzzles.from_game import get_game_puzzles
+    return get_puzzles(_knowledge()).get(puzzle_id) or get_game_puzzles().get(puzzle_id)
 
 
 @router.post("/{puzzle_id}/result")
@@ -208,7 +286,7 @@ def puzzle_result(puzzle_id: str, body: ResultRequest):
     from .learner import get_store
     from .puzzles import get_puzzles
 
-    p = get_puzzles(_knowledge()).get(puzzle_id)
+    p = _find(puzzle_id)
     if p is None:
         return _error(404, "no verified puzzle with that id")
     solved = body.solved and not body.revealed
@@ -233,7 +311,7 @@ def puzzle(puzzle_id: str):
     from .knowledge.usage import get_usage
     from .puzzles import get_puzzles
 
-    p = get_puzzles(_knowledge()).get(puzzle_id)
+    p = _find(puzzle_id)
     if p is None:
         return JSONResponse(status_code=404, content={"error": "no verified puzzle with that id"})
     return {**p.as_dict(), "stats": get_usage().puzzle_stats(p.id)}

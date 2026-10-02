@@ -91,7 +91,17 @@ def _name(knowledge, concept: str | None) -> str:
     return (concept or "").replace("_", " ").title()
 
 
-def personalized(profile, knowledge, pool) -> dict:
+def _focus(pool, knowledge, concept: str, usage) -> dict | None:
+    """The recognition stage to train next in this skill (puzzles.progression)."""
+    if usage is None:
+        return None
+    from .progression import ladder
+    from .skill import split
+    keep, _overrides, _partial = split(pool, concept, knowledge)
+    return ladder(keep, usage.puzzle_stats).as_dict()
+
+
+def personalized(profile, knowledge, pool, usage=None) -> dict:
     """Weakness cards (most useful first) and the profile box."""
     cards: list[dict] = []
     covered: set[str] = set()
@@ -110,7 +120,8 @@ def personalized(profile, knowledge, pool) -> dict:
             "title": w.get("title") or _name(knowledge, concept), "source": "games", "tier": w.get("tier"),
             "kind": w.get("kind"), "evidence": evidence, "progress": progress,
             "priority": round(share * TIER_WEIGHT.get(w.get("tier"), 0.5) * factor, 4),
-            "available": available(pool, knowledge, concept), "recommended": RECOMMENDED})
+            "available": available(pool, knowledge, concept), "recommended": RECOMMENDED,
+            "focus": _focus(pool, knowledge, concept, usage)})
         covered.add(concept)
     for concept, st in (profile.concepts.items() if profile is not None else []):
         recent = _recent(st)
@@ -126,7 +137,8 @@ def personalized(profile, knowledge, pool) -> dict:
             "source": "puzzles", "tier": None, "kind": None,
             "evidence": f"You solved {solved} of your last {len(recent)} {name.lower()} puzzles",
             "progress": None, "priority": round(0.3 * (1 - mean), 4),
-            "available": available(pool, knowledge, concept), "recommended": RECOMMENDED})
+            "available": available(pool, knowledge, concept), "recommended": RECOMMENDED,
+            "focus": _focus(pool, knowledge, concept, usage)})
     cards = [c for c in cards if c["available"] > 0 or c["source"] == "games"]
     cards.sort(key=lambda c: (-c["priority"], c["title"]))
     main = cards[0] if cards else None
@@ -142,10 +154,21 @@ def personalized(profile, knowledge, pool) -> dict:
             "rating": profile.rating if profile is not None else None,
             "main_weakness": main["title"] if main else None,
             "evidence": main["evidence"] if main else None,
-            "recommendation": (f"{RECOMMENDED} puzzles on {main['concept_name'].lower()}, easy to hard"
-                               if main else None),
+            "recommendation": recommendation(main),
         },
     }
+
+
+def recommendation(card: dict | None) -> str | None:
+    """What "Start" gives for this weakness (puzzles.sets decides the actual items)."""
+    if not card:
+        return None
+    from .sets import walked_into
+    name = card["concept_name"].lower()
+    if card.get("source") != "games":
+        return f"{RECOMMENDED} puzzles on {name}, easy to hard"
+    defend = ", and the defensive side" if walked_into({"key": card["key"], "concept": card["concept"]}) else ""
+    return f"{RECOMMENDED} puzzles: a position from your own games, then {name} easy to hard{defend}"
 
 
 # ---------------------------------------------------------------------- solver payload
@@ -171,6 +194,8 @@ def objective_text(puzzle) -> str:
 
 def source_label(puzzle) -> str:
     kind = (puzzle.source or {}).get("type") or ""
+    if kind == "user_game":
+        return "Your game · re-checked by Stockfish · private to you"
     if puzzle.tier == "personal":
         return "Built for your weakness · verified by Stockfish"
     if puzzle.tier == "generated" or kind in ("generated", "procedural"):
@@ -180,10 +205,27 @@ def source_label(puzzle) -> str:
     return "Verified library"
 
 
-def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin: str = "library") -> dict:
+def game_explanation(puzzle) -> str:
+    """Facts only: what was played in the learner's game and what Stockfish shows instead."""
+    ev = (puzzle.facts or {}).get("game") or {}
+    if not ev.get("san"):
+        return ""
+    dots = "." if ev.get("side") == "white" else "..."
+    played = f"{ev.get('move_number')}{dots}{ev['san']}"
+    return (f"In your game you played {played}. Stockfish's best here is {puzzle.solution[0]}"
+            + (f" ({' '.join(puzzle.solution)})." if len(puzzle.solution) > 1 else "."))
+
+
+def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin: str = "library",
+            role: str | None = None, why: str | None = None) -> dict:
     """Everything the board-focused solver needs, and nothing more (no AI text)."""
+    from .sets import ROLE_LABEL
     name = _name(knowledge, puzzle.concept)
-    hints = [h for h in (getattr(example, "hints", None) or []) if h][:1] or [f"Look for a {name.lower()}."]
+    default_hint = ("Something in this position was missed in your game — look at every check, capture "
+                    "and threat." if origin == "your_game" else f"Look for a {name.lower()}.")
+    hints = [h for h in (getattr(example, "hints", None) or []) if h][:1] or [default_hint]
+    explanation = game_explanation(puzzle) if origin == "your_game" else \
+        _first_sentences(getattr(example, "explanation", "") or "")
     side = "white" if " w " in f" {puzzle.fen} " else "black"
     return {
         "id": puzzle.id, "fen": puzzle.fen, "side": side,
@@ -196,7 +238,8 @@ def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin
         "critical_moves": list(puzzle.critical_moves), "forced_moves": list(puzzle.forced_moves),
         "critical_decision_points": list(puzzle.decision_points), "meaningful_moves": puzzle.meaningful_moves,
         "expected_solution_length": puzzle.expected_solution_length,
-        "hint": hints[0], "explanation": _first_sentences(getattr(example, "explanation", "") or ""),
+        "hint": hints[0], "explanation": explanation,
         "origin": origin, "source": source_label(puzzle),
         "uniqueness": puzzle.uniqueness, "reasons": list(reasons or []),
+        "role": role, "role_label": ROLE_LABEL.get(role or ""), "why": why,
     }

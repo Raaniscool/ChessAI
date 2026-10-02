@@ -20,8 +20,10 @@ Deterministic and documented, so every choice has a reason a learner can read.
 4. Quality: a single clear solution is preferred; puzzles with several accepted moves are
    fine (all of them are accepted); entries without an engine record rank last.
 5. Variety: never the same position twice; a small penalty for repeating a sub-concept.
+6. Progression (optional `bonus`, puzzles.progression): prefer the recognition stage the
+   learner should train next (spot -> choose among candidates -> quiet/deeper).
 
-    slot score = relevance * (0.50 * fit + 0.35 * novelty + 0.15 * quality) - variety
+    slot score = relevance * (0.50 * fit + 0.35 * novelty + 0.15 * quality) - variety + stage bonus
     fit        = exp(-((rating - slot_rating) / 250)^2)
 """
 from __future__ import annotations
@@ -64,6 +66,7 @@ class Selection:
     level_note: str | None = None
     requested: int = 0
     partial: int = 0   # weakness sets: related-only matches that were not allowed to fill a slot
+    ladder: dict | None = None   # puzzles.progression: the recognition stage being trained
 
     @property
     def shortfall(self) -> int:
@@ -72,7 +75,7 @@ class Selection:
     def as_dict(self) -> dict:
         return {"concept": self.concept, "target_rating": self.target_rating, "considered": self.considered,
                 "requested": self.requested, "shortfall": self.shortfall, "level_note": self.level_note,
-                "partial": self.partial,
+                "partial": self.partial, "ladder": self.ladder,
                 "puzzles": [c.as_dict() for c in self.chosen]}
 
 
@@ -100,7 +103,10 @@ def targets(concept: str, knowledge) -> dict[str, tuple[float, str]]:
 
 
 def relevance(puzzle: Puzzle, concept: str, wanted: dict[str, tuple[float, str]]) -> tuple[float, str]:
-    if puzzle.tier == "personal" and puzzle.weakness == concept:
+    # a personal puzzle made for this weakness — of a concept that trains it (a "Defend" item made
+    # for the same weakness is a different skill and doesn't count)
+    if puzzle.tier == "personal" and puzzle.weakness == concept \
+            and wanted.get(puzzle.concept, (0.0, ""))[0] >= 0.95:
         return 1.0, "personal"
     if puzzle.concept in wanted:
         return wanted[puzzle.concept]
@@ -170,7 +176,7 @@ def slots(target: int, count: int) -> list[int]:
 
 def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profile=None, usage=None,
            exclude: set[str] | frozenset = frozenset(), now: datetime | None = None,
-           concept_name: str | None = None, overrides: dict | None = None) -> Selection:
+           concept_name: str | None = None, overrides: dict | None = None, bonus=None) -> Selection:
     from ..learner.views import target_rating
 
     now = now or datetime.now(timezone.utc)
@@ -209,6 +215,8 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
             fit = math.exp(-((p.rating - slot) / FIT_WIDTH) ** 2)
             score = rel * (0.50 * fit + 0.35 * nov + 0.15 * QUALITY.get(p.uniqueness, 0.6))
             score -= 0.05 * used_concepts.get(p.concept, 0)
+            if bonus is not None:   # progression (puzzles.progression): the recognition stage to train
+                score += bonus(p)
             key = (score, -abs(p.rating - slot), p.id)
             if best is None or key > (best[0], -abs(best[1].rating - slot), best[1].id):
                 best = (score, p, rel, kind, st, nov_reason)

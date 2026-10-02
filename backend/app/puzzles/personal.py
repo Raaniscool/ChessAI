@@ -13,6 +13,8 @@ from __future__ import annotations
 import chess
 
 from .index import get_puzzles
+from .model import Puzzle
+from .progression import ladder
 from .select import Selection, select
 
 
@@ -54,21 +56,25 @@ def library_selection(weakness: dict, knowledge, count: int, profile=None, usage
                   and p.clear_start]
     # a specific weakness is only served by puzzles of that exact skill (puzzles.skill)
     candidates, overrides, partial = split(candidates, concept, knowledge)
+    seen = _SeenUsage(usage, shown or {})
+    lad = ladder(candidates, seen.puzzle_stats)
     selection = select(candidates, knowledge, concept, count=count, profile=profile,
-                       usage=_SeenUsage(usage, shown or {}), exclude=exclude or set(),
-                       concept_name=weakness.get("title"), overrides=overrides)
+                       usage=seen, exclude=exclude or set(),
+                       concept_name=weakness.get("title"), overrides=overrides, bonus=lad.bonus)
     selection.partial = partial
+    selection.ladder = lad.as_dict()
     return selection
 
 
 def debug_block(weakness: dict, total_games: int, selection: Selection | None, generation: dict,
-                examples: list, origins: dict[str, str], knowledge=None) -> dict:
+                examples: list, origins: dict[str, str], knowledge=None, extra: dict | None = None) -> dict:
     """USER WEAKNESS / SOURCE / LIBRARY MATCH / CUSTOM GENERATION / PUZZLE VALIDATION."""
     puzzles = get_puzzles(knowledge)
     validation = []
     for ex in examples:
-        p = puzzles.get(ex.id)
-        validation.append({"id": ex.id, "origin": origins.get(ex.id), "status": ex.status,
+        p = puzzles.get(ex.id) or (ex if isinstance(ex, Puzzle) else None)
+        status = getattr(ex, "status", None) or getattr(ex, "verification_state", None)
+        validation.append({"id": ex.id, "origin": origins.get(ex.id), "status": status,
                            "uniqueness": p.uniqueness if p else "unchecked",
                            "accepted": list(p.accepted_first) if p else [], "moves": p.learner_moves if p else None,
                            "rating": p.rating if p else None,
@@ -85,11 +91,12 @@ def debug_block(weakness: dict, total_games: int, selection: Selection | None, g
                           "games": weakness.get("game_count"), "of": total_games, "tier": weakness.get("tier")},
         "source": source,
         "library_match": ({"considered": selection.considered, "chosen": len(selection.chosen),
-                           "partial_not_used": selection.partial,
+                           "partial_not_used": selection.partial, "ladder": selection.ladder,
                            "target_rating": selection.target_rating, "level_note": selection.level_note,
                            "puzzles": [{"id": c.puzzle.id, "rating": c.puzzle.rating, "match": c.match,
                                         "type": c.puzzle.type, "score": round(c.score, 3)} for c in selection.chosen]}
                           if selection is not None else {"considered": 0, "chosen": 0, "note": "no concept for this weakness"}),
         "custom_generation": generation,
         "puzzle_validation": validation,
+        **(extra or {}),
     }
