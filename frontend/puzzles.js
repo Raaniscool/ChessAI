@@ -1,8 +1,8 @@
 // Puzzles tab: a dashboard (Personalized / Practice) and a board-focused solver.
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
-import {cardLine, header, judge, newAttempt, nextHint, resultBody, retry, reveal, sameMove, shouldRecord}
-  from "./puzzle-solver.js"
+import {cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, resultBody, retry, reveal, sameMove,
+  shouldRecord} from "./puzzle-solver.js"
 
 const REPLY_DELAY = 450
 const REVERT_DELAY = 550
@@ -79,6 +79,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       box.innerHTML = `<div class="pz-label">Your main weakness</div>
         <h3>${escapeHtml(main.title)}</h3>
         <p class="pz-evidence">${escapeHtml(cardLine(main))}</p>
+        ${focusLine(main) ? `<p class="pz-focus">${escapeHtml(focusLine(main))}</p>` : ""}
         <p class="muted">Recommended: ${escapeHtml(p.profile.recommendation || "")}</p>`
       box.appendChild(startButton(main, `Start ${main.recommended} puzzles`, true))
       el.personal.appendChild(box)
@@ -156,7 +157,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       const r = view.results[p.id]
       b.className = "lesson-item pz-item" + (i === view.pos ? " active" : "") + (r ? ` ${r}` : "")
       b.dataset.id = p.id
-      b.innerHTML = `<span>${i + 1}. ${escapeHtml(p.concept_name)}</span>
+      b.innerHTML = `<span>${i + 1}. ${escapeHtml(itemLabel(p))}</span>
         <span class="badge">${r === "solved" ? "✓" : r === "failed" ? "✗" : escapeHtml(header(p, i, 1).difficulty)}</span>`
       b.addEventListener("click", () => goTo(i))
       el.set.appendChild(b)
@@ -170,9 +171,11 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     el.counter.textContent = h.progress
     el.info.innerHTML = `<div class="pz-side ${p.side}">${escapeHtml(h.side)}</div>
       <div class="pz-objective">${escapeHtml(h.objective)}</div>
-      <div class="pz-meta"><span>${escapeHtml(h.concept)}</span><span>${escapeHtml(h.difficulty)}</span>
+      <div class="pz-meta">${h.role ? `<span class="pz-role ${escapeHtml(p.role || "")}">${escapeHtml(h.role)}</span>` : ""}
+      <span>${escapeHtml(h.concept)}</span><span>${escapeHtml(h.difficulty)}</span>
       ${p.steps.length > 1 ? `<span class="pz-dots">${p.steps.map((_s, i) =>
-        `<i class="${i < view.attempt.index ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>`
+        `<i class="${i < view.attempt.index ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>
+      ${h.why ? `<div class="pz-why"><b>Why this puzzle:</b> ${escapeHtml(h.why)}</div>` : ""}`
   }
 
   function feedback(text, kind = "") {

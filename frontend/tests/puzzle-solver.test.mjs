@@ -1,7 +1,7 @@
 // Puzzle solving rules: solution + reply, mates, accepted/good moves, mistakes, hints, results.
 import test from "node:test"
 import assert from "node:assert/strict"
-import {cardLine, header, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
+import {cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
   from "../puzzle-solver.js"
 
 // 1.Nc7+ (critical) Kd7 2.Nxa8 (forced)
@@ -87,7 +87,21 @@ test("what gets recorded", () => {
 test("promotion and header text", () => {
   assert.ok(sameMove("e7e8", "e7e8q")); assert.ok(!sameMove("e7e8n", "e7e8q")); assert.ok(sameMove("e7e8N", "e7e8n"))
   assert.deepEqual(header(FORK, 1, 5), {side: "White to move", objective: "Win material", concept: "Knight fork",
-    difficulty: "Moderate", progress: "2/5"})
+    difficulty: "Moderate", progress: "2/5", role: "", why: ""})
   assert.equal(cardLine({evidence: "In 3 of your last 10 analyzed games", progress: null}),
     "In 3 of your last 10 analyzed games")
+})
+
+test("personalized items say what they are for and why, in one line", () => {
+  const mine = {...FORK, role: "your_game", role_label: "Your game",
+    why: "Your own game vs alice — you played 30.Kd2 here. Find what you missed."}
+  const h = header(mine, 0, 5)
+  assert.equal(h.role, "Your game")
+  assert.match(h.why, /Your own game vs alice/)
+  assert.equal(itemLabel(mine), "Your game")
+  assert.equal(itemLabel(FORK), "Knight fork")          // practice items: the concept
+  assert.equal(focusLine({focus: {label: "Choose among candidates", note: "You solve the obvious ones (3/3 first try)"}}),
+    "Next: Choose among candidates — You solve the obvious ones (3/3 first try)")
+  assert.equal(focusLine({focus: {label: "Spot it", note: null}}), "")
+  assert.equal(focusLine({}), "")
 })

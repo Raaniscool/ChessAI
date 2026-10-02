@@ -572,6 +572,15 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
   await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "personalized set", 180000)
   check(/Missed knight fork/.test($("pz-title").textContent) && /Knight fork/.test($("pz-info").textContent),
     "the set trains the weakness: " + $("pz-title").textContent)
+  {
+    const info = $("pz-info").textContent.replace(/\s+/g, " ").trim()
+    const items = [...$("pz-set").querySelectorAll(".pz-item")].map(b => b.textContent.replace(/\s+/g, " ").trim())
+    check(/Why this puzzle:/.test(info) && $("pz-info").querySelectorAll(".pz-why").length === 1,
+      "every personalized puzzle says why, in one line: " + info.slice(info.indexOf("Why")))
+    const mine = /Your game/.test(items[0])
+    check(!mine || /Your own game/.test(info), "set order: " + items.join(" | ") +
+      (mine ? " (opens with the position from your own game)" : " (no game moment passed the Stockfish re-check)"))
+  }
   // half-way through the first puzzle: go to Analysis and Lessons, then come back
   const id = puzzleNow()
   const p = await puzzleData(id)

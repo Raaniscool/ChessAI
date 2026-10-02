@@ -597,6 +597,12 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
 .pz-side.white::before { background: #f4f4f4; }
 .pz-side.black::before { background: #111; }
 .pz-objective { font-size: 15.5px; color: #d6dbe0; }
+.pz-why { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.pz-why b { color: #c9d1d9; font-weight: 600; }
+.pz-meta span.pz-role { background: #2d4a3a; color: #bfe8cf; }
+.pz-meta span.pz-role.your_game { background: #4a3a1f; color: #f3d9a4; }
+.pz-meta span.pz-role.defend { background: #23384f; color: #bcd7f5; }
+.pz-focus { font-size: 13px; color: #bfe8cf; margin: 4px 0; }
 .pz-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .pz-meta span:not(.pz-dots) { background: var(--panel-2); border-radius: 6px; padding: 3px 8px; }
 .pz-dots { display: inline-flex; gap: 5px; }

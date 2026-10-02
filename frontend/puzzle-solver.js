@@ -117,7 +117,20 @@ export function header(puzzle, position, total) {
     concept: puzzle.concept_name,
     difficulty: DIFFICULTY_LABEL[puzzle.difficulty] || "",
     progress: total > 1 ? `${position + 1}/${total}` : "",
+    role: puzzle.role_label || "",
+    why: puzzle.why || "",
   }
+}
+
+// The set list names an item by what it is for ("Your game", "Harder") when it has a role.
+export function itemLabel(puzzle) {
+  return puzzle.role_label || puzzle.concept_name
+}
+
+// One line under a weakness card: the next recognition stage (puzzles.progression), if any.
+export function focusLine(card) {
+  const f = card && card.focus
+  return f && f.note ? `Next: ${f.label} — ${f.note}` : ""
 }
 
 // Dashboard text helpers.
