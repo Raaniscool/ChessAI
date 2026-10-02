@@ -486,10 +486,15 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
     "Start training: 5 targeted puzzles for the main weakness")
   check([...why.querySelectorAll("li")].every(li => /—/.test(li.textContent)) && /New to you/.test(why.textContent),
     "every puzzle says why it was chosen")
-  check(/from the puzzle library/.test(card.textContent) && /not positions from your games/.test(card.textContent),
-    "the plan says where the puzzles came from")
+  check(/puzzle library/.test(card.textContent) && /not positions from your games/.test(card.textContent),
+    "the plan says where the puzzles came from: " + card.textContent.slice(0, 160))
+  // back to the games view: it re-renders the overview, so wait for the new history card
+  const oldCount = document.querySelector(".history-count")
   $("tab-games").click()
-  await waitFor(() => document.querySelector(".history-count"), "back to the games view")
+  await waitFor(() => { const n = document.querySelector(".history-count"); const h = hist.querySelector(".ga-history h3")
+    return n && n !== oldCount && h && /Your last 10 games/.test(h.textContent) &&
+      [...hist.querySelectorAll("button")].some(b => /Explain my patterns/.test(b.textContent)) }, "back to the games view", 60000)
+  await sleep(300)
 }
 // custom count: fewer than 10 is refused in the browser
 const sel = document.querySelector(".history-count")
