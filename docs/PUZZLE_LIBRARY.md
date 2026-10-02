@@ -117,14 +117,15 @@ Deterministic, so every puzzle has a reason the learner can read:
    - ×0.7 when it's only a secondary concept of the puzzle
 
    Below 0.5 is never used.
-2. **Level:** the learner's rating for the concept (`learner.views.target_rating`,
-   "practice"). Recent results on these puzzles nudge it:
-   - missed half → −100
-   - slow (>150 s average) → −50
-   - 80% clean first-try solves → +80
+2. **Level:** the calibrated target (see [Difficulty calibration](#difficulty-calibration)).
+   The set spans target −100 … +150, one slot per puzzle, so it runs **warm-up → moderate →
+   harder → harder variation → challenge**. Puzzles below the learner's floor (target −250)
+   are left out while enough others exist. A puzzle more than 600 points from its slot is never
+   used.
 
-   The set spans target −150 … +150, one slot per puzzle, so it runs **easy → hard**. A
-   puzzle more than 600 points from its slot is never used.
+   Callers that pass no calibration (none in the app today) keep the old rule: the concept
+   rating (`learner.views.target_rating`, "practice") nudged by recent results (missed half
+   −100, slow −50, 80% clean +80), spanning target −150 … +150.
 3. **Novelty / spaced retry:**
    - New puzzles come first.
    - A puzzle missed at least a day ago comes back as a retry ("Retry: you missed this
@@ -270,12 +271,68 @@ The shortfall goes to constrained generation for the exact concept, never to a g
 - Each tab keeps its state: a half-solved puzzle is still there after visiting Lessons or
   Analysis.
 
+## Difficulty calibration
+
+*What* to train (the weakness) and *how hard* (the learner's skill) are decided separately.
+Being weak at knight forks means knight-fork puzzles, **not** the easiest puzzles in the
+library. There are no rating bands: the Chess.com rating is one input among several, and
+evidence from games and puzzles can move the target well away from it in either direction.
+
+Code: `learner/difficulty.py` (profile, targets, session step), `analysis/skill_evidence.py`
+(game evidence), `puzzles/select.py` (`calibration=`).
+
+### Evidence
+
+Everything is on the puzzle-rating scale (the scale of `puzzles.profile.decision_rating`). Each
+skill estimate is a **weighted mean of its evidence items**. Every item is stored with its source,
+value, weight and a plain-language detail, so a target can always be explained.
+
+| Source | Value | Weight |
+|---|---|---|
+| Rating prior | `520 + 0.6 × game rating` (400 → 760, 800 → 1000, 1200 → 1240). The game rating is the first available of: median of analyzed games, onboarding rating (normalized), onboarding experience, profile rating. | 2 |
+| Game errors (≥ 3 analyzed games) | Error rate (mistakes + blunders per learner move) → game rating `400 − 1600·log10(rate / 0.12)`, then the same scale map. "Allowed" tactics use base 0.05 for defense; per-phase rates (≥ 30 moves in the phase) feed opening / endgame. | min(3, moves / 80) |
+| Game chances (≥ 3 games, ≥ 3 chances) | Positions where the eval swung ≥ 200 cp to the learner, who is ≥ +150: found (loss ≤ 100) or missed (loss ≥ 200). Each chance is rated like a puzzle (`decision_rating` of the engine's best move) and is check/capture ("pattern") or quiet ("calculation"). Value = Elo performance + 100, because finding it in a real game, unprompted, is harder than in a puzzle. | min(3, n / 4) |
+| Puzzle results (≥ 2 puzzles) | Elo performance on resolved puzzles. Score = first-try rate + 0.6 × (later solves) − 0.1 × hints per attempt. A clean solve in ≤ 20 s counts the puzzle as +100 (it was too easy to measure); a solve slower than 150 s scores × 0.85. Results older than 30 days count half. | 0.4 per puzzle, max 6 |
+
+Skills are overall, tactics, pattern_recognition, calculation, defense, endgame and opening.
+Puzzles count toward the skills that match their type and recognition stage (spot →
+pattern recognition, deep → calculation, defense puzzles → defense, …). The level words
+(beginner … expert) are for display only.
+
+### Concept level and target
+
+- **Concept estimate.** Start from the matching skill estimate, minus 50 if the concept is one of
+  the profile's weaknesses. That anchor gets weight 2. It is then moved by Elo performance on
+  puzzles that strictly match the concept (≥ 0.95). So "easy forks 10/10, harder forks 3/5" lands
+  between the two groups, and the easy forks stop being served.
+- **Target** = concept estimate − 60. That gives about 58% expected success: challenging but
+  realistic.
+  - Zone: target −120 … +150.
+  - Floor: target −250 (trivial for this learner).
+- **In a session** (`POST /api/puzzles/adapt`), after each finished puzzle:
+  - The last two were instant clean solves (≤ 20 s, first try, no hint) → +100. Remaining
+    puzzles below the new zone are swapped for harder ones.
+  - The last two were missed, revealed or needed hints → −100, and the reverse swap.
+  - Otherwise nothing changes. The set does **not** step up automatically after every puzzle.
+  - Your-game items and the defensive item keep their place.
+  - The results are also recorded, so the next set starts from the updated estimate.
+- **Intrinsic difficulty is unchanged.** The puzzle rating still comes from the structure of the
+  critical decision (quiet move, plausible candidates, payoff depth), not from move count.
+  Calibration only decides which ratings fit this learner.
+
+The UI shows one line on the first card, for example *"Aimed at your tactics level (improving),
+from 12 analyzed games and 9 puzzles; 3/5 of these solved cleanly so far"*. When the set
+adapts, it shows a short note. The numbers and evidence are in `/api/puzzles/difficulty`
+and in the set's `debug.difficulty`.
+
 ## API
 
 | Endpoint | Returns |
 |---|---|
 | `GET /api/puzzles/dashboard` | `personalized` (cards, main, profile box), `practice` themes with counts |
-| `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles with `role`, `role_label`, `why`; `ladder`; `debug` for weakness sets (incl. `your_game` trail, `defend`, `roles`) |
+| `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles with `role`, `role_label`, `why`; `ladder`; `difficulty` (target, zone, summary); `debug` for weakness sets (incl. `your_game` trail, `defend`, `roles`) |
+| `POST /api/puzzles/adapt {mode, concept?, weakness?, done[], remaining[], set_ids[]}` | `{shift, reason, replace{old_id: puzzle}, difficulty}`: swaps remaining puzzles that left the zone |
+| `GET /api/puzzles/difficulty?concept=` | the difficulty profile (skills with evidence, prior) and, for a concept, the target with its rule |
 | `POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds, revealed}` | records the outcome; returns the concept rating change and stats |
 | `GET /api/puzzles` | counts by type, tier and uniqueness |
 | `GET /api/puzzles/select?concept=&count=5` | the selection for a concept: puzzles with `reasons`, `stats`, `slot_rating`, `match`, plus `target_rating`, `shortfall` |

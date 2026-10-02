@@ -207,8 +207,10 @@ skipped onboarding counts as no evidence, not as "beginner".
 Every attempt updates it through `record_attempt`. Game findings enter as weaknesses only when
 they recur across several games.
 
-**Difficulty** (`views.py`): `target_rating` = the concept's own rating, or the overall one, plus
-a purpose offset:
+**Difficulty** (`views.py`, used by lessons and plans): `target_rating` = the concept's own
+rating, or the overall one, plus a purpose offset. Puzzles use the evidence-based calibration in
+`learner/difficulty.py` instead (rating prior + game evidence + puzzle results, per skill and
+concept); see "Difficulty calibration" in `PUZZLE_LIBRARY.md`. The purpose offsets:
 
 | Purpose | Offset |
 |---|---|
