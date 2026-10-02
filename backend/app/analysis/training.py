@@ -179,6 +179,60 @@ def create_puzzle_plan(weakness: dict, examples: list, total_games: int, library
     return {"plan": plan, "course": course, "lessons": [lesson]}
 
 
+ORIGIN_TEXT = {"library": "from the verified puzzle library", "personal": "made for you earlier",
+               "generated": "built for you just now"}
+
+
+def create_targeted_plan(weakness: dict, picks: list[tuple], total_games: int, library) -> dict:
+    """Targeted training for one weakness ("Start training"): library puzzles first, generated
+    ones for the rest, easy -> hard. `picks`: [(example, origin, reasons)] with origin
+    library | personal | generated and reasons the learner-facing "why this puzzle" lines."""
+    if not picks:
+        raise TrainingError("no verified puzzles for this weakness yet")
+    examples = [ex for ex, _o, _r in picks]
+    concept = library.concepts.get(weakness.get("concept") or "")
+    subject = concept.name if concept else weakness["title"]
+    names = list(dict.fromkeys(library.concepts[e.concept].name for e in examples if e.concept in library.concepts))
+    n, games = len(picks), weakness.get("game_count") or len(weakness.get("games", []))
+    counts = {o: sum(1 for _e, oo, _r in picks if oo == o) for o in ORIGIN_TEXT}
+    made = [f"{c} {ORIGIN_TEXT[o]}" for o, c in counts.items() if c]
+    intro = (f"I found this in your games: “{weakness['title'].lower()}” (in {games} of your {total_games} analyzed "
+             f"game{'s' if total_games != 1 else ''}). Let's train it with {n} puzzle{'s' if n != 1 else ''}, "
+             f"{'from easier to harder' if n > 1 else 'at your level'}: {', '.join(made)}. Every one was checked by "
+             "Stockfish, and none of them is a position from your own games.")
+    plan_id = uuid.uuid4().hex[:8]
+    steps = [{"type": "teach", "text": intro, "board": {"fen": examples[0].start_fen}}]
+    said = Said(intro)
+    said.credits |= {"procedural", "qwen_generated"}
+    for k, (example, _origin, reasons) in enumerate(picks, start=1):
+        block = example_steps(example, "practice", k, n, names, said)
+        if reasons:
+            block[0] = {**block[0], "text": f"{block[0]['text']}\nWhy this puzzle: {'; '.join(reasons).lower()}."}
+        steps += block
+    generated = [ex.id for ex, o, _r in picks if o != "library"]
+    lesson = _lesson(f"plan_{plan_id}_01", f"{subject}: your training", steps,
+                     f"Done — {n} {subject.lower()} puzzle{'s' if n != 1 else ''} solved.", names, personal=True,
+                     origin={"type": PLANNER, "weakness": weakness["key"], "generated": generated,
+                             "library": [ex.id for ex, o, _r in picks if o == "library"]})
+    title = f"Training: {weakness['title']}"
+    summary = (f"{n} puzzle{'s' if n != 1 else ''} for “{weakness['title'].lower()}”, easy to hard — "
+               + ", ".join(made) + ". Practice positions, not positions from your games.")
+    unit = {"topic_id": None, "title": title, "category": CATEGORY.get(concept.category if concept else "", "tactic"),
+            "reason": weakness.get("description", ""), "verified_by": "verified puzzles checked by python-chess + "
+            "Stockfish", "lesson_ids": [lesson["id"]], "concepts": sorted({e.concept for e in examples}),
+            "weakness": weakness["key"], "example_ids": [e.id for e in examples], "generated": bool(generated)}
+    plan = {"id": plan_id, "goal": f"Train {weakness['title']}", "title": title, "summary": summary,
+            "created": datetime.now(timezone.utc).isoformat(timespec="seconds"), "planner": PLANNER,
+            "units": [unit], "skipped": [], "related": [],
+            "puzzles": [{"id": ex.id, "origin": o, "concept": ex.concept, "title": ex.title, "reasons": list(r)}
+                        for ex, o, r in picks],
+            "personal": {"games": list(weakness.get("games", [])), "weaknesses": [weakness["key"]],
+                         "generated": generated}}
+    course = {"id": f"plan_{plan_id}", "title": title, "description": summary, "kind": "plan",
+              "lessons": [{"id": lesson["id"], "title": lesson["title"]}]}
+    return {"plan": plan, "course": course, "lessons": [lesson]}
+
+
 def create_training_plan(weaknesses: list[dict], moments: dict[str, dict], total_games: int, library,
                          usage=None, catalog=None, level: str | None = None, record_usage: bool = True,
                          generated: dict[str, list] | None = None,

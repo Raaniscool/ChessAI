@@ -14,8 +14,10 @@
     POST   /api/games/history/explain            {count, level?} -> NDJSON: Qwen explains the report's findings
     POST   /api/games/{id}/moments/{ply}/explain {question?} -> NDJSON: Qwen explains verified facts
     POST   /api/games/training                   {keys, game_ids?, level?} -> personal plan (like /api/plans)
-    POST   /api/games/puzzles                    {key, count?} -> NDJSON: new engine-verified puzzles for a
-                                                 weakness (personal tier, never copies of the learner's games)
+    POST   /api/games/puzzles                    {key, count?, fresh?} -> NDJSON: targeted training for a weakness:
+                                                 Puzzle Library first (easy -> hard, at the learner's level), the
+                                                 shortfall generated + engine-verified (personal tier); never
+                                                 copies of the learner's games. fresh=true: generated only.
 """
 from __future__ import annotations
 
@@ -29,7 +31,7 @@ from .analysis import GameAnalyzer, recurring_weaknesses
 from .analysis import history, review
 from .analysis.analyzer import SCHEMA_VERSION as ANALYSIS_VERSION
 from .analysis import personal_puzzles
-from .analysis.training import TrainingError, create_puzzle_plan, create_training_plan
+from .analysis.training import TrainingError, create_puzzle_plan, create_targeted_plan, create_training_plan
 from .engine import EngineUnavailable, get_engine
 from .games import store
 from .games.importers import PlayerNeeded, chesscom_api, get_importer
@@ -81,6 +83,7 @@ class PuzzleRequest(BaseModel):
     count: int = Field(3, ge=1, le=5)
     game_ids: list[str] | None = None
     username: str | None = None
+    fresh: bool = False  # True: only newly generated positions (skip the Puzzle Library)
 
 
 def _error(status: int, message: str, **extra) -> JSONResponse:
@@ -544,7 +547,105 @@ def training(body: TrainingRequest):
 
 @router.post("/puzzles")
 def puzzles(body: PuzzleRequest):
-    """New puzzles for one weakness, streamed (NDJSON) while they are generated and checked:
+    """Targeted puzzles for one weakness (NDJSON). Library first; only the shortfall is generated.
+
+    {"type": "status", "text"} · {"type": "puzzle", "id", "title", "concept"} (each generated one) ·
+    {"type": "done", "plan", "course_id", "first_lesson_id", "library", "reused", "new", "rejected",
+     "attempts"} · {"type": "error", "error"}
+    The plan carries `puzzles` (why each one) and `debug` (USER WEAKNESS / SOURCE / LIBRARY MATCH /
+    CUSTOM GENERATION / PUZZLE VALIDATION).
+    """
+    if body.fresh:
+        return _fresh_puzzles(body)
+    from .knowledge.generation.log import get_log
+    from .knowledge.difficulty import puzzle_rating
+    from .knowledge.usage import get_usage
+    from .learner import get_profile
+    from .lessons import get_library
+    from .planner.store import register_record, save_record
+    from .puzzles import get_puzzles
+    from .puzzles.personal import debug_block, library_selection
+
+    found, err = _find_weaknesses([body.key], body.game_ids, body.username)
+    if err is not None:
+        return err
+    docs, (weakness,) = found
+    library = _knowledge()
+    usage = get_usage()
+    selection = library_selection(weakness, library, body.count, profile=get_profile(), usage=usage,
+                                  shown=get_log().shown())
+    picks = []
+    for c in (selection.chosen if selection else []):
+        ex = library.get(c.puzzle.id)
+        if ex is not None:
+            picks.append((ex, "personal" if c.puzzle.tier == "personal" else "library", c.reasons))
+    need = body.count - len(picks)
+    can_generate = personal_puzzles.supported_weakness(weakness)
+    if not picks and not can_generate:
+        return _error(422, f"I have no verified puzzles for “{weakness['title']}” yet and can't build new puzzles "
+                           "for it — try the training plan, which uses verified examples and your own positions.")
+    engine = None
+    if need > 0 and can_generate:
+        try:
+            engine = get_engine()
+        except EngineUnavailable as exc:
+            if not picks:
+                return _error(503, f"New puzzles have to be checked by Stockfish, which isn't available: {exc}")
+
+    def events():
+        result = None
+        generation = {"needed": max(0, need), "generated": 0, "rejected": 0, "attempts": 0,
+                      "status": "not needed" if need <= 0 else "unsupported weakness" if not can_generate
+                      else "engine unavailable" if engine is None else "ran"}
+        title = weakness["title"].lower()
+        if picks:
+            yield {"type": "status", "text": f"Found {len(picks)} verified puzzle{'s' if len(picks) != 1 else ''} for "
+                                             f"“{title}” at your level."}
+        if engine is not None:
+            yield {"type": "status", "text": f"Building {need} more position{'s' if need != 1 else ''} for “{title}” "
+                                             "and checking each with Stockfish…"}
+            try:
+                result = personal_puzzles.generate_for(weakness, library, engine, count=need, username=body.username)
+            except Exception as exc:  # generation failing must not lose the library puzzles
+                generation["status"] = f"failed: {exc}"
+                yield {"type": "status", "text": f"Building new positions failed: {exc}"}
+            else:
+                generation.update(generated=len(result.accepted), rejected=len(result.rejected),
+                                  attempts=result.attempts)
+                for ex in result.accepted:
+                    yield {"type": "puzzle", "id": ex.id, "title": ex.title, "concept": ex.concept}
+                    picks.append((ex, "generated", [f"Built for your {title} weakness: the library had no more "
+                                                    "puzzles that fit", "New to you"]))
+        if not picks:
+            yield {"type": "error", "error": "None of the positions I built passed every check in time, so I'm "
+                                             "not showing any. Try again — each attempt uses new positions."}
+            return
+        picks.sort(key=lambda t: (puzzle_rating(t[0]), t[0].id))  # easy -> hard
+        record = create_targeted_plan(weakness, picks, len(docs), library)
+        examples = [ex for ex, _o, _r in picks]
+        origins = {ex.id: o for ex, o, _r in picks}
+        record["plan"]["debug"] = debug_block(weakness, len(docs), selection, generation, examples, origins,
+                                              knowledge=library)
+        get_puzzles(library)  # index the new personal entries
+        try:
+            usage.record_used(examples)
+        except OSError:
+            pass
+        get_log().mark_shown([ex.id for ex, o, _r in picks if o != "library"])
+        register_record(get_library(), record)
+        save_record(record)
+        yield {"type": "done", "plan": record["plan"], "course_id": record["course"]["id"],
+               "first_lesson_id": record["lessons"][0]["id"],
+               "library": sum(1 for _e, o, _r in picks if o == "library"),
+               "reused": sum(1 for _e, o, _r in picks if o == "personal"),
+               "new": sum(1 for _e, o, _r in picks if o == "generated"),
+               "rejected": generation["rejected"], "attempts": generation["attempts"]}
+
+    return _ndjson(events())
+
+
+def _fresh_puzzles(body: PuzzleRequest):
+    """Only newly generated positions for one weakness, streamed (NDJSON) while they are generated and checked:
 
     {"type": "status", "text"} · {"type": "puzzle", "id", "title", "concept"} ·
     {"type": "done", "plan", "course_id", "first_lesson_id", "new", "reused", "rejected", "attempts"} ·

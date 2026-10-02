@@ -5,6 +5,7 @@ against the session's `chess.Board` before any engine or teacher is involved.
 """
 from __future__ import annotations
 
+import time
 import uuid
 from dataclasses import dataclass, field, replace
 
@@ -127,6 +128,8 @@ class SessionManager:
             session.board = chess_system.parse_fen(step.fen)
         elif isinstance(step, ExerciseStep):
             session.board = chess_system.parse_fen(step.fen)
+            # puzzle timing: the clock starts at the example's first exercise step
+            self._example_state(session, step).setdefault("started", time.monotonic())
 
     def steps(self, session: Session) -> list:
         return session.steps or self.lesson(session).steps
@@ -532,6 +535,14 @@ class SessionManager:
                                                             hints=hints, revealed=revealed,
                                                             learner_moves=len(idx)))
         score = recorded["score"] if recorded else 0.0
+        if example is not None:
+            started = state.get("started")
+            seconds = round(time.monotonic() - started, 1) if started is not None else None
+            try:
+                self._usage().record_resolved(example.id, solved, first_try, hints=hints, seconds=seconds,
+                                              revealed=revealed, concept=concept)
+            except OSError:
+                pass
         outcome = Outcome(key, concept, rating, score, learner_moves=len(idx), wrong=wrong, hints=hints,
                           revealed=revealed, key_found=bool(state.get("key_found")))
         session.outcomes.append(outcome)

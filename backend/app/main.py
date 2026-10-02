@@ -456,6 +456,10 @@ from .tts_api import router as tts_router  # noqa: E402
 
 app.include_router(tts_router)
 
+from .puzzle_api import router as puzzle_router  # noqa: E402
+
+app.include_router(puzzle_router)
+
 
 # --- frontend -------------------------------------------------------------
 
