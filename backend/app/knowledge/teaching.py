@@ -69,6 +69,15 @@ def key_note(kind: str, f: dict) -> str | None:
     if kind == "pawn_breakthrough":
         return (f"Breakthrough: {_list(f['sacrifices'])} give{'s' if len(f['sacrifices']) == 1 else ''} up "
                 f"material to break the pawn chain, and {f['promotes']} promotes.")
+    if kind == "double_attack":
+        (a, b) = f["attacks"][:2]
+        if a["by"]["square"] == b["by"]["square"]:
+            return f"Double attack: after {f['move']} the {_p(a['by'])} attacks the {_p(a['target'])} and the {_p(b['target'])}."
+        return (f"Double attack: after {f['move']} the {_p(a['by'])} attacks the {_p(a['target'])} and the "
+                f"{_p(b['by'])} attacks the {_p(b['target'])}. Only one threat can be met.")
+    if kind == "parries_threat":
+        t = f["threat"]
+        return f"{f['move']} deals with the threat: the {_p(t['attacker'])} was after the {_p(t['target'])}."
     if kind == "x_ray":
         return (f"X-ray: the {_p(f['slider'])} is lined up through the {_p(f['through'])}. Once that piece is "
                 f"gone, the line is open and {f['capture']} lands on {f['square']}.")
@@ -85,11 +94,11 @@ def key_note(kind: str, f: dict) -> str | None:
         return (f"Zugzwang: {f['move']} is a quiet move — no capture, no check. But now the opponent has to "
                 f"move, and every move makes their position worse.")
     if kind == "perpetual_check":
-        return (f"Perpetual check: {_list(f['checks'])}. {f['side']} is {f['behind_by']} points behind, but "
-                f"the king can't get away from the checks, so the game is drawn.")
+        return (f"Perpetual check: {_list(f['checks'])}. {_side(f['side'])} is {f['behind_by']} points behind, "
+                f"but the king can't get away from the checks.")
     if kind == "stalemate_trick":
-        return (f"Stalemate trick: after {f['final_move']} {f['stalemated']} has no legal move and is not in "
-                f"check. Stalemate is a draw, although {f['side']} was {f['behind_by']} points behind.")
+        return (f"Stalemate trick: after {f['final_move']} {_side(f['stalemated'])} has no legal move and is not "
+                f"in check. Stalemate is a draw, although {_side(f['side'])} was {f['behind_by']} points behind.")
     if kind == "stalemate_trap":
         return (f"Careful: {_list(f['stalemating_moves'])} would be stalemate. {f['key_move']} leaves the "
                 f"opponent a move and keeps the win.")
@@ -146,6 +155,12 @@ def hints(kind: str, f: dict, concept_hint: str | None = None) -> list[str]:
         out.append("Which of your pawns is furthest away from all the others? Use it to pull the enemy king away.")
     elif kind == "pawn_breakthrough":
         out.append("Your pawns face a wall of enemy pawns. Can a sacrifice open a path for one of them?")
+    elif kind == "double_attack":
+        out.append("Can one move create two threats at once?")
+        out.append("Look for a move that attacks the " + _list(sorted({a["target"]["piece"] for a in f["attacks"][:2]})) + ".")
+    elif kind == "parries_threat":
+        out.append("Before you look for your own ideas: what does your opponent threaten right now?")
+        out.append(f"Look at your {f['threat']['target']['piece']} on {f['threat']['target']['square']}.")
     elif kind == "x_ray":
         out.append("One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?")
         out.append(f"Look at the line from your {f['slider']['piece']} on {f['slider']['square']}.")

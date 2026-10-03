@@ -53,8 +53,16 @@ def jobs(all_themes: list[str]) -> dict[str, list[tuple[str, str, dict, str]]]:
                          for t in ("hangingPiece", "fork", "crushing", "opening")],
         "poisonedPawn": [(t, "poisoned_pawn", {}, MISTAKE)
                          for t in ("opening", "crushing", "advantage", "trappedPiece", "hangingPiece")],
-        "earlyQueen": every("early_queen", mode=MISTAKE),
     }
+
+
+# subsets by Lichess's own tags, written next to their parent: zugzwangs that win (the engine
+# profile asks for a clear win; drawing zugzwangs are refused anyway), and checks that save a level
+# position (not a mating attack).
+TAG_SUBSETS = {
+    "zugzwangWin": ("zugzwangQuiet", lambda tags: bool(tags & {"crushing", "advantage", "mate"})),
+    "perpetualDraw": ("perpetual", lambda tags: "equality" in tags and not any(t.startswith("mate") for t in tags)),
+}
 
 
 def load(src: Path, theme: str, cache: dict) -> list:
@@ -115,6 +123,12 @@ def main() -> None:
         with open(dst / f"{key}.csv", "w", newline="", encoding="utf-8") as fh:
             csv.writer(fh).writerows(keep)
         print(f"{key:18s} {len(keep):5d}  {dict(hits)}", flush=True)
+        for sub, (parent, wanted) in TAG_SUBSETS.items():
+            if parent == key:
+                rows = [row for row in keep if wanted(set(row[1].split()))]
+                with open(dst / f"{sub}.csv", "w", newline="", encoding="utf-8") as fh:
+                    csv.writer(fh).writerows(rows)
+                print(f"{sub:18s} {len(rows):5d}  (subset of {key})", flush=True)
 
 
 if __name__ == "__main__":

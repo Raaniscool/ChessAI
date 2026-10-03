@@ -198,6 +198,9 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict, requ
         facts = None  # the pipeline will reject it and report why
         if require_facts:
             return None  # the expansion only proposes positions that show the idea
+    if facts is not None and concept == "spotting_threats" and (
+            rep.boards[key_ply + 1].is_check() or rep.final.is_checkmate()):
+        return None  # answering a threat with a check or a mate is not the defensive lesson
     if facts is not None:
         concept, kind, facts = _refine(concept, kind, facts, ctx, library)
     name = library.concepts[concept].name
@@ -224,7 +227,7 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict, requ
         outcome = "The line ends in stalemate: a draw."
         notes.setdefault(rep.labels[-1], "Stalemate: a draw.")
     elif concept == "perpetual_check":
-        outcome = "The checks can't be escaped, so the game is drawn."
+        outcome = "The game is drawn."
     elif final.is_checkmate():
         outcome = "The line ends in checkmate."
         if len(sans) - 1 > key_ply:
@@ -296,7 +299,9 @@ def mistake_candidates(library, per_concept: int = 3, exclude: set[str] | None =
 # elsewhere on the board, not weakened king shelters.
 EXPANSION_MISTAKE_THEMES = {"backRankMate": "back_rank_weakness", "attackingF2F7": "missed_threat",
                             "exposedKing": "missed_threat", "hangingQueen": "hanging_queen",
-                            "poisonedPawn": "poisoned_pawn", "earlyQueen": "early_queen"}
+                            "poisonedPawn": "poisoned_pawn"}
+# (no "early queen" from Lichess: a puzzle starts mid-game, so it can't show that the queen came out
+# early — the one candidate was a pinned queen. Early-queen examples are curated whole games.)
 
 
 def _threat_was_real(puzzle: dict) -> bool:

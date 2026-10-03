@@ -25,7 +25,8 @@ STRUGGLE_ATTEMPTS = 3  # puzzle-based cards need this many recent attempts in a 
 STRUGGLE_MEAN = 0.5    # ... and a recent average score below this
 TIER_WEIGHT = {"recurring": 1.0, "occasional": 0.6}
 THEMES = [  # (concept id, label) in display order
-    ("fork", "Forks"), ("pin", "Pins"), ("skewer", "Skewers"), ("discovered_attack", "Discovered attacks"),
+    ("fork", "Forks"), ("pin", "Pins"), ("skewer", "Skewers"), ("x_ray", "X-rays"),
+    ("discovered_attack", "Discovered attacks"),
     ("checkmate", "Checkmates"), ("hanging_piece", "Hanging pieces"), ("beginner_mistakes", "Punishing mistakes"),
     ("spotting_threats", "Defending"), ("deflection", "Deflection"), ("removing_defender", "Removing the defender"),
     ("overloaded_piece", "Overloaded pieces"), ("attraction", "Decoys"), ("clearance", "Clearance"),

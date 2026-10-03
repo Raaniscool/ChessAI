@@ -883,5 +883,51 @@
    "import_date": "2026-10-03"
   },
   "category": "endgames"
+ },
+ {
+  "id": "endgame_perpetual_queen_g5_f6",
+  "title": "Perpetual check: the queen between g5 and f6",
+  "concept": "perpetual_check",
+  "difficulty": 2,
+  "description": "White is a rook behind and Black threatens to take everything on White's second rank. But Black's king has no g-pawn.",
+  "start_fen": "5rk1/5p1p/8/8/8/8/rr1Q1PPP/6K1 w - - 0 1",
+  "moves": [
+   "Qg5+",
+   "Kh8",
+   "Qf6+",
+   "Kg8",
+   "Qg5+",
+   "Kh8",
+   "Qf6+"
+  ],
+  "key_move": "1.Qg5+",
+  "prompt": "White to move. You are behind on material. Find the way to save the game.",
+  "hints": [
+   "Black's king has lost its g-pawn. Which checks does that allow?",
+   "Two squares, one after the other: the king can never escape."
+  ],
+  "notes": {
+   "1.Qg5+": "Check on the open g-file.",
+   "2.Qf6+": "Check on the long diagonal: the king has to go back to g8.",
+   "4.Qf6+": "The same checks again: a draw."
+  },
+  "explanation": "White is a rook behind, so a slow move loses. Without its g-pawn Black's king has no shelter: Qg5+ drives it to h8, Qf6+ sends it back to g8, and the queen can repeat these two checks forever. Nothing can block on g6, g7 or f6 in time, so the game is drawn.",
+  "tags": [
+   "endgame",
+   "perpetual check",
+   "draw",
+   "saving a lost position"
+  ],
+  "prerequisites": [
+   "check"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "perpetual-queen-g5-f6",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Perpetual check against a king without its g-pawn (standard drawing pattern); Stockfish 19: only 1.Qg5+ draws (0.00), other moves lose",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
  }
 ]

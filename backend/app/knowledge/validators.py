@@ -1675,8 +1675,8 @@ def v_desperado(ctx: Ctx, params: dict) -> dict:
         board, mv = r.boards[i], r.moves[i]
         piece = board.piece_at(mv.from_square)
         victim = board.piece_at(mv.to_square)
-        if piece.piece_type in (chess.KING, chess.PAWN) or victim is None:
-            continue
+        if piece.piece_type in (chess.KING, chess.PAWN) or victim is None or board.is_check():
+            continue  # (taking the checking piece is answering a check, not a desperado)
         if VALUES[victim.piece_type] > VALUES[piece.piece_type]:
             continue  # taking something bigger is simply winning material, not a desperado
         attackers = board.attackers(not color, mv.from_square)
@@ -1700,6 +1700,8 @@ def v_zugzwang(ctx: Ctx, params: dict) -> dict:
     if i + 1 >= len(r.moves):
         raise Fail("show the opponent's forced reply after the quiet move")
     board, mv = r.boards[i], r.moves[i]
+    if board.is_check():
+        raise Fail("the learner is in check: getting out of check doesn't hand the opponent the move")
     if board.is_capture(mv) or r.boards[i + 1].is_check():
         raise Fail("the key move of a zugzwang is a quiet move, not a capture or a check")
     return {"move": ctx.label(i), "forced_reply": ctx.label(i + 1), "side": _side_name(board.turn)}
@@ -1717,6 +1719,8 @@ def v_perpetual_check(ctx: Ctx, params: dict) -> dict:
         raise Fail("a perpetual saves a lost game: the learner should be clearly behind")
     if len(plies) < 2 or not all(r.boards[i + 1].is_check() for i in plies):
         raise Fail("every learner move of a perpetual is a check (at least two)")
+    if _balance(r.final, color) > -3:
+        raise Fail("the learner wins the material back: the draw doesn't come from the checks")
     return {"checks": [ctx.label(i) for i in plies], "behind_by": -_balance(r.boards[start], color),
             "side": _side_name(color)}
 
