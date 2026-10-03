@@ -31,6 +31,9 @@ THEMES = [  # (concept id, label) in display order
     ("overloaded_piece", "Overloaded pieces"), ("trapped_piece", "Trapped pieces"), ("sacrifice", "Sacrifices"),
     ("zwischenzug", "In-between moves"), ("endgames", "Endgames"), ("tactics", "Mixed tactics"),
 ]
+# Mixed practice: the point is to recognise the idea yourself, so its puzzles don't name their
+# concept before they are solved (the solver hides it; every other set shows it).
+MIXED_THEMES = {"tactics"}
 NEUTRAL_OBJECTIVE = "Find the best move"
 OBJECTIVE_TEXT = {"material": "Win material", "defense": "Defend against the threat", "idea": "Find the best move"}
 
@@ -65,7 +68,7 @@ def themes(pool, knowledge) -> list[dict]:
     for cid, label in THEMES:
         n = len(matching(pool, knowledge, cid, THEME_RELEVANCE))
         if n >= MIN_THEME:
-            out.append({"concept": cid, "label": label, "count": n})
+            out.append({"concept": cid, "label": label, "count": n, "mixed": cid in MIXED_THEMES})
     return out
 
 

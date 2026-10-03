@@ -106,3 +106,58 @@ def test_clean_solves_lower_a_weakness_and_failures_raise_it(client):  # noqa: F
     for _ in range(4):
         client.post("/api/puzzles/test_knight_fork_2/result", json={"solved": False, "mistakes": 2})
     assert priority() > improved
+
+
+# --- continuous sessions (POST /api/puzzles/next) and Mixed practice ---------------------------
+def test_continuous_practice_never_runs_dry(client, monkeypatch):  # noqa: F811
+    import app.analysis.personal_puzzles as pp
+    calls = []
+    monkeypatch.setattr(pp, "generate_for", lambda *a, **k: calls.append(a[0]) or GenerationResult("knight_fork",
+                                                                                                    attempts=1))
+    first = client.post("/api/puzzles/set", json={"mode": "practice", "concept": "fork", "count": 2}).json()
+    session = [p["id"] for p in first["puzzles"]]
+    done = [{"id": pid, "solved": True, "first_try": True, "hints": 0, "revealed": False, "seconds": 9}
+            for pid in session]
+    # the next one: the same selection, never a puzzle already in the session
+    nxt = client.post("/api/puzzles/next", json={"mode": "practice", "concept": "fork", "count": 3,
+                                                 "exclude": session, "done": done}).json()
+    fresh = [p["id"] for p in nxt["puzzles"]]
+    assert fresh and not set(fresh) & set(session) and nxt["mixed"] is False
+    assert nxt["session"]["shift"] == 100   # two instant solves: this session steps up (learner.difficulty)
+    session += fresh
+    # the library theme is used up: verified generation is tried, then earlier puzzles come back
+    more = client.post("/api/puzzles/next", json={"mode": "practice", "concept": "fork", "count": 3,
+                                                  "exclude": session, "done": done}).json()
+    assert calls and calls[-1]["key"] == "practice:fork"   # the shortfall path ran first
+    ids = [p["id"] for p in more["puzzles"]]
+    assert ids and session[-1] not in ids                   # never the puzzle just played
+    assert all("Review" in r for p in more["puzzles"] for r in p["reasons"][:1])
+
+
+def test_continuous_personalized_session_keeps_the_weakness(client, monkeypatch):  # noqa: F811
+    import app.analysis.personal_puzzles as pp
+    monkeypatch.setattr(pp, "generate_for", lambda *a, **k: GenerationResult("knight_fork", attempts=1))
+    _analyzed(client)
+    first = client.post("/api/puzzles/set", json={"mode": "personalized", "weakness": "knight_fork", "count": 5}).json()
+    session = [p["id"] for p in first["puzzles"]]
+    for _ in range(3):
+        nxt = client.post("/api/puzzles/next", json={"mode": "personalized", "weakness": "knight_fork",
+                                                     "exclude": session, "count": 2})
+        assert nxt.status_code == 200, nxt.json()
+        body = nxt.json()
+        assert body["puzzles"] and all(p["concept"] == "knight_fork" for p in body["puzzles"])
+        assert session[-1] not in [p["id"] for p in body["puzzles"]]
+        assert not any(p["id"].startswith("game:") for p in body["puzzles"])   # your game: once, at the start
+        session += [p["id"] for p in body["puzzles"]]
+
+
+def test_only_mixed_practice_is_flagged_to_hide_the_concept(client):  # noqa: F811
+    from app.puzzles.dashboard import MIXED_THEMES
+    dash = client.get("/api/puzzles/dashboard").json()
+    assert all(t["mixed"] == (t["concept"] in MIXED_THEMES) for t in dash["practice"])
+    assert MIXED_THEMES == {"tactics"}
+    mixed = client.post("/api/puzzles/set", json={"mode": "practice", "concept": "tactics", "count": 2}).json()
+    forks = client.post("/api/puzzles/set", json={"mode": "practice", "concept": "fork", "count": 2}).json()
+    assert mixed["mixed"] is True and forks["mixed"] is False
+    # the concept stays in the payload either way (stats, selection, the post-solve reveal)
+    assert all(p["reveal"]["concept_name"] for p in mixed["puzzles"])

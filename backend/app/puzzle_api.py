@@ -9,6 +9,14 @@
                                                   mode "personalized": for a weakness (default: the
                                                   main one); library first, then strictly verified
                                                   generation when the library runs short
+    POST /api/puzzles/next {mode, concept?, weakness?, exclude, done, count}
+                                               -> the next puzzles of a continuous session: same
+                                                  selection as /set (weakness, concept skill,
+                                                  calibration + this session's results, library
+                                                  first, then verified generation), never one
+                                                  already in the session; when everything fitting
+                                                  has been played, earlier ones come back for
+                                                  review rather than the session ending
     POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds,
                                    revealed}   -> records the outcome (puzzle stats + learner model)
     POST /api/puzzles/adapt {mode, concept?, weakness?, done, remaining, set_ids}
@@ -68,6 +76,24 @@ class SetRequest(BaseModel):
     count: int = Field(5, ge=1, le=10)
     generate: bool = True
     username: str | None = None
+    # continuous sessions (POST /next): what the session already holds and how it went
+    exclude: list[str] = Field(default_factory=list)
+    done: list[dict] = Field(default_factory=list)
+    continuation: bool = False
+
+
+class NextRequest(BaseModel):
+    mode: Literal["personalized", "practice"] = "personalized"
+    concept: str | None = None
+    weakness: str | None = None
+    username: str | None = None
+    count: int = Field(3, ge=1, le=10)
+    exclude: list[str] = Field(default_factory=list)   # every puzzle already in this session
+    done: list[dict] = Field(default_factory=list)     # finished puzzles of this session, in order
+    generate: bool = True
+
+
+REVIEW_WINDOW = 12  # a review puzzle is never one of the last this many of the session
 
 
 class ResultRequest(BaseModel):
@@ -164,12 +190,14 @@ def puzzle_set(body: SetRequest):
     from .puzzles.from_game import pick as pick_game
     from .puzzles.personal import _SeenUsage, debug_block, library_selection, own_boards
     from .puzzles.progression import ladder
-    from .learner.difficulty import for_learner
+    from .learner.difficulty import for_learner, session_shift
 
     knowledge = _knowledge()
     profile, usage, log = get_profile(), get_usage(), get_log()
     index = get_puzzles(knowledge)
     shown = log.shown()
+    exclude = set(body.exclude)
+    shift, shift_reason = session_shift(body.done) if body.continuation else (0, None)
     weakness, total_games, generation = None, 0, {"needed": 0, "generated": 0, "rejected": 0, "attempts": 0,
                                                   "status": "not needed"}
     items: list[dict] = []
@@ -181,15 +209,22 @@ def puzzle_set(body: SetRequest):
         pool = theme_pool(candidates(index.all()), knowledge, concept, body.count)
         seen = _SeenUsage(usage, shown)
         lad = ladder(pool, seen.puzzle_stats)
-        calibration = for_learner(knowledge, profile, usage).target(concept, knowledge)
+        calibration = for_learner(knowledge, profile, usage).target(concept, knowledge, shift)
         selection = select(pool, knowledge, concept, count=body.count, profile=profile, usage=seen, bonus=lad.bonus,
-                           calibration=calibration)
+                           calibration=calibration, exclude=exclude)
         selection.ladder = lad.as_dict()
         title = f"Practice: {knowledge.concepts[concept].name}"
         items = [{"puzzle": c.puzzle, "example": knowledge.get(c.puzzle.id), "reasons": c.reasons,
                   "origin": "personal" if c.puzzle.tier == "personal" else "library", "role": "practice",
                   "why": None} for c in selection.chosen if c.puzzle.clear_start]
         items = [it for it in items if it["example"] is not None]
+        if not items and body.continuation and body.generate:
+            # the theme's library puzzles are used up for now: strictly verified new ones
+            theme = {"key": f"practice:{concept}", "concept": concept, "title": knowledge.concepts[concept].name,
+                     "evidence": []}
+            generated, generation = _generate(theme, knowledge, body.count, body, index)
+            items = [{**it, "role": "practice", "why": None, "reasons": ["New puzzle, verified by Stockfish"]}
+                     for it in generated if it["puzzle"].id not in exclude]
         items.sort(key=lambda it: (it["puzzle"].rating, it["puzzle"].id))
     else:
         key = body.weakness
@@ -212,7 +247,9 @@ def puzzle_set(body: SetRequest):
         engine = _LazyEngine()
         # A. the learner's own mistake, re-verified (only for weaknesses found in their games)
         game_puzzle, trail = (pick_game(weakness, engine if body.generate else None, usage)
-                              if weakness["evidence"] else (None, []))
+                              if weakness["evidence"] and not body.continuation else (None, []))
+        if game_puzzle is not None and game_puzzle.id in exclude:
+            game_puzzle = None
         extra_debug["your_game"] = {"used": game_puzzle.id if game_puzzle else None, "trail": trail}
         if game_puzzle is not None:
             items.append({"puzzle": game_puzzle, "example": None, "role": "your_game", "origin": "your_game",
@@ -220,7 +257,8 @@ def puzzle_set(body: SetRequest):
         wants_defend = sets.walked_into(weakness) and body.count >= 4 and not key.startswith("puzzles:")
         skill_count = max(1, body.count - len(items) - (1 if wants_defend else 0))
         # B. verified library puzzles of exactly this skill (easy -> hard, progression-aware)
-        selection = library_selection(weakness, knowledge, skill_count, profile=profile, usage=usage, shown=shown)
+        selection = library_selection(weakness, knowledge, skill_count, profile=profile, usage=usage, shown=shown,
+                                      exclude=exclude, session_shift=shift)
         target = selection.target_rating if selection else 1200
         for c in (selection.chosen if selection else []):
             ex = knowledge.get(c.puzzle.id)
@@ -232,19 +270,24 @@ def puzzle_set(body: SetRequest):
         if not key.startswith("puzzles:") and body.generate \
                 and len(skill_items) < min(skill_count, MIN_LIBRARY_BEFORE_GENERATING):
             generated, generation = _generate(weakness, knowledge, skill_count - len(skill_items), body, index)
-            items += [{**it, "role": sets.role_for(it["puzzle"], target)} for it in generated]
+            items += [{**it, "role": sets.role_for(it["puzzle"], target)} for it in generated
+                      if it["puzzle"].id not in exclude]
         # the defensive version, for weaknesses the learner walked into
         if wants_defend:
             avoid = own_boards(weakness) | {it["puzzle"].fen.split(" ")[0] for it in items}
             defend, extra_debug["defend"] = sets.defend_item(
                 weakness, knowledge, index, usage, shown, target, avoid,
                 engine=engine if body.generate else None, username=body.username)
-            if defend is not None:
+            if defend is not None and defend["puzzle"].id not in exclude:
                 items.append({**defend, "reasons": ["The defensive side of the same weakness"]})
         for it in items:
             it["why"] = sets.why(weakness, it["role"], it["puzzle"])
             it["why_after"] = sets.why_after(weakness, it["role"], it["puzzle"])
         items = sets.order(items)
+    if not items and body.continuation:
+        # nothing new fits right now (library and generation): bring back earlier puzzles for
+        # review rather than ending the session — never one of the session's last few
+        items = _review_items(body, knowledge, index, concept, weakness, selection)
     if not items:
         return _error(422, f"No verified puzzles for {title.lower()} right now — you've seen them all recently. "
                            "Try another theme, or come back tomorrow.")
@@ -253,7 +296,10 @@ def puzzle_set(body: SetRequest):
     except OSError:
         pass
     log.mark_shown([it["puzzle"].id for it in items if it["origin"] not in ("library", "your_game")])
+    from .puzzles.dashboard import MIXED_THEMES
     out = {"mode": body.mode, "concept": concept, "title": title, "weakness": weakness and weakness["key"],
+           "mixed": body.mode == "practice" and concept in MIXED_THEMES,
+           "session": {"shift": shift, "reason": shift_reason} if body.continuation else None,
            "ladder": selection.ladder if selection else None,
            "difficulty": _difficulty_brief(selection.calibration if selection else None),
            "puzzles": [payload(it["puzzle"], it["example"], knowledge, it["reasons"], it["origin"],
@@ -264,6 +310,45 @@ def puzzle_set(body: SetRequest):
         out["debug"] = debug_block(weakness, total_games, selection, generation, examples,
                                    {it["puzzle"].id: it["origin"] for it in items}, knowledge=knowledge,
                                    extra={**extra_debug, "roles": {it["puzzle"].id: it["role"] for it in items}})
+    return out
+
+
+@router.post("/next")
+def puzzle_next(body: NextRequest):
+    """The next puzzles of a continuous session (see the module docstring). Same rules as /set."""
+    return puzzle_set(SetRequest(mode=body.mode, concept=body.concept, weakness=body.weakness, count=body.count,
+                                 generate=body.generate, username=body.username, exclude=body.exclude,
+                                 done=body.done, continuation=True))
+
+
+def _review_items(body, knowledge, index, concept: str, weakness: dict | None, selection) -> list[dict]:
+    """Earlier puzzles of this skill, nearest the learner's level, least recently played first."""
+    from .puzzles import sets
+    from .puzzles.dashboard import candidates, matching
+    recent = set(body.exclude[-REVIEW_WINDOW:])
+    if weakness is not None:
+        from .puzzles.personal import own_boards
+        from .puzzles.skill import split
+        mine = own_boards(weakness)
+        pool, _o, _p = split([p for p in candidates(index.all()) if p.fen.split(" ")[0] not in mine], concept,
+                             knowledge)
+    else:
+        pool = matching(candidates(index.all()), knowledge, concept)
+    pool = [p for p in pool if knowledge.get(p.id) is not None]
+    fresh = [p for p in pool if p.id not in recent]
+    if not fresh:  # a tiny theme: anything but the puzzle just played
+        last = body.exclude[-1:] or []
+        fresh = [p for p in pool if p.id not in last]
+    order = {pid: i for i, pid in enumerate(body.exclude)}
+    target = selection.target_rating if selection else 1200
+    fresh.sort(key=lambda p: (order.get(p.id, -1), abs(p.rating - target), p.id))
+    out = []
+    for p in fresh[:body.count]:
+        role = sets.role_for(p, target) if weakness is not None else "practice"
+        out.append({"puzzle": p, "example": knowledge.get(p.id), "origin": "library", "role": role,
+                    "reasons": ["Review: a puzzle from earlier — new ones for this theme are used up for now"],
+                    "why": sets.why(weakness, role, p) if weakness is not None else None,
+                    "why_after": sets.why_after(weakness, role, p) if weakness is not None else None})
     return out
 
 
