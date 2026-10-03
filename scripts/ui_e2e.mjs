@@ -96,6 +96,7 @@ async function wrongMove(p) {
 }
 
 // While solving, earlier positions are for looking: no moves there; → gets back to the puzzle.
+let midReviewed = false
 async function reviewMidPuzzle() {
   const latest = board.getPosition()
   $("nav-prev").click()
@@ -104,6 +105,7 @@ async function reviewMidPuzzle() {
     $("board-status").textContent)
   $("nav-next").click()
   await waitFor(() => board.getPosition() === latest && board.isMoveInputEnabled(), "nav: back to the puzzle", 5000)
+  midReviewed = true
 }
 
 // P) Puzzles tab — usable on its own, before any game analysis or lesson
@@ -201,6 +203,22 @@ $("pz-mode-practice").click()
   check(board.getArrows().length === 1, "arrows: drawing the same arrow again removes it")
   fire(empty[3], "mousedown", 0); fire(empty[3], "mouseup", 0)
   check(board.getArrows().length === 0 && board.getPosition() === endFen, "arrows: a left click clears them")
+  // The mid-puzzle ← check needs a puzzle of 2+ moves. Which puzzles come first depends on the
+  // library, so when both above were one-movers, open a longer one from the same set.
+  if (!midReviewed) {
+    let multi = null
+    for (const item of $("pz-set").querySelectorAll(".pz-item")) {
+      if (item.classList.contains("solved") || item.classList.contains("failed")) continue
+      const d = await puzzleData(item.dataset.id)
+      if (d.steps.length > 1) { multi = {item, d}; break }
+    }
+    check(!!multi, "nav: the set has a puzzle of 2+ moves for the mid-puzzle check")
+    multi.item.click()
+    await waitFor(() => puzzleNow() === multi.d.id && board.state.moveInputCallback, "longer puzzle open", 10000)
+    await playStep(multi.d.steps[0], false)
+    await reviewMidPuzzle()
+  }
+  check(midReviewed, "nav: mid-puzzle review was exercised")
   $("pz-back").click()
   await waitFor(() => visible("pz-dashboard"), "back to the dashboard")
 }
@@ -473,6 +491,15 @@ $("chat-input").value = "show me why this move is bad"
 await sendChat()
 await waitFor(() => { const all = [...document.querySelectorAll("#messages .msg.assistant")]; const m = all.pop(); return all.length >= assistantBefore && m && !m.classList.contains("typing") && m.textContent.length > 10 }, "chat reply", 90000)
 check((await planIds()).length === before, "'show me why…' is answered in the chat, not turned into a plan")
+// Explanation requests (learner.help): only the explicit asks count. That is the one "Explain this
+// example" click and the chat questions ("show me why…"; with Qwen on also "Why is the pawn good on
+// e4?"). Instant feedback, automatic AI explanations, hints and revealed solutions never count.
+{
+  const prof = (await (await realFetch(new URL("api/profile", BASE))).json()).profile
+  const ex = prof.stats.explanations || {}
+  check(ex.explain === 1 && ex.question === (qwenOn ? 2 : 1) && ex.deeper === 0,
+    "explanation requests: only the explicit asks are counted: " + JSON.stringify(ex))
+}
 
 // 10) Game Analysis: import Chess.com games, analyze with Stockfish, review, explain, train
 const pgnHead = (white, link, fen) => `[Event "Live Chess"]\n[Site "Chess.com"]\n[Date "2026.09.20"]\n[White "${white}"]\n` +
