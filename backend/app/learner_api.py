@@ -31,6 +31,7 @@ class Onboarding(BaseModel):
 class Preferences(BaseModel):
     explanation: str | None = None
     tts: dict | None = None           # {enabled, provider, voice, speed, read: {lessons, ...}}
+    board_sounds: bool | None = None  # move / capture / check sounds on the board
 
 
 def _library():
@@ -85,6 +86,8 @@ def put_preferences(body: Preferences):
             if body.explanation not in ("brief", "balanced", "detailed"):
                 raise ValueError("explanation must be brief, balanced or detailed")
             p.preferences["explanation"] = body.explanation
+        if body.board_sounds is not None:
+            p.preferences["board_sounds"] = bool(body.board_sounds)
         if body.tts is not None:
             p.preferences["tts"] = {**(p.preferences.get("tts") or {}), **clean_tts(body.tts)}
         p.touch()

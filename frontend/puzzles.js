@@ -10,7 +10,7 @@ const REVERT_DELAY = 550
 const SOLUTION_STEP = 700
 
 export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler,
-  escapeHtml, setStatus, nav = null, MoveHistory = null, showNode = null}) {
+  escapeHtml, setStatus, nav = null, MoveHistory = null, showNode = null, sounds = null}) {
   const $ = id => document.getElementById(id)
   const el = {
     title: $("pz-title"), counter: $("pz-counter"), dashboard: $("pz-dashboard"), solver: $("pz-solver"),
@@ -30,6 +30,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   const puzzle = () => view.set[view.pos]
   const orientation = () => (puzzle() && puzzle().side === "black" ? COLOR.black : COLOR.white)
   const show = (node, on) => node.classList.toggle("hidden", !on)
+  const sound = (move, chess) => { if (sounds && move) sounds.playMove(move, chess.fen()) }
 
   // ------------------------------------------------------------------ dashboard
   function setMode(mode) {
@@ -239,6 +240,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     const legal = chess.moves({square: from, verbose: true}).filter(m => m.to === to)
     if (!legal.length) return
     const move = chess.move({from, to, promotion: legal.some(m => m.promotion) ? "q" : undefined})
+    sound(move, chess)
     view.history.play(chess.fen(), move.from + move.to + (move.promotion || ""), move.san)
     view.explore = new Chess(chess.fen())
     nav.refresh()
@@ -299,7 +301,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     const p = puzzle()
     const token = view.token
     const trial = new Chess(view.chess.fen())
-    play(trial, uci)
+    sound(play(trial, uci), trial)   // the learner's move sounds once, right away (also when it's wrong)
     const r = judge(p, view.attempt, uci, {mate: trial.in_checkmate()})
     if (r.verdict === "wrong" || r.verdict === "good") {
       setInput(false)
@@ -328,6 +330,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     if (token !== view.token) return
     if (r.reply) {
       const reply = play(view.chess, r.reply)
+      sound(reply, view.chess)
       if (view.history) view.history.append(view.chess.fen(), r.reply, reply && reply.san)
       if (nav) nav.refresh()
       await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
@@ -425,6 +428,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
         const move = play(view.chess, uci)
         if (view.history) view.history.append(view.chess.fen(), uci, move && move.san)
         if (nav) nav.refresh()
+        sound(move, view.chess)
         await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
           highlights: [{square: uci.slice(0, 2), color: "green"}, {square: uci.slice(2, 4), color: "green"}]})
       }

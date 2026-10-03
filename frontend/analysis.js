@@ -22,7 +22,7 @@ const store = {
 
 export function setupGameAnalysis(ctx) {
   const {api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
-    setStatus, makeSpeakable, narrator, onTraining, nav = null, MoveHistory = null} = ctx
+    setStatus, makeSpeakable, narrator, onTraining, nav = null, MoveHistory = null, sounds = null} = ctx
 
   // ← → under the board step through what the review last put on it (board-nav.js).
   let lineRuns = 0  // the newest engine line owns the navigation lock
@@ -1066,7 +1066,8 @@ export function setupGameAnalysis(ctx) {
     track(m.fen_before, [m.best_move_uci])
     const chess = new Chess(m.fen_before)
     const u = m.best_move_uci
-    chess.move({from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] || "q"})
+    const best = chess.move({from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] || "q"})
+    if (sounds) sounds.playMove(best, chess.fen())
     await board.setPosition(chess.fen(), true)
     clearMarkers()
     mark(uciSquares(u), MARKER_TYPE.square)
@@ -1089,6 +1090,7 @@ export function setupGameAnalysis(ctx) {
         try { move = chess.move(line[i]) } catch (_) { move = null }
         if (!move) break
         if (h) { h.append(chess.fen(), move.from + move.to + (move.promotion || ""), move.san); nav.refresh() }
+        if (sounds) sounds.playMove(move, chess.fen())
         await board.setPosition(chess.fen(), true)
         clearMarkers()
         mark([move.from, move.to], i === 0 ? MARKER_TYPE.square : MARKER_TYPE.frame)

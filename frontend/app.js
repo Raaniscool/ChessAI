@@ -14,6 +14,7 @@ import {setupCoach} from "./coach.js"
 import {setupPuzzles} from "./puzzles.js"
 import {MoveHistory, createBoardNav, navKey} from "./board-nav.js"
 import {CalcArrows} from "./calc-arrows.js"
+import {createBoardSounds} from "./sounds.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -109,6 +110,9 @@ const board = new Chessboard(document.getElementById("board"), {
   // right-drag arrows for calculation: off while the AI is moving pieces by itself
   extensions: [{class: Markers, props: {}}, {class: CalcArrows, props: {isDisabled: () => Boolean(nav && nav.isLocked())}}],
 })
+
+// Move / capture / check sounds (sounds.js): played once where a move is made, never on redraws.
+const sounds = createBoardSounds()
 
 const HIGHLIGHT_MARKERS = {
   green: MARKER_TYPE.square,
@@ -289,6 +293,7 @@ async function handleUserMove(from, to) {
   const uci = from + to + (promotion || "")
   const fenBefore = state.chess.fen()
   const played = applyUci(state.chess, uci)
+  sounds.playMove(played, state.chess.fen())
   stopStream()
   narrator.stop()
 
@@ -707,6 +712,7 @@ async function playDemonstration() {
       const move = applyUci(demoChess, step.moves[i])
       lessonHistory.append(demoChess.fen(), step.moves[i], move && move.san)
       nav.refresh()
+      sounds.playMove(move, demoChess.fen())
       await board.setPosition(demoChess.fen(), true)
       const comment = step.comments && step.comments[i]
       if (comment) {
@@ -830,6 +836,7 @@ async function revealSolution() {
         lessonHistory.append(chess.fen(), res.uci, move.san)
         nav.refresh()
         await showPosition(state.step.board.fen, {orientation: board.getOrientation()})
+        sounds.playMove(move, chess.fen())
         await board.setPosition(chess.fen(), true)
         clearMarkers()
         board.addMarker(MARKER_TYPE.square, move.from)
@@ -1230,7 +1237,7 @@ async function loadHealth() {
 
 const gameAnalysis = setupGameAnalysis({
   api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
-  setStatus, makeSpeakable, narrator, nav, MoveHistory,
+  setStatus, makeSpeakable, narrator, nav, MoveHistory, sounds,
   // A training plan built from the learner's games is an ordinary plan: show it in the lessons view.
   onTraining: async res => {
     await switchView("lessons")
@@ -1241,7 +1248,7 @@ const gameAnalysis = setupGameAnalysis({
 
 const puzzles = setupPuzzles({
   api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler, escapeHtml, setStatus,
-  nav, MoveHistory, showNode,
+  nav, MoveHistory, showNode, sounds,
 })
 
 let lessonBoard = null  // what the lesson view showed, restored when coming back
@@ -1323,7 +1330,7 @@ document.getElementById("chat-input").addEventListener("keydown", e => {
   welcome.appendChild(suggestionChips(STARTERS.map(t => `I want to learn ${t.toLowerCase()}`), STARTERS))
   makeSpeakable(welcome)
 }
-const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escapeHtml,
+const coach = setupCoach({api, narrator, requestPlan, addMsg, messagesEl, escapeHtml, sounds,
   // the username from onboarding: one click from "thanks" to the learner's games being analyzed
   analyzeGames: async username => { await switchView("games"); await gameAnalysis.fetchFor(username) }})
 coach.init({

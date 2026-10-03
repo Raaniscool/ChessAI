@@ -252,6 +252,9 @@ def test_profile_api_preferences_reset_and_username_optional(client):  # noqa: F
     assert prefs["explanation"] == "brief" and prefs["tts"] == {"enabled": True, "speed": "fast",
                                                                  "voice": "af_heart", "read": {"hints": False}}
     assert client.put("/api/profile/preferences", json={"explanation": "loud"}).status_code == 422
+    r = client.put("/api/profile/preferences", json={"board_sounds": False}).json()
+    assert r["profile"]["preferences"]["board_sounds"] is False
+    assert r["profile"]["preferences"]["explanation"] == "brief"   # other settings are kept
     assert client.post("/api/profile/reset").json()["profile"]["new"]
 
 

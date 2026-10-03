@@ -371,6 +371,14 @@ export function setupCoach(deps) {
     narrator.save()
   }
 
+  /** Board sounds: the server's setting is used when this browser has never chosen. */
+  function adoptServerSounds() {
+    let local = null
+    try { local = localStorage.getItem("chessai.boardSounds") } catch (_) { /* ignore */ }
+    const server = state.profile && state.profile.preferences && state.profile.preferences.board_sounds
+    if (deps.sounds && local === null && typeof server === "boolean") deps.sounds.setEnabled(server)
+  }
+
   function voiceOptions(select) {
     select.innerHTML = ""
     const usable = ((state.tts && state.tts.providers) || []).filter(p => p.available && p.voices.length)
@@ -463,6 +471,19 @@ export function setupCoach(deps) {
     body.appendChild(el("div", "muted setting-note",
       "Move explanations are only read out when the move matters — not for every recapture."))
 
+    if (deps.sounds) {
+      body.appendChild(el("h3", "", "Board"))
+      const soundRow = el("label", "setting-row")
+      const sound = el("input"); sound.type = "checkbox"; sound.id = "set-board-sounds"; sound.checked = deps.sounds.enabled
+      soundRow.append(sound, el("span", "", "Move, capture and check sounds"))
+      sound.addEventListener("change", () => {
+        deps.sounds.setEnabled(sound.checked)
+        if (sound.checked) deps.sounds.play("move")
+        api("/api/profile/preferences", "PUT", {board_sounds: sound.checked}).catch(() => {})
+      })
+      body.appendChild(soundRow)
+    }
+
     body.appendChild(el("h3", "", "Explanations"))
     const current = (state.profile && state.profile.preferences.explanation) || "balanced"
     const style = chipGroup(STYLES, {selected: [current]})
@@ -538,6 +559,7 @@ export function setupCoach(deps) {
     }
     await Promise.all([loadVoices(), refresh()])
     adoptServerPrefs()
+    adoptServerSounds()
     syncToggle()
     document.getElementById("speech-controls").classList.toggle("hidden", !narrator.supported)
   }
