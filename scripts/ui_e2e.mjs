@@ -222,6 +222,54 @@ $("pz-mode-practice").click()
   $("pz-back").click()
   await waitFor(() => visible("pz-dashboard"), "back to the dashboard")
 }
+// T) Training subtab: short games against a bot; the idea stays hidden until the report
+{
+  let lastSeg = null
+  const appFetch = globalThis.fetch
+  globalThis.fetch = async (...a) => {
+    const r = await appFetch(...a)
+    if (String(a[0]).includes("puzzles/training")) r.clone().json().then(j => { if (j && j.segment) lastSeg = j.segment }).catch(() => {})
+    return r
+  }
+  const IDEA = /fork|\bpins?\b|skewer|mate\b|sacrific|deflect|discover|smother|back.rank|opposition|zwischenzug|desperado|hint/i
+  $("pz-mode-training").click()
+  await waitFor(() => visible("pz-training") && $("pz-training").querySelector(".tr-mode"), "training home", 20000)
+  check([...$("pz-training").querySelectorAll(".tr-mode")].map(b => b.dataset.mode).join() === "opening,middlegame,endgame,mixed",
+    "training 1: Beginning Game, Middlegame, Endgame and Mixed Games")
+  check(/Nothing yet/.test($("pz-training").textContent), "training 2: a new learner's profile says there is no evidence yet")
+  $("pz-training").querySelector('.tr-mode[data-mode="mixed"]').click()
+  await waitFor(() => visible("pz-trainer") && lastSeg && board.state.moveInputCallback, "training segment open", 20000)
+  check(!visible("pz-dashboard") && !visible("pz-solver") && /You play (White|Black)/.test($("tr-info").textContent),
+    "training 3: the board with an info line (" + $("tr-info").textContent + ")")
+  check(!IDEA.test($("tr-info").textContent + $("tr-feedback").textContent) && !visible("tr-report"),
+    "training 4: nothing names the position's idea while playing")
+  const firstSeg = lastSeg.id
+  let plies = 0
+  while (!visible("tr-continue") && plies < 12) {
+    await waitFor(() => (board.state.moveInputCallback && lastSeg && !lastSeg.end_reason) || visible("tr-continue")
+      || visible("tr-report"), "training: your move", 30000)
+    if (visible("tr-continue") || visible("tr-report")) break
+    const chess = new Chess(lastSeg.fen)
+    const m = chess.moves({verbose: true})[0]
+    const before = lastSeg.learner_moves
+    check(move(m.from, m.to) === "ok", `training move ${m.san} accepted by the board`)
+    await waitFor(() => (lastSeg && lastSeg.learner_moves > before) || visible("tr-continue"), "training: move sent", 20000)
+    if (plies === 1) check(!IDEA.test($("tr-info").textContent + $("tr-feedback").textContent), "training 5: still no idea mid-segment")
+    plies++
+  }
+  await waitFor(() => visible("tr-continue") && visible("tr-report"), "training report", 60000)
+  const report = $("tr-report").textContent
+  check(/Accuracy|moves played/.test(report) && /What went well/.test(report) && /What to work on/.test(report),
+    "training 6: the report shows accuracy, what went well and what to work on")
+  check(lastSeg.learner_moves >= 1 && lastSeg.learner_moves <= 10, `training 7: a segment of ${lastSeg.learner_moves} moves (5–10, or the game ended)`)
+  $("tr-continue").click()
+  await waitFor(() => lastSeg && lastSeg.id !== firstSeg && !lastSeg.finished && board.state.moveInputCallback, "training: next segment", 20000)
+  check(!visible("tr-report") && visible("pz-trainer"), "training 8: Continue starts the next segment at once")
+  $("tr-back").click()
+  await waitFor(() => visible("pz-dashboard") && visible("pz-training") && /moves analysed/.test($("pz-training").textContent), "training: back home", 20000)
+  check(/\b1 segment\b/.test($("pz-training").textContent), "training 9: the profile counts the finished segment (not the open one)")
+  globalThis.fetch = appFetch
+}
 $("tab-lessons").click()
 await waitFor(() => visible("lesson-pane") && !visible("puzzles-pane"), "lessons again")
 
