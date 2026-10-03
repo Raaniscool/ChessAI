@@ -1062,6 +1062,465 @@ def v_poisoned_pawn(ctx: Ctx, params: dict) -> dict:
     return facts
 
 
+# ------------------------------------------------- library expansion (item 9)
+# Tactics: decoy, clearance, interference, underpromotion. Mates: mate in two, hook, dovetail.
+# Endgames: rule of the square, key squares, Philidor, triangulation, wrong bishop, outside
+# passed pawn, breakthrough. Mistakes: back-rank weakness, the stalemate trap.
+
+def _balance(board: chess.Board, color: chess.Color) -> int:
+    return material(board, color) - material(board, not color)
+
+
+@validator("attraction")
+def v_attraction(ctx: Ctx, params: dict) -> dict:
+    """Decoy: the learner offers a piece on a square, an enemy piece captures it (and so is
+    dragged onto that square), and the learner's next move exploits the piece standing there."""
+    r = ctx.replay
+    color = ctx.learner
+    for i in _plies(ctx, params):
+        if i + 2 >= len(r.moves):
+            break
+        move, reply, follow = r.moves[i], r.moves[i + 1], r.moves[i + 2]
+        square = move.to_square
+        if reply.to_square != square:
+            continue  # the offer wasn't taken
+        lured_board = r.boards[i + 2]
+        lured = lured_board.piece_at(square)
+        if lured is None or lured.color == color:
+            continue
+        after = r.boards[i + 3]
+        hits = (after.is_check() and after.king(not color) == square) or \
+            square in after.attacks(follow.to_square) or follow.to_square == square or after.is_checkmate()
+        if not hits:
+            continue
+        end = r.final
+        mate = end.is_checkmate() and end.turn != color
+        if not mate and _balance(end, color) <= _balance(r.boards[i], color):
+            continue  # the decoy must pay: mate or material
+        return {"move": ctx.label(i), "offered": piece_fact(r.boards[i + 1], square),
+                "lured": piece_fact(lured_board, square), "square": chess.square_name(square),
+                "follow_up": ctx.label(i + 2), "ends_in_mate": mate}
+    raise Fail("no decoy: no offered piece drags an enemy piece onto a square the next move exploits")
+
+
+def _path(move: chess.Move) -> set[int]:
+    return set(chess.SquareSet(chess.between(move.from_square, move.to_square))) | {move.to_square}
+
+
+@validator("clearance")
+def v_clearance(ctx: Ctx, params: dict) -> dict:
+    """A piece moves away (with tempo), and another learner piece then uses the square or line it
+    cleared — a move that was impossible while the first piece stood there."""
+    r = ctx.replay
+    color = ctx.learner
+    plies = _plies(ctx, params)
+    for i in plies:
+        cleared = r.moves[i].from_square
+        for j in (k for k in plies if i < k <= i + 4):
+            follow = r.moves[j]
+            if follow.from_square == r.moves[i].to_square:
+                continue  # the same piece moving on is not a clearance
+            if cleared not in _path(follow):
+                continue
+            board_j = r.boards[j]
+            if board_j.piece_at(cleared) is not None and cleared != follow.to_square:
+                continue  # something else re-occupied the square
+            if board_j.piece_at(cleared) is not None and board_j.color_at(cleared) != color:
+                continue  # an enemy piece went there: a capture, not a use of the cleared square
+            # put the clearing piece back: the follow-up must then be impossible
+            probe = board_j.copy(stack=False)
+            probe.set_piece_at(cleared, r.boards[i].piece_at(cleared))
+            if probe.is_pseudo_legal(follow):
+                continue
+            return {"move": ctx.label(i), "cleared_square": chess.square_name(cleared),
+                    "clearing_piece": piece_fact(r.boards[i], cleared), "follow_up": ctx.label(j),
+                    "used_by": piece_fact(r.boards[j], follow.from_square)}
+    raise Fail("no clearance: no later move uses a square or line that an earlier move vacated")
+
+
+@validator("interference")
+def v_interference(ctx: Ctx, params: dict) -> dict:
+    """A learner piece lands between an enemy long-range piece and a square it guarded; with the
+    line cut, the learner then uses that square."""
+    r = ctx.replay
+    color = ctx.learner
+    plies = _plies(ctx, params)
+    for i in plies:
+        before, after = r.boards[i], r.boards[i + 1]
+        s = r.moves[i].to_square
+        for a in chess.SquareSet(before.occupied_co[not color]):
+            piece = before.piece_at(a)
+            if piece.piece_type not in SLIDERS or a == s:
+                continue
+            for t in chess.SquareSet(before.attacks(a)):
+                if s not in chess.SquareSet(chess.between(a, t)):
+                    continue
+                if after.piece_at(a) != piece or t in after.attacks(a):
+                    continue
+                # the follow-up comes from another piece: the interposed piece itself moving on
+                # would reopen the line it cut
+                used = [j for j in plies if i < j <= i + 4 and r.moves[j].to_square == t
+                        and r.moves[j].from_square != s]
+                if used:
+                    return {"move": ctx.label(i), "cut_square": chess.square_name(s),
+                            "blocked_piece": piece_fact(before, a), "guarded_square": chess.square_name(t),
+                            "follow_up": ctx.label(used[0])}
+    raise Fail("no interference: no move cuts an enemy line to a square the learner then uses")
+
+
+@validator("underpromotion")
+def v_underpromotion(ctx: Ctx, params: dict) -> dict:
+    """The learner promotes to a knight, bishop or rook (Stockfish checks that a queen is worse)."""
+    r = ctx.replay
+    for i in _plies(ctx, params):
+        move = r.moves[i]
+        if move.promotion in (chess.KNIGHT, chess.BISHOP, chess.ROOK):
+            if r.boards[i + 1].is_checkmate() and _queen_mates(r.boards[i], move):
+                raise Fail("a queen would mate as well: this is not an underpromotion idea")
+            return {"move": ctx.label(i), "promoted_to": PIECE_NAMES[move.promotion],
+                    "square": chess.square_name(move.to_square),
+                    "gives_check": r.boards[i + 1].is_check(), "stalemate_if_queen": _queen_stalemates(r.boards[i], move)}
+    raise Fail("no underpromotion: the learner never promotes to a knight, bishop or rook")
+
+
+def _queen_mates(board: chess.Board, move: chess.Move) -> bool:
+    probe = board.copy(stack=False)
+    probe.push(chess.Move(move.from_square, move.to_square, chess.QUEEN))
+    return probe.is_checkmate()
+
+
+def _queen_stalemates(board: chess.Board, move: chess.Move) -> bool:
+    probe = board.copy(stack=False)
+    probe.push(chess.Move(move.from_square, move.to_square, chess.QUEEN))
+    return probe.is_stalemate()
+
+
+@validator("mate_in_two")
+def v_mate_in_two(ctx: Ctx, params: dict) -> dict:
+    facts = v_checkmate(ctx, {})
+    r = ctx.replay
+    start = ctx.key_ply or 0
+    moves = sum(1 for i in range(start, len(r.moves)) if r.boards[i].turn == ctx.learner)
+    if moves != 2:
+        raise Fail(f"the learner mates in {moves} moves, not two")
+    facts["pattern"] = "mate in two"
+    return facts
+
+
+@validator("hook_mate")
+def v_hook_mate(ctx: Ctx, params: dict) -> dict:
+    """A rook mates from right beside the king; a knight guards the rook and a pawn guards the knight."""
+    board, facts = _mate(ctx, params)
+    color = board.turn
+    king = board.king(color)
+    rooks = [c for c in board.checkers() if board.piece_at(c).piece_type == chess.ROOK]
+    if not rooks or chess.square_distance(rooks[0], king) != 1:
+        raise Fail("in a hook mate a rook checks from right next to the king")
+    rook = rooks[0]
+    knights = [a for a in board.attackers(not color, rook) if board.piece_at(a).piece_type == chess.KNIGHT]
+    guarded = [n for n in knights
+               if any(board.piece_at(p).piece_type == chess.PAWN for p in board.attackers(not color, n))]
+    if not guarded:
+        raise Fail("in a hook mate a knight guards the rook and a pawn guards the knight")
+    facts["pattern"] = "hook mate"
+    facts["rook"] = piece_fact(board, rook)
+    facts["knight"] = piece_fact(board, guarded[0])
+    return facts
+
+
+@validator("dovetail_mate")
+def v_dovetail_mate(ctx: Ctx, params: dict) -> dict:
+    """The queen mates diagonally next to the king; the two squares she doesn't cover are blocked
+    by the king's own pieces."""
+    board, facts = _mate(ctx, params)
+    color = board.turn
+    king = board.king(color)
+    queens = [c for c in board.checkers() if board.piece_at(c).piece_type == chess.QUEEN]
+    if not queens:
+        raise Fail("a dovetail mate is delivered by the queen")
+    q = queens[0]
+    df = chess.square_file(q) - chess.square_file(king)
+    dr = chess.square_rank(q) - chess.square_rank(king)
+    if abs(df) != 1 or abs(dr) != 1:
+        raise Fail("in a dovetail mate the queen stands diagonally next to the king")
+    blockers = []
+    for f, rk in ((chess.square_file(king) - df, chess.square_rank(king)),
+                  (chess.square_file(king), chess.square_rank(king) - dr)):
+        if not (0 <= f < 8 and 0 <= rk < 8):
+            raise Fail("in a dovetail mate the king is not on the edge behind the queen's diagonal")
+        sq = chess.square(f, rk)
+        piece = board.piece_at(sq)
+        if piece is None or piece.color != color:
+            raise Fail(f"{chess.square_name(sq)} is not blocked by the king's own piece")
+        blockers.append(piece_fact(board, sq))
+    facts["pattern"] = "dovetail mate"
+    facts["blocked_by"] = blockers
+    return facts
+
+
+# ---- endgames
+
+def _only(board: chess.Board, color: chess.Color, types: set[int]) -> bool:
+    return all(p.piece_type in types | {chess.KING} for p in board.piece_map().values() if p.color == color)
+
+
+def _queening_square(sq: int, color: chess.Color) -> int:
+    return chess.square(chess.square_file(sq), 7 if color == chess.WHITE else 0)
+
+
+def _moves_to_queen(sq: int, color: chess.Color) -> int:
+    rank = chess.square_rank(sq)
+    steps = 7 - rank if color == chess.WHITE else rank
+    start = 1 if color == chess.WHITE else 6
+    return steps - 1 if rank == start else steps  # the double step from the start square
+
+
+@validator("rule_of_the_square")
+def v_rule_of_square(ctx: Ctx, params: dict) -> dict:
+    """A lone defending king outside the pawn's square can't catch it: the pawn just runs."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    if not _only(board, not color, set()):
+        raise Fail("the rule of the square is shown against a lone king")
+    if not _only(board, color, {chess.PAWN}):
+        raise Fail("the rule of the square is a pawn ending")
+    for pawn in board.pieces(chess.PAWN, color):
+        if not _passed(board, pawn, color):
+            continue
+        promoted = [i for i in range(start, len(r.moves)) if r.boards[i].turn == color and r.moves[i].promotion
+                    and chess.square_file(r.moves[i].to_square) == chess.square_file(pawn)]
+        if not promoted:
+            continue
+        q = _queening_square(pawn, color)
+        need = _moves_to_queen(pawn, color)
+        dist = chess.square_distance(board.king(not color), q)
+        reach = need + (1 if board.turn != color else 0)  # the defender moving first gets a tempo
+        if dist <= reach:
+            raise Fail(f"the defending king is inside the square ({dist} moves from {chess.square_name(q)}, "
+                       f"the pawn needs {need})")
+        return {"pawn": chess.square_name(pawn), "queening_square": chess.square_name(q), "pawn_moves": need,
+                "defending_king": chess.square_name(board.king(not color)), "king_moves_needed": dist,
+                "promotes": ctx.label(promoted[0])}
+    raise Fail("no passed pawn outruns the defending king to promotion in this line")
+
+
+def _key_squares(pawn: int, color: chess.Color) -> list[int]:
+    f, rank = chess.square_file(pawn), chess.square_rank(pawn)
+    rel = rank if color == chess.WHITE else 7 - rank
+    up = 1 if color == chess.WHITE else -1
+    if f in (0, 7):  # rook pawn: the squares next to the queening square
+        g = 1 if f == 0 else 6
+        return [chess.square(g, 6 if color == chess.WHITE else 1), chess.square(g, 7 if color == chess.WHITE else 0)]
+    rows = [rank + 2 * up] if rel <= 3 else [rank + up, rank + 2 * up]
+    return [chess.square(ff, rr) for rr in rows if 0 <= rr < 8 for ff in (f - 1, f, f + 1) if 0 <= ff < 8]
+
+
+@validator("key_squares")
+def v_key_squares(ctx: Ctx, params: dict) -> dict:
+    """King and pawn against king: the attacking king reaches one of the pawn's key squares."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    pawns = list(board.pieces(chess.PAWN, color))
+    if not _only(board, not color, set()) or not _only(board, color, {chess.PAWN}) or len(pawns) != 1:
+        raise Fail("key squares are shown with king and pawn against king")
+    keys = _key_squares(pawns[0], color)
+    if board.king(color) in keys:
+        raise Fail("the king already stands on a key square")
+    for i in _plies(ctx, params):
+        b = r.boards[i + 1]
+        if r.boards[i].piece_at(r.moves[i].from_square).piece_type != chess.KING:
+            continue
+        current = list(b.pieces(chess.PAWN, color))
+        if not current:
+            break
+        if b.king(color) in _key_squares(current[0], color):
+            return {"pawn": chess.square_name(current[0]), "key_squares": [chess.square_name(k) for k in keys],
+                    "king_reaches": chess.square_name(b.king(color)), "move": ctx.label(i)}
+    raise Fail("the king never reaches a key square of the pawn")
+
+
+@validator("philidor_position")
+def v_philidor(ctx: Ctx, params: dict) -> dict:
+    """Rook against rook and pawn: the defender's rook holds its third rank; when the pawn steps
+    onto that rank, the rook drops back and checks from behind."""
+    r = ctx.replay
+    defender = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    attacker = not defender
+    pawns = list(board.pieces(chess.PAWN, attacker))
+    if len(pawns) != 1 or not _only(board, attacker, {chess.ROOK, chess.PAWN}) or \
+            not _only(board, defender, {chess.ROOK}) or len(board.pieces(chess.ROOK, defender)) != 1 or \
+            len(board.pieces(chess.ROOK, attacker)) != 1:
+        raise Fail("the Philidor position is rook against rook and pawn")
+    third = 5 if defender == chess.BLACK else 2  # the defender's third rank
+    held = any(chess.square_rank(s) == third for i in range(start, len(r.moves))
+               for s in r.boards[i].pieces(chess.ROOK, defender))
+    if not held:
+        raise Fail("the defending rook never holds its third rank")
+    for i in range(start, len(r.moves) - 1):
+        if r.boards[i].turn != attacker:
+            continue
+        mv = r.moves[i]
+        if r.boards[i].piece_at(mv.from_square).piece_type == chess.PAWN and chess.square_rank(mv.to_square) == third:
+            for j in range(i + 1, len(r.moves)):
+                if r.boards[j].turn != defender:
+                    continue
+                piece = r.boards[j].piece_at(r.moves[j].from_square)
+                after = r.boards[j + 1]
+                if piece.piece_type == chess.ROOK and after.is_check() and \
+                        abs(chess.square_rank(r.moves[j].to_square) - third) >= 3:
+                    return {"third_rank": third + 1, "pawn_advance": ctx.label(i), "checks_from_behind": ctx.label(j),
+                            "defender": _side_name(defender)}
+            break
+    raise Fail("after the pawn advances, the rook doesn't drop back to check from behind")
+
+
+@validator("triangulation")
+def v_triangulation(ctx: Ctx, params: dict) -> dict:
+    """Losing a tempo: the learner's king walks a triangle so the same position comes back with
+    the other side to move."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    seen: dict[str, int] = {}
+    for i in range(start, len(r.boards)):
+        b = r.boards[i]
+        placement = b.board_fen()
+        if placement in seen:
+            j = seen[placement]
+            if r.boards[j].turn != b.turn:
+                kings = [k for k in range(j, i) if r.boards[k].turn == color]
+                if len(kings) >= 3 and all(r.boards[k].piece_at(r.moves[k].from_square).piece_type == chess.KING
+                                           for k in kings):
+                    return {"from": ctx.label(j) if j > 0 else "start", "back_at": ctx.label(i - 1),
+                            "king_moves": len(kings), "now_to_move": _side_name(b.turn)}
+        seen.setdefault(placement, i)
+    raise Fail("no triangulation: the same position never returns with the other side to move")
+
+
+@validator("wrong_bishop")
+def v_wrong_bishop(ctx: Ctx, params: dict) -> dict:
+    """Bishop and rook pawn against a lone king: if the bishop can't control the queening corner
+    and the defending king gets there, it's a draw."""
+    r = ctx.replay
+    defender = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    strong = not defender
+    pawns = list(board.pieces(chess.PAWN, strong))
+    bishops = list(board.pieces(chess.BISHOP, strong))
+    if not _only(board, defender, set()) or not _only(board, strong, {chess.BISHOP, chess.PAWN}) or \
+            len(bishops) != 1 or not pawns or len({chess.square_file(p) for p in pawns}) != 1 or \
+            chess.square_file(pawns[0]) not in (0, 7):
+        raise Fail("the wrong bishop is bishop and rook pawn(s) against a lone king")
+    corner = _queening_square(pawns[0], strong)
+    light = lambda sq: (chess.square_file(sq) + chess.square_rank(sq)) % 2 == 1  # noqa: E731
+    if light(bishops[0]) == light(corner):
+        raise Fail("the bishop controls the queening square: this is the right bishop")
+    reached = any(chess.square_distance(b.king(defender), corner) <= 1 for b in r.boards[start:])
+    if not reached:
+        raise Fail("the defending king never reaches the corner")
+    return {"corner": chess.square_name(corner), "bishop": piece_fact(board, bishops[0]),
+            "bishop_squares": "light" if light(bishops[0]) else "dark", "defender": _side_name(defender)}
+
+
+@validator("outside_passed_pawn")
+def v_outside_passer(ctx: Ctx, params: dict) -> dict:
+    """Pawn ending: a passed pawn far from the other pawns drags the enemy king away, and the
+    learner's king then eats pawns on the other wing."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    if not _only(board, color, {chess.PAWN}) or not _only(board, not color, {chess.PAWN}):
+        raise Fail("the outside passed pawn is a pawn ending idea")
+    others = list(board.pieces(chess.PAWN, not color))
+    for p in board.pieces(chess.PAWN, color):
+        if not _passed(board, p, color):
+            continue
+        rest = [q for q in board.pieces(chess.PAWN, color) if q != p] + others
+        if not rest:
+            continue
+        files = [chess.square_file(q) for q in rest]
+        f = chess.square_file(p)
+        if not (all(x >= f + 2 for x in files) or all(x <= f - 2 for x in files)):
+            continue  # not outside: pawns on both sides of it, or too close
+        for i in range(start, len(r.moves)):
+            if r.boards[i].turn != color:
+                continue
+            mv = r.moves[i]
+            victim = r.boards[i].piece_at(mv.to_square)
+            mover = r.boards[i].piece_at(mv.from_square)
+            if mover.piece_type == chess.KING and victim is not None and victim.piece_type == chess.PAWN and \
+                    abs(chess.square_file(mv.to_square) - f) >= 3:
+                return {"outside_pawn": chess.square_name(p), "king_wins_pawn": ctx.label(i),
+                        "side": _side_name(color)}
+    raise Fail("no outside passed pawn decoys the king while the other king wins pawns")
+
+
+@validator("pawn_breakthrough")
+def v_breakthrough(ctx: Ctx, params: dict) -> dict:
+    """Pawn ending: the learner gives up pawns to break the enemy chain, and a pawn promotes."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    board = r.boards[start]
+    if not _only(board, color, {chess.PAWN}) or not _only(board, not color, {chess.PAWN}):
+        raise Fail("a breakthrough is a pawn ending idea")
+    sacs = [i for i in range(start, len(r.moves) - 1) if r.boards[i].turn == color
+            and r.boards[i].piece_at(r.moves[i].from_square).piece_type == chess.PAWN
+            and r.moves[i + 1].to_square == r.moves[i].to_square]
+    promo = [i for i in range(start, len(r.moves)) if r.boards[i].turn == color and r.moves[i].promotion]
+    if not sacs:
+        raise Fail("no pawn is given up")
+    if not promo:
+        raise Fail("no pawn breaks through to promote")
+    return {"sacrifices": [ctx.label(i) for i in sacs], "promotes": ctx.label(promo[0]), "side": _side_name(color)}
+
+
+# ---- mistakes
+
+@validator("back_rank_weakness")
+def v_back_rank_weakness(ctx: Ctx, params: dict) -> dict:
+    """The mistake leaves the back rank weak and the punishment ends in a back-rank mate."""
+    facts = v_mistake(ctx, params)
+    mate = v_back_rank(ctx, {})
+    facts["mate"] = mate
+    return facts
+
+
+@validator("stalemate_trap")
+def v_stalemate_trap(ctx: Ctx, params: dict) -> dict:
+    """Winning side to move: at least one natural move would stalemate the opponent; the learner's
+    move doesn't, and the line ends in checkmate."""
+    r = ctx.replay
+    if ctx.key_ply is None:
+        raise Fail("the stalemate trap needs a key move")
+    board = r.boards[ctx.key_ply]
+    color = board.turn
+    if _balance(board, color) < 5:
+        raise Fail("the learner is not clearly winning on material")
+    traps = []
+    for mv in board.legal_moves:
+        probe = board.copy(stack=False)
+        probe.push(mv)
+        if probe.is_stalemate():
+            traps.append(board.san(mv))
+    if not traps:
+        raise Fail("no move would stalemate: there is no trap to avoid")
+    if board.san(r.moves[ctx.key_ply]) in traps:
+        raise Fail("the key move itself stalemates")
+    end = r.final
+    if not (end.is_checkmate() and end.turn != color):
+        raise Fail("the line doesn't finish the job with checkmate")
+    return {"stalemating_moves": sorted(traps), "key_move": ctx.label(ctx.key_ply), "side": _side_name(color)}
+
+
 @validator("all")
 def v_all(ctx: Ctx, params: dict) -> dict:
     """Combine validators: {"type": "all", "of": [{"type": "fork"}, {"type": "check"}]}."""

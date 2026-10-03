@@ -345,5 +345,37 @@ def _practical(example, rep, engine, depth) -> EngineReport:
     return EngineReport("pass", "practical", [], details)
 
 
-_PROFILES = {"practical": _practical, "defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
+def _underpromotion(example, rep, engine, depth) -> EngineReport:
+    """The tactic profile, plus: promoting to a queen on the same move must be clearly worse
+    (at least MISTAKE_MIN_LOSS) or stalemate — otherwise the underpromotion teaches nothing."""
+    report = _tactic(example, rep, engine, depth)
+    report.profile = "underpromotion"
+    if report.outcome == "fail" or example.key_ply is None:
+        return report
+    for i in _learner_plies(rep, example.key_ply):
+        move = rep.moves[i]
+        if move.promotion not in (chess.KNIGHT, chess.BISHOP, chess.ROOK):
+            continue
+        board = rep.boards[i]
+        side = board.turn
+        queen = board.copy(stack=False)
+        queen.push(chess.Move(move.from_square, move.to_square, chess.QUEEN))
+        actual, _ = eval_cp(engine, rep.boards[i + 1], side, depth)
+        if rep.boards[i + 1].is_checkmate():
+            actual = MATE_CP
+        if queen.is_stalemate():
+            report.details["queen_instead"] = "stalemate"
+            return report
+        if queen.is_checkmate():
+            return EngineReport("fail", "underpromotion", ["a queen would mate as well"], report.details)
+        q_cp, _ = eval_cp(engine, queen, side, depth)
+        report.details["queen_instead_cp"] = q_cp
+        if actual - q_cp < MISTAKE_MIN_LOSS:
+            return EngineReport("fail", "underpromotion",
+                                [f"a queen is about as good ({q_cp} cp against {actual} cp)"], report.details)
+        return report
+    return EngineReport("fail", "underpromotion", ["no underpromotion in the learner's moves"], report.details)
+
+
+_PROFILES = {"practical": _practical, "underpromotion": _underpromotion, "defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
              "endgame_win": _endgame_win, "endgame_draw": _endgame_draw}
