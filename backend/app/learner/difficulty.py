@@ -1,7 +1,7 @@
 """Difficulty profile: how hard puzzles should be for this learner, per skill, with the evidence.
 
 Weakness and skill are separate questions. Weaknesses (analysis.history) say *what* to train.
-This module says *how hard* — "challenging but realistically solvable" — from four kinds of
+This module says *how hard* — "challenging but realistically solvable" — from five kinds of
 evidence, all on the puzzle scale (puzzles.profile decision ratings):
 
   1. Rating prior          the median rating of the learner's games (else onboarding rating,
@@ -27,6 +27,8 @@ evidence, all on the puzzle scale (puzzles.profile decision ratings):
                            a clean solve in <= 20 s counts as solving a puzzle 100 points harder,
                            a solve over 150 s counts 0.85. Elo performance; weight 0.4 per puzzle
                            (max 6), so ~5 puzzles count as much as the rating prior.
+  5. Training              Training segments (assessment): mistakes per move by phase, counted like
+                           game errors, and the hidden ideas found or missed (like game chances).
 
 Each skill (overall, tactics, pattern_recognition, calculation, defense, endgame, opening) is the
 weighted mean of the evidence that applies to it. A concept starts from its skill's estimate
@@ -328,6 +330,33 @@ def _prior(profile) -> dict:
     return {"game_rating": game, "puzzle_scale": puzzle_scale(game), "source": source}
 
 
+def _training_evidence(profile, items: dict[str, list[Evidence]], prior: dict) -> None:
+    """Training segments (assessment.record), counted like game evidence: error rates per phase (same
+    formula, same weight growth, at least MIN_PHASE_MOVES moves) and the hidden ideas found or missed
+    (Elo performance over the positions' puzzle ratings + CHANCE_BONUS: unprompted, like a game)."""
+    tr = (getattr(profile, "training", None) or {}) if profile is not None else {}
+    phases = tr.get("phases") or {}
+
+    def errors(skill: str, errs: int, moves: int, what: str) -> None:
+        if moves < MIN_PHASE_MOVES:
+            return
+        items[skill].append(Evidence("training", puzzle_scale(from_error_rate(errs, moves, ERROR_BASE)),
+                                     min(GAME_MAX_WEIGHT, moves / ERROR_MOVES_PER_WEIGHT),
+                                     f"{errs} {what} in {moves} Training moves"))
+    errors("overall", sum(int((c or {}).get("errors") or 0) for c in phases.values()),
+           sum(int((c or {}).get("moves") or 0) for c in phases.values()), "mistakes/blunders")
+    for phase in ("opening", "endgame"):
+        c = phases.get(phase) or {}
+        errors(phase, int(c.get("errors") or 0), int(c.get("moves") or 0), f"{phase} mistakes/blunders")
+    tested = [t for t in tr.get("tested") or [] if t.get("rating") is not None]
+    if len(tested) >= MIN_CHANCES:
+        perf = performance([(t["rating"], 1.0 if t["found"] else 0.0, 1.0) for t in tested], prior["puzzle_scale"])
+        found = sum(1 for t in tested if t["found"])
+        items["overall"].append(Evidence("training chances", _clamp(perf + CHANCE_BONUS),
+                                         min(GAME_MAX_WEIGHT, len(tested) / 4),
+                                         f"found {found} of {len(tested)} hidden ideas in Training"))
+
+
 def build(profile, usage=None, lookup=None, now: datetime | None = None) -> DifficultyProfile:
     """The learner's difficulty profile from the profile (rating, game evidence) and puzzle results."""
     prior = _prior(profile)
@@ -359,6 +388,7 @@ def build(profile, usage=None, lookup=None, now: datetime | None = None) -> Diff
             found = sum(1 for c in sub if c["found"])
             items[skill].append(Evidence("game chances", _clamp(perf + CHANCE_BONUS), min(GAME_MAX_WEIGHT, len(sub) / 4),
                                          f"found {found} of {len(sub)} winning chances in your games"))
+    _training_evidence(profile, items, prior)
     trials = puzzle_trials(usage, lookup, now) if lookup is not None else []
     for skill in SKILLS:
         mine = [t for p, t in trials if skill in puzzle_dimension(p)]

@@ -116,6 +116,7 @@ class LearnerProfile:
     completed_lessons: list[str] = field(default_factory=list)
     preferences: dict = field(default_factory=lambda: {"explanation": "balanced"})
     exercise_log: list[dict] = field(default_factory=list)
+    training: dict = field(default_factory=dict)     # assessment.record: Training segments' evidence
 
     # ------------------------------------------------------------------ io
     def as_dict(self) -> dict:
