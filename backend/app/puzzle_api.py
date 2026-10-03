@@ -138,6 +138,26 @@ def dashboard() -> dict:
             "library": {"puzzles": len(pool)}}
 
 
+def _profile_key(key: str | None) -> bool:
+    """Cards that come from the learner profile itself (puzzle results, Training), not from one game report."""
+    return bool(key) and key.split(":", 1)[0] in ("puzzles", "training")
+
+
+def _practice_focus(profile, knowledge, index, served_ids, pool) -> tuple:
+    """Practice weighting from the learner's needs (assessment.needs.practice_focus) and what it is based on.
+    `served_ids`: puzzles already given this session (they count towards each need's share)."""
+    from collections import Counter
+
+    from .assessment.needs import concept_needs, practice_focus, top_needs
+    needs = concept_needs(profile, knowledge)
+    served = Counter(p.concept for p in (index.get(pid) for pid in served_ids) if p is not None)
+    focus = practice_focus(needs, knowledge, served, pool)
+    info = {"needs": [{"concept": n["concept"], "priority": n["priority"], "confidence": n["confidence"],
+                       "status": n["status"]} for n in top_needs(needs)],
+            "weights": focus.as_dict() if focus else []}
+    return focus, info
+
+
 def _weakness(key: str, username: str | None) -> tuple[dict | None, int]:
     """The full weakness (with evidence from the analyzed games) or the learner-profile entry."""
     from .game_api import _find_weaknesses
@@ -210,9 +230,11 @@ def puzzle_set(body: SetRequest):
         seen = _SeenUsage(usage, shown)
         lad = ladder(pool, seen.puzzle_stats)
         calibration = for_learner(knowledge, profile, usage).target(concept, knowledge, shift)
+        focus, focus_info = _practice_focus(profile, knowledge, index, exclude, pool)
         selection = select(pool, knowledge, concept, count=body.count, profile=profile, usage=seen, bonus=lad.bonus,
-                           calibration=calibration, exclude=exclude)
+                           calibration=calibration, exclude=exclude, focus=focus)
         selection.ladder = lad.as_dict()
+        extra_debug["focus"] = focus_info
         title = f"Practice: {knowledge.concepts[concept].name}"
         items = [{"puzzle": c.puzzle, "example": knowledge.get(c.puzzle.id), "reasons": c.reasons,
                   "origin": "personal" if c.puzzle.tier == "personal" else "library", "role": "practice",
@@ -233,7 +255,7 @@ def puzzle_set(body: SetRequest):
             if main is None:
                 return _error(422, "No weaknesses found yet. Analyze some games, or pick a theme in Practice.")
             key = main["key"]
-        if key.startswith("puzzles:"):
+        if _profile_key(key):
             weakness = {"key": key, "concept": key.split(":", 1)[1], "title": None}
         else:
             weakness, total_games = _weakness(key, body.username)
@@ -254,7 +276,7 @@ def puzzle_set(body: SetRequest):
         if game_puzzle is not None:
             items.append({"puzzle": game_puzzle, "example": None, "role": "your_game", "origin": "your_game",
                           "reasons": ["The position from your game, re-checked by Stockfish"]})
-        wants_defend = sets.walked_into(weakness) and body.count >= 4 and not key.startswith("puzzles:")
+        wants_defend = sets.walked_into(weakness) and body.count >= 4 and not _profile_key(key)
         skill_count = max(1, body.count - len(items) - (1 if wants_defend else 0))
         # B. verified library puzzles of exactly this skill (easy -> hard, progression-aware)
         selection = library_selection(weakness, knowledge, skill_count, profile=profile, usage=usage, shown=shown,
@@ -267,7 +289,7 @@ def puzzle_set(body: SetRequest):
                               "origin": "personal" if c.puzzle.tier == "personal" else "library"})
         skill_items = [it for it in items if it["role"] in ("same", "easier", "harder")]
         # C. strictly verified new puzzles when the library runs short
-        if not key.startswith("puzzles:") and body.generate \
+        if not _profile_key(key) and body.generate \
                 and len(skill_items) < min(skill_count, MIN_LIBRARY_BEFORE_GENERATING):
             generated, generation = _generate(weakness, knowledge, skill_count - len(skill_items), body, index)
             items += [{**it, "role": sets.role_for(it["puzzle"], target)} for it in generated
@@ -398,7 +420,7 @@ def adapt(body: AdaptRequest):
     else:
         if not body.weakness:
             return out
-        if body.weakness.startswith("puzzles:"):
+        if _profile_key(body.weakness):
             weakness = {"key": body.weakness, "concept": body.weakness.split(":", 1)[1], "title": None, "evidence": []}
         else:
             weakness, _n = _weakness(body.weakness, body.username)
@@ -429,7 +451,8 @@ def adapt(body: AdaptRequest):
         pool = theme_pool(candidates(index.all()), knowledge, concept, len(swap))
         seen = _SeenUsage(usage, shown)
         selection = select(pool, knowledge, concept, count=len(swap), profile=profile, usage=seen,
-                           exclude=exclude, bonus=ladder(pool, seen.puzzle_stats).bonus, calibration=cal)
+                           exclude=exclude, bonus=ladder(pool, seen.puzzle_stats).bonus, calibration=cal,
+                           focus=_practice_focus(profile, knowledge, index, exclude, pool)[0])
     fresh = [c for c in (selection.chosen if selection else [])
              if knowledge.get(c.puzzle.id) is not None and low <= c.puzzle.rating <= high]
     replaced = []

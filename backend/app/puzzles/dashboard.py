@@ -108,7 +108,14 @@ def _focus(pool, knowledge, concept: str, usage) -> dict | None:
 
 
 def personalized(profile, knowledge, pool, usage=None) -> dict:
-    """Weakness cards (most useful first) and the profile box."""
+    """Weakness cards (most useful first) and the profile box.
+
+    Sources: recurring mistakes from analysed games, struggling puzzle concepts, and Training
+    (assessment.needs: hidden ideas missed or found, validator-named mistakes, with confidence).
+    Training also adjusts the other cards (assessment.needs.card_factor): a game weakness the learner
+    now handles in Training drops, one Training confirms rises. Every card carries its reasons."""
+    from ..assessment.needs import card_factor, concept_needs
+    needs = concept_needs(profile, knowledge) if profile is not None else {}
     cards: list[dict] = []
     covered: set[str] = set()
     for w in profile.weaknesses if profile is not None else []:
@@ -125,7 +132,7 @@ def personalized(profile, knowledge, pool, usage=None) -> dict:
             "key": w["key"], "concept": concept, "concept_name": _name(knowledge, concept),
             "title": w.get("title") or _name(knowledge, concept), "source": "games", "tier": w.get("tier"),
             "kind": w.get("kind"), "evidence": evidence, "progress": progress,
-            "priority": round(share * TIER_WEIGHT.get(w.get("tier"), 0.5) * factor, 4),
+            "priority": round(share * TIER_WEIGHT.get(w.get("tier"), 0.5) * factor * card_factor(needs.get(concept)), 4),
             "available": available(pool, knowledge, concept), "recommended": RECOMMENDED,
             "focus": _focus(pool, knowledge, concept, usage)})
         covered.add(concept)
@@ -142,9 +149,25 @@ def personalized(profile, knowledge, pool, usage=None) -> dict:
             "key": f"puzzles:{concept}", "concept": concept, "concept_name": name, "title": name,
             "source": "puzzles", "tier": None, "kind": None,
             "evidence": f"You solved {solved} of your last {len(recent)} {name.lower()} puzzles",
-            "progress": None, "priority": round(0.3 * (1 - mean), 4),
+            "progress": None, "priority": round(0.3 * (1 - mean) * card_factor(needs.get(concept)), 4),
             "available": available(pool, knowledge, concept), "recommended": RECOMMENDED,
             "focus": _focus(pool, knowledge, concept, usage)})
+        covered.add(concept)
+    for concept, need in needs.items():
+        # Training's own findings: only once the evidence says so (assessment.needs status), never one move
+        if concept in covered or "training" not in need["sources"] or need["status"] != "needs_work":
+            continue
+        cards.append({
+            "key": f"training:{concept}", "concept": concept, "concept_name": need["name"], "title": need["name"],
+            "source": "training", "tier": None, "kind": None,
+            "evidence": next((r for r in need["reasons"] if r.startswith("Training")), need["why"]),
+            "progress": None, "priority": need["priority"],
+            "available": available(pool, knowledge, concept), "recommended": RECOMMENDED,
+            "focus": _focus(pool, knowledge, concept, usage)})
+    for card in cards:
+        need = needs.get(card["concept"])
+        card["reasons"] = list(need["reasons"]) if need else [card["evidence"]]
+        card["confidence"] = need["confidence"] if need else None
     cards = [c for c in cards if c["available"] > 0 or c["source"] == "games"]
     cards.sort(key=lambda c: (-c["priority"], c["title"]))
     main = cards[0] if cards else None

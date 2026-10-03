@@ -188,10 +188,17 @@ def calibrated_slots(target: int, count: int) -> list[int]:
     return [round(target - CAL_LOW + i * step) for i in range(count)]
 
 
+FOCUS_REASON = "More of what your results say you need"   # names no idea: safe in Mixed
+
+
 def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profile=None, usage=None,
            exclude: set[str] | frozenset = frozenset(), now: datetime | None = None,
            concept_name: str | None = None, overrides: dict | None = None, bonus=None,
-           calibration: dict | None = None) -> Selection:
+           calibration: dict | None = None, focus=None) -> Selection:
+    """`focus` (optional, assessment.needs.PracticeFocus): the learner's needs. The slot score is
+    multiplied by focus.weight(puzzle, needs already in this set, set size) — favoured while the need
+    is below its evidence-based share of the session, held back above it — so a weak spot comes up
+    more often while the set stays varied. None = no learner weighting (exactly as before)."""
     from ..learner.views import target_rating
 
     now = now or datetime.now(timezone.utc)
@@ -233,6 +240,7 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
     used_ids: set[str] = set()
     used_boards: set[str] = set()
     used_concepts: dict[str, int] = {}
+    used_focus: dict[str, int] = {}
     for slot in slot_ratings:
         best: tuple[float, Puzzle, float, str, dict, str | None] | None = None
         for p, rel, kind, st in pool:
@@ -244,6 +252,8 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
                 continue
             fit = math.exp(-((p.rating - slot) / FIT_WIDTH) ** 2)
             score = rel * (0.50 * fit + 0.35 * nov + 0.15 * QUALITY.get(p.uniqueness, 0.6))
+            if focus is not None:
+                score *= focus.weight(p, used_focus, len(selection.chosen))
             score -= 0.05 * used_concepts.get(p.concept, 0)
             if bonus is not None:   # progression (puzzles.progression): the recognition stage to train
                 score += bonus(p)
@@ -256,8 +266,11 @@ def select(puzzles: list[Puzzle], knowledge, concept: str, count: int = 5, profi
         used_ids.add(p.id)
         used_boards.add(p.fen.split(" ")[0])
         used_concepts[p.concept] = used_concepts.get(p.concept, 0) + 1
-        selection.chosen.append(Choice(p, score, slot, _reasons(p, kind, name, slot, nov_reason, knowledge),
-                                       kind, st))
+        reasons = _reasons(p, kind, name, slot, nov_reason, knowledge)
+        if focus is not None and focus.key(p):
+            reasons.append(FOCUS_REASON)
+            used_focus[focus.key(p)] = used_focus.get(focus.key(p), 0) + 1
+        selection.chosen.append(Choice(p, score, slot, reasons, kind, st))
     selection.chosen.sort(key=lambda c: (c.puzzle.rating, c.puzzle.id))
     return selection
 
