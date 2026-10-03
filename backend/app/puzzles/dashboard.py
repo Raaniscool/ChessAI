@@ -28,7 +28,8 @@ THEMES = [  # (concept id, label) in display order
     ("fork", "Forks"), ("pin", "Pins"), ("skewer", "Skewers"), ("discovered_attack", "Discovered attacks"),
     ("checkmate", "Checkmates"), ("hanging_piece", "Hanging pieces"), ("beginner_mistakes", "Punishing mistakes"),
     ("spotting_threats", "Defending"), ("deflection", "Deflection"), ("removing_defender", "Removing the defender"),
-    ("overloaded_piece", "Overloaded pieces"), ("trapped_piece", "Trapped pieces"), ("sacrifice", "Sacrifices"),
+    ("overloaded_piece", "Overloaded pieces"), ("attraction", "Decoys"), ("clearance", "Clearance"),
+    ("interference", "Interference"), ("trapped_piece", "Trapped pieces"), ("sacrifice", "Sacrifices"),
     ("zwischenzug", "In-between moves"), ("endgames", "Endgames"), ("tactics", "Mixed tactics"),
 ]
 # Mixed practice: the point is to recognise the idea yourself, so its puzzles don't name their

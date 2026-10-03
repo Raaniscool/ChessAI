@@ -1,0 +1,974 @@
+[
+ {
+  "id": "lichess_bepk1",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the winning plan.",
+  "start_fen": "6k1/8/7p/3pPK2/8/P7/8/8 b - - 0 55",
+  "moves": [
+   "d4",
+   "Ke4",
+   "h5",
+   "Kxd4"
+  ],
+  "final_fen": "6k1/8/8/4P2p/3K4/P7/8/8 b - - 0 57",
+  "key_move": "56.Ke4",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "55...d4": "The opponent's last move. Something is now possible — look closely.",
+   "56.Ke4": "The passed pawn on a3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (57.Kxd4).",
+   "57.Kxd4": "White comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on a3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (57.Kxd4). White comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "a3",
+    "king_wins_pawn": "57.Kxd4",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "BePK1",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/BePK1",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 429,
+    "key_move": {
+     "move": "Ke4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 147,
+     "best_move": "Ke4",
+     "best_cp": 147,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_e1rau",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the winning plan.",
+  "start_fen": "8/8/8/5p2/3Kpk1P/8/5P2/8 b - - 0 61",
+  "moves": [
+   "Kg4",
+   "Ke5",
+   "f4",
+   "Kxe4"
+  ],
+  "final_fen": "8/8/8/8/4KpkP/8/5P2/8 b - - 0 63",
+  "key_move": "62.Ke5",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "61...Kg4": "The opponent's last move. Something is now possible — look closely.",
+   "62.Ke5": "The passed pawn on h4 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (63.Kxe4).",
+   "63.Kxe4": "White comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on h4 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (63.Kxe4). White comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "h4",
+    "king_wins_pawn": "63.Kxe4",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "e1RAU",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/e1RAU",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 592,
+    "key_move": {
+     "move": "Ke5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 560,
+     "best_move": "Ke5",
+     "best_cp": 560,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ludao",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the winning plan.",
+  "start_fen": "8/8/8/5p2/2p2P2/4k1P1/2K5/8 w - - 0 63",
+  "moves": [
+   "Kc3",
+   "Kf3",
+   "g4",
+   "Kxg4"
+  ],
+  "final_fen": "8/8/8/5p2/2p2Pk1/2K5/8/8 w - - 0 65",
+  "key_move": "63...Kf3",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "63.Kc3": "The opponent's last move. Something is now possible — look closely.",
+   "63...Kf3": "The passed pawn on c4 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (64...Kxg4).",
+   "64...Kxg4": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on c4 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (64...Kxg4). Black comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "c4",
+    "king_wins_pawn": "64...Kxg4",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "luDAO",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/luDAO",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 575,
+    "key_move": {
+     "move": "Kf3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 453,
+     "best_move": "Kf3",
+     "best_cp": 453,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_qlukh",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the winning plan.",
+  "start_fen": "8/p7/1p6/2p1k1p1/2P3K1/2PP4/P7/8 w - - 1 49",
+  "moves": [
+   "d4+",
+   "cxd4",
+   "cxd4+",
+   "Kxd4"
+  ],
+  "final_fen": "8/p7/1p6/6p1/2Pk2K1/8/P7/8 w - - 0 51",
+  "key_move": "49...cxd4",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "49.d4+": "The opponent's last move. Something is now possible — look closely.",
+   "49...cxd4": "The passed pawn on g5 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (50...Kxd4).",
+   "50...Kxd4": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on g5 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (50...Kxd4). Black comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "g5",
+    "king_wins_pawn": "50...Kxd4",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "QLUkH",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/QLUkH",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 358,
+    "key_move": {
+     "move": "cxd4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 404,
+     "best_move": "cxd4",
+     "best_cp": 404,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_venba",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the winning plan.",
+  "start_fen": "8/8/8/pp6/8/PPPk1p2/5K2/8 w - - 2 47",
+  "moves": [
+   "c4",
+   "bxc4",
+   "bxc4",
+   "Kxc4"
+  ],
+  "final_fen": "8/8/8/p7/2k5/P4p2/5K2/8 w - - 0 49",
+  "key_move": "47...bxc4",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "47.c4": "The opponent's last move. Something is now possible — look closely.",
+   "47...bxc4": "The passed pawn on f3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (48...Kxc4).",
+   "48...Kxc4": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on f3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (48...Kxc4). Black comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "f3",
+    "king_wins_pawn": "48...Kxc4",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "venBa",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/venBa",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 564,
+    "key_move": {
+     "move": "bxc4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 580,
+     "best_move": "bxc4",
+     "best_cp": 580,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_9ahfb",
+  "status": "verified",
+  "title": "Outside passed pawn",
+  "concept": "outside_passed_pawn",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Find the winning plan.",
+  "start_fen": "8/5p2/3kp2p/8/2KPpp2/P7/5PPP/8 b - - 3 37",
+  "moves": [
+   "e3",
+   "fxe3",
+   "fxe3",
+   "Kd3",
+   "e2",
+   "Kxe2"
+  ],
+  "final_fen": "8/5p2/3kp2p/8/3P4/P7/4K1PP/8 b - - 0 40",
+  "key_move": "38.fxe3",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Which of your pawns is furthest away from all the others? Use it to pull the enemy king away."
+  ],
+  "notes": {
+   "37...e3": "The opponent's last move. Something is now possible — look closely.",
+   "38.fxe3": "The passed pawn on a3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (40.Kxe2).",
+   "40.Kxe2": "White comes out 1 point of material ahead."
+  },
+  "explanation": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side. The passed pawn on a3 is far from all the other pawns: the enemy king has to go after it, and meanwhile the other king wins pawns on the far side (40.Kxe2). White comes out 1 point of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "3-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "outside_passed_pawn": {
+    "outside_pawn": "a3",
+    "king_wins_pawn": "40.Kxe2",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9AHfb",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9AHfb",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "outside_passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 358,
+    "key_move": {
+     "move": "fxe3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 330,
+     "best_move": "fxe3",
+     "best_cp": 330,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_vkmnv",
+  "status": "verified",
+  "title": "Pawn breakthrough",
+  "concept": "pawn_breakthrough",
+  "category": "endgames",
+  "subcategory": "pawnEndgame",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Find the winning plan.",
+  "start_fen": "6K1/1p6/1P6/2P5/p7/2k5/8/8 b - - 0 76",
+  "moves": [
+   "Kc4",
+   "c6",
+   "bxc6",
+   "b7",
+   "a3",
+   "b8=Q"
+  ],
+  "final_fen": "1Q4K1/8/2p5/8/2k5/p7/8/8 b - - 0 79",
+  "key_move": "77.c6",
+  "prompt": "What would you play here? Find the winning plan.",
+  "hints": [
+   "Your pawns face a wall of enemy pawns. Can a sacrifice open a path for one of them?"
+  ],
+  "notes": {
+   "76...Kc4": "The opponent's last move. Something is now possible — look closely.",
+   "77.c6": "Breakthrough: 77.c6 gives up material to break the pawn chain, and 79.b8=Q promotes.",
+   "79.b8=Q": "White comes out 7 points of material ahead."
+  },
+  "explanation": "In a pawn ending, giving up one or two pawns to break the enemy pawn chain so that one of your pawns runs through to promote. Breakthrough: 77.c6 gives up material to break the pawn chain, and 79.b8=Q promotes. White comes out 7 points of material ahead.",
+  "tags": [
+   "pawnEndgame",
+   "lichess",
+   "real game",
+   "3-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pawn_breakthrough": {
+    "sacrifices": [
+     "77.c6"
+    ],
+    "promotes": "79.b8=Q",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "vKMNv",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/vKMNv",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pawn_breakthrough"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 491,
+    "key_move": {
+     "move": "c6",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 475,
+     "best_move": "c6",
+     "best_cp": 475,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ }
+]

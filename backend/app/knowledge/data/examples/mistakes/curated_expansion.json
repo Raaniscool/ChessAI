@@ -1,0 +1,358 @@
+[
+ {
+  "id": "mistake_stalemate_queen_corner",
+  "status": "verified",
+  "title": "Avoiding stalemate: one move mates, one draws",
+  "concept": "stalemate_trap",
+  "category": "mistakes",
+  "difficulty": 1,
+  "description": "White is a queen up and Black's king is in the corner. One careless queen move would throw it all away.",
+  "start_fen": "k7/8/2K5/8/8/8/8/1Q6 w - - 0 1",
+  "moves": [
+   "Qb7#"
+  ],
+  "final_fen": "k7/1Q6/2K5/8/8/8/8/8 b - - 1 1",
+  "key_move": "1.Qb7#",
+  "prompt": "White to move. Finish the game — carefully.",
+  "hints": [
+   "Before you move, check whether Black would still have a legal move.",
+   "Qb6 would take away every square without giving check."
+  ],
+  "notes": {
+   "1.Qb7#": "Checkmate: the queen on b7 is protected by the king and covers a7 and b8."
+  },
+  "explanation": "Qb6 would be stalemate: Black's king on a8 would have no legal move but wouldn't be in check, and the game would be a draw. Qb7 gives check, the king on c6 protects the queen, and it's checkmate. When you're winning, always ask: does my opponent still have a move?",
+  "tags": [
+   "stalemate",
+   "checkmate",
+   "queen",
+   "beginner"
+  ],
+  "prerequisites": [
+   "stalemate"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "stalemate_trap": {
+    "stalemating_moves": [
+     "Qb6"
+    ],
+    "key_move": "1.Qb7#",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "stalemate-trap-corner",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Avoiding stalemate with king and queen (standard endgame technique); verified with Stockfish 19",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "1 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "stalemate_trap"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "other good moves: Qh7, Qb2, Qb3"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Qh7, Qb2, Qb3"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [
+     "other good moves: Qh7, Qb2, Qb3"
+    ],
+    "depth": 14,
+    "key_move": {
+     "move": "Qb7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qb7#",
+     "best_cp": 9990,
+     "alternatives": [
+      "Qh7",
+      "Qb2",
+      "Qb3"
+     ],
+     "mate_after": true,
+     "label": "1.Qb7#"
+    },
+    "learner_moves": [],
+    "alternatives": [
+     "Qh7",
+     "Qb2",
+     "Qb3"
+    ]
+   },
+   "alternatives": [
+    "Qh7",
+    "Qb2",
+    "Qb3"
+   ]
+  }
+ },
+ {
+  "id": "mistake_stalemate_give_a_square",
+  "status": "verified",
+  "title": "Avoiding stalemate: give the king a square",
+  "concept": "stalemate_trap",
+  "category": "mistakes",
+  "difficulty": 3,
+  "description": "Black's king has no legal move right now. Almost every quiet move White can make is stalemate.",
+  "start_fen": "7k/5Q2/8/6K1/8/8/8/8 w - - 0 1",
+  "moves": [
+   "Qe7",
+   "Kg8",
+   "Kg6",
+   "Kh8",
+   "Qf8#"
+  ],
+  "final_fen": "5Q1k/8/6K1/8/8/8/8/8 b - - 5 3",
+  "key_move": "1.Qe7",
+  "prompt": "White to move. Black's king can't move at all. What does that mean for your next move?",
+  "hints": [
+   "If Black had to move now, it would be stalemate.",
+   "Every king move would be stalemate. Give Black's king a square back."
+  ],
+  "notes": {
+   "1.Qe7": "The queen steps back and gives Black's king the square g8 — no stalemate.",
+   "2.Kg6": "Now White's king comes closer.",
+   "3.Qf8#": "Checkmate."
+  },
+  "explanation": "Black's king on h8 has no legal move. Kg6 or Kh6 would be stalemate — in fact every king move would be. First give the king a square with Qe7; after Kg8, Kg6 brings White's king closer and Qf8 is mate. A winning player has to keep the opponent breathing until the very last move.",
+  "tags": [
+   "stalemate",
+   "checkmate",
+   "queen",
+   "endgame technique"
+  ],
+  "prerequisites": [
+   "stalemate"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "stalemate_trap": {
+    "stalemating_moves": [
+     "Kf4",
+     "Kf5",
+     "Kf6",
+     "Kg4",
+     "Kg6",
+     "Kh4",
+     "Kh5",
+     "Kh6",
+     "Qg6"
+    ],
+    "key_move": "1.Qe7",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "stalemate-trap-square",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Avoiding stalemate with king and queen (standard endgame technique); verified with Stockfish 19",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "stalemate_trap"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "other good moves: Qb7, Qc7, Qa7, Qd7"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Qb7, Qc7, Qa7, Qd7"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [
+     "other good moves: Qb7, Qc7, Qa7, Qd7"
+    ],
+    "depth": 14,
+    "key_move": {
+     "move": "Qe7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qb7",
+     "best_cp": 9970,
+     "alternatives": [
+      "Qb7",
+      "Qc7",
+      "Qa7",
+      "Qd7"
+     ],
+     "mate_after": true,
+     "label": "1.Qe7"
+    },
+    "learner_moves": [
+     {
+      "move": "Kg6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Kg6",
+      "best_cp": 9980,
+      "alternatives": [
+       "Kh6",
+       "Kf6",
+       "Kf5"
+      ],
+      "mate_after": true,
+      "label": "2.Kg6"
+     },
+     {
+      "move": "Qf8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qg7#",
+      "best_cp": 9990,
+      "alternatives": [
+       "Qg7#",
+       "Qh7#",
+       "Qe8#"
+      ],
+      "mate_after": true,
+      "label": "3.Qf8#"
+     }
+    ],
+    "alternatives": [
+     "Qb7",
+     "Qc7",
+     "Qa7",
+     "Qd7"
+    ]
+   },
+   "alternatives": [
+    "Qb7",
+    "Qc7",
+    "Qa7",
+    "Qd7"
+   ]
+  }
+ }
+]

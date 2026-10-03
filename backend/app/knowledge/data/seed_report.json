@@ -2,33 +2,37 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 341,
+  "verified": 409,
   "rejected": 20,
   "needs_review": 35
  },
  "by_category": {
   "basics": 26,
-  "checkmates": 71,
-  "endgames": 6,
-  "mistakes": 20,
+  "checkmates": 89,
+  "endgames": 22,
+  "mistakes": 34,
   "openings": 10,
-  "tactics": 208
+  "tactics": 228
  },
  "by_concept": {
   "absolute_pin": 15,
   "anastasia_mate": 10,
   "arabian_mate": 10,
+  "attraction": 6,
   "back_rank_mate": 15,
+  "back_rank_weakness": 6,
   "boden_mate": 10,
   "cannot_castle": 2,
   "captures": 1,
   "caro_kann": 5,
   "castling": 2,
   "check": 1,
+  "clearance": 4,
   "deflection": 11,
   "discovered_attack": 11,
   "discovered_check": 15,
   "double_check": 15,
+  "dovetail_mate": 6,
   "early_queen": 1,
   "en_passant": 2,
   "evans_gambit": 1,
@@ -37,9 +41,12 @@
   "fried_liver": 1,
   "hanging_piece": 15,
   "hanging_queen": 1,
+  "hook_mate": 6,
   "hung_piece": 6,
   "ignoring_development": 1,
+  "interference": 4,
   "italian_game": 2,
+  "key_squares": 2,
   "king_safety_mistake": 2,
   "knight_fork": 15,
   "ladder_mate": 1,
@@ -47,11 +54,15 @@
   "legals_mate": 1,
   "lucena_position": 1,
   "mate_in_one": 10,
-  "missed_threat": 1,
+  "mate_in_two": 6,
+  "missed_threat": 7,
   "opposition": 2,
+  "outside_passed_pawn": 6,
   "overloaded_piece": 15,
   "passed_pawn": 1,
+  "pawn_breakthrough": 2,
   "pawn_fork": 3,
+  "philidor_position": 1,
   "poisoned_pawn": 1,
   "promotion": 15,
   "queen_fork": 8,
@@ -60,14 +71,19 @@
   "removing_defender": 14,
   "repeated_moves": 1,
   "rook_mate": 1,
+  "rule_of_the_square": 2,
   "sacrifice": 15,
   "scholars_mate": 1,
   "skewer": 15,
   "smothered_mate": 12,
   "stalemate": 2,
+  "stalemate_trap": 2,
   "trapped_piece": 14,
+  "triangulation": 2,
   "two_knights_defense": 1,
+  "underpromotion": 6,
   "walked_into_fork": 6,
+  "wrong_bishop": 1,
   "zwischenzug": 14
  },
  "needs_review": [
@@ -6181,5 +6197,65 @@
    "skewer": 3
   },
   "not_verified": []
+ },
+ "expansion": {
+  "import_date": "2026-10-02",
+  "totals": {
+   "verified": 68,
+   "needs_review": 4
+  },
+  "by_concept": {
+   "attraction": 6,
+   "back_rank_weakness": 6,
+   "clearance": 4,
+   "dovetail_mate": 6,
+   "hook_mate": 6,
+   "interference": 4,
+   "key_squares": 2,
+   "mate_in_two": 6,
+   "missed_threat": 6,
+   "outside_passed_pawn": 6,
+   "pawn_breakthrough": 2,
+   "philidor_position": 1,
+   "rule_of_the_square": 2,
+   "stalemate_trap": 2,
+   "triangulation": 2,
+   "underpromotion": 6,
+   "wrong_bishop": 1
+  },
+  "not_verified": [
+   {
+    "id": "lichess_8pscz",
+    "concept": "clearance",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 52.Rg8+ the learner is only 24 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_fsvwv",
+    "concept": "clearance",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 41.Rb8 the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_aija3",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 34.Bb2 the learner is only 35 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_k1tc6",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 36.Re5+ the learner is only 61 cp better — the tactic doesn't clearly win"
+    ]
+   }
+  ]
  }
 }

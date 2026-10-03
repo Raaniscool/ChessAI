@@ -1,0 +1,3866 @@
+[
+ {
+  "id": "lichess_7yoiw",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "8/8/8/4Q3/6PK/4k3/4q3/5q2 b - - 3 69",
+  "moves": [
+   "Kf2",
+   "Qg3#"
+  ],
+  "final_fen": "8/8/8/8/6PK/6Q1/4qk2/5q2 b - - 5 70",
+  "key_move": "70.Qg3#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on f2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "69...Kf2": "The opponent's last move. Something is now possible — look closely.",
+   "70.Qg3#": "Checkmate! The black king on f2 is attacked by the queen on g3, its own pieces block f1 and e2; e1, g1, g2, e3, f3 and g3 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. Checkmate! The black king on f2 is attacked by the queen on g3, its own pieces block f1 and e2; e1, g1, g2, e3, f3 and g3 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "black",
+    "king": "f2",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "g3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "e1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "f1",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "g1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "e2",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "e3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "f3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "g3",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "h4"
+      }
+     }
+    ],
+    "mating_move": "70.Qg3#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "e2"
+     },
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "f1"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7yoiw",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7yoiw",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qg3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qg3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "70.Qg3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_rxdyx",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/q1KQ4/4P3/8/1k6/8/8/8 w - - 9 63",
+  "moves": [
+   "Kd6",
+   "Qc5#"
+  ],
+  "final_fen": "8/3Q4/3KP3/2q5/1k6/8/8/8 w - - 11 64",
+  "key_move": "63...Qc5#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on d6 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "63.Kd6": "The opponent's last move. Something is now possible — look closely.",
+   "63...Qc5#": "Checkmate! The white king on d6 is attacked by the queen on c5, its own pieces block e6 and d7; c5, d5, e5, c6, c7 and e7 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. Checkmate! The white king on d6 is attacked by the queen on c5, its own pieces block e6 and d7; c5, d5, e5, c6, c7 and e7 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "white",
+    "king": "d6",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "c5"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c5",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "b4"
+      }
+     },
+     {
+      "square": "d5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "e5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "c6",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "e6",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "c7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "d7",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c5"
+      }
+     }
+    ],
+    "mating_move": "63...Qc5#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "e6"
+     },
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "rxDYX",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/rxDYX",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qc5#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qc5#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "63...Qc5#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_zqj9d",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "8/8/8/8/5K2/Q7/2p5/2kq4 b - - 1 76",
+  "moves": [
+   "Kd2",
+   "Qe3#"
+  ],
+  "final_fen": "8/8/8/8/5K2/4Q3/2pk4/3q4 b - - 3 77",
+  "key_move": "77.Qe3#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on d2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "76...Kd2": "The opponent's last move. Something is now possible — look closely.",
+   "77.Qe3#": "Checkmate! The black king on d2 is attacked by the queen on e3, its own pieces block d1 and c2; c1, e1, e2, c3, d3 and e3 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. Checkmate! The black king on d2 is attacked by the queen on e3, its own pieces block d1 and c2; c1, e1, e2, c3, d3 and e3 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "black",
+    "king": "d2",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "e3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "d1",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "e1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "c2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "c3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "d3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "e3",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "f4"
+      }
+     }
+    ],
+    "mating_move": "77.Qe3#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "c2"
+     },
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "d1"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "zqj9D",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/zqj9D",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qe3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qe3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "77.Qe3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_1lcsc",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "8/8/4Qpkp/3p4/2p2q2/7P/6P1/7K b - - 3 40",
+  "moves": [
+   "Qe5",
+   "Qg8+",
+   "Kf5",
+   "Qg4#"
+  ],
+  "final_fen": "8/8/5p1p/3pqk2/2p3Q1/7P/6P1/7K b - - 7 42",
+  "key_move": "41.Qg8+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on f5 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "40...Qe5": "The opponent's last move. Something is now possible — look closely.",
+   "42.Qg4#": "Checkmate! The black king on f5 is attacked by the queen on g4, its own pieces block e5 and f6; e4, f4, g4, g5, e6 and g6 are covered; and nothing can block or capture the checking piece.",
+   "41.Qg8+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on f5 is attacked by the queen on g4, its own pieces block e5 and f6; e4, f4, g4, g5, e6 and g6 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "black",
+    "king": "f5",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "g4"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "e4",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "f4",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "h3"
+      }
+     },
+     {
+      "square": "e5",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "g5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "e6",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "f6",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g6",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g4"
+      }
+     }
+    ],
+    "mating_move": "42.Qg4#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "e5"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "f6"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "1lcSc",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/1lcSc",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qg8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qg8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41.Qg8+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qg4#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qg4#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "42.Qg4#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_3jxmf",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/1PQ5/6pk/3q4/P7/4P3/2p2PK1/8 w - - 7 68",
+  "moves": [
+   "Kf1",
+   "Qh1+",
+   "Ke2",
+   "Qd1#"
+  ],
+  "final_fen": "8/1PQ5/6pk/8/P7/4P3/2p1KP2/3q4 w - - 11 70",
+  "key_move": "68...Qh1+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on e2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "68.Kf1": "The opponent's last move. Something is now possible — look closely.",
+   "69...Qd1#": "Checkmate! The white king on e2 is attacked by the queen on d1, its own pieces block f2 and e3; d1, e1, f1, d2, d3 and f3 are covered; and nothing can block or capture the checking piece.",
+   "68...Qh1+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on e2 is attacked by the queen on d1, its own pieces block f2 and e3; d1, e1, f1, d2, d3 and f3 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "white",
+    "king": "e2",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "d1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d1",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "c2"
+      }
+     },
+     {
+      "square": "e1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "f1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "d2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "f2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "d3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "e3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "d1"
+      }
+     }
+    ],
+    "mating_move": "69...Qd1#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "f2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "e3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "3JXMf",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/3JXMf",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qh1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qh1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "68...Qh1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qd1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qd1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "69...Qd1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_7shq4",
+  "status": "verified",
+  "title": "Dovetail mate",
+  "concept": "dovetail_mate",
+  "category": "checkmates",
+  "subcategory": "dovetailMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "6k1/5p2/6p1/7p/4Q2P/4PKP1/8/4q3 w - - 12 49",
+  "moves": [
+   "Qd4",
+   "Qf1+",
+   "Ke4",
+   "Qf5#"
+  ],
+  "final_fen": "6k1/5p2/6p1/5q1p/3QK2P/4P1P1/8/8 w - - 16 51",
+  "key_move": "49...Qf1+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on e4 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "49.Qd4": "The opponent's last move. Something is now possible — look closely.",
+   "50...Qf5#": "Checkmate! The white king on e4 is attacked by the queen on f5, its own pieces block e3 and d4; d3, f3, f4, d5, e5 and f5 are covered; and nothing can block or capture the checking piece.",
+   "49...Qf1+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on e4 is attacked by the queen on f5, its own pieces block e3 and d4; d3, f3, f4, d5, e5 and f5 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "dovetailMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "dovetail_mate": {
+    "mated_side": "white",
+    "king": "e4",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "f5"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f5"
+      }
+     },
+     {
+      "square": "e3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f3",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f5"
+      }
+     },
+     {
+      "square": "d4",
+      "blocked_by": "queen"
+     },
+     {
+      "square": "f4",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f5"
+      }
+     },
+     {
+      "square": "d5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f5"
+      }
+     },
+     {
+      "square": "e5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f5"
+      }
+     },
+     {
+      "square": "f5",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g6"
+      }
+     }
+    ],
+    "mating_move": "50...Qf5#",
+    "pattern": "dovetail mate",
+    "blocked_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d4"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "e3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7SHq4",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7SHq4",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "dovetail_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qf1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qf1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "49...Qf1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qf5#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qf5#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "50...Qf5#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_0ymg6",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "2R5/4rpk1/5Np1/6P1/8/5K2/8/6b1 b - - 35 58",
+  "moves": [
+   "Bd4",
+   "Rg8#"
+  ],
+  "final_fen": "6R1/4rpk1/5Np1/6P1/3b4/5K2/8/8 b - - 37 59",
+  "key_move": "59.Rg8#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on g7 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "58...Bd4": "The opponent's last move. Something is now possible — look closely.",
+   "59.Rg8#": "Checkmate! The black king on g7 is attacked by the rook on g8, its own pieces block g6 and f7; f6, h6, h7, f8, g8 and h8 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. Checkmate! The black king on g7 is attacked by the rook on g8, its own pieces block g6 and f7; f6, h6, h7, f8, g8 and h8 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "black",
+    "king": "g7",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "g8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g5"
+      }
+     },
+     {
+      "square": "g6",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g5"
+      }
+     },
+     {
+      "square": "f7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h7",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g8"
+      }
+     },
+     {
+      "square": "g8",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "h8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g8"
+      }
+     }
+    ],
+    "mating_move": "59.Rg8#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "white",
+     "square": "g8"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "white",
+     "square": "f6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0Ymg6",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0Ymg6",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rg8#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rg8#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "59.Rg8#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_apvln",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/5N1k/8/2R3p1/7n/5K1P/7r/8 w - - 9 50",
+  "moves": [
+   "Kg3",
+   "Rg2#"
+  ],
+  "final_fen": "8/5N1k/8/2R3p1/7n/6KP/6r1/8 w - - 11 51",
+  "key_move": "50...Rg2#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on g3 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "50.Kg3": "The opponent's last move. Something is now possible — look closely.",
+   "50...Rg2#": "Checkmate! The white king on g3 is attacked by the rook on g2, its own pieces block h3; f2, g2, h2, f3, f4, g4 and h4 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. Checkmate! The white king on g3 is attacked by the rook on g2, its own pieces block h3; f2, g2, h2, f3, f4, g4 and h4 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "white",
+    "king": "g3",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "g2"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f2",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g2"
+      }
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "h4"
+      }
+     },
+     {
+      "square": "h2",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g2"
+      }
+     },
+     {
+      "square": "f3",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "h4"
+      }
+     },
+     {
+      "square": "h3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f4",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g5"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g2"
+      }
+     },
+     {
+      "square": "h4",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g5"
+      }
+     }
+    ],
+    "mating_move": "50...Rg2#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "black",
+     "square": "g2"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "black",
+     "square": "h4"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "apvln",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/apvln",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rg2#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rg2#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "50...Rg2#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_w9myz",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "7k/6p1/5nP1/5PK1/4r3/1Q6/8/8 w - - 9 49",
+  "moves": [
+   "Qb7",
+   "Rg4#"
+  ],
+  "final_fen": "7k/1Q4p1/5nP1/5PK1/6r1/8/8/8 w - - 11 50",
+  "key_move": "49...Rg4#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on g5 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "49.Qb7": "The opponent's last move. Something is now possible — look closely.",
+   "49...Rg4#": "Checkmate! The white king on g5 is attacked by the rook on g4, its own pieces block f5 and g6; f4, g4, h4, h5, f6 and h6 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. Checkmate! The white king on g5 is attacked by the rook on g4, its own pieces block f5 and g6; f4, g4, h4, h5, f6 and h6 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "white",
+    "king": "g5",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "g4"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f4",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "h4",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g4"
+      }
+     },
+     {
+      "square": "f5",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h5",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "f6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g7"
+      }
+     },
+     {
+      "square": "g6",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g7"
+      }
+     }
+    ],
+    "mating_move": "49...Rg4#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "black",
+     "square": "g4"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "black",
+     "square": "f6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "w9MYz",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/w9MYz",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rg4#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rg4#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "49...Rg4#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_bhlxj",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/8/4R1p1/1P4rp/3p4/1R2nk2/2P5/4K3 w - - 1 46",
+  "moves": [
+   "b6",
+   "Rg1+",
+   "Kd2",
+   "Rd1#"
+  ],
+  "final_fen": "8/8/1P2R1p1/7p/3p4/1R2nk2/2PK4/3r4 w - - 3 48",
+  "key_move": "46...Rg1+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on d2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "46.b6": "The opponent's last move. Something is now possible — look closely.",
+   "47...Rd1#": "Checkmate! The white king on d2 is attacked by the rook on d1, its own pieces block c2; c1, d1, e1, e2, c3, d3 and e3 are covered; and nothing can block or capture the checking piece.",
+   "46...Rg1+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on d2 is attacked by the rook on d1, its own pieces block c2; c1, d1, e1, e2, c3, d3 and e3 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "white",
+    "king": "d2",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "d1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "d1",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "e1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "c2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e2",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "c3",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "d4"
+      }
+     },
+     {
+      "square": "d3",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d1"
+      }
+     },
+     {
+      "square": "e3",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "d4"
+      }
+     }
+    ],
+    "mating_move": "47...Rd1#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "black",
+     "square": "d1"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "black",
+     "square": "e3"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "BHLxJ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/BHLxJ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rg1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rg1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "46...Rg1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rd1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rd1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "47...Rd1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_cpk1e",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "6k1/5p2/Q7/1p6/P1p5/8/1P4P1/1Kn1r3 w - - 3 39",
+  "moves": [
+   "Qxb5",
+   "Nb3+",
+   "Kc2",
+   "Rc1#"
+  ],
+  "final_fen": "6k1/5p2/8/1Q6/P1p5/1n6/1PK3P1/2r5 w - - 3 41",
+  "key_move": "39...Nb3+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on c2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "39.Qxb5": "The opponent's last move. Something is now possible — look closely.",
+   "40...Rc1#": "Checkmate! The white king on c2 is attacked by the rook on c1, its own pieces block b2; b1, c1, d1, d2, b3, c3 and d3 are covered; and nothing can block or capture the checking piece.",
+   "39...Nb3+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on c2 is attacked by the rook on c1, its own pieces block b2; b1, c1, d1, d2, b3, c3 and d3 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "white",
+    "king": "c2",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "c1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "b1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "c1"
+      }
+     },
+     {
+      "square": "c1",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "b3"
+      }
+     },
+     {
+      "square": "d1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "c1"
+      }
+     },
+     {
+      "square": "b2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "d2",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "b3"
+      }
+     },
+     {
+      "square": "b3",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "c4"
+      }
+     },
+     {
+      "square": "c3",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "c1"
+      }
+     },
+     {
+      "square": "d3",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "c4"
+      }
+     }
+    ],
+    "mating_move": "40...Rc1#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "black",
+     "square": "c1"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "black",
+     "square": "b3"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Cpk1e",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Cpk1e",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nb3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Nb3+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "39...Nb3+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rc1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rc1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "40...Rc1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ort3r",
+  "status": "verified",
+  "title": "Hook mate",
+  "concept": "hook_mate",
+  "category": "checkmates",
+  "subcategory": "hookMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "4k3/p3p3/4N3/2pP4/n7/P5r1/8/2K2R2 b - - 3 43",
+  "moves": [
+   "Rxa3",
+   "Rf8+",
+   "Kd7",
+   "Rd8#"
+  ],
+  "final_fen": "3R4/p2kp3/4N3/2pP4/n7/r7/8/2K5 b - - 3 45",
+  "key_move": "44.Rf8+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on d7 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "43...Rxa3": "The opponent's last move. Something is now possible — look closely.",
+   "45.Rd8#": "Checkmate! The black king on d7 is attacked by the rook on d8, its own pieces block e7; c6, d6, e6, c7, c8, d8 and e8 are covered; and nothing can block or capture the checking piece.",
+   "44.Rf8+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on d7 is attacked by the rook on d8, its own pieces block e7; c6, d6, e6, c7, c8, d8 and e8 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "hookMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hook_mate": {
+    "mated_side": "black",
+    "king": "d7",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "d8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "d5"
+      }
+     },
+     {
+      "square": "d6",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     },
+     {
+      "square": "e6",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "d5"
+      }
+     },
+     {
+      "square": "c7",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "e7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "c8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     },
+     {
+      "square": "d8",
+      "covered_by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "e8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     }
+    ],
+    "mating_move": "45.Rd8#",
+    "pattern": "hook mate",
+    "rook": {
+     "piece": "rook",
+     "color": "white",
+     "square": "d8"
+    },
+    "knight": {
+     "piece": "knight",
+     "color": "white",
+     "square": "e6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "ORt3r",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/ORt3r",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hook_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rf8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rf8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "44.Rf8+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rd8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rd8#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "45.Rd8#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_1z9mm",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find mate in two.",
+  "start_fen": "8/8/2R5/3P4/7b/1PP1Bk2/8/1r4K1 w - - 1 46",
+  "moves": [
+   "Kh2",
+   "Bg3+",
+   "Kh3",
+   "Rh1#"
+  ],
+  "final_fen": "8/8/2R5/3P4/8/1PP1BkbK/8/7r w - - 5 48",
+  "key_move": "46...Bg3+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on h3 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "46.Kh2": "The opponent's last move. Something is now possible — look closely.",
+   "47...Rh1#": "Checkmate! The white king on h3 is attacked by the rook on h1; g2, h2, g3, g4 and h4 are covered; and nothing can block or capture the checking piece.",
+   "46...Bg3+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on h3 is attacked by the rook on h1; g2, h2, g3, g4 and h4 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "white",
+    "king": "h3",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "h1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "h2",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "g3"
+      }
+     },
+     {
+      "square": "g3",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "h4",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "g3"
+      }
+     }
+    ],
+    "mating_move": "47...Rh1#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "1z9mM",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/1z9mM",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bg3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Bg3+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "46...Bg3+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rh1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rh1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "47...Rh1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_2zvz3",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find mate in two.",
+  "start_fen": "6k1/6r1/7R/1pb2B2/8/5Q2/6P1/4q2K w - - 1 47",
+  "moves": [
+   "Kh2",
+   "Qg1+",
+   "Kh3",
+   "Qh1#"
+  ],
+  "final_fen": "6k1/6r1/7R/1pb2B2/8/5Q1K/6P1/7q w - - 5 49",
+  "key_move": "47...Qg1+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on h3 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "47.Kh2": "The opponent's last move. Something is now possible — look closely.",
+   "48...Qh1#": "Checkmate! The white king on h3 is attacked by the queen on h1, its own pieces block g2; h2, g3, g4 and h4 are covered; and nothing can block or capture the checking piece.",
+   "47...Qg1+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on h3 is attacked by the queen on h1, its own pieces block g2; h2, g3, g4 and h4 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "white",
+    "king": "h3",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "h1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "h1"
+      }
+     },
+     {
+      "square": "g3",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g7"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g7"
+      }
+     },
+     {
+      "square": "h4",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "h1"
+      }
+     }
+    ],
+    "mating_move": "48...Qh1#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2zVZ3",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2zVZ3",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qg1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qg1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "47...Qg1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qh1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qh1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "48...Qh1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_514db",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find mate in two.",
+  "start_fen": "8/3r3p/8/8/3p3P/R2p4/1r2k1R1/6K1 b - - 0 50",
+  "moves": [
+   "Ke1",
+   "Ra1+",
+   "Rb1",
+   "Rxb1#"
+  ],
+  "final_fen": "8/3r3p/8/8/3p3P/3p4/6R1/1R2k1K1 b - - 0 52",
+  "key_move": "51.Ra1+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on e1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "50...Ke1": "The opponent's last move. Something is now possible — look closely.",
+   "52.Rxb1#": "Checkmate! The black king on e1 is attacked by the rook on b1; d1, f1, d2, e2 and f2 are covered; and nothing can block or capture the checking piece.",
+   "51.Ra1+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on e1 is attacked by the rook on b1; d1, f1, d2, e2 and f2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "black",
+    "king": "e1",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "b1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b1"
+      }
+     },
+     {
+      "square": "f1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b1"
+      }
+     },
+     {
+      "square": "d2",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g2"
+      }
+     },
+     {
+      "square": "e2",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g2"
+      }
+     },
+     {
+      "square": "f2",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "g2"
+      }
+     }
+    ],
+    "mating_move": "52.Rxb1#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "514DB",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/514DB",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ra1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "51.Ra1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxb1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rxb1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "52.Rxb1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_7xzva",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find mate in two.",
+  "start_fen": "KR6/3q2p1/1P5p/6kP/8/5B2/6P1/8 w - - 11 57",
+  "moves": [
+   "Bb7",
+   "Qa4+",
+   "Ba6",
+   "Qxa6#"
+  ],
+  "final_fen": "KR6/6p1/qP5p/6kP/8/8/6P1/8 w - - 0 59",
+  "key_move": "57...Qa4+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on a8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "57.Bb7": "The opponent's last move. Something is now possible — look closely.",
+   "58...Qxa6#": "Checkmate! The white king on a8 is attacked by the queen on a6, its own pieces block b8; a7 and b7 are covered; and nothing can block or capture the checking piece.",
+   "57...Qa4+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on a8 is attacked by the queen on a6, its own pieces block b8; a7 and b7 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "white",
+    "king": "a8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "a6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "a7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "a6"
+      }
+     },
+     {
+      "square": "b7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "a6"
+      }
+     },
+     {
+      "square": "b8",
+      "blocked_by": "rook"
+     }
+    ],
+    "mating_move": "58...Qxa6#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7XZVa",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7XZVa",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qa4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qa4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "57...Qa4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxa6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qxa6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "58...Qxa6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9pp3f",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find mate in two.",
+  "start_fen": "6rk/R7/5p2/3n1N1K/3P2P1/8/5B2/8 w - - 4 57",
+  "moves": [
+   "Bh4",
+   "Nf4+",
+   "Kh6",
+   "Rg6#"
+  ],
+  "final_fen": "7k/R7/5prK/5N2/3P1nPB/8/8/8 w - - 8 59",
+  "key_move": "57...Nf4+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on h6 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "57.Bh4": "The opponent's last move. Something is now possible — look closely.",
+   "58...Rg6#": "Checkmate! The white king on h6 is attacked by the rook on g6; g5, h5, g6, g7 and h7 are covered; and nothing can block or capture the checking piece.",
+   "57...Nf4+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on h6 is attacked by the rook on g6; g5, h5, g6, g7 and h7 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "white",
+    "king": "h6",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "g6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g5",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "black",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "h5",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "f4"
+      }
+     },
+     {
+      "square": "g6",
+      "covered_by": {
+       "piece": "knight",
+       "color": "black",
+       "square": "f4"
+      }
+     },
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "g6"
+      }
+     },
+     {
+      "square": "h7",
+      "covered_by": {
+       "piece": "king",
+       "color": "black",
+       "square": "h8"
+      }
+     }
+    ],
+    "mating_move": "58...Rg6#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9pP3f",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9pP3f",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Nf4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "57...Nf4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rg6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rg6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "58...Rg6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_cqfwm",
+  "status": "verified",
+  "title": "Mate in two",
+  "concept": "mate_in_two",
+  "category": "checkmates",
+  "subcategory": "mateIn2",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find mate in two.",
+  "start_fen": "8/8/2R4p/P5pk/8/r6P/6PK/8 b - - 6 40",
+  "moves": [
+   "Rxa5",
+   "g4+",
+   "Kh4",
+   "Rxh6#"
+  ],
+  "final_fen": "8/8/7R/r5p1/6Pk/7P/7K/8 b - - 0 42",
+  "key_move": "41.g4+",
+  "prompt": "What would you play here? Find mate in two.",
+  "hints": [
+   "It's mate in two: start with a forcing move that leaves no defence.",
+   "The king on h4 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "40...Rxa5": "The opponent's last move. Something is now possible — look closely.",
+   "42.Rxh6#": "Checkmate! The black king on h4 is attacked by the rook on h6, its own pieces block g5; g3, h3, g4 and h5 are covered; and nothing can block or capture the checking piece.",
+   "41.g4+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on h4 is attacked by the rook on h6, its own pieces block g5; g3, h3, g4 and h5 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "mateIn2",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "mate_in_two": {
+    "mated_side": "black",
+    "king": "h4",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "h6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g3",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "h2"
+      }
+     },
+     {
+      "square": "h3",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "h6"
+      }
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "h3"
+      }
+     },
+     {
+      "square": "g5",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h5",
+      "covered_by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g4"
+      }
+     }
+    ],
+    "mating_move": "42.Rxh6#",
+    "pattern": "mate in two"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "CqFwm",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/CqFwm",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "mate_in_two"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "g4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "g4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41.g4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxh6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rxh6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "42.Rxh6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ }
+]

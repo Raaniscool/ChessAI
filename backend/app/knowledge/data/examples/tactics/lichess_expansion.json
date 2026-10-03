@@ -1,0 +1,3184 @@
+[
+ {
+  "id": "lichess_0cu4v",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the decoy.",
+  "start_fen": "8/p1N2Q2/7p/4k3/6K1/1P2P1P1/P3q3/8 w - - 1 42",
+  "moves": [
+   "Qf3",
+   "h5+",
+   "Kxh5",
+   "Qxf3+"
+  ],
+  "final_fen": "8/p1N5/8/4k2K/8/1P2PqP1/P7/8 w - - 0 44",
+  "key_move": "42...h5+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to h5?"
+  ],
+  "notes": {
+   "42.Qf3": "The opponent's last move. Something is now possible — look closely.",
+   "42...h5+": "Decoy! The pawn on h5 is offered, so the king has to come to h5 — and there it runs into 43...Qxf3+.",
+   "43...Qxf3+": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The pawn on h5 is offered, so the king has to come to h5 — and there it runs into 43...Qxf3+. Black comes out 8 points of material ahead.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "42...h5+",
+    "offered": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "h5"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "white",
+     "square": "h5"
+    },
+    "square": "h5",
+    "follow_up": "43...Qxf3+",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0cu4V",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0cu4V",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "h5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 797,
+     "best_move": "h5+",
+     "best_cp": 797,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "42...h5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxf3+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 849,
+      "best_move": "Qxf3+",
+      "best_cp": 849,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "43...Qxf3+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_2aiio",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the decoy.",
+  "start_fen": "r5k1/6b1/8/1pB5/1P1Pq3/2P1P3/1K5Q/3N4 w - - 17 51",
+  "moves": [
+   "Qc2",
+   "Ra2+",
+   "Kxa2",
+   "Qxc2+"
+  ],
+  "final_fen": "6k1/6b1/8/1pB5/1P1P4/2P1P3/K1q5/3N4 w - - 0 53",
+  "key_move": "51...Ra2+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to a2?"
+  ],
+  "notes": {
+   "51.Qc2": "The opponent's last move. Something is now possible — look closely.",
+   "51...Ra2+": "Decoy! The rook on a2 is offered, so the king has to come to a2 — and there it runs into 52...Qxc2+.",
+   "52...Qxc2+": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The rook on a2 is offered, so the king has to come to a2 — and there it runs into 52...Qxc2+. Black comes out 4 points of material ahead.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "51...Ra2+",
+    "offered": {
+     "piece": "rook",
+     "color": "black",
+     "square": "a2"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "white",
+     "square": "a2"
+    },
+    "square": "a2",
+    "follow_up": "52...Qxc2+",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2AIIo",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2AIIo",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ra2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 603,
+     "best_move": "Ra2+",
+     "best_cp": 603,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "51...Ra2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxc2+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 608,
+      "best_move": "Qxc2+",
+      "best_cp": 608,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "52...Qxc2+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_3orph",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the decoy.",
+  "start_fen": "8/1pR5/p4pk1/5b1p/PB1KrP1P/6P1/8/8 w - - 3 38",
+  "moves": [
+   "Kc5",
+   "b6+",
+   "Kxb6",
+   "Rxb4+"
+  ],
+  "final_fen": "8/2R5/pK3pk1/5b1p/Pr3P1P/6P1/8/8 w - - 0 40",
+  "key_move": "38...b6+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to b6?"
+  ],
+  "notes": {
+   "38.Kc5": "The opponent's last move. Something is now possible — look closely.",
+   "38...b6+": "Decoy! The pawn on b6 is offered, so the king has to come to b6 — and there it runs into 39...Rxb4+.",
+   "39...Rxb4+": "Black comes out 2 points of material ahead."
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The pawn on b6 is offered, so the king has to come to b6 — and there it runs into 39...Rxb4+. Black comes out 2 points of material ahead.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "38...b6+",
+    "offered": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "b6"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "white",
+     "square": "b6"
+    },
+    "square": "b6",
+    "follow_up": "39...Rxb4+",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "3ORPH",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/3ORPH",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "b6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "b6+",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "38...b6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxb4+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 492,
+      "best_move": "Rxb4+",
+      "best_cp": 492,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "39...Rxb4+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_6ehjh",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the decoy.",
+  "start_fen": "8/pp4R1/6k1/P4q2/8/3Q4/1Pr3rP/1K6 b - - 5 47",
+  "moves": [
+   "Kf6",
+   "Rf7+",
+   "Kxf7",
+   "Qxf5+"
+  ],
+  "final_fen": "8/pp3k2/8/P4Q2/8/8/1Pr3rP/1K6 b - - 0 49",
+  "key_move": "48.Rf7+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to f7?"
+  ],
+  "notes": {
+   "47...Kf6": "The opponent's last move. Something is now possible — look closely.",
+   "48.Rf7+": "Decoy! The rook on f7 is offered, so the king has to come to f7 — and there it runs into 49.Qxf5+.",
+   "49.Qxf5+": "White comes out 4 points of material ahead."
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The rook on f7 is offered, so the king has to come to f7 — and there it runs into 49.Qxf5+. White comes out 4 points of material ahead.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "48.Rf7+",
+    "offered": {
+     "piece": "rook",
+     "color": "white",
+     "square": "f7"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "black",
+     "square": "f7"
+    },
+    "square": "f7",
+    "follow_up": "49.Qxf5+",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "6Ehjh",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/6Ehjh",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rf7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 486,
+     "best_move": "Rf7+",
+     "best_cp": 486,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "48.Rf7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxf5+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 508,
+      "best_move": "Qxf5+",
+      "best_cp": 508,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "49.Qxf5+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_chdwz",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the decoy.",
+  "start_fen": "1R6/5p1k/4p2p/8/3q4/5Q2/5PPP/r4BK1 w - - 3 29",
+  "moves": [
+   "Qg3",
+   "Rxf1+",
+   "Kxf1",
+   "Qd1#"
+  ],
+  "final_fen": "1R6/5p1k/4p2p/8/8/6Q1/5PPP/3q1K2 w - - 1 31",
+  "key_move": "29...Rxf1+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to f1?"
+  ],
+  "notes": {
+   "29.Qg3": "The opponent's last move. Something is now possible — look closely.",
+   "29...Rxf1+": "Decoy! The rook on f1 is offered, so the king has to come to f1 — and there it runs into 30...Qd1#.",
+   "30...Qd1#": "Checkmate!"
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The rook on f1 is offered, so the king has to come to f1 — and there it runs into 30...Qd1#. The line ends in checkmate.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "29...Rxf1+",
+    "offered": {
+     "piece": "rook",
+     "color": "black",
+     "square": "f1"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "white",
+     "square": "f1"
+    },
+    "square": "f1",
+    "follow_up": "30...Qd1#",
+    "ends_in_mate": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "CHdWZ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/CHdWZ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxf1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rxf1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "29...Rxf1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qd1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qd1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "30...Qd1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_cnd57",
+  "status": "verified",
+  "title": "Decoy",
+  "concept": "attraction",
+  "category": "tactics",
+  "subcategory": "attraction",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the decoy.",
+  "start_fen": "4Rrk1/6pp/p2N4/8/P7/8/2rn1P2/4R2K b - - 1 34",
+  "moves": [
+   "Nf3",
+   "Rxf8+",
+   "Kxf8",
+   "Re8#"
+  ],
+  "final_fen": "4Rk2/6pp/p2N4/8/P7/5n2/2r2P2/7K b - - 1 36",
+  "key_move": "35.Rxf8+",
+  "prompt": "What would you play here? Find the decoy.",
+  "hints": [
+   "Can you force an enemy piece onto a square where it gets hit? It may cost material.",
+   "Which enemy piece would you like to bring to f8?"
+  ],
+  "notes": {
+   "34...Nf3": "The opponent's last move. Something is now possible — look closely.",
+   "35.Rxf8+": "Decoy! The rook on f8 is offered, so the king has to come to f8 — and there it runs into 36.Re8#.",
+   "36.Re8#": "Checkmate!"
+  },
+  "explanation": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate. Decoy! The rook on f8 is offered, so the king has to come to f8 — and there it runs into 36.Re8#. The line ends in checkmate.",
+  "tags": [
+   "attraction",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "attraction": {
+    "move": "35.Rxf8+",
+    "offered": {
+     "piece": "rook",
+     "color": "white",
+     "square": "f8"
+    },
+    "lured": {
+     "piece": "king",
+     "color": "black",
+     "square": "f8"
+    },
+    "square": "f8",
+    "follow_up": "36.Re8#",
+    "ends_in_mate": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "CND57",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/CND57",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "attraction"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxf8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rxf8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "35.Rxf8+"
+    },
+    "learner_moves": [
+     {
+      "move": "Re8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Re8#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "36.Re8#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_0knza",
+  "status": "verified",
+  "title": "Clearance",
+  "concept": "clearance",
+  "category": "tactics",
+  "subcategory": "clearance",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Clear the way for another piece.",
+  "start_fen": "6k1/1Q4p1/6qp/P6n/1P6/5P2/1P4PP/6RK w - - 1 33",
+  "moves": [
+   "a6",
+   "Ng3+",
+   "hxg3",
+   "Qh5#"
+  ],
+  "final_fen": "6k1/1Q4p1/P6p/7q/1P6/5PP1/1P4P1/6RK w - - 1 35",
+  "key_move": "33...Ng3+",
+  "prompt": "What would you play here? Clear the way for another piece.",
+  "hints": [
+   "One of your own pieces is in the way. Move it — with a threat if you can.",
+   "Which of your pieces would love to use h5?"
+  ],
+  "notes": {
+   "33.a6": "The opponent's last move. Something is now possible — look closely.",
+   "33...Ng3+": "Clearance: the knight on h5 gets out of the way, so the queen on g6 can use h5 next.",
+   "34...Qh5#": "Checkmate!"
+  },
+  "explanation": "A clearance move gets one of your own pieces out of the way — ideally with a threat — so another piece can use the square or line it was blocking. Clearance: the knight on h5 gets out of the way, so the queen on g6 can use h5 next. The line ends in checkmate.",
+  "tags": [
+   "clearance",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "clearance": {
+    "move": "33...Ng3+",
+    "cleared_square": "h5",
+    "clearing_piece": {
+     "piece": "knight",
+     "color": "black",
+     "square": "h5"
+    },
+    "follow_up": "34...Qh5#",
+    "used_by": {
+     "piece": "queen",
+     "color": "black",
+     "square": "g6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0KNZa",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0KNZa",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "clearance"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ng3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ng3+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "33...Ng3+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qh5#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qh5#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "34...Qh5#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9gerd",
+  "status": "verified",
+  "title": "Clearance",
+  "concept": "clearance",
+  "category": "tactics",
+  "subcategory": "clearance",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Clear the way for another piece.",
+  "start_fen": "8/6pk/5p2/3P2p1/4Pq2/5P1K/3R1QPP/6r1 w - - 15 41",
+  "moves": [
+   "g3",
+   "g4+",
+   "fxg4",
+   "Qh6#"
+  ],
+  "final_fen": "8/6pk/5p1q/3P4/4P1P1/6PK/3R1Q1P/6r1 w - - 1 43",
+  "key_move": "41...g4+",
+  "prompt": "What would you play here? Clear the way for another piece.",
+  "hints": [
+   "One of your own pieces is in the way. Move it — with a threat if you can.",
+   "Which of your pieces would love to use g5?"
+  ],
+  "notes": {
+   "41.g3": "The opponent's last move. Something is now possible — look closely.",
+   "41...g4+": "Clearance: the pawn on g5 gets out of the way, so the queen on f4 can use g5 next.",
+   "42...Qh6#": "Checkmate!"
+  },
+  "explanation": "A clearance move gets one of your own pieces out of the way — ideally with a threat — so another piece can use the square or line it was blocking. Clearance: the pawn on g5 gets out of the way, so the queen on f4 can use g5 next. The line ends in checkmate.",
+  "tags": [
+   "clearance",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "clearance": {
+    "move": "41...g4+",
+    "cleared_square": "g5",
+    "clearing_piece": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "g5"
+    },
+    "follow_up": "42...Qh6#",
+    "used_by": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f4"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9geRd",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9geRd",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "clearance"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "g4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "g4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41...g4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qh6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qh6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "42...Qh6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_bvrky",
+  "status": "verified",
+  "title": "Clearance",
+  "concept": "clearance",
+  "category": "tactics",
+  "subcategory": "clearance",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Clear the way for another piece.",
+  "start_fen": "R3R3/6kb/p1r2p2/1p1n1P1P/4K2P/8/8/8 b - - 3 42",
+  "moves": [
+   "Nc7",
+   "Re7+",
+   "Kh6",
+   "Rh8"
+  ],
+  "final_fen": "7R/2n1R2b/p1r2p1k/1p3P1P/4K2P/8/8/8 b - - 7 44",
+  "key_move": "43.Re7+",
+  "prompt": "What would you play here? Clear the way for another piece.",
+  "hints": [
+   "One of your own pieces is in the way. Move it — with a threat if you can.",
+   "Which of your pieces would love to use e8?"
+  ],
+  "notes": {
+   "42...Nc7": "The opponent's last move. Something is now possible — look closely.",
+   "43.Re7+": "Clearance: the rook on e8 gets out of the way, so the rook on a8 can use e8 next."
+  },
+  "explanation": "A clearance move gets one of your own pieces out of the way — ideally with a threat — so another piece can use the square or line it was blocking. Clearance: the rook on e8 gets out of the way, so the rook on a8 can use e8 next.",
+  "tags": [
+   "clearance",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "clearance": {
+    "move": "43.Re7+",
+    "cleared_square": "e8",
+    "clearing_piece": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e8"
+    },
+    "follow_up": "44.Rh8",
+    "used_by": {
+     "piece": "rook",
+     "color": "white",
+     "square": "a8"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "BvrkY",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/BvrkY",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "clearance"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Re7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 408,
+     "best_move": "Re7+",
+     "best_cp": 408,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "43.Re7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rh8",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 545,
+      "best_move": "Rh8",
+      "best_cp": 545,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "44.Rh8"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ggpie",
+  "status": "verified",
+  "title": "Clearance",
+  "concept": "clearance",
+  "category": "tactics",
+  "subcategory": "clearance",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Clear the way for another piece.",
+  "start_fen": "1r5k/6p1/Q6p/8/1N2R1P1/8/Pr5q/K3R3 w - - 0 31",
+  "moves": [
+   "Qg6",
+   "Rxa2+",
+   "Nxa2",
+   "Qb2#"
+  ],
+  "final_fen": "1r5k/6p1/6Qp/8/4R1P1/8/Nq6/K3R3 w - - 1 33",
+  "key_move": "31...Rxa2+",
+  "prompt": "What would you play here? Clear the way for another piece.",
+  "hints": [
+   "One of your own pieces is in the way. Move it — with a threat if you can.",
+   "Which of your pieces would love to use b2?"
+  ],
+  "notes": {
+   "31.Qg6": "The opponent's last move. Something is now possible — look closely.",
+   "31...Rxa2+": "Clearance: the rook on b2 gets out of the way, so the queen on h2 can use b2 next.",
+   "32...Qb2#": "Checkmate!"
+  },
+  "explanation": "A clearance move gets one of your own pieces out of the way — ideally with a threat — so another piece can use the square or line it was blocking. Clearance: the rook on b2 gets out of the way, so the queen on h2 can use b2 next. The line ends in checkmate.",
+  "tags": [
+   "clearance",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "clearance": {
+    "move": "31...Rxa2+",
+    "cleared_square": "b2",
+    "clearing_piece": {
+     "piece": "rook",
+     "color": "black",
+     "square": "b2"
+    },
+    "follow_up": "32...Qb2#",
+    "used_by": {
+     "piece": "queen",
+     "color": "black",
+     "square": "h2"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "GGpIe",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/GGpIe",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "clearance"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxa2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rxa2+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "31...Rxa2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qb2#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qb2#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "32...Qb2#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_4km56",
+  "status": "verified",
+  "title": "Interference",
+  "concept": "interference",
+  "category": "tactics",
+  "subcategory": "interference",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Cut the defender off.",
+  "start_fen": "3r4/1pp3k1/p7/6p1/1PP2p2/P1Nn1P2/5PK1/3R4 b - - 1 29",
+  "moves": [
+   "Kf6",
+   "Nd5+",
+   "Ke5",
+   "Rxd3"
+  ],
+  "final_fen": "3r4/1pp5/p7/3Nk1p1/1PP2p2/P2R1P2/5PK1/8 b - - 0 31",
+  "key_move": "30.Nd5+",
+  "prompt": "What would you play here? Cut the defender off.",
+  "hints": [
+   "The rook on d8 guards d3. Can you put something in the way?"
+  ],
+  "notes": {
+   "29...Kf6": "The opponent's last move. Something is now possible — look closely.",
+   "30.Nd5+": "Interference: the piece on d5 cuts the rook on d8 off from d3, which is no longer defended.",
+   "31.Rxd3": "White comes out 3 points of material ahead."
+  },
+  "explanation": "Interference puts a piece between an enemy long-range piece and a square it guards. With the line cut, that square is no longer defended. Interference: the piece on d5 cuts the rook on d8 off from d3, which is no longer defended. White comes out 3 points of material ahead.",
+  "tags": [
+   "interference",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "interference": {
+    "move": "30.Nd5+",
+    "cut_square": "d5",
+    "blocked_piece": {
+     "piece": "rook",
+     "color": "black",
+     "square": "d8"
+    },
+    "guarded_square": "d3",
+    "follow_up": "31.Rxd3"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4kM56",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4kM56",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "interference"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nd5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 341,
+     "best_move": "Nd5+",
+     "best_cp": 341,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "30.Nd5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxd3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 366,
+      "best_move": "Rxd3",
+      "best_cp": 366,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "31.Rxd3"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9r9dr",
+  "status": "verified",
+  "title": "Interference",
+  "concept": "interference",
+  "category": "tactics",
+  "subcategory": "interference",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Cut the defender off.",
+  "start_fen": "8/3r1p2/p1kB1K2/2P3P1/8/1P6/P7/8 b - - 0 58",
+  "moves": [
+   "Rb7",
+   "Be7",
+   "Rb4",
+   "Kxf7"
+  ],
+  "final_fen": "8/4BK2/p1k5/2P3P1/1r6/1P6/P7/8 b - - 0 60",
+  "key_move": "59.Be7",
+  "prompt": "What would you play here? Cut the defender off.",
+  "hints": [
+   "The rook on b7 guards f7. Can you put something in the way?"
+  ],
+  "notes": {
+   "58...Rb7": "The opponent's last move. Something is now possible — look closely.",
+   "59.Be7": "Interference: the piece on e7 cuts the rook on b7 off from f7, which is no longer defended.",
+   "60.Kxf7": "White comes out 1 point of material ahead."
+  },
+  "explanation": "Interference puts a piece between an enemy long-range piece and a square it guards. With the line cut, that square is no longer defended. Interference: the piece on e7 cuts the rook on b7 off from f7, which is no longer defended. White comes out 1 point of material ahead.",
+  "tags": [
+   "interference",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "interference": {
+    "move": "59.Be7",
+    "cut_square": "e7",
+    "blocked_piece": {
+     "piece": "rook",
+     "color": "black",
+     "square": "b7"
+    },
+    "guarded_square": "f7",
+    "follow_up": "60.Kxf7"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9R9Dr",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9R9Dr",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "interference"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Be7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 316,
+     "best_move": "Be7",
+     "best_cp": 316,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "59.Be7"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxf7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 339,
+      "best_move": "Kxf7",
+      "best_cp": 339,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "60.Kxf7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_fbvqg",
+  "status": "verified",
+  "title": "Interference",
+  "concept": "interference",
+  "category": "tactics",
+  "subcategory": "interference",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Cut the defender off.",
+  "start_fen": "5Q2/1ppk4/4q1r1/3p4/4p1p1/P1P5/1P4PP/5RK1 b - - 7 32",
+  "moves": [
+   "Rg8",
+   "Rf7+",
+   "Kc6",
+   "Qxg8"
+  ],
+  "final_fen": "6Q1/1pp2R2/2k1q3/3p4/4p1p1/P1P5/1P4PP/6K1 b - - 0 34",
+  "key_move": "33.Rf7+",
+  "prompt": "What would you play here? Cut the defender off.",
+  "hints": [
+   "The queen on e6 guards g8. Can you put something in the way?"
+  ],
+  "notes": {
+   "32...Rg8": "The opponent's last move. Something is now possible — look closely.",
+   "33.Rf7+": "Interference: the piece on f7 cuts the queen on e6 off from g8, which is no longer defended.",
+   "34.Qxg8": "White comes out 5 points of material ahead."
+  },
+  "explanation": "Interference puts a piece between an enemy long-range piece and a square it guards. With the line cut, that square is no longer defended. Interference: the piece on f7 cuts the queen on e6 off from g8, which is no longer defended. White comes out 5 points of material ahead.",
+  "tags": [
+   "interference",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "interference": {
+    "move": "33.Rf7+",
+    "cut_square": "f7",
+    "blocked_piece": {
+     "piece": "queen",
+     "color": "black",
+     "square": "e6"
+    },
+    "guarded_square": "g8",
+    "follow_up": "34.Qxg8"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "FBvQg",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/FBvQg",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "interference"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rf7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 476,
+     "best_move": "Rf7+",
+     "best_cp": 476,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "33.Rf7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxg8",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 465,
+      "best_move": "Qxg8",
+      "best_cp": 465,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "34.Qxg8"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ny2ju",
+  "status": "verified",
+  "title": "Interference",
+  "concept": "interference",
+  "category": "tactics",
+  "subcategory": "interference",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Cut the defender off.",
+  "start_fen": "8/6bk/p3q1rp/4P3/1p2Q2P/5N2/1P3PP1/6K1 b - - 4 32",
+  "moves": [
+   "Qg4",
+   "Ng5+",
+   "hxg5",
+   "Qxg4"
+  ],
+  "final_fen": "8/6bk/p5r1/4P1p1/1p4QP/8/1P3PP1/6K1 b - - 0 34",
+  "key_move": "33.Ng5+",
+  "prompt": "What would you play here? Cut the defender off.",
+  "hints": [
+   "The rook on g6 guards g4. Can you put something in the way?"
+  ],
+  "notes": {
+   "32...Qg4": "The opponent's last move. Something is now possible — look closely.",
+   "33.Ng5+": "Interference: the piece on g5 cuts the rook on g6 off from g4, which is no longer defended.",
+   "34.Qxg4": "White comes out 6 points of material ahead."
+  },
+  "explanation": "Interference puts a piece between an enemy long-range piece and a square it guards. With the line cut, that square is no longer defended. Interference: the piece on g5 cuts the rook on g6 off from g4, which is no longer defended. White comes out 6 points of material ahead.",
+  "tags": [
+   "interference",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "interference": {
+    "move": "33.Ng5+",
+    "cut_square": "g5",
+    "blocked_piece": {
+     "piece": "rook",
+     "color": "black",
+     "square": "g6"
+    },
+    "guarded_square": "g4",
+    "follow_up": "34.Qxg4"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Ny2Ju",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Ny2Ju",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "interference"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ng5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 515,
+     "best_move": "Ng5+",
+     "best_cp": 515,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "33.Ng5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxg4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 580,
+      "best_move": "Qxg4",
+      "best_cp": 580,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "34.Qxg4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_hv8dr",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the best promotion.",
+  "start_fen": "8/8/R7/6k1/4P2p/7K/P2r2p1/8 w - - 2 48",
+  "moves": [
+   "Ra8",
+   "g1=N#"
+  ],
+  "final_fen": "R7/8/8/6k1/4P2p/7K/P2r4/6n1 w - - 0 49",
+  "key_move": "48...g1=N#",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "48.Ra8": "The opponent's last move. Something is now possible — look closely.",
+   "48...g1=N#": "Underpromotion! The pawn becomes a knight on g1. Here it does more than a queen would."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on g1. Here it does more than a queen would. The line ends in checkmate.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "48...g1=N#",
+    "promoted_to": "knight",
+    "square": "g1",
+    "gives_check": true,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "hv8Dr",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/hv8Dr",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "g1=N#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "g1=N#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "48...g1=N#"
+    },
+    "learner_moves": [],
+    "alternatives": [],
+    "queen_instead_cp": -2
+   }
+  }
+ },
+ {
+  "id": "lichess_0fh2r",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best promotion.",
+  "start_fen": "8/8/7p/1N3kpP/8/3p1p2/3K4/8 w - - 0 66",
+  "moves": [
+   "Nc3",
+   "f2",
+   "Nd5",
+   "f1=N+"
+  ],
+  "final_fen": "8/8/7p/3N1kpP/8/3p4/3K4/5n2 w - - 0 68",
+  "key_move": "66...f2",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "66.Nc3": "The opponent's last move. Something is now possible — look closely.",
+   "66...f2": "Underpromotion! The pawn becomes a knight on f1. Here it does more than a queen would.",
+   "67...f1=N+": "Black comes out 2 points of material ahead."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on f1. Here it does more than a queen would. Black comes out 2 points of material ahead.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "67...f1=N+",
+    "promoted_to": "knight",
+    "square": "f1",
+    "gives_check": true,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0Fh2r",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0Fh2r",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "f2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 383,
+     "best_move": "f2",
+     "best_cp": 383,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "66...f2"
+    },
+    "learner_moves": [
+     {
+      "move": "f1=N+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 324,
+      "best_move": "f1=N+",
+      "best_cp": 324,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "67...f1=N+"
+     }
+    ],
+    "alternatives": [],
+    "queen_instead_cp": 0
+   }
+  }
+ },
+ {
+  "id": "lichess_7axvw",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the best promotion.",
+  "start_fen": "8/2p1P1k1/5qP1/5P1p/4K3/8/8/8 b - - 0 81",
+  "moves": [
+   "h4",
+   "e8=N+",
+   "Kh8",
+   "Nxf6"
+  ],
+  "final_fen": "7k/2p5/5NP1/5P2/4K2p/8/8/8 b - - 0 83",
+  "key_move": "82.e8=N+",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "81...h4": "The opponent's last move. Something is now possible — look closely.",
+   "82.e8=N+": "Underpromotion! The pawn becomes a knight on e8. Here it does more than a queen would.",
+   "83.Nxf6": "White comes out 11 points of material ahead."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on e8. Here it does more than a queen would. White comes out 11 points of material ahead.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "82.e8=N+",
+    "promoted_to": "knight",
+    "square": "e8",
+    "gives_check": true,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7aXvw",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7aXvw",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "e8=N+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 651,
+     "best_move": "e8=N+",
+     "best_cp": 651,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "82.e8=N+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxf6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 626,
+      "best_move": "Nxf6",
+      "best_cp": 626,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "83.Nxf6"
+     }
+    ],
+    "alternatives": [],
+    "queen_instead_cp": 0
+   }
+  }
+ },
+ {
+  "id": "lichess_alumr",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best promotion.",
+  "start_fen": "3R4/8/8/3bkp2/8/3K4/4p2r/R7 w - - 1 53",
+  "moves": [
+   "Ra5",
+   "e1=N+",
+   "Kc3",
+   "Rc2+"
+  ],
+  "final_fen": "3R4/8/8/R2bkp2/8/2K5/2r5/4n3 w - - 2 55",
+  "key_move": "53...e1=N+",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "53.Ra5": "The opponent's last move. Something is now possible — look closely.",
+   "53...e1=N+": "Underpromotion! The pawn becomes a knight on e1. Here it does more than a queen would.",
+   "54...Rc2+": "Black comes out 2 points of material ahead."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on e1. Here it does more than a queen would. Black comes out 2 points of material ahead.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "53...e1=N+",
+    "promoted_to": "knight",
+    "square": "e1",
+    "gives_check": true,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "ALuMr",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/ALuMr",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "e1=N+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 618,
+     "best_move": "e1=N+",
+     "best_cp": 618,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "53...e1=N+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rc2+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 590,
+      "best_move": "Rc2+",
+      "best_cp": 590,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "54...Rc2+"
+     }
+    ],
+    "alternatives": [],
+    "queen_instead_cp": -5
+   }
+  }
+ },
+ {
+  "id": "lichess_ggdhg",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the best promotion.",
+  "start_fen": "8/3n1PKp/8/5k1P/8/8/pB6/8 b - - 0 54",
+  "moves": [
+   "Kg5",
+   "h6",
+   "Nc5",
+   "f8=N"
+  ],
+  "final_fen": "5N2/6Kp/7P/2n3k1/8/8/pB6/8 b - - 0 56",
+  "key_move": "55.h6",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "54...Kg5": "The opponent's last move. Something is now possible — look closely.",
+   "55.h6": "Underpromotion! The pawn becomes a knight on f8. Here it does more than a queen would.",
+   "56.f8=N": "White comes out 2 points of material ahead."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on f8. Here it does more than a queen would. White comes out 2 points of material ahead.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "56.f8=N",
+    "promoted_to": "knight",
+    "square": "f8",
+    "gives_check": false,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Ggdhg",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Ggdhg",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "h6",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 385,
+     "best_move": "h6",
+     "best_cp": 385,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "55.h6"
+    },
+    "learner_moves": [
+     {
+      "move": "f8=N",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 302,
+      "best_move": "f8=N",
+      "best_cp": 302,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "56.f8=N"
+     }
+    ],
+    "alternatives": [],
+    "queen_instead_cp": -7
+   }
+  }
+ },
+ {
+  "id": "lichess_mutkj",
+  "status": "verified",
+  "title": "Underpromotion",
+  "concept": "underpromotion",
+  "category": "tactics",
+  "subcategory": "underPromotion",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the best promotion.",
+  "start_fen": "8/5P1k/p4R2/5PKP/3q4/8/8/8 b - - 4 59",
+  "moves": [
+   "Qf2",
+   "f8=N+",
+   "Kg8",
+   "Ne6"
+  ],
+  "final_fen": "6k1/8/p3NR2/5PKP/8/8/5q2/8 b - - 2 61",
+  "key_move": "60.f8=N+",
+  "prompt": "What would you play here? Find the best promotion.",
+  "hints": [
+   "A pawn is about to promote — but is a queen really the best choice here?"
+  ],
+  "notes": {
+   "59...Qf2": "The opponent's last move. Something is now possible — look closely.",
+   "60.f8=N+": "Underpromotion! The pawn becomes a knight on f8. Here it does more than a queen would.",
+   "61.Ne6": "White comes out 2 points of material ahead."
+  },
+  "explanation": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate. Underpromotion! The pawn becomes a knight on f8. Here it does more than a queen would. White comes out 2 points of material ahead.",
+  "tags": [
+   "underPromotion",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "underpromotion": {
+    "move": "60.f8=N+",
+    "promoted_to": "knight",
+    "square": "f8",
+    "gives_check": true,
+    "stalemate_if_queen": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "MUTKJ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/MUTKJ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "underpromotion"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "underpromotion",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "f8=N+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 184,
+     "best_move": "f8=N+",
+     "best_cp": 184,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "60.f8=N+"
+    },
+    "learner_moves": [
+     {
+      "move": "Ne6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 134,
+      "best_move": "Ne6",
+      "best_cp": 134,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "61.Ne6"
+     }
+    ],
+    "alternatives": [],
+    "queen_instead_cp": -9990
+   }
+  }
+ }
+]
