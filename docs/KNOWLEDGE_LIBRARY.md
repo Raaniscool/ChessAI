@@ -219,6 +219,77 @@ proposal  ← a constructor (python-chess builds a position with the idea)  or  
   force; the constructor failed the discrimination check 40 of 40 times and was removed), openings
   (only the Lichess opening database is used), and concepts without a validator.
 
+## Opening trees (`knowledge/opening_trees.py`)
+
+25 openings are stored as **trees**, not lines: Italian, Ruy Lopez, Scotch, Four Knights, Vienna,
+King's Gambit, Petrov, Philidor, Sicilian, French, Caro-Kann, Scandinavian, Pirc, Alekhine, QGD,
+QGA, Slav, Catalan, London, King's Indian, Nimzo-Indian, Queen's Indian, Grünfeld, English, Dutch.
+(Benoni and Réti are not in this set yet.)
+
+| | |
+|---|---|
+| Spec (hand-written, reviewed) | `knowledge/sources/data/curated/opening_trees.json`: names, aliases, main line, summary, plans, traps, model games |
+| Build | `scripts/build_opening_trees.py` (Stockfish depth 14; resumable eval cache `sources/data/opening_evals.json`) |
+| Output | `knowledge/data/opening_trees/<id>.json` + `_report.json` |
+| Last build | 6,768 positions (6,138 unique), 2,733 named lines; 100–873 positions per opening |
+
+**Where the positions come from.** Every move is from the Lichess opening database (CC0, the same
+TSVs as `lichess_openings.py`): all named lines of the opening and every prefix of them. Hand-picked
+main lines must be *exact* database lines, or the build stops. Only a thin tree (under 100 database
+positions: London, Pirc, Scandinavian, Petrov) is extended along Stockfish's best moves, at most six
+plies past a named leaf. Those positions are marked `src: "engine"`, and lessons say when a line ends
+in engine moves.
+
+**What is verified.** Every position gets a Stockfish evaluation. Every move is labelled sound
+(loses ≤120 cp), dubious (≤250) or mistake. A learner's move in a taught branch must be sound.
+Traps and model games are hand-written candidates, and the build keeps them only if they hold up:
+
+- **Traps:** the moves before the mistake are reasonable (≤250 cp). The mistake loses ≥150 cp. The
+  punishment is accurate (≤80 cp per move) and ends in mate or ≥ +150.
+- **Games:** each one replays legally, stays in the tree for ≥6 plies, and its result matches the
+  final position.
+
+Last build: 13 of 20 traps and 8 of 9 games were kept. Rejections are listed in `_report.json`, e.g.
+"Fried Liver Attack: the mistake Nxd5 only loses 105 cp". The library's own Fried Liver example is
+separate and verified on its own.
+
+**Teaching a branch, not the tree** (`planner/opening_tree_plans.py`). `OpeningTrees.find(goal)`
+matches the opening and, optionally, a named variation ("Sicilian Dragon", "Marshall Attack",
+"Grünfeld"). A variation name with no opening named is used only when it is unambiguous, so "exchange
+variation" matches nothing. `OpeningTree.branch(node, level, side)` picks the line to teach:
+
+| Level | Branch |
+|---|---|
+| beginner | to the first named position ≥8 plies deep |
+| intermediate | to the first named position ≥14 plies deep |
+| advanced | the deepest continuation; if it ends before 18 plies, the deepest named theory that leaves it as late as possible |
+
+So the length varies by opening and level: Scandinavian 8/14/17 plies, QGD 8/15/28. A request
+for a variation always stays inside it.
+
+The plan has three parts:
+
+1. The branch: moves and ideas, then the whole branch from memory. The drill covers every learner
+   move however long the line is. A "where this branch fits" step lists the alternatives at each
+   move ("Your opponent can also play 3...a6 (Morphy Defense)…").
+2. Up to two traps that share the branch's moves.
+3. A model game that reaches it.
+
+Other branches are offered as chips (`plan.branches`), never added to the plan.
+
+**Who answers.** When the catalog or a verified library example already teaches exactly the request
+(the Italian Game, the Caro-Kann Advance, the Najdorf on the catalog's Sicilian line, the Evans
+Gambit), that planner answers as before. The tree only adds `plan.branches` suggestions. The tree
+planner answers everything else that names one of the 25 openings. Tree failures are logged and
+never break planning.
+
+Rebuild after editing the spec (about 20 minutes cold; cached evaluations make reruns fast):
+
+```powershell
+.\.venv\Scripts\python scripts\build_opening_trees.py            # all 25
+.\.venv\Scripts\python scripts\build_opening_trees.py --only dutch_defense,petrovs_defense
+```
+
 ## When the library has nothing (`planner/missing.py`)
 
 A lesson request never fails just because there is no verified example:
