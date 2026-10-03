@@ -267,6 +267,36 @@ shape without counting the examples twice.
 - `POST /api/knowledge/answer` answers definitions instantly.
 - Every `/api/*` response carries `Server-Timing`, and requests over 3 s are logged.
 
-Tests: `test_learner.py`, `test_adaptive_lessons.py`, `test_lesson_wording.py`,
+**One skill profile for Puzzles and Training** (`learner/training_level.py`):
+- Lessons are pitched with the same calibration as the Puzzles tab (`learner/difficulty.py`). It
+  uses game error rates (overall, opening, endgame), tactics walked into (defence), and winning
+  chances found or missed (pattern recognition and calculation). The rating is only a weak prior.
+  It also counts every finished puzzle *and lesson exercise*.
+- It is per concept. A defensive idea uses the defence skill, an endgame uses the endgame skill,
+  and a weakness from the games is pitched slightly lower. The lesson's purpose (from
+  `lesson_shape`) shifts the target a little: learn −60, simplify −120, practice 0, challenge
+  +100.
+- Examples are ranked by their puzzle-index rating, the same scale as the targets.
+- It adapts gradually. Each lesson exercise is recorded as a puzzle result, so the next lesson on
+  that concept starts from the updated estimate. This is an Elo performance with an anchor, so
+  one result moves it a little. Inside a lesson, `learner.adapt` swaps at most two examples on
+  the same scale.
+- A sub-idea whose easiest position is more than 400 above the target waits until the ideas at
+  the learner's level run out.
+- The profile appears in the coach panel as "Skills". The API exposes it as
+  `profile.skill_profile` with the fields overall_skill_level, tactical_skill,
+  calculation_skill, defensive_skill, opening_skill, endgame_skill and pattern_recognition, each
+  with its evidence.
+
+**Instant feedback for library examples** (`teacher/library_feedback.py`): a correct move in a
+verified example shows the stored, verified text at once. That text is the move note, the
+explanation on the final move, the verified line's best reply, the moves Stockfish accepts as
+equally good, and the idea once solved. No AI call is made. "🧠 Explain deeper" asks the AI
+teacher. The closing explanation doesn't repeat sentences already shown.
+
+**No spoilers before solving:** puzzle and lesson exercise prompts say "find the best move". The
+concept, the objective and any reason that names the idea appear only after the solve or reveal.
+
+Tests: `test_training_level.py`, `test_library_feedback.py`, `test_learner.py`, `test_adaptive_lessons.py`, `test_lesson_wording.py`,
 `test_questions_and_skills.py`, `test_importance.py`, `test_request_matching.py`, and the UI e2e
 onboarding flow.

@@ -168,6 +168,13 @@ soft highlight.
   - A left click or any position change clears them.
   - cm-chessboard's move input only reacts to the left button, so a right-drag can never move a
     piece. Arrows never touch the history, the engine or the AI.
+- **Check highlight** (`frontend/check-highlight.js`): a king in check gets a red glow on its
+  square. It is a cm-chessboard extension, so it covers every position the board shows: lessons,
+  learner and demonstration moves, puzzles, game review and history navigation. It redraws when
+  the pieces change, when the board is redrawn and when it is turned. It sits in its own layer
+  under the pieces, so clearing lesson or puzzle markers never removes it. Check detection is a
+  small pure function (`checkedKings`), tested against chess.js on random games.
+- **Board sounds** (`frontend/sounds.js`): move, capture and check sounds, switchable in settings.
 
 ## Roadmap alignment
 
