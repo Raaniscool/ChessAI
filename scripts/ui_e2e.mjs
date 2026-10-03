@@ -139,6 +139,13 @@ $("pz-mode-practice").click()
   check(/(White|Black) to move/.test($("pz-info").textContent) && /^Puzzle 1$/.test($("pz-counter").textContent) &&
     $("pz-set").querySelectorAll(".pz-item").length >= 3, "puzzles 4+5: general practice works without analysis and opens the solver: " +
     $("pz-info").textContent.replace(/\s+/g, " ").trim())
+  // Practice → a chosen theme names the type before solving (only Mixed practice hides it)
+  {
+    const c = $("pz-info").querySelector(".pz-concept")
+    check(!!c && /pin/i.test(c.textContent) && !/Mixed/.test($("pz-title").textContent) &&
+      /pin/i.test($("pz-set").querySelector(".pz-item.active").textContent),
+      "Practice → Pins shows the type before solving: " + (c && c.textContent))
+  }
   const level = $("pz-info").querySelector(".pz-level")
   check(level && /^Aimed at your pins? level|^Aimed at your (tactics|pattern recognition|calculation) level/.test(level.textContent),
     "calibration: the first card says which level the set is aimed at: " + (level && level.textContent))
