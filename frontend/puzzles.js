@@ -1,13 +1,13 @@
 // Puzzles tab: a dashboard (Personalized / Practice) and a board-focused solver.
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
-import {applyAdapt, cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, pendingIds, resultBody, retry,
-  reveal, sameMove,
-  shouldRecord} from "./puzzle-solver.js"
+import {applyAdapt, autoNextDelay, cardLine, focusLine, header, itemLabel, judge, needsMore, newAttempt, nextHint,
+  pendingIds, resultBody, retry, reveal, sameMove, shouldRecord} from "./puzzle-solver.js"
 
 const REPLY_DELAY = 450
 const REVERT_DELAY = 550
 const SOLUTION_STEP = 700
+const MORE_COUNT = 3      // puzzles fetched at a time in a continuous session
 
 export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler,
   escapeHtml, setStatus, nav = null, MoveHistory = null, showNode = null, sounds = null}) {
@@ -23,6 +23,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     mode: "personal", screen: "dashboard", dashboard: null, set: [], title: "", pos: 0, attempt: null,
     chess: null, inputOpen: false, token: 0, active: false, results: {}, summary: null,
     body: null, done: [], difficulty: null, adaptNote: null,
+    mixed: false,    // Mixed practice: the concept stays hidden until a puzzle is over
+    session: 0,      // which training session (a new start or leaving ends the old one)
+    more: null,      // the pending request for the next puzzles
+    auto: null,      // the pending "next puzzle by itself" {timer, tick}
     history: MoveHistory ? new MoveHistory(new Chess().fen()) : null,   // what's been played (← →)
     explore: null,   // after the puzzle: a board to try other moves on (never graded or recorded)
   }
@@ -86,7 +90,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
         <p class="pz-evidence">${escapeHtml(cardLine(main))}</p>
         ${focusLine(main) ? `<p class="pz-focus">${escapeHtml(focusLine(main))}</p>` : ""}
         <p class="muted">Recommended: ${escapeHtml(p.profile.recommendation || "")}</p>`
-      box.appendChild(startButton(main, `Start ${main.recommended} puzzles`, true))
+      box.appendChild(startButton(main, "Start training", true))
       el.personal.appendChild(box)
       const others = p.weaknesses.slice(1)
       if (others.length) {
@@ -118,7 +122,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     }
     const intro = document.createElement("p")
     intro.className = "muted"
-    intro.textContent = "Pick a theme. Puzzles adapt to your level as you solve them."
+    intro.textContent = "Pick a theme. Puzzles keep coming and adapt to your level as you solve them."
     el.practice.append(intro, grid)
   }
 
@@ -142,9 +146,13 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       return
     }
     el.status.textContent = ""
+    cancelAuto()
+    view.session++
+    view.more = null
     view.set = res.puzzles
-    // the set's theme ("Knight forks") would name every puzzle's idea: a neutral heading while solving
-    view.title = body.mode === "personalized" ? "Your puzzles" : "Practice set"
+    // Mixed practice is about recognising the idea yourself: a neutral heading, concepts hidden
+    view.mixed = Boolean(res.mixed)
+    view.title = view.mixed ? "Mixed practice" : res.title
     view.theme = res.title
     view.results = {}
     view.summary = null
@@ -168,7 +176,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       const r = view.results[p.id]
       b.className = "lesson-item pz-item" + (i === view.pos ? " active" : "") + (r ? ` ${r}` : "")
       b.dataset.id = p.id
-      b.innerHTML = `<span>${i + 1}. ${escapeHtml(itemLabel(p, r))}</span>
+      b.innerHTML = `<span>${i + 1}. ${escapeHtml(itemLabel(p, r, {mixed: view.mixed}))}</span>
         <span class="badge">${r === "solved" ? "✓" : r === "failed" ? "✗" : escapeHtml(header(p, i, 1).difficulty)}</span>`
       b.addEventListener("click", () => goTo(i))
       el.set.appendChild(b)
@@ -178,7 +186,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   function renderInfo() {
     const p = puzzle()
     const done = Boolean(view.attempt && view.attempt.done)
-    const h = header(p, view.pos, view.set.length, done)
+    const h = header(p, view.pos, view.set.length, done, {mixed: view.mixed, continuous: true})
     el.title.textContent = view.title || "Puzzles"
     el.counter.textContent = h.progress
     el.info.innerHTML = `<div class="pz-side ${p.side}">${escapeHtml(h.side)}</div>
@@ -359,15 +367,77 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
         the board — they don't count.</p>` : ""}`
     show(el.explain, true)
     show(el.hint, false); show(el.solution, false); show(el.retry, true); show(el.next, true)
-    el.next.textContent = view.pos < view.set.length - 1 ? "Next →" : "Finish set"
+    el.next.textContent = "Next →"
     view.results[p.id] = solved ? "solved" : "failed"
-    renderInfo()   // now the theme, the real objective and the named "why" can be shown
+    renderInfo()   // in Mixed practice, now the theme, the real objective and the named "why" are shown
     renderSetList()
     if (view.history) {   // free exploration from here (MoveHistory keeps what was played)
       view.explore = new Chess(view.history.current.fen)
       setInput(true)
     }
-    await recordIfNeeded()
+    const token = view.token
+    await recordIfNeeded()   // record -> the difficulty profile updates -> the next selection uses it
+    if (token !== view.token || view.screen !== "solver") return
+    if (needsMore(view.set, view.results, view.pos)) fetchMore()   // the next puzzles, chosen now
+    scheduleAuto(autoNextDelay(a))
+  }
+
+  // ------------------------------------------------------------------ continuous session
+  // A training session never ends by itself: after each puzzle the next one loads (after a short
+  // pause, cancelled by any interaction), and more puzzles are fetched before the queue runs
+  // out — chosen with everything recorded so far (POST /api/puzzles/next: the same selection as
+  // the first set, never a puzzle already in the session; generation or review when the theme's
+  // fresh puzzles are used up). Only "Back to Puzzles" ends it.
+  function fetchMore() {
+    if (view.more) return view.more
+    const session = view.session
+    const b = view.body || {}
+    view.more = api("/api/puzzles/next", "POST", {mode: b.mode, concept: b.concept, weakness: b.weakness,
+      username: b.username, count: MORE_COUNT, exclude: view.set.map(p => p.id), done: view.done.slice(-8)})
+      .then(res => {
+        if (session !== view.session || !res) return 0
+        const have = new Set(view.set.map(p => p.id))
+        const fresh = (res.puzzles || []).filter(p => !have.has(p.id))
+        if (!fresh.length) return 0
+        view.set = [...view.set, ...fresh]
+        if (res.difficulty) view.difficulty = res.difficulty
+        if (res.session && res.session.reason) view.adaptNote = {pos: view.set.length - fresh.length, text: res.session.reason}
+        renderSetList()
+        return fresh.length
+      })
+      .catch(() => 0)
+      .finally(() => { if (session === view.session) view.more = null })
+    return view.more
+  }
+
+  function cancelAuto() {
+    if (!view.auto) return
+    clearTimeout(view.auto.timer)
+    clearInterval(view.auto.tick)
+    if (view.auto.node) view.auto.node.remove()
+    view.auto = null
+  }
+
+  function scheduleAuto(ms) {
+    cancelAuto()
+    if (!view.active) return
+    const node = document.createElement("div")
+    node.className = "pz-auto muted"
+    const left = document.createElement("span")
+    const stay = document.createElement("button")
+    stay.className = "btn small"
+    stay.textContent = "Stay here"
+    stay.addEventListener("click", cancelAuto)
+    node.append("Next puzzle in ", left, " ", stay)
+    el.explain.appendChild(node)
+    const end = Date.now() + ms
+    const update = () => { left.textContent = `${Math.max(1, Math.ceil((end - Date.now()) / 1000))}s` }
+    update()
+    const token = view.token
+    view.auto = {node, tick: setInterval(update, 250), timer: setTimeout(() => {
+      cancelAuto()
+      if (token === view.token && view.active && view.screen === "solver") onNext()
+    }, ms)}
   }
 
   async function recordIfNeeded() {
@@ -443,6 +513,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   async function onRetry() {
+    cancelAuto()
     const p = puzzle()
     retry(p, view.attempt)
     view.attempt.revealed = false
@@ -459,15 +530,34 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   async function onNext() {
+    if (view.screen !== "solver" || !(view.attempt && view.attempt.done)) return   // only after a puzzle
+    cancelAuto()
+    const token = ++view.token
     await recordIfNeeded()
-    if (view.pos < view.set.length - 1) return openPuzzle(view.pos + 1)
-    const solved = Object.values(view.results).filter(r => r === "solved").length
-    view.summary = `Set complete: ${solved} of ${view.set.length} solved. Your results update what's recommended.`
-    return backToDashboard()
+    if (view.pos >= view.set.length - 1) {
+      el.status.textContent = ""
+      setStatus("Finding the next puzzle…")
+      await fetchMore()
+      if (token !== view.token || view.screen !== "solver") return
+      setStatus("")
+      if (view.pos >= view.set.length - 1) {
+        feedback("Couldn't load another puzzle just now — press Next → to try again.", "")
+        return
+      }
+    }
+    return openPuzzle(view.pos + 1)
   }
 
   async function backToDashboard() {
+    cancelAuto()
     await recordIfNeeded()
+    const finished = Object.values(view.results)
+    if (view.screen === "solver" && finished.length) {
+      const solved = finished.filter(r => r === "solved").length
+      view.summary = `Session: ${solved} of ${finished.length} solved. Your results update what's recommended.`
+    }
+    view.session++
+    view.more = null
     view.token++
     setInput(false)
     if (nav) nav.set("puzzles", null)   // nothing to step through on the dashboard
@@ -486,6 +576,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   el.retry.addEventListener("click", onRetry)
   el.next.addEventListener("click", onNext)
   el.back.addEventListener("click", backToDashboard)
+  // looking around after a puzzle (← →, a move on the board, an arrow) pauses the automatic next
+  for (const ev of ["mousedown", "touchstart"]) board.context.addEventListener(ev, cancelAuto, {passive: true})
+  for (const id of ["nav-prev", "nav-next"]) { const b = $(id); if (b) b.addEventListener("click", cancelAuto) }
+  document.addEventListener("keydown", e => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") cancelAuto() })
 
   return {
     // Called when the Puzzles tab is shown: everything is where the learner left it.
@@ -519,6 +613,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       }
     },
     leave() {
+      cancelAuto()
       view.active = false
       view.token++  // a pending reply animation stops; the attempt stays as it was
       view.inputOpen = false

@@ -635,3 +635,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
 .pz-item.solved .badge { color: var(--accent-2); }
 .pz-item.failed .badge { color: #f1b7b5; }
 .pz-set-empty { font-size: 13px; }
+
+/* continuous puzzle sessions: the countdown to the next puzzle */
+.pz-auto { display: flex; align-items: center; gap: .5em; margin-top: .5em; font-size: .9em; }
+.pz-auto .btn.small { padding: .15em .6em; font-size: .85em; }

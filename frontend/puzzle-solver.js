@@ -110,29 +110,47 @@ export function resultBody(attempt, now = Date.now()) {
 
 export const DIFFICULTY_LABEL = {1: "Easy", 2: "Moderate", 3: "Challenging", 4: "Hard", 5: "Very hard"}
 
-// No spoilers: before a puzzle is over, the solver shows only neutral information — side to
-// move, "find the best move", difficulty, progress, a "why" that names no idea. The concept
-// ("Queen fork"), the real objective ("Mate in 2") and the named "why" (puzzle.reveal) appear
-// once the puzzle is solved, failed or revealed (`done`).
-export function header(puzzle, position, total, done = false) {
-  const reveal = (done && puzzle.reveal) || {}
+// What the solver shows above the board. Every set names its idea as before — the weakness in a
+// personalized set, the chosen theme in Practice — except Mixed practice (`mixed`), whose point
+// is to recognise the idea yourself: there, before the puzzle is over, only neutral information
+// (side to move, "find the best move", difficulty, progress) is shown, and the concept ("Queen
+// fork"), the real objective ("Mate in 2") and the named "why" (puzzle.reveal) appear once the
+// puzzle is solved, failed or revealed (`done`).
+// `continuous`: an open-ended session (no total): "Puzzle 7" instead of "7/10".
+export function header(puzzle, position, total, done = false, {mixed = false, continuous = false} = {}) {
+  const open = done || !mixed
+  const reveal = (open && puzzle.reveal) || {}
   return {
     side: puzzle.side === "black" ? "Black to move" : "White to move",
-    objective: done && reveal.objective_text ? reveal.objective_text : "Find the best move",
-    concept: done ? reveal.concept_name || puzzle.concept_name || "" : "",
+    objective: reveal.objective_text || (open && puzzle.objective_text) || "Find the best move",
+    concept: open ? reveal.concept_name || puzzle.concept_name || "" : "",
     difficulty: DIFFICULTY_LABEL[puzzle.difficulty] || "",
-    progress: total > 1 ? `${position + 1}/${total}` : "",
-    role: (done && reveal.role_label) || puzzle.role_label || "",
-    why: (done && reveal.why) || puzzle.why || "",
+    progress: continuous ? `Puzzle ${position + 1}` : total > 1 ? `${position + 1}/${total}` : "",
+    role: reveal.role_label || puzzle.role_label || "",
+    why: reveal.why || puzzle.why || "",
   }
 }
 
-// The set list names an item by what it is for ("Your game", "Harder") when it has a role; the
-// concept only once that puzzle has a result.
-export function itemLabel(puzzle, result = null) {
+// The set list names an item by what it is for ("Your game", "Harder") or by its concept; in
+// Mixed practice the concept only once that puzzle has a result.
+export function itemLabel(puzzle, result = null, {mixed = false} = {}) {
   const reveal = puzzle.reveal || {}
-  if (result) return reveal.role_label || reveal.concept_name || puzzle.concept_name || "Puzzle"
+  if (result || !mixed) return reveal.role_label || puzzle.role_label || reveal.concept_name || puzzle.concept_name || "Puzzle"
   return puzzle.role_label || "Puzzle"
+}
+
+// Continuous sessions: after a puzzle the next one loads by itself — a short pause after a clean
+// solve, a longer one to look at the solution after a miss (any interaction cancels it).
+export const AUTO_NEXT_SOLVED = 2500
+export const AUTO_NEXT_MISSED = 6000
+export function autoNextDelay(attempt) {
+  return attempt.solved && !attempt.failed && !attempt.revealed ? AUTO_NEXT_SOLVED : AUTO_NEXT_MISSED
+}
+
+// Fetch more puzzles while fewer than this many unopened ones are left in the session.
+export const PREFETCH_BELOW = 2
+export function needsMore(set, results, pos) {
+  return pendingIds(set, results, pos).length < PREFETCH_BELOW
 }
 
 // One line under a weakness card: the next recognition stage (puzzles.progression), if any.

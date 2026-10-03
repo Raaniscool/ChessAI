@@ -1,7 +1,7 @@
 // Puzzle solving rules: solution + reply, mates, accepted/good moves, mistakes, hints, results.
 import test from "node:test"
 import assert from "node:assert/strict"
-import {applyAdapt, pendingIds, cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
+import {AUTO_NEXT_MISSED, AUTO_NEXT_SOLVED, applyAdapt, autoNextDelay, needsMore, pendingIds, cardLine, focusLine, header, itemLabel, judge, newAttempt, nextHint, remainingLine, resultBody, retry, reveal, sameMove, shouldRecord}
   from "../puzzle-solver.js"
 
 // 1.Nc7+ (critical) Kd7 2.Nxa8 (forced)
@@ -87,11 +87,15 @@ test("what gets recorded", () => {
 
 test("promotion and header text", () => {
   assert.ok(sameMove("e7e8", "e7e8q")); assert.ok(!sameMove("e7e8n", "e7e8q")); assert.ok(sameMove("e7e8N", "e7e8n"))
-  // while solving: nothing that names the idea
-  assert.deepEqual(header(FORK, 1, 5), {side: "White to move", objective: "Find the best move", concept: "",
+  // a theme set names its idea from the start (the learner chose it)
+  assert.deepEqual(header(FORK, 1, 5), {side: "White to move", objective: "Win material", concept: "Knight fork",
     difficulty: "Moderate", progress: "2/5", role: "", why: ""})
-  // once the puzzle is over: the theme and the real objective
-  assert.deepEqual(header(FORK, 1, 5, true), {side: "White to move", objective: "Win material", concept: "Knight fork",
+  // Mixed practice, while solving: nothing that names the idea
+  assert.deepEqual(header(FORK, 1, 5, false, {mixed: true}), {side: "White to move", objective: "Find the best move",
+    concept: "", difficulty: "Moderate", progress: "2/5", role: "", why: ""})
+  assert.equal(header(FORK, 6, 7, false, {continuous: true}).progress, "Puzzle 7")   // an open-ended session
+  // once a Mixed puzzle is over: the theme and the real objective
+  assert.deepEqual(header(FORK, 1, 5, true, {mixed: true}), {side: "White to move", objective: "Win material", concept: "Knight fork",
     difficulty: "Moderate", progress: "2/5", role: "", why: ""})
   assert.equal(cardLine({evidence: "In 3 of your last 10 analyzed games", progress: null}),
     "In 3 of your last 10 analyzed games")
@@ -104,9 +108,10 @@ test("personalized items say what they are for and why, in one line", () => {
   assert.equal(h.role, "Your game")
   assert.match(h.why, /Your own game vs alice/)
   assert.equal(itemLabel(mine), "Your game")
-  assert.equal(itemLabel(FORK), "Puzzle")               // practice items: no concept before solving...
-  assert.equal(itemLabel(FORK, "solved"), "Knight fork")  // ...the concept once it has a result
-  assert.equal(itemLabel(FORK, "failed"), "Knight fork")
+  assert.equal(itemLabel(FORK), "Knight fork")                        // theme sets: the concept
+  assert.equal(itemLabel(FORK, null, {mixed: true}), "Puzzle")       // Mixed: no concept before solving...
+  assert.equal(itemLabel(FORK, "solved", {mixed: true}), "Knight fork")  // ...the concept once it has a result
+  assert.equal(itemLabel(FORK, "failed", {mixed: true}), "Knight fork")
   assert.equal(focusLine({focus: {label: "Choose among candidates", note: "You solve the obvious ones (3/3 first try)"}}),
     "Next: Choose among candidates — You solve the obvious ones (3/3 first try)")
   assert.equal(focusLine({focus: {label: "Spot it", note: null}}), "")
@@ -124,18 +129,41 @@ test("session adaptation only swaps unopened puzzles after the current one", () 
   assert.equal(applyAdapt(set, results, 4, {e: {id: "w"}}).changed, 0)   // nothing after the last
 })
 
-test("no spoilers before the end: a defensive item and a weakness set name nothing until solved", () => {
+test("personalized sets keep naming the identified type before solving", () => {
   const defend = {...FORK, role: "defend", role_label: "Bonus", why: "Chosen for you — it cost you material in 3 recent games.",
     reveal: {concept_name: "Spotting threats", objective_text: "Defend against the threat", role_label: "Defend",
       why: "Walked into a fork: the defensive side — spot the opponent's threat and stop it."}}
-  const before = header(defend, 4, 5)
+  const h = header(defend, 4, 5)
+  assert.equal(h.concept, "Spotting threats"); assert.equal(h.role, "Defend")
+  assert.equal(h.objective, "Defend against the threat"); assert.match(h.why, /defensive side/)
+  assert.equal(itemLabel(defend), "Defend")
+})
+
+test("continuous sessions: next puzzle by itself, more fetched before the queue runs out", () => {
+  const clean = {...newAttempt(FORK, 0), done: true, solved: true}
+  const missed = {...newAttempt(FORK, 0), done: true, solved: false, failed: true}
+  const revealed = {...newAttempt(FORK, 0), done: true, revealed: true, failed: true}
+  assert.equal(autoNextDelay(clean), AUTO_NEXT_SOLVED)
+  assert.equal(autoNextDelay(missed), AUTO_NEXT_MISSED); assert.equal(autoNextDelay(revealed), AUTO_NEXT_MISSED)
+  assert.ok(AUTO_NEXT_MISSED > AUTO_NEXT_SOLVED)   // time to look at the solution after a miss
+  const set = ["a", "b", "c", "d"].map(id => ({id}))
+  assert.equal(needsMore(set, {a: "solved"}, 0), false)            // b, c, d still ahead
+  assert.equal(needsMore(set, {a: "solved", b: "solved"}, 2), true)  // only d left: fetch more now
+  assert.equal(needsMore(set, {}, 3), true)                          // at the end: nothing queued
+})
+
+test("Mixed practice: a defensive item and its set name nothing until solved", () => {
+  const defend = {...FORK, role: "defend", role_label: "Bonus", why: "Chosen for you — it cost you material in 3 recent games.",
+    reveal: {concept_name: "Spotting threats", objective_text: "Defend against the threat", role_label: "Defend",
+      why: "Walked into a fork: the defensive side — spot the opponent's threat and stop it."}}
+  const before = header(defend, 4, 5, false, {mixed: true})
   const shown = Object.values(before).join(" ")
   for (const word of ["fork", "Fork", "Defend", "threat", "Spotting"]) assert.ok(!shown.includes(word), word)
-  assert.equal(itemLabel(defend), "Bonus")
-  const after = header(defend, 4, 5, true)
+  assert.equal(itemLabel(defend, null, {mixed: true}), "Bonus")
+  const after = header(defend, 4, 5, true, {mixed: true})
   assert.equal(after.role, "Defend"); assert.equal(after.concept, "Spotting threats")
   assert.equal(after.objective, "Defend against the threat"); assert.match(after.why, /defensive side/)
-  assert.equal(itemLabel(defend, "solved"), "Defend")
+  assert.equal(itemLabel(defend, "solved", {mixed: true}), "Defend")
   // the hint (asked for) may name the idea: that is what a hint is for
   assert.equal(nextHint({...defend, hint: null}, newAttempt(defend)).text, "Look for a knight fork.")
 })
