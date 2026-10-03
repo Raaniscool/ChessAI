@@ -260,7 +260,14 @@ The shortfall goes to constrained generation for the exact concept, never to a g
 
 - The header shows the side to move, the objective ("Mate in 2", "Win material"), the role
   (Your game / Same pattern / Easier / Harder / Defend), the concept, the difficulty, progress
-  (2/5) and one "Why this puzzle" line.
+  ("Puzzle 7") and one "Why this puzzle" line.
+- **Mixed practice is the exception** (`MIXED_THEMES` in `puzzles/dashboard.py`, the "Mixed
+  tactics" theme). Its point is to recognise the idea yourself, so before a puzzle is over the
+  solver shows only the side to move, "Find the best move", the difficulty and progress. The set
+  list shows "Puzzle", and the heading is "Mixed practice". The concept, the real objective and
+  the named reason appear once the puzzle is solved, failed or revealed. Personalized sets and
+  single-theme Practice keep showing the type throughout. The concept is always in the payload
+  (`reveal`), for stats and selection.
 - The solution move animates the opponent's reply.
 - A wrong move gets ✗ and is taken back. The puzzle counts as failed, and you can still finish
   it or retry.
@@ -328,12 +335,31 @@ from 12 analyzed games and 9 puzzles; 3/5 of these solved cleanly so far"*. When
 adapts, it shows a short note. The numbers and evidence are in `/api/puzzles/difficulty`
 and in the set's `debug.difficulty`.
 
+**Continuous sessions.** A training session doesn't end after the first batch.
+
+- After each puzzle, the result and explanation are shown. The next puzzle then loads by itself:
+  2.5 s after a clean solve, 6 s after a miss (time to look at the solution). A countdown with
+  "Stay here" is shown. Any interaction cancels it: ← →, a move or arrow on the board, or Retry.
+  Next → always works.
+- The flow is: record the result → the difficulty profile updates → select the next puzzle.
+- When fewer than 2 unopened puzzles are left, `POST /api/puzzles/next` fetches 3 more. It uses
+  exactly the selection of `/set`: the weakness or theme, concept skill, calibration, novelty,
+  progression, and library first. It never serves a puzzle already in the session. It adds this
+  session's results (`session_shift`: two instant solves +100, two tough ones −100).
+- When a theme's fresh puzzles are used up, it tries verified generation: the existing
+  shortfall path for weaknesses, and the same generator for a Practice theme when one exists.
+  Then earlier puzzles come back as "Review", least recently played first and never one of the
+  last 12. The session never runs dry.
+- "Your game" opens a personalized session only once. Only "← Back to Puzzles" ends the
+  session, and the dashboard then shows "Session: N of M solved".
+
 ## API
 
 | Endpoint | Returns |
 |---|---|
 | `GET /api/puzzles/dashboard` | `personalized` (cards, main, profile box), `practice` themes with counts |
 | `POST /api/puzzles/set {mode, concept?, weakness?, count}` | solver-ready puzzles with `role`, `role_label`, `why`; `ladder`; `difficulty` (target, zone, summary); `debug` for weakness sets (incl. `your_game` trail, `defend`, `roles`) |
+| `POST /api/puzzles/next {mode, concept?, weakness?, exclude[], done[], count}` | the next puzzles of a continuous session (same shape as `/set`, plus `session{shift, reason}`); never one in `exclude`; generation, then review, when fresh ones run out |
 | `POST /api/puzzles/adapt {mode, concept?, weakness?, done[], remaining[], set_ids[]}` | `{shift, reason, replace{old_id: puzzle}, difficulty}`: swaps remaining puzzles that left the zone |
 | `GET /api/puzzles/difficulty?concept=` | the difficulty profile (skills with evidence, prior) and, for a concept, the target with its rule |
 | `POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds, revealed}` | records the outcome; returns the concept rating change and stats |
