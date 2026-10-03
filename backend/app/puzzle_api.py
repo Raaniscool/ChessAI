@@ -509,7 +509,7 @@ def puzzle_result(puzzle_id: str, body: ResultRequest):
         pass
     changed = get_store().update("local", lambda prof: prof.record_attempt(
         p.concept, p.rating, solved=solved, first_try=first_try, hints=body.hints, revealed=body.revealed,
-        learner_moves=max(1, p.meaningful_moves)))
+        learner_moves=max(1, p.meaningful_moves), context={"source": "puzzle", "exercise_id": p.id}))
     return {"recorded": True, "concept": p.concept, "solved": solved, "first_try": first_try,
             "rating_before": (changed or {}).get("rating_before"), "rating_after": (changed or {}).get("rating_after"),
             "stats": usage.puzzle_stats(p.id)}

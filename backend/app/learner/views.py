@@ -10,15 +10,21 @@ Concept status (in priority order):
     learned      a lesson was completed but no exercises solved yet
     new          nothing yet
 
+A concept with the "understanding" explanation signal (learner.help: mostly solved, but an
+explanation was requested on at least 3 of the last results and half of them) is not called
+mastered yet: it stays "practicing". Explanation requests never make a concept "weak".
+
 Gaps (what kind of help works):
-    calculation  one-move positions go well (≥0.7) but multi-move ones don't (<0.45)
-    transfer     solved in puzzles (≥0.7) but still a recurring mistake in real games
+    calculation    one-move positions go well (≥0.7) but multi-move ones don't (<0.45)
+    transfer       solved in puzzles (≥0.7) but still a recurring mistake in real games
+    understanding  solved, but the learner keeps asking why (learner.help signal)
 Needs review: time since last seen exceeds REVIEW_AFTER[status] (spaced repetition).
 """
 from __future__ import annotations
 
 from .profile import (MASTERED_SCORE, MASTERY_WINDOW, MIN_FOR_MASTERY, MIN_FOR_WEAK, REVIEW_AFTER, WEAK_SCORE,
                       ConceptState, LearnerProfile, _mean, days_since)
+from . import help as H
 from . import rating as R
 
 # How far below/above the learner's rating material is aimed, by purpose.
@@ -45,7 +51,12 @@ def combined(profile: LearnerProfile, cid: str, library=None) -> ConceptState | 
         for name in ("attempts", "solved", "first_try", "hints", "reveals", "lessons_started",
                      "lessons_completed", "game_misses", "game_evidence_games"):
             setattr(out, name, getattr(out, name) + getattr(st, name))
+        out.recent_explained += H.aligned_flags(st.recent, st.recent_explained)
         out.recent += st.recent
+        out.explain_requests += st.explain_requests
+        out.explained += st.explained
+        for kind, n in st.explain_kinds.items():
+            out.explain_kinds[kind] = out.explain_kinds.get(kind, 0) + n
         out.recent_short += st.recent_short
         out.recent_long += st.recent_long
         if st.last_seen and (out.last_seen or "") < st.last_seen:
@@ -57,13 +68,21 @@ def combined(profile: LearnerProfile, cid: str, library=None) -> ConceptState | 
     return out
 
 
+def help_of(st: ConceptState | None) -> dict:
+    """The explanation signal for a concept state (learner.help), over the mastery window."""
+    if st is None:
+        return H.signal([], [], MASTERY_WINDOW) | {"requests": 0}
+    return H.signal(st.recent, st.recent_explained, MASTERY_WINDOW) | {"requests": st.explain_requests}
+
+
 def status_of(st: ConceptState | None) -> str:
     if st is None:
         return "new"
     window = st.recent[-MASTERY_WINDOW:]
     score = _mean(window)
     if st.attempts >= MIN_FOR_MASTERY and score is not None and score >= MASTERED_SCORE:
-        return "mastered"
+        # solving it while repeatedly asking why isn't mastery yet (not a weakness either)
+        return "practicing" if help_of(st)["signal"] == "understanding" else "mastered"
     if (st.attempts >= MIN_FOR_WEAK and score is not None and score < WEAK_SCORE) or st.game_misses >= 2:
         return "weak"
     if st.attempts:
@@ -83,6 +102,8 @@ def gaps_of(st: ConceptState | None) -> list[str]:
     score = _mean(st.recent[-MASTERY_WINDOW:])
     if st.game_misses >= 2 and score is not None and st.attempts >= 3 and score >= 0.7:
         out.append("transfer")
+    if help_of(st)["signal"] == "understanding":
+        out.append("understanding")
     return out
 
 
@@ -97,6 +118,7 @@ def concept_view(profile: LearnerProfile, cid: str, library=None) -> dict:
         "attempts": st.attempts if st else 0,
         "success": round(_mean(st.recent[-MASTERY_WINDOW:]), 2) if st and st.recent else None,
         "last_seen": st.last_seen if st else None,
+        "explanations": help_of(st),
     }
 
 
@@ -122,6 +144,7 @@ def lesson_shape(profile: LearnerProfile, concept: str | None, library=None) -> 
     """
     view = concept_view(profile, concept, library) if concept else {"status": "new", "gaps": []}
     status, gaps, level = view["status"], view["gaps"], profile.level
+    explain = (view.get("explanations") or {}).get("signal", "none")
     if status == "mastered":
         shape = {"demos": 0, "practice": 4, "purpose": "challenge"}
     elif status == "weak":
@@ -131,8 +154,13 @@ def lesson_shape(profile: LearnerProfile, concept: str | None, library=None) -> 
     else:  # new to this learner
         shape = {"demos": {"beginner": 2, "intermediate": 1, "advanced": 1}[level],
                  "practice": {"beginner": 2, "intermediate": 3, "advanced": 3}[level], "purpose": "learn"}
+    # Repeatedly asked for explanations on this idea: teach it once more before stepping up
+    # (one more worked example; the purpose, and so the difficulty, is not lowered here).
+    teaching = explain in ("understanding", "difficulty")
+    if teaching:
+        shape["demos"] = min(3, shape["demos"] + 1)
     shape.update({
-        "status": status, "gaps": gaps, "level": level,
+        "status": status, "gaps": gaps, "level": level, "teaching": teaching, "explanations": explain,
         "reminders": profile.rating < 700,
         "prerequisites": level == "beginner" and status in ("new", "weak"),
         "realistic": "transfer" in gaps,

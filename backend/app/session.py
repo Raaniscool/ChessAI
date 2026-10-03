@@ -82,6 +82,7 @@ class Session:
     example_state: dict = field(default_factory=dict)  # example id -> tries/hints/reveal
     outcomes: list = field(default_factory=list)       # learner.adapt.Outcome per finished example
     changes: int = 0                     # adaptations made in this lesson
+    change_kinds: list = field(default_factory=list)   # learner.adapt kinds of those changes
     notes: dict = field(default_factory=dict)          # id(step) -> coach note shown with it
     said: dict = field(default_factory=dict)           # example id -> sentences the instant feedback showed
     learner_id: str = "local"
@@ -353,6 +354,8 @@ class SessionManager:
             if verified:
                 result.update(explanation=verified["text"], teacher="library", ai_explanation=False,
                               deeper=final)
+                if final:  # the "Explain deeper" button is offered for this example from now on
+                    state["deeper_offered"] = True
                 session.said.setdefault(example.id, set()).update(verified["sentences"])
             else:
                 result["ai_explanation"] = False  # still nothing for the language model to add here
@@ -560,9 +563,13 @@ class SessionManager:
         wrong, hints = state.get("wrong", 0), state.get("hints", 0)
         solved = not revealed
         first_try = wrong == 0
+        asked = dict(state.get("explanations") or {})  # explicit requests while solving (learner.help)
+        context = {"source": "lesson", "lesson_id": session.lesson_id, "session_id": session.id,
+                   "exercise_id": key}
         recorded = self._learner(lambda p: p.record_attempt(concept, rating, solved=solved, first_try=first_try,
                                                             hints=hints, revealed=revealed,
-                                                            learner_moves=len(idx)))
+                                                            learner_moves=len(idx), explanations=asked,
+                                                            context=context))
         score = recorded["score"] if recorded else 0.0
         if example is not None:
             started = state.get("started")
@@ -576,7 +583,7 @@ class SessionManager:
             from .learner.training_level import rating_of
             rating = rating_of(library)(example)
         outcome = Outcome(key, concept, rating, score, learner_moves=len(idx), wrong=wrong, hints=hints,
-                          revealed=revealed, key_found=bool(state.get("key_found")))
+                          revealed=revealed, key_found=bool(state.get("key_found")), explained=bool(asked))
         session.outcomes.append(outcome)
         if example is None:
             return None
@@ -622,7 +629,8 @@ class SessionManager:
         except OSError:
             seen, last_used = {}, {}
         decision = decide(session.outcomes, upcoming, used, session.changes, library, level=profile.level,
-                          known=known, seen=seen, last_used=last_used, rating_of=puzzle_rating)
+                          known=known, seen=seen, last_used=last_used, rating_of=puzzle_rating,
+                          done_kinds=set(session.change_kinds))
         if decision is None:
             return None
         new_steps = self._steps_for(library, decision)
@@ -636,6 +644,7 @@ class SessionManager:
             steps[here[2]:here[2]] = new_steps
         session.steps = steps
         session.changes += 1
+        session.change_kinds.append(decision.kind)
         session.notes[id(new_steps[0])] = decision.note
         return {"kind": decision.kind, "note": decision.note, "example": decision.example_id,
                 "total_steps": len(steps)}
@@ -659,6 +668,48 @@ class SessionManager:
         except (LessonError, ValueError):
             return []
 
+    # --- explanation requests (learner.help) ---
+
+    def note_explanation(self, session: Session, kind: str) -> dict | None:
+        """The learner explicitly asked for an explanation ("Explain this example", "Explain
+        deeper", a question in the lesson chat). Automatic feedback never comes through here.
+
+        Still solving the example: attached to its result when it resolves. Already resolved:
+        attached to that logged result now. A worked example with nothing to solve: logged on
+        its own. A soft signal: no score, rating or difficulty changes here (learner.help)."""
+        try:
+            return self._note_explanation(session, kind)
+        except Exception:  # pragma: no cover - tracking must never break a lesson
+            import logging
+            logging.getLogger(__name__).warning("explanation tracking failed", exc_info=True)
+            return None
+
+    def _note_explanation(self, session: Session, kind: str) -> dict | None:
+        example = self._example_for(session)
+        if example is not None:
+            key, concept = example.id, example.concept
+        else:
+            step = self.current_step(session)
+            concepts = self._lesson_concepts(session)
+            if step is None or not concepts:
+                return None
+            key, concept = self._state_key(session, step), concepts[0]
+        outcome = next((o for o in reversed(session.outcomes) if o.example_id == key), None)
+        if outcome is None and self._exercise_indexes(session, key):
+            asked = session.example_state.setdefault(key, {}).setdefault("explanations", {})
+            asked[kind] = asked.get(kind, 0) + 1
+            return {"kind": kind, "exercise_id": key, "pending": True}
+        if outcome is not None:
+            outcome.explained = True
+            concept = outcome.concept
+        return self._learner(lambda p: p.record_explanation(concept, kind, exercise_id=key, session_id=session.id,
+                                                            lesson_id=session.lesson_id))
+
+    def _note_question(self, session: Session, message: str) -> None:
+        from .learner.help import is_help_request
+        if is_help_request(message):
+            self.note_explanation(session, "question")
+
     # --- chat ---
 
     def _chat_context(self, session: Session):
@@ -681,6 +732,7 @@ class SessionManager:
         if not message or not message.strip():
             raise ChessError("Empty message")
         message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
+        self._note_question(session, message)
         context = self._chat_context(session)
         history = list(session.transcript)  # prompt gets the new message exactly once
         reply, teacher_used = chat_or_fallback(get_teacher(), message, context, history)
@@ -722,6 +774,8 @@ class SessionManager:
             raise ExerciseConflict("This step has no library example to explain")
         if self._solution_pending(session, example.id):
             raise ExerciseConflict("Solve the exercise first — the explanation would give it away")
+        deeper = bool(session.example_state.get(example.id, {}).get("deeper_offered"))
+        self.note_explanation(session, "deeper" if deeper else "explain")
         context = self._chat_context(session)
         level = self.lesson(session).difficulty
         return stream_events(
@@ -737,6 +791,7 @@ class SessionManager:
         if not message or not message.strip():
             raise ChessError("Empty message")
         message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
+        self._note_question(session, message)
         context = self._chat_context(session)
         history = list(session.transcript)
         events = stream_events(

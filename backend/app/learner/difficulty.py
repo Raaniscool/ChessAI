@@ -32,7 +32,11 @@ Each skill (overall, tactics, pattern_recognition, calculation, defense, endgame
 weighted mean of the evidence that applies to it. A concept starts from its skill's estimate
 (minus WEAKNESS_SHIFT when it is a weakness from the games — practise it slightly below your
 level, never at kindergarten level) and moves with the learner's results on puzzles of exactly
-that skill (anchor weight 2).
+that skill (anchor weight 2). When the learner has repeatedly asked for explanations on that
+concept (learner.help signal "understanding" or "difficulty": at least 3 of the last results, and
+half of them), the concept's target eases by help.TARGET_EASE (40, less than a game weakness):
+teach and consolidate before stepping up. Requests never enter the skill estimates themselves, so
+they can't lower the overall level or an unrelated skill, and a single request changes nothing.
 
     target = concept estimate - ZONE_OFFSET    (~58% expected success: challenging, solvable)
     zone   = target - 120 .. target + 150      (the productive range a set spans)
@@ -213,6 +217,19 @@ class DifficultyProfile:
     puzzles: int
     trials: list = field(default_factory=list)   # [(puzzle, trial)]
     weaknesses: set = field(default_factory=set)
+    explanations: dict = field(default_factory=dict)  # concept -> (recent scores, explanation flags)
+
+    def explanation_signal(self, concepts) -> dict:
+        """learner.help signal over the given concepts' recent results (an idea and its sub-ideas)."""
+        from . import help as H
+        from .profile import MASTERY_WINDOW
+        recent, flags = [], []
+        for cid in sorted(concepts):
+            scores, marks = self.explanations.get(cid, ([], []))
+            recent += list(scores)[-MASTERY_WINDOW:]
+            flags += H.aligned_flags(list(scores), marks)[-MASTERY_WINDOW:]
+        # the family's window: the newest MASTERY_WINDOW of each, judged together
+        return H.signal(recent, flags, max(len(recent), 1))
 
     def skill_for_concept(self, concept: str, knowledge) -> str:
         from ..puzzles.model import DEFENSIVE
@@ -231,6 +248,7 @@ class DifficultyProfile:
         from ..puzzles.select import targets
         dim = self.skill_for_concept(concept, knowledge)
         base = self.skills[dim].estimate
+        from .help import TARGET_EASE
         weak = concept in self.weaknesses
         anchor = base - (WEAKNESS_SHIFT if weak else 0)
         wanted = {c for c, (w, _k) in targets(concept, knowledge).items() if w >= 0.95} if concept in \
@@ -238,11 +256,15 @@ class DifficultyProfile:
         mine = [(p, t) for p, t in self.trials if p.concept in wanted]
         n = sum(t[2] for _p, t in mine)
         est = performance([t for _p, t in mine], anchor, CONCEPT_ANCHOR) if mine else anchor
+        explain = self.explanation_signal(wanted | {concept})
+        ease = TARGET_EASE if explain["signal"] in ("understanding", "difficulty") else 0
+        est -= ease
         solved = sum(1 for _p, t in mine if t[1] >= 0.75)
         return _clamp(est), {
             "concept": concept, "skill": dim, "skill_estimate": base, "weakness": weak,
             "weakness_shift": -WEAKNESS_SHIFT if weak else 0, "puzzles": len(mine), "weight": round(n, 2),
             "solved_cleanly": solved, "estimate": _clamp(est),
+            "explanations": explain["signal"], "explanation_shift": -ease,
             "detail": (f"{solved} of {len(mine)} puzzles of this skill solved cleanly" if mine
                        else "no puzzles of this skill yet: starts from your " + dim.replace("_", " ") + " level")}
 
@@ -287,6 +309,8 @@ def summary_line(dp: DifficultyProfile, dim: str, concept_info: dict | None = No
         line += f"; {concept_info['solved_cleanly']}/{concept_info['puzzles']} of these solved cleanly so far"
     elif concept_info and concept_info["weakness"]:
         line += "; a weak spot, so pitched slightly lower"
+    if concept_info and concept_info.get("explanation_shift"):
+        line += "; you've often asked why on these, so we consolidate before stepping up"
     return line
 
 
@@ -345,8 +369,11 @@ def build(profile, usage=None, lookup=None, now: datetime | None = None) -> Diff
         items[skill].append(Evidence("puzzles", _clamp(perf), min(PUZZLE_MAX_WEIGHT, PUZZLE_WEIGHT * sum(t[2] for t in mine)),
                                      f"{clean} of {len(mine)} puzzles solved cleanly"))
     weaknesses = {w.get("concept") for w in (getattr(profile, "weaknesses", None) or []) if w.get("concept")}
+    explanations = {cid: (list(st.recent), list(getattr(st, "recent_explained", []) or []))
+                    for cid, st in ((getattr(profile, "concepts", None) or {}) if profile is not None else {}).items()
+                    if getattr(st, "recent", None)}
     return DifficultyProfile(skills={k: _combine(k, v) for k, v in items.items()}, prior=prior, games=games,
-                             puzzles=len(trials), trials=trials, weaknesses=weaknesses)
+                             puzzles=len(trials), trials=trials, weaknesses=weaknesses, explanations=explanations)
 
 
 def session_shift(results: list[dict]) -> tuple[int, str | None]:

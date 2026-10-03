@@ -4,7 +4,10 @@
     skill            overall rating on the tutor's scale, and how sure we are of it
     concepts         per library concept: attempts, first-try solves, hints, reveals, a
                      per-concept rating, recent results (split into one-move and
-                     multi-move positions), game evidence, last seen
+                     multi-move positions), game evidence, last seen, and explicit
+                     explanation requests (learner.help) kept apart from the results
+    exercise_log     the last MAX_LOG resolved exercises with their context (lesson/session,
+                     exercise, concept, difficulty, result, hints, reveal, explanation requests)
     weaknesses       recurring patterns from the learner's own games (Game History)
     stats            puzzle / lesson / hint totals
     recent topics    what was studied lately
@@ -29,6 +32,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import rating as R
+from .help import KINDS as HELP_KINDS, aligned_flags
 
 RECENT = 10                 # results remembered per concept
 MASTERY_WINDOW = 6          # results a mastery decision looks at
@@ -38,6 +42,7 @@ MIN_FOR_MASTERY = 4
 MIN_FOR_WEAK = 3
 REVIEW_AFTER = {"mastered": 21, "practicing": 5, "learned": 3, "weak": 2}  # days
 MAX_RECENT_TOPICS = 20
+MAX_LOG = 200               # exercise_log entries kept (oldest dropped)
 EXPLANATION_STYLES = ("brief", "balanced", "detailed")
 GOALS = ("tactics", "openings", "endgames", "checkmates", "stop_blundering", "calculation", "strategy",
          "rating")
@@ -80,6 +85,11 @@ class ConceptState:
     game_evidence_games: int = 0
     last_seen: str | None = None
     last_result: str | None = None        # solved | failed
+    # explicit explanation requests (learner.help): never part of the scores above
+    explain_requests: int = 0             # every request about this concept
+    explain_kinds: dict = field(default_factory=dict)     # kind -> count (explain / deeper / question)
+    explained: int = 0                    # resolved exercises with at least one request
+    recent_explained: list[int] = field(default_factory=list)  # 1/0 per entry of `recent`
 
     @classmethod
     def from_dict(cls, d: dict) -> "ConceptState":
@@ -100,10 +110,12 @@ class LearnerProfile:
     game_skill: dict = field(default_factory=dict)   # analysis.skill_evidence over all analyzed games
     stats: dict = field(default_factory=lambda: {
         "puzzles": {"attempts": 0, "solved": 0, "first_try": 0},
-        "lessons": {"started": 0, "completed": 0}, "hints_used": 0, "reveals": 0})
+        "lessons": {"started": 0, "completed": 0}, "hints_used": 0, "reveals": 0,
+        "explanations": {"explain": 0, "deeper": 0, "question": 0}})
     recent_topics: list[dict] = field(default_factory=list)
     completed_lessons: list[str] = field(default_factory=list)
     preferences: dict = field(default_factory=lambda: {"explanation": "balanced"})
+    exercise_log: list[dict] = field(default_factory=list)
 
     # ------------------------------------------------------------------ io
     def as_dict(self) -> dict:
@@ -198,8 +210,13 @@ class LearnerProfile:
 
     # ------------------------------------------------------------------ events
     def record_attempt(self, concept: str, puzzle_rating: int, *, solved: bool, first_try: bool,
-                       hints: int = 0, revealed: bool = False, learner_moves: int = 1) -> dict:
-        """One resolved exercise. Returns what changed (for adaptation / the UI)."""
+                       hints: int = 0, revealed: bool = False, learner_moves: int = 1,
+                       explanations: dict | None = None, context: dict | None = None) -> dict:
+        """One resolved exercise. Returns what changed (for adaptation / the UI).
+
+        `explanations`: explicit requests made while solving it (kind -> count, learner.help);
+        they are logged with the result but never change its score or any rating.
+        `context`: source / lesson_id / session_id / exercise_id for the exercise log."""
         st = self.concept(concept)
         before = self.concept_rating(concept)
         score = R.score_for(solved, first_try, hints, revealed)
@@ -209,7 +226,13 @@ class LearnerProfile:
         st.first_try += int(solved and first_try and not revealed and hints == 0)
         st.hints += max(0, hints)
         st.reveals += int(revealed)
+        asked = {k: int(v) for k, v in (explanations or {}).items() if k in HELP_KINDS and int(v) > 0}
+        flags = aligned_flags(st.recent, st.recent_explained)
         st.recent = (st.recent + [score])[-RECENT:]
+        st.recent_explained = (flags + [int(bool(asked))])[-RECENT:]
+        for kind, n in asked.items():
+            self._count_request(st, kind, n)
+        st.explained += int(bool(asked))
         bucket = st.recent_long if learner_moves >= 2 else st.recent_short
         bucket.append(score)
         del bucket[:-RECENT]
@@ -229,8 +252,58 @@ class LearnerProfile:
         self.stats["hints_used"] += max(0, hints)
         self.stats["reveals"] += int(revealed)
         self._topic(concept)
+        ctx = context or {}
+        self._log({"at": _iso(), "source": ctx.get("source", "lesson"), "lesson_id": ctx.get("lesson_id"),
+                   "session_id": ctx.get("session_id"), "exercise_id": ctx.get("exercise_id"),
+                   "concept": concept, "difficulty": int(puzzle_rating),
+                   "result": "revealed" if revealed else ("solved" if solved else "failed"),
+                   "solved": bool(solved and not revealed), "first_try": bool(first_try), "hints": max(0, hints),
+                   "revealed": bool(revealed), "score": score, "explanation_requested": bool(asked),
+                   "explanations": {k: asked.get(k, 0) for k in HELP_KINDS}, "seq": st.attempts})
         self.touch()
         return {"concept": concept, "score": score, "rating_before": before, "rating_after": st.rating}
+
+    def record_explanation(self, concept: str, kind: str, *, exercise_id: str | None = None,
+                           session_id: str | None = None, lesson_id: str | None = None) -> dict:
+        """An explicit explanation request about an exercise that is already resolved (e.g.
+        "Explain deeper" after the last move), or about a worked example with nothing to solve.
+        It is attached to that exercise's logged result. Scores and ratings stay as they were."""
+        if kind not in HELP_KINDS:
+            raise ValueError(f"kind must be one of {', '.join(HELP_KINDS)}")
+        st = self.concept(concept)
+        self._count_request(st, kind, 1)
+        entry = None
+        if exercise_id is not None:
+            entry = next((e for e in reversed(self.exercise_log) if e.get("exercise_id") == exercise_id
+                          and e.get("session_id") == session_id and e.get("concept") == concept
+                          and e.get("result") is not None), None)
+        newly = False
+        if entry is not None:
+            entry["explanations"][kind] = entry["explanations"].get(kind, 0) + 1
+            if not entry["explanation_requested"]:
+                entry["explanation_requested"] = newly = True
+                st.explained += 1
+                back = st.attempts - int(entry.get("seq", st.attempts))  # results recorded since
+                flags = aligned_flags(st.recent, st.recent_explained)
+                if 0 <= back < len(flags):
+                    flags[len(flags) - 1 - back] = 1
+                st.recent_explained = flags
+        else:  # a worked example (nothing to solve): the request is logged on its own
+            self._log({"at": _iso(), "source": "lesson", "lesson_id": lesson_id, "session_id": session_id,
+                       "exercise_id": exercise_id, "concept": concept, "result": None,
+                       "explanation_requested": True, "explanations": {k: int(k == kind) for k in HELP_KINDS}})
+        st.last_seen = _iso()
+        self.touch()
+        return {"concept": concept, "kind": kind, "attached": entry is not None, "newly_explained": newly}
+
+    def _count_request(self, st: ConceptState, kind: str, n: int) -> None:
+        st.explain_requests += n
+        st.explain_kinds[kind] = st.explain_kinds.get(kind, 0) + n
+        counts = self.stats.setdefault("explanations", {k: 0 for k in HELP_KINDS})
+        counts[kind] = counts.get(kind, 0) + n
+
+    def _log(self, entry: dict) -> None:
+        self.exercise_log = (self.exercise_log + [entry])[-MAX_LOG:]
 
     def record_lesson(self, concepts: list[str], *, completed: bool, lesson_id: str | None = None) -> None:
         for cid in dict.fromkeys(concepts):

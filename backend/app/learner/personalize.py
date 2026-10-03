@@ -111,6 +111,12 @@ def reason(shape: dict, profile: LearnerProfile, concept: str | None, name: str)
                 "come from real games.")
     elif shape["calculation"]:
         text = f"You spot {subject} ideas well; these positions need a few moves of calculation to finish."
+    elif shape.get("teaching") and shape["status"] == "weak":
+        text = (f"{name} gave you some trouble and you asked for explanations, so we'll start with worked "
+                "examples and clearer positions.")
+    elif shape.get("teaching"):
+        text = (f"You solve {subject} positions, and you've asked why a few times, so this lesson starts "
+                "with a worked example that shows the idea step by step.")
     elif shape["status"] == "mastered":
         text = f"You've already got the hang of {subject}, so these are harder positions to keep you sharp."
     elif shape["status"] == "weak":

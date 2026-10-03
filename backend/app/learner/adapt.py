@@ -5,8 +5,13 @@ lesson's outcomes and the learner model. At most MAX_CHANGES per lesson, so a le
 never balloons, and nothing is ever changed behind the learner's back: every change
 comes with a short note saying why.
 
-    harder         the last two examples were solved cleanly (first try, no hints) and
-                   the next one isn't harder than those: swap it for a harder position
+    harder         the last two examples were solved cleanly (first try, no hints, and no
+                   explanation requested) and the next one isn't harder than those: swap it
+                   for a harder position
+    teach          two examples in this lesson were solved but the learner asked for an
+                   explanation each time ("I can solve it, but why?"): insert one worked
+                   example of the same idea (never harder; once per lesson). Asking is not
+                   a failure: nothing is made easier because of it
     easier         the learner had to look at the solution, or needed 3+ tries: insert a
                    clearer position of the same idea before going on
     prerequisite   ... and for a beginner who hasn't met a building block of the idea
@@ -27,6 +32,8 @@ HARDER_STEP = 200         # aim this far above the hardest position solved clean
 HARDER_MIN = 100          # ... and accept nothing less than this much harder
 EASIER_STEP = 250         # aim this far below the position that went wrong
 EASIER_MIN = 80
+TEACH_AFTER = 2           # explained solves in a lesson before a worked example is added
+TEACH_BELOW = 100         # the worked example is aimed this far below the last position
 
 NOTES = {
     "harder": ["You're finding these easy, so here's a harder one.",
@@ -38,6 +45,8 @@ NOTES = {
     "calculation": ["You found the key move; the hard part was seeing it through. "
                     "Here's a shorter line to practise the follow-up.",
                     "The idea was right. Now let's practise finishing the job, one move at a time."],
+    "teach": ["You solved these, and you asked why. Here's a worked example that shows the idea step by step.",
+              "Good solving. Since you wanted the why, here's one worked example of the same idea before we go on."],
     "prerequisite": ["This idea builds on {name}. Here's a quick look at that first.",
                      "First a quick refresher on {name}, which this idea depends on."],
 }
@@ -54,11 +63,12 @@ class Outcome:
     hints: int = 0
     revealed: bool = False
     key_found: bool = False     # the first move of the example was found without help
+    explained: bool = False     # an explanation was requested for it (learner.help; not a failure)
 
 
 @dataclass
 class Decision:
-    kind: str                   # harder | easier | calculation | prerequisite
+    kind: str                   # harder | easier | calculation | prerequisite | teach
     example_id: str
     role: str                   # role for the new example's steps
     replace: str | None = None  # example id to swap out (harder), else insert
@@ -73,10 +83,11 @@ def note_for(kind: str, seed: str, **fmt) -> str:
 
 def decide(outcomes: list[Outcome], upcoming: list[tuple[str, int, str]], used: set[str], changes: int,
            library, level: str = "beginner", known: set[str] | None = None, seen=None,
-           last_used=None, rating_of=None) -> Decision | None:
+           last_used=None, rating_of=None, done_kinds=None) -> Decision | None:
     """`upcoming`: (example_id, rating, role) of the examples still ahead in the lesson.
     `rating_of`: example -> rating on the same scale as the outcomes' ratings (default
-    knowledge.difficulty; the session passes learner.training_level.rating_of)."""
+    knowledge.difficulty; the session passes learner.training_level.rating_of).
+    `done_kinds`: kinds of the changes already made in this lesson."""
     from ..knowledge.difficulty import puzzle_rating as _library_rating
     from ..knowledge.library import Query
     puzzle_rating = rating_of or _library_rating
@@ -121,7 +132,13 @@ def decide(outcomes: list[Outcome], upcoming: list[tuple[str, int, str]], used: 
                 return Decision("easier", ex.id, "guided", note=note_for("easier", seed))
         return None
 
-    clean = [o for o in outcomes[-2:] if o.score >= 1.0]
+    explained_solves = [o for o in outcomes if o.explained and o.score > 0 and not o.revealed]
+    if len(explained_solves) >= TEACH_AFTER and "teach" not in (done_kinds or ()) and last.score > 0:
+        ex = find(last.rating - TEACH_BELOW, lambda e: puzzle_rating(e) <= last.rating, mode=None)
+        if ex is not None:
+            return Decision("teach", ex.id, "demonstration", note=note_for("teach", seed))
+
+    clean = [o for o in outcomes[-2:] if o.score >= 1.0 and not o.explained]
     if len(outcomes) >= 2 and len(clean) == 2:
         best = max(o.rating for o in clean)
         nxt = next(((eid, r, role) for eid, r, role in upcoming if role in ("guided", "practice")), None)
