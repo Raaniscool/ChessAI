@@ -14,11 +14,15 @@ from pathlib import Path
 
 CURATED = Path(__file__).resolve().parent / "data" / "curated"
 FILES = ("basics", "checkmates", "endgames", "mistakes")  # openings.json is read by lichess_openings
+# the item-9 expansion (rule of the square, key squares, Philidor, triangulation, wrong bishop,
+# breakthrough, avoiding stalemate): verified by `build_knowledge_seed.py --expand`. Records carry
+# their own "category".
+EXPANSION_FILES = ("endgames_expansion", "mistakes_expansion")
 
 
-def candidates(directory: Path | None = None) -> list[dict]:
+def candidates(directory: Path | None = None, files: tuple[str, ...] = FILES) -> list[dict]:
     out = []
-    for name in FILES:
+    for name in files:
         path = (directory or CURATED) / f"{name}.json"
         if not path.exists():
             continue

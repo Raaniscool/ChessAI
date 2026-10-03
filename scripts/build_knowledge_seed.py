@@ -57,9 +57,14 @@ def main() -> int:
     ap.add_argument("--starter-per-concept", type=int, default=3)
     ap.add_argument("--tiers", action="store_true",
                     help="rebuild only the starter + harder tiers against the current library")
+    ap.add_argument("--expand", action="store_true",
+                    help="rebuild only the item-9 expansion (new tactics, mates, endgames, mistakes)")
+    ap.add_argument("--expand-per-concept", type=int, default=6)
     args = ap.parse_args()
     if args.tiers:
         return add_tiers(args)
+    if args.expand:
+        return add_expansion(args)
 
     with tempfile.TemporaryDirectory() as tmp:  # an empty library with the real concept graph
         shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
@@ -289,6 +294,88 @@ def add_tiers(args) -> int:
             "not_verified": [{"id": r["id"], "status": r["status"], "reasons": r["reasons"]}
                              for r in mine if r["status"] != "verified"],
         }
+    report_path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    return 0
+
+
+EXPANSION_FILES = ("lichess_expansion.json", "curated_expansion.json")
+
+
+def add_expansion(args) -> int:
+    """Library expansion (decoys, clearance, interference, underpromotion, mate in two, hook and
+    dovetail mates, pawn-ending technique, rook-ending defence, real-game king-safety and
+    back-rank mistakes, avoiding stalemate). Verifies the candidates against the library as it is
+    — every stage of the pipeline, nothing relaxed — and writes only the expansion's own files."""
+    examples = KNOWLEDGE / "examples"
+    old_files = [p for name in EXPANSION_FILES for p in examples.rglob(name)]
+    with tempfile.TemporaryDirectory() as tmp:  # the library without any previous expansion
+        shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
+        for path in examples.rglob("*.json"):
+            if path not in old_files:
+                target = Path(tmp) / "examples" / path.relative_to(examples)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(path, target)
+        library = KnowledgeLibrary(data_dir=Path(tmp), load_runtime=False)
+        # puzzle ids already in the library (as tactics or mistakes) are not imported twice
+        used = {(e.source or {}).get("source_id") for e in library.verified()}
+        results: list[dict] = []
+        engine = get_engine()
+
+        def run(cand: dict, importer: str) -> str:
+            t = time.time()
+            rep = verify_candidate(cand, library, engine=engine, depth=args.depth, tier="global",
+                                   method="seed_builder")
+            record = rep.example.to_record() if rep.example is not None else cand
+            if rep.status == "verified":
+                record["verification"]["verified_at"] = lichess_puzzles.EXPANSION_DATE
+                library.add(rep.example)
+            results.append({"status": rep.status, "record": record, "reasons": rep.reasons, "id": cand.get("id"),
+                            "importer": importer})
+            print(f"{rep.status:13s} {cand.get('id', '?'):40s} {time.time() - t:5.1f}s", flush=True)
+            for reason in rep.reasons:
+                print(f"      - {reason[:200]}", flush=True)
+            return rep.status
+
+        try:
+            for cand in curated.candidates(files=curated.EXPANSION_FILES):
+                run(cand, "curated_expansion")
+            per = args.expand_per_concept
+            for cand in lichess_puzzles.expansion_candidates(library, per_concept=per, exclude=used):
+                run(cand, "lichess_expansion")
+            for cand in lichess_puzzles.expansion_mistake_candidates(library, per_concept=per, exclude=used):
+                run(cand, "lichess_expansion")
+        finally:
+            engine.close()
+        everything = library.verified()
+    verified = [r["record"] for r in results if r["status"] == "verified"]
+    print(f"\n{dict(Counter(r['status'] for r in results))}  by concept: "
+          f"{dict(sorted(Counter(r['concept'] for r in verified).items()))}")
+    if args.dry_run:
+        return 0
+    by_file: dict[Path, list[dict]] = defaultdict(list)
+    for r in results:
+        if r["status"] == "verified":
+            by_file[examples / r["record"]["category"] / f"{r['importer']}.json"].append(r["record"])
+    for old in old_files:
+        old.unlink()
+    for path, records in sorted(by_file.items()):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        records.sort(key=lambda rec: (rec["concept"], rec["difficulty"], rec["id"]))
+        path.write_text(json.dumps(records, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {len(records):3d} -> {path.relative_to(ROOT)}")
+    report_path = KNOWLEDGE / "seed_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["totals"]["verified"] = len(everything)
+    report["by_category"] = dict(Counter(e.category for e in everything))
+    report["by_concept"] = dict(sorted(Counter(e.concept for e in everything).items()))
+    report["expansion"] = {
+        "import_date": lichess_puzzles.EXPANSION_DATE,
+        "totals": dict(Counter(r["status"] for r in results)),
+        "by_concept": dict(sorted(Counter(r["record"]["concept"] for r in results
+                                          if r["status"] == "verified").items())),
+        "not_verified": [{"id": r["id"], "concept": r["record"].get("concept"), "status": r["status"],
+                          "reasons": r["reasons"]} for r in results if r["status"] != "verified"],
+    }
     report_path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     return 0
 

@@ -30,6 +30,12 @@ TOPICS = Path(__file__).resolve().parents[2] / "planner" / "data" / "topics.json
 POOL = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool.json"
 # longer solutions and combinations, so stronger learners get positions that stretch them
 POOL_HARDER = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_harder.json"
+# the item-9 expansion: decoys, clearance, interference, underpromotion, more mates, pawn endings
+# and real-game mistakes. pool_ideas.json was pre-filtered with the concept validators so the
+# Stockfish build only checked positions that show the idea.
+POOL_EXPANSION = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_expansion.json"
+POOL_IDEAS = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_ideas.json"
+EXPANSION_DATE = "2026-10-02"
 LICENSE = "CC0-1.0"
 
 # Lichess theme -> library concept (refined from the facts where possible)
@@ -81,9 +87,9 @@ def _title(concept_name: str, kind: str, f: dict) -> str:
     return concept_name
 
 
-def _themes(path: Path | None, order) -> dict[str, list[dict]]:
+def _themes(path: Path | None, order, paths: list[Path] | None = None) -> dict[str, list[dict]]:
     """{theme: puzzles}: the given file, or the planner's puzzles followed by the pool."""
-    paths = [path] if path else [PUZZLES, POOL]
+    paths = [path] if path else (paths or [PUZZLES, POOL])
     merged: dict[str, list[dict]] = {}
     for p in paths:
         if not p.exists():
@@ -113,7 +119,51 @@ def candidates(library, per_concept: int = 4, path: Path | None = None) -> list[
     return out
 
 
-def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict) -> dict | None:
+# Lichess theme -> concepts tried in order; the first whose validator finds the idea wins.
+EXPANSION_THEMES = {
+    "attraction": ["attraction"], "clearance": ["clearance"], "interference": ["interference"],
+    "underPromotion": ["underpromotion"], "mateIn2": ["mate_in_two"], "hookMate": ["hook_mate"],
+    "dovetailMate": ["dovetail_mate"],
+    "pawnEndgame": ["outside_passed_pawn", "pawn_breakthrough"],
+    "zugzwang": ["outside_passed_pawn", "pawn_breakthrough"],
+}
+# the learner's task for concepts without a topic text ("Find the decoy.")
+TASKS = {
+    "attraction": "Find the decoy.", "clearance": "Clear the way for another piece.",
+    "interference": "Cut the defender off.", "underpromotion": "Find the best promotion.",
+    "mate_in_two": "Find mate in two.", "hook_mate": "Find the checkmate.", "dovetail_mate": "Find the checkmate.",
+    "outside_passed_pawn": "Find the winning plan.", "pawn_breakthrough": "Find the winning plan.",
+}
+
+
+def expansion_candidates(library, per_concept: int = 6, exclude: set[str] | None = None,
+                         paths: list[Path] | None = None) -> list[dict]:
+    """Candidates for the item-9 concepts from the expansion pools (simplest first)."""
+    exclude = exclude or set()
+    themes = _themes(None, lambda p: (len(p["moves"]), p["id"]), paths or [POOL_EXPANSION, POOL_IDEAS])
+    out: list[dict] = []
+    per: dict[str, int] = {}
+    used: set[str] = set()
+    for theme, concepts in EXPANSION_THEMES.items():
+        for puzzle in themes.get(theme, []):
+            if puzzle["id"] in exclude or puzzle["id"] in used:
+                continue
+            for concept in concepts:
+                if per.get(concept, 0) >= per_concept or concept not in library.concepts:
+                    continue
+                cand = _candidate(puzzle, theme, concept, library, {"task": TASKS.get(concept)},
+                                  require_facts=True, import_date=EXPANSION_DATE)
+                if cand is None:
+                    continue
+                per[concept] = per.get(concept, 0) + 1
+                used.add(puzzle["id"])
+                out.append(cand)
+                break
+    return out
+
+
+def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict, require_facts: bool = False,
+               import_date: str | None = None) -> dict | None:
     if concept not in library.concepts:
         return None
     board = chess.Board(puzzle["fen"])
@@ -133,6 +183,8 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict) -> d
         facts = validators.run(kind, ctx, {k: v for k, v in spec.items() if k != "type"})
     except validators.Fail:
         facts = None  # the pipeline will reject it and report why
+        if require_facts:
+            return None  # the expansion only proposes positions that show the idea
     if facts is not None:
         concept, kind, facts = _refine(concept, kind, facts, ctx, library)
     name = library.concepts[concept].name
@@ -142,7 +194,14 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict) -> d
         difficulty = 1
     notes = {rep.labels[0]: "The opponent's last move. Something is now possible — look closely."}
     note = teaching.key_note(kind, facts) if facts else None
-    if note:
+    if note and note.startswith("Checkmate! ") and not rep.boards[key_ply + 1].is_checkmate():
+        # a mate in several moves: the mate is described where it happens, not at the first move
+        notes[rep.labels[-1]] = note
+        mate = note[len("Checkmate! "):]
+        note = ("This starts a forced checkmate: whatever the reply, mate follows. In the final position, "
+                + mate[0].lower() + mate[1:])
+        notes[rep.labels[key_ply]] = "This starts a forced checkmate: whatever the reply, mate follows."
+    elif note:
         notes[rep.labels[key_ply]] = note
     final = rep.final
     start = rep.boards[key_ply]
@@ -177,7 +236,8 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict) -> d
         "tags": [theme, "lichess", "real game", f"{learner_moves}-move"],
         "source": provenance("lichess_puzzle", puzzle["id"], LICENSE,
                              url=f"https://lichess.org/training/{puzzle['id']}",
-                             reference="Lichess puzzle database (database.lichess.org)"),
+                             reference="Lichess puzzle database (database.lichess.org)",
+                             **({"import_date": import_date} if import_date else {})),
     }
 
 
@@ -212,7 +272,62 @@ def mistake_candidates(library, per_concept: int = 3, exclude: set[str] | None =
     return out
 
 
-def _mistake_candidate(puzzle: dict, theme: str, concept: str, library) -> dict | None:
+# the expansion's real-game mistakes: the setup move ignores the back rank, or ignores a threat
+# that was already there (attacks on f2/f7 and on an exposed king). These Lichess themes are not
+# imported as "weakening the king": their setup moves are mostly king walks into skewers or moves
+# elsewhere on the board, not weakened king shelters.
+EXPANSION_MISTAKE_THEMES = {"backRankMate": "back_rank_weakness", "attackingF2F7": "missed_threat",
+                            "exposedKing": "missed_threat"}
+
+
+def _threat_was_real(puzzle: dict) -> bool:
+    """Stricter than the validator, for imports: had the mistaken side passed instead, the same
+    reply would have done the same damage (mate, or the same piece captured)."""
+    board = chess.Board(puzzle["fen"])
+    mistake, reply = (chess.Move.from_uci(u) for u in puzzle["moves"][:2])
+    passed = board.copy(stack=False)
+    passed.push(chess.Move.null())
+    if reply not in passed.legal_moves:
+        return False
+    actual = board.copy(stack=False)
+    actual.push(mistake)
+    side = board.turn
+    for uci in puzzle["moves"][1:]:  # the whole punishment must work without the mistake too
+        move = chess.Move.from_uci(uci)
+        if move not in passed.legal_moves:
+            return False
+        actual.push(move)
+        passed.push(move)
+    if actual.is_checkmate():
+        return passed.is_checkmate()
+    return (material(passed, side) - material(passed, not side)) <= \
+        (material(actual, side) - material(actual, not side))
+
+
+def expansion_mistake_candidates(library, per_concept: int = 6, exclude: set[str] | None = None,
+                                 paths: list[Path] | None = None) -> list[dict]:
+    exclude = exclude or set()
+    themes = _themes(None, lambda p: (-len(p["moves"]), p["id"]), paths or [POOL_IDEAS])
+    out: list[dict] = []
+    taken: dict[str, int] = {}
+    for theme, concept in EXPANSION_MISTAKE_THEMES.items():
+        if concept not in library.concepts:
+            continue
+        for puzzle in themes.get(theme, []):
+            if taken.get(concept, 0) >= per_concept:
+                break
+            if puzzle["id"] in exclude or any(c["source"]["source_id"] == puzzle["id"] for c in out):
+                continue
+            if concept == "missed_threat" and not _threat_was_real(puzzle):
+                continue
+            cand = _mistake_candidate(puzzle, theme, concept, library, import_date=EXPANSION_DATE)
+            if cand is not None:
+                out.append(cand)
+                taken[concept] = taken.get(concept, 0) + 1
+    return out
+
+
+def _mistake_candidate(puzzle: dict, theme: str, concept: str, library, import_date: str | None = None) -> dict | None:
     board = chess.Board(puzzle["fen"])
     sans = []
     for uci in puzzle["moves"]:
@@ -244,6 +359,28 @@ def _mistake_candidate(puzzle: dict, theme: str, concept: str, library) -> dict 
                   f"pieces can go next, and whether one square would attack two of your pieces at once.")
         punish_note = teaching.key_note("fork", fork)
         hints = teaching.hints("fork", fork)
+    elif concept == "back_rank_weakness":
+        mate = facts["mate"]
+        title = "Ignoring the back rank"
+        mistake_note = f"The mistake: the {mistaker.lower()} king on {mate['king']} has no escape square."
+        lesson = (f"After {mistake} the {mistaker.lower()} king was stuck on its back rank, and {punisher} "
+                  f"mated there. Before you move a piece that guards your back rank, check whether a rook or "
+                  f"queen could give a check your king can't escape — and give it an escape square in time.")
+        punish_note = f"{punisher} goes for the back rank."
+        hints = [f"The {mistaker.lower()} king on {mate['king']} has no escape square.",
+                 "Which check on the back rank can't be answered?"]
+    elif concept == "missed_threat":
+        threat = rep.sans[1]
+        ending = "and it ends in checkmate" if facts["ends_in_mate"] else \
+            f"and {punisher} wins {facts['material_lost']} points of material"
+        title = "Missing a threat: checkmate" if facts["ends_in_mate"] else "Missing a threat"
+        mistake_note = f"The mistake: {mistaker} plays on as if nothing were threatened."
+        lesson = (f"Before {mistake}, {punisher} was already threatening {threat}. {mistaker} ignored it, "
+                  f"{punisher} carried out the threat, {ending}. Before every move, ask: what does my "
+                  f"opponent threaten right now?")
+        punish_note = f"{punisher} carries out the threat."
+        hints = ["Your opponent just ignored something you were threatening. What was it?",
+                 "Look for checks and captures first."]
     else:
         hung = facts["hung"]
         title = f"Hanging a piece: the loose {hung['piece']}"
@@ -280,5 +417,6 @@ def _mistake_candidate(puzzle: dict, theme: str, concept: str, library) -> dict 
         "tags": [theme, "mistake", "lichess", "real game"],
         "source": provenance("lichess_puzzle", puzzle["id"], LICENSE,
                              url=f"https://lichess.org/training/{puzzle['id']}",
-                             reference="Lichess puzzle database (database.lichess.org)"),
+                             reference="Lichess puzzle database (database.lichess.org)",
+                             **({"import_date": import_date} if import_date else {})),
     }
