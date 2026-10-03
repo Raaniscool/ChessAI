@@ -433,5 +433,455 @@
    "import_date": "2026-10-02"
   },
   "category": "endgames"
+ },
+ {
+  "id": "endgame_stalemate_trick_rook_g8",
+  "title": "Stalemate trick: the rook gives itself up",
+  "concept": "stalemate_tricks",
+  "difficulty": 3,
+  "description": "White is a queen against a rook behind. Quiet moves lose — but White's king has no moves of its own.",
+  "start_fen": "7k/7p/8/8/8/6Rp/5q1P/7K w - - 0 1",
+  "moves": [
+   "Rg8+",
+   "Kxg8"
+  ],
+  "key_move": "1.Rg8+",
+  "prompt": "White to move. You are lost on material. Can you save the game?",
+  "hints": [
+   "Count your king's legal moves. What if the rook weren't there?",
+   "A check that has to be answered by a capture."
+  ],
+  "notes": {
+   "1.Rg8+": "The rook gives check, and Black has to take it: h7 is blocked by Black's own pawn and the rook covers g7.",
+   "1...Kxg8": "Stalemate: White's king on h1 has no legal move and is not in check."
+  },
+  "explanation": "White is a queen against a rook behind, and after a quiet rook move the queen mates. But White's king on h1 can't move: the queen on f2 attacks g1 and g2, and the pawn on h2 is blocked. So White gets rid of the rook with check. Black must take it, and White, with no legal move and not in check, is stalemated — a draw.",
+  "tags": [
+   "endgame",
+   "stalemate",
+   "swindle",
+   "saving a lost position"
+  ],
+  "prerequisites": [
+   "stalemate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "stalemate-trick-rook-g8",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Stalemate trick with a desperado rook (standard swindle); Stockfish 19: only 1.Rg8+ draws, other moves are mated",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_stalemate_trick_rook_g1_black",
+  "title": "Stalemate trick: no moves left for Black",
+  "concept": "stalemate_tricks",
+  "difficulty": 3,
+  "description": "Black is a queen and a knight behind. Black's king is boxed in — use it.",
+  "start_fen": "k7/p2N4/P1P3r1/Q7/8/8/7P/7K b - - 0 1",
+  "moves": [
+   "Rg1+",
+   "Kxg1"
+  ],
+  "key_move": "1...Rg1+",
+  "prompt": "Black to move. You are lost on material. Is there a way to draw?",
+  "hints": [
+   "Does Black's king have any legal move?",
+   "If the rook disappears, can Black move at all?"
+  ],
+  "notes": {
+   "1...Rg1+": "Check — and White's king has to take: g2 is covered by the rook and h2 holds White's own pawn.",
+   "2.Kxg1": "Stalemate: Black has no legal move and is not in check."
+  },
+  "explanation": "Black's king on a8 can't move: the knight on d7 covers b8, the pawn on c6 covers b7, and the pawn on a7 is blocked. If Black had no rook, Black would have no legal move at all. So the rook gives check where White's king must capture it, and Black is stalemated — a draw, although Black was far behind.",
+  "tags": [
+   "endgame",
+   "stalemate",
+   "swindle",
+   "saving a lost position"
+  ],
+  "prerequisites": [
+   "stalemate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "stalemate-trick-rook-g1",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Stalemate trick with a desperado rook (standard swindle); Stockfish 19: only 1...Rg1+ draws",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_perpetual_queen_vs_rooks",
+  "title": "Perpetual check: the queen against two rooks",
+  "concept": "perpetual_check",
+  "difficulty": 3,
+  "description": "White is three points behind. The black king has few pawns around it.",
+  "start_fen": "7k/6p1/7p/8/8/8/rr6/4Q1K1 w - - 0 1",
+  "moves": [
+   "Qe8+",
+   "Kh7",
+   "Qe4+",
+   "g6",
+   "Qe7+",
+   "Kg8",
+   "Qe8+",
+   "Kg7",
+   "Qe7+"
+  ],
+  "key_move": "1.Qe8+",
+  "prompt": "White to move. You are behind on material. How do you save the game?",
+  "hints": [
+   "You can't win this ending — can you stop it from being played at all?",
+   "Check, check, check: can the black king ever escape?"
+  ],
+  "notes": {
+   "1.Qe8+": "The first check.",
+   "2.Qe4+": "The queen checks again on the diagonal.",
+   "3.Qe7+": "And again.",
+   "5.Qe7+": "The black king can't get away from the checks: a draw."
+  },
+  "explanation": "White is three points of material behind, and the two rooks would win a long ending. Instead White gives check after check with the queen. Wherever the black king goes — g8, h7 or g7 — another check follows, and Black's pieces can't block in time, so the game is drawn.",
+  "tags": [
+   "endgame",
+   "perpetual check",
+   "draw",
+   "saving a lost position"
+  ],
+  "prerequisites": [
+   "check"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "perpetual-queen-vs-rooks",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Perpetual check (standard drawing technique); Stockfish 19: 0.00 after 1.Qe8+, other moves lose",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_queen_mate_corner",
+  "title": "King and queen: the final squeeze",
+  "concept": "queen_mate",
+  "difficulty": 1,
+  "description": "The black king is already on the edge. Bring your king in and finish.",
+  "start_fen": "6k1/8/8/5K2/8/8/8/Q7 w - - 0 1",
+  "moves": [
+   "Kg6",
+   "Kf8",
+   "Qe5",
+   "Kg8",
+   "Qg7#"
+  ],
+  "key_move": "1.Kg6",
+  "prompt": "White to move. Mate the black king.",
+  "hints": [
+   "The queen can't mate alone: bring the king closer first.",
+   "Then the queen gives mate next to the black king, protected by your king."
+  ],
+  "notes": {
+   "1.Kg6": "The white king comes up: now it covers f7, g7 and h7.",
+   "2.Qe5": "The queen takes away e7 and e8, so Black's king has to go back to g8.",
+   "3.Qg7#": "Checkmate: the queen on g7 is protected by the king."
+  },
+  "explanation": "With king and queen against king, the queen alone can't mate: the king has to help. Here the white king steps to g6, the queen takes the e-file, and the queen mates on g7 protected by the king. Before every queen move, check that Black still has a legal move — stalemate throws the win away.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "queen",
+   "basic mate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "queen-mate-corner",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "King and queen against king (standard technique); line verified with Stockfish 19 (mate in 3)",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_queen_mate_box",
+  "title": "King and queen: shrink the box",
+  "concept": "queen_mate",
+  "difficulty": 2,
+  "description": "The black king is in the middle of the board. Push it to the edge with the queen and your king.",
+  "start_fen": "8/8/8/8/2k5/8/1Q6/3K4 w - - 0 1",
+  "moves": [
+   "Qd2",
+   "Kc5",
+   "Qd7",
+   "Kc4",
+   "Kd2",
+   "Kb4",
+   "Qd5",
+   "Ka3",
+   "Kc3",
+   "Ka4",
+   "Qe5",
+   "Ka3",
+   "Qa5#"
+  ],
+  "key_move": "1.Qd2",
+  "prompt": "White to move. Drive the king to the edge and mate it.",
+  "hints": [
+   "Use the queen to fence the king in, a knight's move away from it.",
+   "When the box can't get smaller, bring your king up."
+  ],
+  "notes": {
+   "1.Qd2": "The queen fences the black king in.",
+   "3.Kd2": "The white king joins in.",
+   "7.Qa5#": "Checkmate on the edge of the board."
+  },
+  "explanation": "With king and queen against king, the queen builds a box around the enemy king and makes it smaller and smaller, the white king walks up to help, and only then comes the mate on the edge. Before every quiet queen move, check that the black king still has a legal move — otherwise the game ends in a draw instead of a win.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "queen",
+   "basic mate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "queen-mate-box",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "King and queen against king (standard technique); Stockfish 19 mating line (mate in 7)",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_rook_mate_corner",
+  "title": "King and rook: mate in the corner",
+  "concept": "rook_mate",
+  "difficulty": 1,
+  "description": "The black king is on the edge. Your king and rook work together.",
+  "start_fen": "6k1/8/4K3/8/8/8/8/R7 w - - 0 1",
+  "moves": [
+   "Kf6",
+   "Kh7",
+   "Ra8",
+   "Kh6",
+   "Rh8#"
+  ],
+  "key_move": "1.Kf6",
+  "prompt": "White to move. Mate the black king.",
+  "hints": [
+   "First bring your king closer.",
+   "The rook mates along the edge while your king guards the escape squares."
+  ],
+  "notes": {
+   "1.Kf6": "The white king steps closer: now it covers g7.",
+   "2.Ra8": "The rook takes the eighth rank.",
+   "3.Rh8#": "Checkmate."
+  },
+  "explanation": "With king and rook against king, the rook alone can't mate: the kings have to stand close, and the rook gives mate along the edge while the white king guards the squares in front. Here Kf6 brings the king up, Ra8 takes the back rank, and Rh8 is mate.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "rook",
+   "basic mate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "rook-mate-corner",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "King and rook against king (standard technique); line verified with Stockfish 19 (mate in 3)",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_rook_mate_black",
+  "title": "King and rook: Black mates on the first rank",
+  "concept": "rook_mate",
+  "difficulty": 2,
+  "description": "Black has king and rook against White's lone king, which is already on its first rank.",
+  "start_fen": "8/8/8/8/8/3k4/r7/4K3 b - - 0 1",
+  "moves": [
+   "Rb2",
+   "Kf1",
+   "Ke3",
+   "Kg1",
+   "Kf3",
+   "Kh1",
+   "Kg3",
+   "Kg1",
+   "Rb1#"
+  ],
+  "key_move": "1...Rb2",
+  "prompt": "Black to move. Mate White's king.",
+  "hints": [
+   "Keep White's king on the first rank with the rook.",
+   "Bring your king opposite White's king, then mate along the rank."
+  ],
+  "notes": {
+   "1...Rb2": "The rook keeps White's king on the first rank.",
+   "2...Ke3": "The black king follows.",
+   "5...Rb1#": "Checkmate: the black king on g3 takes away f2, g2 and h2."
+  },
+  "explanation": "King and rook against king: the rook keeps the enemy king on the edge, the attacking king walks up opposite it, and the rook mates along the edge. Here Black's rook holds the second rank while Black's king follows White's king to the corner, and Rb1 is mate.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "rook",
+   "basic mate"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "rook-mate-black",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "King and rook against king (standard technique); Stockfish 19 mating line (mate in 5)",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "mate_ladder_two_rooks_kingside",
+  "title": "Ladder mate: two rooks climb the board",
+  "concept": "ladder_mate",
+  "difficulty": 1,
+  "description": "Two rooks against a lone king, which is far from your rooks.",
+  "start_fen": "8/8/8/6k1/R7/1R6/8/2K5 w - - 0 1",
+  "moves": [
+   "Rb5+",
+   "Kg6",
+   "Ra6+",
+   "Kg7",
+   "Rb7+",
+   "Kg8",
+   "Ra8#"
+  ],
+  "key_move": "1.Rb5+",
+  "prompt": "White to move. Mate with the two rooks.",
+  "hints": [
+   "One rook holds a rank while the other checks on the next one.",
+   "Keep the rooks far away from the black king, so it can't attack them."
+  ],
+  "notes": {
+   "1.Rb5+": "The b-rook checks while the a-rook holds the fourth rank.",
+   "2.Ra6+": "Now the a-rook checks and the b-rook holds the fifth rank.",
+   "4.Ra8#": "Checkmate on the edge."
+  },
+  "explanation": "The ladder mate: the two rooks take turns. One rook guards a rank, the other checks on the next rank up, and the king is pushed back rank by rank until it is mated on the edge. The rooks stay on the far side of the board so the king can never attack them.",
+  "tags": [
+   "checkmate",
+   "rooks",
+   "basic mate",
+   "ladder"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "ladder-mate-kingside",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Ladder (lawnmower) mate with two rooks (standard technique); verified with Stockfish 19",
+   "import_date": "2026-10-03"
+  },
+  "category": "checkmates"
+ },
+ {
+  "id": "endgame_philidor_f_pawn_white",
+  "title": "Philidor defence: White holds the third rank",
+  "concept": "philidor_position",
+  "difficulty": 3,
+  "description": "White defends rook against rook and pawn. Black's king and pawn are close to White's king.",
+  "start_fen": "8/8/8/8/5pk1/R7/1r6/5K2 w - - 0 1",
+  "moves": [
+   "Rc3",
+   "f3",
+   "Rc8",
+   "Kg3",
+   "Rg8+",
+   "Kf4",
+   "Rf8+",
+   "Ke3",
+   "Re8+",
+   "Kd3",
+   "Rd8+"
+  ],
+  "key_move": "1.Rc3",
+  "prompt": "White to move. Hold the draw.",
+  "hints": [
+   "Keep your rook on your third rank — the black king must not get to it.",
+   "When the pawn steps onto that rank, your rook goes to the far end of the board and checks."
+  ],
+  "notes": {
+   "1.Rc3": "The rook stays on White's third rank, so the black king can't come forward.",
+   "1...f3": "The pawn steps onto the third rank — but now the black king has no shelter from checks.",
+   "2.Rc8": "The rook drops back to the far end of the board.",
+   "3.Rg8+": "Check from behind — and the checks don't stop."
+  },
+  "explanation": "The Philidor defence: the defending rook holds its third rank so the attacking king can't advance. As soon as the pawn steps onto that rank, the pawn can no longer shelter its king, and the rook goes back to the far end of the board to check from behind. The black king can't hide, so the game is drawn.",
+  "tags": [
+   "endgame",
+   "rook endgame",
+   "Philidor",
+   "draw"
+  ],
+  "prerequisites": [
+   "passed_pawn"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "philidor-f-pawn-white",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Philidor position (standard rook-endgame defence); Stockfish 19: 0.00 at every move",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
+ },
+ {
+  "id": "endgame_lucena_f_pawn",
+  "title": "Lucena win: drive the king away and promote",
+  "concept": "lucena_position",
+  "difficulty": 3,
+  "description": "White's pawn is on the seventh rank with its king in front of it. Black's king is cut off on the d-file.",
+  "start_fen": "5K2/3k1P2/8/8/8/8/6r1/4R3 w - - 0 1",
+  "moves": [
+   "Re7+",
+   "Kd8",
+   "Re4",
+   "Kd7",
+   "Rd4+",
+   "Ke6",
+   "Ke8",
+   "Rf2",
+   "f8=Q",
+   "Rxf8+",
+   "Kxf8"
+  ],
+  "key_move": "1.Re7+",
+  "prompt": "White to move. Win the rook ending.",
+  "hints": [
+   "Your king has to get out from in front of the pawn — but first push the black king further away.",
+   "A rook on the fourth rank can block checks later."
+  ],
+  "notes": {
+   "1.Re7+": "Check: the black king is pushed back.",
+   "2.Re4": "The rook goes to the fourth rank, where it can block checks from the side.",
+   "3.Rd4+": "Another check drives the king off the d-file.",
+   "5.f8=Q": "The pawn promotes. Black has to give up the rook for the new queen."
+  },
+  "explanation": "White's pawn is on the seventh rank and White's king stands in front of it. White first uses the rook to push Black's king away, puts the rook on the fourth rank, then the white king steps aside and the pawn promotes. Black has to give up the rook for the new queen, and king and rook against king is a win.",
+  "tags": [
+   "endgame",
+   "rook endgame",
+   "Lucena",
+   "promotion"
+  ],
+  "prerequisites": [
+   "passed_pawn"
+  ],
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "lucena-f-pawn",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Lucena-type rook ending (standard technique); Stockfish 19: White stays above +4.5 throughout",
+   "import_date": "2026-10-03"
+  },
+  "category": "endgames"
  }
 ]

@@ -35,6 +35,7 @@ POOL_HARDER = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "po
 # Stockfish build only checked positions that show the idea.
 POOL_EXPANSION = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_expansion.json"
 POOL_IDEAS = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_ideas.json"
+POOL_FINISH = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_finish.json"
 EXPANSION_DATE = "2026-10-02"
 LICENSE = "CC0-1.0"
 
@@ -126,6 +127,12 @@ EXPANSION_THEMES = {
     "dovetailMate": ["dovetail_mate"],
     "pawnEndgame": ["outside_passed_pawn", "pawn_breakthrough"],
     "zugzwang": ["outside_passed_pawn", "pawn_breakthrough"],
+    # finishing item 9: pools pre-filtered with the concept's own validator (pool_finish.json)
+    "xRay": ["x_ray"], "doubleBishopMate": ["double_bishop_mate"], "epauletteMate": ["epaulette_mate"],
+    "greekGift": ["greek_gift"], "windmill": ["windmill"], "desperado": ["desperado"],
+    "zugzwangQuiet": ["zugzwang"], "perpetual": ["perpetual_check"], "stalemateTrick": ["stalemate_tricks"],
+    "threatDefence": ["spotting_threats"], "doubleAttack": ["double_attack"], "pawnFork": ["pawn_fork"],
+    "relativePin": ["relative_pin"],
 }
 # the learner's task for concepts without a topic text ("Find the decoy.")
 TASKS = {
@@ -133,6 +140,12 @@ TASKS = {
     "interference": "Cut the defender off.", "underpromotion": "Find the best promotion.",
     "mate_in_two": "Find mate in two.", "hook_mate": "Find the checkmate.", "dovetail_mate": "Find the checkmate.",
     "outside_passed_pawn": "Find the winning plan.", "pawn_breakthrough": "Find the winning plan.",
+    "x_ray": "Find the x-ray.", "double_bishop_mate": "Find the checkmate.", "epaulette_mate": "Find the checkmate.",
+    "greek_gift": "Attack the king.", "windmill": "Find the windmill.", "desperado": "Find the best move.",
+    "zugzwang": "Find the quiet winning move.", "perpetual_check": "Save the game.",
+    "stalemate_tricks": "Save the game.", "spotting_threats": "What does your opponent threaten? Stop it.",
+    "double_attack": "Attack two things at once.", "pawn_fork": "Find the pawn fork.",
+    "relative_pin": "Find the pin.",
 }
 
 
@@ -140,7 +153,7 @@ def expansion_candidates(library, per_concept: int = 6, exclude: set[str] | None
                          paths: list[Path] | None = None) -> list[dict]:
     """Candidates for the item-9 concepts from the expansion pools (simplest first)."""
     exclude = exclude or set()
-    themes = _themes(None, lambda p: (len(p["moves"]), p["id"]), paths or [POOL_EXPANSION, POOL_IDEAS])
+    themes = _themes(None, lambda p: (len(p["moves"]), p["id"]), paths or [POOL_EXPANSION, POOL_IDEAS, POOL_FINISH])
     out: list[dict] = []
     per: dict[str, int] = {}
     used: set[str] = set()
@@ -207,7 +220,12 @@ def _candidate(puzzle: dict, theme: str, concept: str, library, text: dict, requ
     start = rep.boards[key_ply]
     gained = (material(final, learner) - material(final, not learner)) - \
              (material(start, learner) - material(start, not learner))
-    if final.is_checkmate():
+    if final.is_stalemate():
+        outcome = "The line ends in stalemate: a draw."
+        notes.setdefault(rep.labels[-1], "Stalemate: a draw.")
+    elif concept == "perpetual_check":
+        outcome = "The checks can't be escaped, so the game is drawn."
+    elif final.is_checkmate():
         outcome = "The line ends in checkmate."
         if len(sans) - 1 > key_ply:
             notes.setdefault(rep.labels[-1], "Checkmate!")
@@ -277,7 +295,8 @@ def mistake_candidates(library, per_concept: int = 3, exclude: set[str] | None =
 # imported as "weakening the king": their setup moves are mostly king walks into skewers or moves
 # elsewhere on the board, not weakened king shelters.
 EXPANSION_MISTAKE_THEMES = {"backRankMate": "back_rank_weakness", "attackingF2F7": "missed_threat",
-                            "exposedKing": "missed_threat"}
+                            "exposedKing": "missed_threat", "hangingQueen": "hanging_queen",
+                            "poisonedPawn": "poisoned_pawn", "earlyQueen": "early_queen"}
 
 
 def _threat_was_real(puzzle: dict) -> bool:
@@ -307,7 +326,7 @@ def _threat_was_real(puzzle: dict) -> bool:
 def expansion_mistake_candidates(library, per_concept: int = 6, exclude: set[str] | None = None,
                                  paths: list[Path] | None = None) -> list[dict]:
     exclude = exclude or set()
-    themes = _themes(None, lambda p: (-len(p["moves"]), p["id"]), paths or [POOL_IDEAS])
+    themes = _themes(None, lambda p: (-len(p["moves"]), p["id"]), paths or [POOL_IDEAS, POOL_FINISH])
     out: list[dict] = []
     taken: dict[str, int] = {}
     for theme, concept in EXPANSION_MISTAKE_THEMES.items():
@@ -381,6 +400,27 @@ def _mistake_candidate(puzzle: dict, theme: str, concept: str, library, import_d
         punish_note = f"{punisher} carries out the threat."
         hints = ["Your opponent just ignored something you were threatening. What was it?",
                  "Look for checks and captures first."]
+    elif concept == "poisoned_pawn":
+        grabbed = facts["grabbed"]
+        ending = "and it ends in checkmate" if facts["ends_in_mate"] else \
+            f"and in the end {mistaker} is {facts['material_lost']} points down"
+        title = "Grabbing a poisoned pawn"
+        mistake_note = f"The mistake: {mistaker} grabs the {teaching._p(grabbed)}."
+        lesson = (f"{mistaker} took the pawn with {mistake}, {punisher} answered {punish}, {ending}. A pawn "
+                  f"is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, "
+                  f"look at your opponent's best reply.")
+        punish_note = f"{punisher} punishes the pawn grab."
+        hints = [f"{mistaker} just grabbed a pawn. What did that cost?", "Look for checks, captures and threats."]
+    elif concept == "early_queen":
+        chased = facts["queen_chased_by"]
+        title = "Bringing the queen out too early"
+        mistake_note = f"The mistake: the {mistaker.lower()} queen comes out early."
+        result = "and the queen is lost" if facts["queen_lost"] else \
+            f"and the queen is chased with {teaching._list(chased)} while {punisher} develops"
+        lesson = (f"{mistaker} played {mistake} in the opening {result}. Develop knights and bishops first: a "
+                  f"queen out early is a target for the opponent's pieces.")
+        punish_note = f"{punisher} attacks the queen and gains time."
+        hints = ["The queen came out very early. Can you attack it while developing?"]
     else:
         hung = facts["hung"]
         title = f"Hanging a piece: the loose {hung['piece']}"
@@ -393,10 +433,10 @@ def _mistake_candidate(puzzle: dict, theme: str, concept: str, library, import_d
                  f"Look at the {hung['piece']} on {hung['square']}."]
     notes = {mistake: mistake_note, punish: punish_note}
     final = rep.final
-    lost = facts["material_lost"]
+    lost = facts.get("material_lost", 0)
     if final.is_checkmate():
         notes.setdefault(rep.labels[-1], "Checkmate!")
-    elif len(sans) > 2:
+    elif len(sans) > 2 and lost > 0:
         notes.setdefault(rep.labels[-1], f"{punisher} comes out {lost} point{'s' if lost != 1 else ''} of material ahead.")
     return {
         "id": f"lichess_{puzzle['id'].lower()}_mistake",
