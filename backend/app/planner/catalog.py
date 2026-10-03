@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -71,6 +72,8 @@ def validate_line(san_moves: list[str], start_fen: str = chess.STARTING_FEN) -> 
 
 
 def _normalize(text: str) -> list[str]:
+    # accents folded first: "Grünfeld" is "grunfeld", not "gr" + "nfeld"
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode() if not text.isascii() else text
     text = text.lower().replace("'", "").replace("’", "")
     return re.findall(r"[a-z0-9]+", text)
 

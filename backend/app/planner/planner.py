@@ -453,6 +453,37 @@ def _profile_level(profile) -> str | None:
 
 def _plan_without_intent(cleaned: str, library_first: bool, level, catalog, use_qwen: bool, engine, intent,
                          teacher=None, profile=None) -> dict:
+    record = _plan_without_intent_inner(cleaned, library_first, level, catalog, use_qwen, engine, intent,
+                                        teacher, profile)
+    if library_first:
+        try:  # an opening with a verified tree: offer its other branches (never breaks planning)
+            from .opening_tree_plans import attach_branches
+            record = attach_branches(record, cleaned)
+        except Exception as exc:
+            log.warning("opening-tree suggestions failed: %s", exc)
+    return record
+
+
+def _opening_tree_plan(cleaned: str, level, catalog, profile) -> dict | None:
+    """One verified branch of an opening tree, when the catalog and the library don't already teach
+    exactly what was asked (e.g. "Grünfeld", "Sicilian Dragon", "King's Gambit")."""
+    try:
+        from .opening_tree_plans import create_opening_tree_plan, find_branch_request
+        match = find_branch_request(cleaned, catalog)
+        if match is None:
+            return None
+        return create_opening_tree_plan(cleaned, match, level or _profile_level(profile))
+    except Exception as exc:  # the opening trees must never break planning
+        log.warning("opening-tree plan failed, using the other planners: %s", exc)
+        return None
+
+
+def _plan_without_intent_inner(cleaned: str, library_first: bool, level, catalog, use_qwen: bool, engine, intent,
+                               teacher=None, profile=None) -> dict:
+    if library_first and len(cleaned) >= 2:
+        record = _opening_tree_plan(cleaned, level, catalog, profile)
+        if record is not None:
+            return record
     if library_first and len(cleaned) >= 2:
         from .knowledge_lessons import create_knowledge_plan
         try:
