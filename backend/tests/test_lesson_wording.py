@@ -59,7 +59,10 @@ def test_lessons_do_not_repeat_themselves(goal, rating):
         assert texts.count("Generated position") <= 1
         for step in lesson["steps"]:
             head = (step.get("text") or "").split("\n")[0]
-            if head.startswith("Example "):
+            if head.startswith("Example ") and " — " not in head:
+                # a position to solve: the header names nothing (the title comes afterwards)
+                assert re.fullmatch(r"Example \d+ of \d+\.", head), head
+            elif head.startswith("Example "):
                 label = head.split(" — ", 1)[1].split(".")[0]
                 assert not any(label.lower().startswith(n.lower() + ":") for n in lesson["concepts"]), head
 

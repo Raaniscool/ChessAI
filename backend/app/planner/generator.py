@@ -209,9 +209,6 @@ def puzzle_steps(puzzle: dict, topic: Topic, number: int, total: int) -> list[di
     opponent = _side(board.turn)
     learner = "black" if opponent == "white" else "white"
     learner_moves = len(puzzle["moves"]) // 2
-    length = ""
-    if puzzle.get("mate"):
-        length = " (mate in one)" if learner_moves == 1 else f" (mate in {learner_moves})"
     steps: list[dict] = [{
         "type": "demonstrate",
         "text": f"Puzzle {number} of {total}. You play {learner}. Your opponent plays "
@@ -227,8 +224,8 @@ def puzzle_steps(puzzle: dict, topic: Topic, number: int, total: int) -> list[di
         final = i + 1 >= len(solution)
         san = board.san(move)
         accepted = list(puzzle.get("final_accepted") or [san]) if final else [san]
-        if i == 0:
-            prompt = f"{text.get('task', 'Find the best move.')}{length}"
+        if i == 0:  # the task, not the idea: "Find the fork" would give the answer away
+            prompt = "Find the best move."
         else:
             prompt = "Keep going — find the next move."
         hints = [text.get("hint") or move_hints(board, move)[0]] + move_hints(board, move)[1:]

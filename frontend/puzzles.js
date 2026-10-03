@@ -143,7 +143,9 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     }
     el.status.textContent = ""
     view.set = res.puzzles
-    view.title = res.title
+    // the set's theme ("Knight forks") would name every puzzle's idea: a neutral heading while solving
+    view.title = body.mode === "personalized" ? "Your puzzles" : "Practice set"
+    view.theme = res.title
     view.results = {}
     view.summary = null
     view.body = body
@@ -166,7 +168,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       const r = view.results[p.id]
       b.className = "lesson-item pz-item" + (i === view.pos ? " active" : "") + (r ? ` ${r}` : "")
       b.dataset.id = p.id
-      b.innerHTML = `<span>${i + 1}. ${escapeHtml(itemLabel(p))}</span>
+      b.innerHTML = `<span>${i + 1}. ${escapeHtml(itemLabel(p, r))}</span>
         <span class="badge">${r === "solved" ? "✓" : r === "failed" ? "✗" : escapeHtml(header(p, i, 1).difficulty)}</span>`
       b.addEventListener("click", () => goTo(i))
       el.set.appendChild(b)
@@ -175,13 +177,14 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
 
   function renderInfo() {
     const p = puzzle()
-    const h = header(p, view.pos, view.set.length)
+    const done = Boolean(view.attempt && view.attempt.done)
+    const h = header(p, view.pos, view.set.length, done)
     el.title.textContent = view.title || "Puzzles"
     el.counter.textContent = h.progress
     el.info.innerHTML = `<div class="pz-side ${p.side}">${escapeHtml(h.side)}</div>
       <div class="pz-objective">${escapeHtml(h.objective)}</div>
       <div class="pz-meta">${h.role ? `<span class="pz-role ${escapeHtml(p.role || "")}">${escapeHtml(h.role)}</span>` : ""}
-      <span>${escapeHtml(h.concept)}</span><span>${escapeHtml(h.difficulty)}</span>
+      ${h.concept ? `<span class="pz-concept">${escapeHtml(h.concept)}</span>` : ""}<span>${escapeHtml(h.difficulty)}</span>
       ${p.steps.length > 1 ? `<span class="pz-dots">${p.steps.map((_s, i) =>
         `<i class="${i < view.attempt.index ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>
       ${h.why ? `<div class="pz-why"><b>Why this puzzle:</b> ${escapeHtml(h.why)}</div>` : ""}
@@ -358,6 +361,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     show(el.hint, false); show(el.solution, false); show(el.retry, true); show(el.next, true)
     el.next.textContent = view.pos < view.set.length - 1 ? "Next →" : "Finish set"
     view.results[p.id] = solved ? "solved" : "failed"
+    renderInfo()   // now the theme, the real objective and the named "why" can be shown
     renderSetList()
     if (view.history) {   // free exploration from here (MoveHistory keeps what was played)
       view.explore = new Chess(view.history.current.fen)

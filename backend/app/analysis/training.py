@@ -98,9 +98,9 @@ def own_position_steps(moment: dict, number: int, total: int, concept_names: lis
     src = moment.get("source") or {}
     who = f" against {src['opponent']}" if src.get("opponent") else ""
     side = "white" if board.turn else "black"
+    # what went wrong ("you missed a fork") would give the answer away: it comes after solving
     prompt = (f"Your game{who}, move {moment['move_number']} ({number} of {total}). You played "
-              f"{moment['san']} here — {review.headline(moment)[0].lower() + review.headline(moment)[1:]} "
-              f"Find a better move.")
+              f"{moment['san']} here — there was a better move. Find it.")
     hints = [review.tip(moment)] + move_hints(board, best)[:2]
     steps = [
         {"type": "teach", "text": f"A position from your own game{who}. It's {side.capitalize()} to move — "
@@ -108,7 +108,8 @@ def own_position_steps(moment: dict, number: int, total: int, concept_names: lis
          "board": {"fen": moment["fen_before"], "highlights": _highlights(moment)}},
         {"type": "exercise", "fen": moment["fen_before"], "side": side, "prompt": prompt, "hints": hints,
          "advance_on": "accepted_move", "accepted": accepted, "concepts": concept_names,
-         "continue_text": f"Yes — Stockfish's choice here is {accepted[0]}."
+         "continue_text": f"Yes — Stockfish's choice here is {accepted[0]}. About your {moment['san']}: "
+                          f"{review.headline(moment)[0].lower() + review.headline(moment)[1:]}"
                           + (f" {', '.join(accepted[1:])} is just as good." if len(accepted) > 1 else "")},
     ]
     probe, line = board.copy(), []

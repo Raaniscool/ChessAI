@@ -243,6 +243,7 @@ def puzzle_set(body: SetRequest):
                 items.append({**defend, "reasons": ["The defensive side of the same weakness"]})
         for it in items:
             it["why"] = sets.why(weakness, it["role"], it["puzzle"])
+            it["why_after"] = sets.why_after(weakness, it["role"], it["puzzle"])
         items = sets.order(items)
     if not items:
         return _error(422, f"No verified puzzles for {title.lower()} right now — you've seen them all recently. "
@@ -256,7 +257,8 @@ def puzzle_set(body: SetRequest):
            "ladder": selection.ladder if selection else None,
            "difficulty": _difficulty_brief(selection.calibration if selection else None),
            "puzzles": [payload(it["puzzle"], it["example"], knowledge, it["reasons"], it["origin"],
-                               role=it["role"], why=it.get("why")) for it in items]}
+                               role=it["role"], why=it.get("why"), why_after=it.get("why_after"))
+                       for it in items]}
     if weakness is not None:
         examples = [it["example"] or it["puzzle"] for it in items]
         out["debug"] = debug_block(weakness, total_games, selection, generation, examples,
@@ -349,8 +351,10 @@ def adapt(body: AdaptRequest):
     for old, c in zip(sorted(swap, key=lambda p: p.rating), sorted(fresh, key=lambda c: c.puzzle.rating)):
         role = sets.role_for(c.puzzle, cal["target"]) if weakness is not None else "practice"
         why = sets.why(weakness, role, c.puzzle) if weakness is not None else None
+        after = sets.why_after(weakness, role, c.puzzle) if weakness is not None else None
         out["replace"][old.id] = payload(c.puzzle, knowledge.get(c.puzzle.id), knowledge, c.reasons,
-                                         "personal" if c.puzzle.tier == "personal" else "library", role=role, why=why)
+                                         "personal" if c.puzzle.tier == "personal" else "library", role=role, why=why,
+                                         why_after=after)
         replaced.append(c.puzzle)
     try:
         usage.record_used(replaced)

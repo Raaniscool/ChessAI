@@ -31,6 +31,7 @@ THEMES = [  # (concept id, label) in display order
     ("overloaded_piece", "Overloaded pieces"), ("trapped_piece", "Trapped pieces"), ("sacrifice", "Sacrifices"),
     ("zwischenzug", "In-between moves"), ("endgames", "Endgames"), ("tactics", "Mixed tactics"),
 ]
+NEUTRAL_OBJECTIVE = "Find the best move"
 OBJECTIVE_TEXT = {"material": "Win material", "defense": "Defend against the threat", "idea": "Find the best move"}
 
 
@@ -217,9 +218,14 @@ def game_explanation(puzzle) -> str:
 
 
 def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin: str = "library",
-            role: str | None = None, why: str | None = None) -> dict:
-    """Everything the board-focused solver needs, and nothing more (no AI text)."""
-    from .sets import ROLE_LABEL
+            role: str | None = None, why: str | None = None, why_after: str | None = None) -> dict:
+    """Everything the board-focused solver needs, and nothing more (no AI text).
+
+    No spoilers: what the solver shows BEFORE the puzzle is solved is neutral — side to move,
+    "find the best move", difficulty, progress, a "why" that names no idea. The concept, the
+    objective ("Mate in 2", "Defend against the threat") and the named "why" are in `reveal`,
+    shown once the puzzle is over. `concept` / `primary_concept` stay for selection and stats."""
+    from .sets import ROLE_LABEL, ROLE_LABEL_BEFORE
     name = _name(knowledge, puzzle.concept)
     default_hint = ("Something in this position was missed in your game — look at every check, capture "
                     "and threat." if origin == "your_game" else f"Look for a {name.lower()}.")
@@ -230,7 +236,7 @@ def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin
     return {
         "id": puzzle.id, "fen": puzzle.fen, "side": side,
         "concept": puzzle.concept, "concept_name": name, "primary_concept": puzzle.primary_concept,
-        "objective": puzzle.objective, "objective_text": objective_text(puzzle),
+        "objective": puzzle.objective, "objective_text": NEUTRAL_OBJECTIVE,
         "difficulty": puzzle.difficulty, "rating": puzzle.rating,
         "solution": list(puzzle.solution),
         "steps": [{k: s[k] for k in ("uci", "san", "kind", "accepted", "good", "reply_uci", "reply_san")}
@@ -241,5 +247,7 @@ def payload(puzzle, example, knowledge, reasons: list[str] | None = None, origin
         "hint": hints[0], "explanation": explanation,
         "origin": origin, "source": source_label(puzzle),
         "uniqueness": puzzle.uniqueness, "reasons": list(reasons or []),
-        "role": role, "role_label": ROLE_LABEL.get(role or ""), "why": why,
+        "role": role, "role_label": ROLE_LABEL_BEFORE.get(role or ""), "why": why,
+        "reveal": {"concept_name": name, "objective_text": objective_text(puzzle),
+                   "role_label": ROLE_LABEL.get(role or ""), "why": why_after or why},
     }

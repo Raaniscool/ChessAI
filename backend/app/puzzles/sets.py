@@ -21,6 +21,9 @@ from .model import DEFENSIVE
 
 ROLE_LABEL = {"your_game": "Your game", "same": "Same pattern", "easier": "Easier", "harder": "Harder",
               "defend": "Defend"}
+# What the role pill says before the puzzle is solved: "Defend" tells the learner the answer is
+# a defensive move, so it is only named afterwards.
+ROLE_LABEL_BEFORE = {**ROLE_LABEL, "defend": "Bonus"}
 ORDER = ("your_game", "same", "easier", "harder", "defend")
 ROLE_GAP = 75   # rating points from the target before an item counts as easier / harder
 DEFEND_GENERATION_BUDGET = 15.0
@@ -52,6 +55,16 @@ def evidence_phrase(weakness: dict) -> str:
 
 
 def why(weakness: dict, role: str, puzzle=None) -> str:
+    """The "why this puzzle" line shown BEFORE solving: why it was chosen, never what to look
+    for — the weakness's name ("Knight forks") or "defend" would give the idea away. The named
+    version (why_after) is shown once the puzzle is over."""
+    if role == "your_game":
+        return why_after(weakness, role, puzzle)
+    step = {"easier": " (a step easier)", "harder": " (a step harder)"}.get(role, "")
+    return f"Chosen for you — {evidence_phrase(weakness)}{step}."
+
+
+def why_after(weakness: dict, role: str, puzzle=None) -> str:
     title = weakness.get("title") or "This skill"
     if role == "your_game":
         ev = ((puzzle.facts or {}).get("game") if puzzle is not None else None) or {}

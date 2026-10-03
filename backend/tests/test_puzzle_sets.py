@@ -174,13 +174,20 @@ def test_roles_order_and_reasons():
              [("d", 800, "defend"), ("h", 1100, "harder"), ("e", 700, "easier"), ("s2", 950, "same"),
               ("s1", 900, "same"), ("g", 1500, "your_game")]]
     assert [it["puzzle"].id for it in sets.order(items)] == ["g", "s1", "s2", "e", "h", "d"]
-    assert sets.why(FORK_WEAKNESS, "harder") == "Missed knight fork — you missed this 4 times in 3 recent games " \
+    # before solving: why it was chosen, never the idea's name
+    assert sets.why(FORK_WEAKNESS, "harder") == "Chosen for you — you missed this 4 times in 3 recent games " \
                                                 "(a step harder)."
+    # afterwards: the named version
+    assert sets.why_after(FORK_WEAKNESS, "harder") == "Missed knight fork — you missed this 4 times in 3 recent " \
+                                                      "games (a step harder)."
     walked = {"key": "walked_into_fork", "title": "Walked into a fork", "game_count": 3, "occurrences": 3,
               "evidence": [{"family": "allowed"}]}
     assert sets.walked_into(walked) and not sets.walked_into(FORK_WEAKNESS)
     assert "cost you material in 3 recent games" in sets.why(walked, "same")
-    assert sets.why(walked, "defend").startswith("Walked into a fork: the defensive side")
+    assert sets.why_after(walked, "defend").startswith("Walked into a fork: the defensive side")
+    for role in ("same", "easier", "harder", "defend"):  # no spoiler before solving
+        line = sets.why(walked, role).lower()
+        assert "fork" not in line and "defen" not in line and "threat" not in line, (role, line)
 
 
 def test_defensive_item_only_for_walked_into_weaknesses(tmp_path):

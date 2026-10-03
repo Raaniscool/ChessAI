@@ -120,8 +120,34 @@ def _title(example, concept_names: list[str]) -> str:
     return example.title
 
 
+def keeps_own_prompt(example) -> bool:
+    """Whose stored prompt is the task itself, not a hint: an opening line ("play the next move
+    of the Italian") and a requested material setup ("you have two rooks against a queen")."""
+    return example.category == "openings" or str((example.source or {}).get("source_id", "")).startswith("material:")
+
+
+def exercise_prompt(example, board: chess.Board) -> str:
+    """What the learner is asked BEFORE solving: the task, never the idea. A stored prompt such
+    as "Find the knight move that attacks two things at once" names the answer's motif, so a
+    test position just asks for the best move (the idea is in the hints, on request, and in the
+    explanation afterwards)."""
+    if keeps_own_prompt(example) and example.prompt:
+        return example.prompt
+    return f"{_side(board).capitalize()} to move — find the best move."
+
+
 def _header(example, number: int, total: int, role: str, concept_names: list[str] | None = None,
             said: Said | None = None) -> str:
+    if role != "demonstration" and not keeps_own_prompt(example):
+        # a position to solve: no title or description that names the idea before it is found
+        # ("Knight fork: win the queen") — they come with the explanation afterwards.
+        text = f"Example {number} of {total}."
+        if said is not None:
+            repeated = said.role == role
+            said.role = role
+            if repeated:
+                return text
+        return f"{text}\n\n{ROLE_TEXT[role]}"
     text = f"Example {number} of {total} — {_title(example, concept_names or [])}."
     if example.description:
         description = said.fresh(example.description, keep_one=False) if said else example.description
@@ -135,8 +161,10 @@ def _header(example, number: int, total: int, role: str, concept_names: list[str
     return f"{text}\n\n{ROLE_TEXT[role]}"
 
 
-def _explanation(example, said: Said | None = None) -> str:
+def _explanation(example, said: Said | None = None, solved: bool = False) -> str:
     text = example.explanation or example.description
+    if solved and example.title:  # the idea's name, now that the position has been solved
+        text = f"{example.title.rstrip('.')}. {text or ''}".strip()
     if said:
         parts = [said.fresh(text or ""), said.credit(example)]
     else:
@@ -218,7 +246,8 @@ def example_steps(example, role: str, number: int, total: int, concept_names: li
     key = example.key_ply
     shown = "demonstration" if role == "demonstration" or key is None else role
     header = _header(example, number, total, shown, concept_names, said)
-    closing = {"type": "teach", "text": _explanation(example, said),
+    closing = {"type": "teach", "text": _explanation(example, said, solved=shown != "demonstration"
+                                                     and not keeps_own_prompt(example)),
                "board": _board(rep.final.fen(), example), "example": example.id}
     if shown == "demonstration":
         return [_demo(example, rep, 0, n, header, True), closing]
@@ -229,7 +258,7 @@ def example_steps(example, role: str, number: int, total: int, concept_names: li
     else:
         steps.append({"type": "teach", "text": header, "board": {"fen": rep.boards[0].fen()},
                       "example": example.id})
-    prompt = example.prompt or "Find the key move."
+    prompt = exercise_prompt(example, rep.boards[key])
     notes = example.comments()
     learner = [p for p in range(key, n) if (p - key) % 2 == 0]
     last_learner = learner[-1]

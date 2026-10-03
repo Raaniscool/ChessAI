@@ -78,7 +78,9 @@ def test_puzzle_topic_becomes_pattern_and_practice_lessons():
     for lesson in (pattern, practice):
         parse_lesson(lesson, course_id="x")
     ex = [s for s in pattern["steps"] if s["type"] == "exercise"]
-    assert len(ex) == PATTERN_PUZZLES and all(s["prompt"].startswith("Find the smothered mate") for s in ex)
+    assert len(ex) == PATTERN_PUZZLES and all(s["prompt"] == "Find the best move." for s in ex)
+    # no spoiler: the task never names the idea ("Find the smothered mate") — the hint can
+    assert all("smother" not in s["prompt"].lower() for s in ex) and all(s["hints"] for s in ex)
     # every exercise is preceded by the animated opponent move it answers
     steps = practice["steps"]
     for i, step in enumerate(steps):

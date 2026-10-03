@@ -110,21 +110,29 @@ export function resultBody(attempt, now = Date.now()) {
 
 export const DIFFICULTY_LABEL = {1: "Easy", 2: "Moderate", 3: "Challenging", 4: "Hard", 5: "Very hard"}
 
-export function header(puzzle, position, total) {
+// No spoilers: before a puzzle is over, the solver shows only neutral information — side to
+// move, "find the best move", difficulty, progress, a "why" that names no idea. The concept
+// ("Queen fork"), the real objective ("Mate in 2") and the named "why" (puzzle.reveal) appear
+// once the puzzle is solved, failed or revealed (`done`).
+export function header(puzzle, position, total, done = false) {
+  const reveal = (done && puzzle.reveal) || {}
   return {
     side: puzzle.side === "black" ? "Black to move" : "White to move",
-    objective: puzzle.objective_text,
-    concept: puzzle.concept_name,
+    objective: done && reveal.objective_text ? reveal.objective_text : "Find the best move",
+    concept: done ? reveal.concept_name || puzzle.concept_name || "" : "",
     difficulty: DIFFICULTY_LABEL[puzzle.difficulty] || "",
     progress: total > 1 ? `${position + 1}/${total}` : "",
-    role: puzzle.role_label || "",
-    why: puzzle.why || "",
+    role: (done && reveal.role_label) || puzzle.role_label || "",
+    why: (done && reveal.why) || puzzle.why || "",
   }
 }
 
-// The set list names an item by what it is for ("Your game", "Harder") when it has a role.
-export function itemLabel(puzzle) {
-  return puzzle.role_label || puzzle.concept_name
+// The set list names an item by what it is for ("Your game", "Harder") when it has a role; the
+// concept only once that puzzle has a result.
+export function itemLabel(puzzle, result = null) {
+  const reveal = puzzle.reveal || {}
+  if (result) return reveal.role_label || reveal.concept_name || puzzle.concept_name || "Puzzle"
+  return puzzle.role_label || "Puzzle"
 }
 
 // One line under a weakness card: the next recognition stage (puzzles.progression), if any.

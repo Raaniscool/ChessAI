@@ -20,7 +20,9 @@ def test_dashboard_and_practice_work_without_any_analysis(client):  # noqa: F811
     body = client.post("/api/puzzles/set", json={"mode": "practice", "concept": "fork", "count": 3}).json()
     assert body["title"] == "Practice: Fork" and len(body["puzzles"]) == 3
     p = body["puzzles"][0]
-    assert p["side"] == "white" and p["objective"] == "material" and p["objective_text"] == "Win material"
+    assert p["side"] == "white" and p["objective"] == "material" and p["objective_text"] == "Find the best move"
+    # the idea and the real objective only in the post-solve reveal
+    assert p["reveal"]["objective_text"] == "Win material" and p["reveal"]["concept_name"]
     assert p["critical_moves"] == ["Nc7+"] and p["forced_moves"] == ["Nxa8"] and p["critical_decision_points"] == [1]
     assert p["expected_solution_length"] == 2 and p["solution"] == ["Nc7+", "Kd7", "Nxa8"]
     assert p["steps"][0] == {"uci": "b5c7", "san": "Nc7+", "kind": "critical", "accepted": [], "good": [],
