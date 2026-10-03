@@ -1,0 +1,350 @@
+{
+  "_about": "Curated spec for the opening trees (scripts/build_opening_trees.py). The MOVES of every tree come from the Lichess opening database (CC0); this file only names the openings, picks which database line is the main line, and adds short hand-written plans, named traps and famous historical games. Every trap and game is replayed by python-chess and checked by Stockfish at build time; anything that fails is left out of the tree (see opening_trees/_report.json).",
+  "openings": [
+    {
+      "id": "italian_game", "title": "Italian Game", "side": "white",
+      "names": ["Italian Game"], "aliases": ["italian", "giuoco piano", "italian game"],
+      "catalog_topic": "italian_game", "library_concept": "italian_game",
+      "main": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d3 d6 6. Nbd2 O-O 7. O-O",
+      "summary": "White develops the bishop to c4, aiming at f7, and builds the centre slowly with c3 and d3 (or quickly with d4).",
+      "plans": ["Castle, then prepare d4 with c3 so you get a big pawn centre.", "In the slow lines (d3), bring the b1-knight to g3 via d2 and f1, then push on the kingside.", "Keep an eye on f7: it is only defended by Black's king early on."],
+      "watch_for": ["Black wants ...d5 to free the position; if it comes with tempo, your bishop on c4 can get hit."],
+      "traps": [
+        {"name": "Blackburne Shilling Gambit", "moves": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Nd4 4. Nxe5 Qg5 5. Nxf7 Qxg2 6. Rf1 Qxe4+ 7. Be2 Nf3#", "mistake": 8, "explanation": "After 3...Nd4 the greedy 4.Nxe5 and especially 5.Nxf7 walk into ...Qxg2 and a smothered-style mate on f3. The calm 4.Nxd4 or 4.c3 keeps White better."},
+        {"name": "Fried Liver Attack", "moves": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. Ng5 d5 5. exd5 Nxd5 6. Nxf7 Kxf7 7. Qf3+ Ke6 8. Nc3", "mistake": 9, "explanation": "Recapturing 5...Nxd5 lets White sacrifice on f7 and drag Black's king into the centre. 5...Na5 is the main line."}
+      ],
+      "games": [
+        {"white": "Adolf Anderssen", "black": "Jean Dufresne", "event": "Berlin (the \"Evergreen Game\")", "year": 1852, "result": "1-0",
+         "moves": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3 Ba5 6. d4 exd4 7. O-O d3 8. Qb3 Qf6 9. e5 Qg6 10. Re1 Nge7 11. Ba3 b5 12. Qxb5 Rb8 13. Qa4 Bb6 14. Nbd2 Bb7 15. Ne4 Qf5 16. Bxd3 Qh5 17. Nf6+ gxf6 18. exf6 Rg8 19. Rad1 Qxf3 20. Rxe7+ Nxe7 21. Qxd7+ Kxd7 22. Bf5+ Ke8 23. Bd7+ Kf8 24. Bxe7#",
+         "lesson": "The Evans Gambit: White gives a pawn for fast development and open lines, then finishes with a famous queen sacrifice."}
+      ]
+    },
+    {
+      "id": "ruy_lopez", "title": "Ruy Lopez", "side": "white",
+      "names": ["Ruy Lopez"], "aliases": ["ruy lopez", "spanish", "spanish game", "ruy"],
+      "catalog_topic": "ruy_lopez", "library_concept": null,
+      "main": "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3",
+      "summary": "White pins down the knight that defends e5 with Bb5 and plays for a long-lasting pull: c3, d4 and a slow kingside build-up.",
+      "plans": ["Build the centre with c3 and d4; h3 first stops ...Bg4 pinning your knight.", "Reroute the b1-knight via d2 and f1 to g3 or e3.", "The bishop on b3 (or c2) is your best attacking piece: keep it."],
+      "watch_for": ["Black's ...b5 and ...Na5 to chase the bishop, and the Marshall-style ...d5 pawn sacrifice."],
+      "traps": [
+        {"name": "Noah's Ark Trap", "moves": "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 b5 5. Bb3 d6 6. d4 Nxd4 7. Nxd4 exd4 8. Qxd4 c5 9. Qd5 Be6 10. Qc6+ Bd7 11. Qd5 c4", "mistake": 14, "explanation": "Taking back on d4 with the queen lets Black's pawns trap the bishop on b3 (...c5 and ...c4). Recapture with 8.c3 or play 8.Bd5 instead."},
+        {"name": "Mortimer Trap", "moves": "1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. d3 Ne7 5. Nxe5 c6 6. Bc4 Qa5+ 7. c3 Qxe5", "mistake": 8, "explanation": "The pawn on e5 looks free, but ...c6 and ...Qa5+ fork the king and the knight."},
+        {"name": "Tarrasch Trap", "moves": "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Nxe4 6. d4 b5 7. Bb3 d5 8. dxe5 Be6 9. c3 Be7 10. Re1 O-O 11. Nd4 Qd7 12. Nxe6 fxe6 13. Rxe4", "mistake": 21, "explanation": "In the Open Ruy Lopez, 11...Qd7 leaves the knight on e4 without support: after Nxe6 the d5 pawn is pinned and the knight falls."}
+      ],
+      "games": []
+    },
+    {
+      "id": "scotch_game", "title": "Scotch Game", "side": "white",
+      "names": ["Scotch Game"], "aliases": ["scotch", "scotch game"],
+      "catalog_topic": "scotch_game", "library_concept": null,
+      "main": "1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6 5. Nxc6 bxc6 6. e5",
+      "summary": "White opens the centre at once with d4, trading Black's e5 pawn and getting free play for the pieces.",
+      "plans": ["Use your space: the knight on d4 and pawn on e4 control the centre.", "In the Mieses line (5.Nxc6), push e5 to drive Black's knight and play c4.", "Castle quickly; the position opens early."],
+      "watch_for": ["Black's quick ...Bc5 or ...Nf6 hitting e4, and ...Qf6 or ...Qh4 attacking your knight and pawns."],
+      "traps": [
+        {"name": "Sea-Cadet Mate", "moves": "1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. c3 dxc3 5. Nxc3 d6 6. Bc4 Bg4 7. O-O Ne5 8. Nxe5 Bxd1 9. Bxf7+ Ke7 10. Nd5#", "mistake": 15, "explanation": "Taking the queen with 8...Bxd1 allows mate with the minor pieces: Bxf7+ and Nd5#. 8...dxe5 was necessary."}
+      ],
+      "games": []
+    },
+    {
+      "id": "four_knights_game", "title": "Four Knights Game", "side": "white",
+      "names": ["Four Knights Game"], "aliases": ["four knights", "four knights game"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 e5 2. Nf3 Nc6 3. Nc3 Nf6 4. Bb5 Bb4 5. O-O O-O 6. d3 d6 7. Bg5 Ne7",
+      "summary": "Both sides bring out their knights first. It is solid and teaches clean development: knights before bishops, castle early.",
+      "plans": ["Develop calmly: Bb5 (Spanish) or d4 (Scotch Four Knights) are the main ideas.", "Pin Black's f6-knight with Bg5 when Black's bishop has left e7.", "Aim for d4 to open the centre when your pieces are ready."],
+      "watch_for": ["The Rubinstein ...Nd4 counter-attack and symmetrical pins on your own knights."],
+      "traps": [],
+      "games": [
+        {"white": "Louis Paulsen", "black": "Paul Morphy", "event": "New York, first American Chess Congress", "year": 1857, "result": "0-1",
+         "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 Nf6 4. Bb5 Bc5 5. O-O O-O 6. Nxe5 Re8 7. Nxc6 dxc6 8. Bc4 b5 9. Be2 Nxe4 10. Nxe4 Rxe4 11. Bf3 Re6 12. c3 Qd3 13. b4 Bb6 14. a4 bxa4 15. Qxa4 Bd7 16. Ra2 Rae8 17. Qa6 Qxf3 18. gxf3 Rg6+ 19. Kh1 Bh3 20. Rd1 Bg2+ 21. Kg1 Bxf3+ 22. Kf1 Bg2+ 23. Kg1 Bh3+ 24. Kh1 Bxf2 25. Qf1 Bxf1 26. Rxf1 Re2 27. Ra1 Rh6 28. d4 Be3",
+         "lesson": "Morphy's lead in development turns into a queen sacrifice on f3 that opens White's king."}
+      ]
+    },
+    {
+      "id": "vienna_game", "title": "Vienna Game", "side": "white",
+      "names": ["Vienna Game", "Vienna Gambit"], "aliases": ["vienna", "vienna game", "vienna gambit"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 e5 2. Nc3 Nf6 3. f4 d5 4. fxe5 Nxe4 5. Nf3 Be7",
+      "summary": "White plays Nc3 before Nf3 so the f-pawn can advance: the Vienna Gambit (f4) gives King's Gambit ideas with more preparation, and quieter lines use Bc4 and d3.",
+      "plans": ["Prepare f4 to open the f-file against f7.", "Bc4 and d3 support a slow attack; castle short once f4 is in.", "Use the Vienna Gambit (3.f4) against ...Nf6 lines for a quick initiative."],
+      "watch_for": ["Black's ...d5 break in the centre, which is the best answer to f4."],
+      "traps": [
+        {"name": "Wurzburger Trap", "moves": "1. e4 e5 2. Nc3 Nf6 3. f4 d5 4. fxe5 Nxe4 5. d3 Qh4+ 6. g3 Nxg3 7. Nf3 Qh5 8. Nxd5", "mistake": 13, "explanation": "After 7.Nf3 Black's queen and knight are both loose; 7...Qh5 lets White win material with Nxd5 and the hanging knight on g3."}
+      ],
+      "games": []
+    },
+    {
+      "id": "kings_gambit", "title": "King's Gambit", "side": "white",
+      "names": ["King's Gambit"], "aliases": ["kings gambit", "king's gambit"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. h4 g4 5. Ne5",
+      "summary": "White gives the f-pawn to deflect Black's e5 pawn, opening the f-file and taking the centre with d4.",
+      "plans": ["After ...exf4, play Nf3 (stops ...Qh4+) and d4 to grab the centre.", "Open the f-file and aim everything at f7.", "Undermine Black's pawn chain with h4 when Black defends the gambit pawn with ...g5."],
+      "watch_for": ["...Qh4+ before Nf3, and ...d5 giving the pawn back to open lines against your king."],
+      "traps": [
+        {"name": "Classical King's Gambit Declined: 3.fxe5?", "moves": "1. e4 e5 2. f4 Bc5 3. fxe5 Qh4+ 4. g3 Qxe4+ 5. Qe2 Qxh1", "mistake": 4, "explanation": "Against 2...Bc5 the pawn on e5 is poisoned: ...Qh4+ and ...Qxe4+ wins the rook on h1."}
+      ],
+      "games": [
+        {"white": "Adolf Anderssen", "black": "Lionel Kieseritzky", "event": "London (the \"Immortal Game\")", "year": 1851, "result": "1-0",
+         "moves": "1. e4 e5 2. f4 exf4 3. Bc4 Qh4+ 4. Kf1 b5 5. Bxb5 Nf6 6. Nf3 Qh6 7. d3 Nh5 8. Nh4 Qg5 9. Nf5 c6 10. g4 Nf6 11. Rg1 cxb5 12. h4 Qg6 13. h5 Qg5 14. Qf3 Ng8 15. Bxf4 Qf6 16. Nc3 Bc5 17. Nd5 Qxb2 18. Bd6 Bxg1 19. e5 Qxa1+ 20. Ke2 Na6 21. Nxg7+ Kd8 22. Qf6+ Nxf6 23. Be7#",
+         "lesson": "The Bishop's Gambit: White gives both rooks and the queen, and mates with three minor pieces."}
+      ]
+    },
+    {
+      "id": "petrovs_defense", "title": "Petrov's Defense", "side": "black",
+      "names": ["Petrov's Defense"], "aliases": ["petrov", "petroff", "petrovs defense", "russian game", "petrov defense", "petroff defense"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Be7 7. O-O Nc6 8. Re1 Bg4 9. c3 f5 10. Nbd2",
+      "summary": "Black counter-attacks e4 instead of defending e5. Very solid: symmetrical structures where Black's well-placed knight on e4 equalises.",
+      "plans": ["Never copy White blindly: after 3.Nxe5, first 3...d6, then take on e4.", "Support the knight on e4 with ...d5 and ...f5.", "Develop with ...Be7, ...Nc6 and ...Bg4, and castle."],
+      "watch_for": ["White's Qe2 on the e-file (discovered attacks), and c4 hitting your d5 pawn."],
+      "traps": [
+        {"name": "Copying White: 3...Nxe4?", "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 Nxe4 4. Qe2 Nf6 5. Nc6+ Be7 6. Nxd8", "mistake": 7, "explanation": "After 3...Nxe4 4.Qe2, retreating with 4...Nf6 allows a discovered check: Nc6+ wins Black's queen. 4...Qe7 limits the damage."},
+        {"name": "Marshall Trap", "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6 7. O-O O-O 8. c4 Bg4 9. cxd5 f5 10. Re1 Bxh2+", "mistake": 18, "explanation": "10.Re1 looks natural but leaves h2 weak: ...Bxh2+ opens White's king."}
+      ],
+      "games": []
+    },
+    {
+      "id": "philidor_defense", "title": "Philidor Defense", "side": "black",
+      "names": ["Philidor Defense"], "aliases": ["philidor", "philidor defense", "philidor defence"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 e5 2. Nf3 d6 3. d4 Nf6 4. Nc3 Nbd7 5. Bc4 Be7 6. O-O h6",
+      "summary": "Black defends e5 with ...d6, keeping a compact, solid position. Modern players reach it via the Lion setup (...Nf6, ...Nbd7, ...Be7).",
+      "plans": ["Hold the e5 strongpoint with ...Nbd7 and ...Be7; castle before opening the centre.", "Later, ...c6, ...b5 or ...exd4 with ...Re8 give counterplay.", "Watch f7 while White's bishop is on c4."],
+      "watch_for": ["Ng5 and Bxf7+ tricks while your king is still in the centre."],
+      "traps": [
+        {"name": "Légal's Mate", "moves": "1. e4 e5 2. Nf3 d6 3. Bc4 Bg4 4. Nc3 g6 5. Nxe5 Bxd1 6. Bxf7+ Ke7 7. Nd5#", "mistake": 9, "explanation": "The queen on d1 is bait: if Black takes it, Bxf7+ and Nd5# mate with three minor pieces. 5...dxe5 loses only a pawn."}
+      ],
+      "games": [
+        {"white": "Paul Morphy", "black": "Duke Karl of Brunswick and Count Isouard", "event": "Paris Opera (the \"Opera Game\")", "year": 1858, "result": "1-0",
+         "moves": "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#",
+         "lesson": "Development beats material: Morphy gives pieces to open lines against an undeveloped king."}
+      ]
+    },
+    {
+      "id": "sicilian_defense", "title": "Sicilian Defense", "side": "black",
+      "names": ["Sicilian Defense"], "aliases": ["sicilian", "sicilian defense", "sicilian defence"],
+      "catalog_topic": "sicilian_defense", "library_concept": null,
+      "main": "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. f4 Be7 8. Qf3 Qc7 9. O-O-O Nbd7",
+      "summary": "Black answers 1.e4 with ...c5, trading a wing pawn for White's d-pawn and getting an unbalanced game with the half-open c-file.",
+      "plans": ["After ...cxd4 you have two central pawns against one; use the c-file for your rooks.", "Queenside play: ...a6, ...b5 and pressure on c3 and e4.", "Choose your system at move 5: ...a6 (Najdorf), ...g6 (Dragon), ...e6 (Scheveningen) or ...Nc6 (Classical)."],
+      "watch_for": ["White attacks on the kingside, often with castling queenside and a pawn storm (f4, g4)."],
+      "traps": [
+        {"name": "Magnus Smith Trap", "moves": "1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 d6 6. Bc4 g6 7. Nxc6 bxc6 8. e5", "mistake": 11, "explanation": "Against Bc4, the Dragon setup ...g6 runs into Nxc6 and e5, hitting the f6 knight and opening lines toward f7."},
+        {"name": "Siberian Trap", "moves": "1. e4 c5 2. d4 cxd4 3. c3 dxc3 4. Nxc3 Nc6 5. Nf3 e6 6. Bc4 Qc7 7. Qe2 Nf6 8. O-O Ng4 9. h3 Nd4 10. Nxd4 Qh2#", "mistake": 16, "explanation": "In the Smith-Morra, after ...Ng4 the natural h3 loses: ...Nd4 attacks the queen and opens h2 for ...Qh2#."}
+      ],
+      "games": []
+    },
+    {
+      "id": "french_defense", "title": "French Defense", "side": "black",
+      "names": ["French Defense"], "aliases": ["french", "french defense", "french defence"],
+      "catalog_topic": "french_defense", "library_concept": null,
+      "main": "1. e4 e6 2. d4 d5 3. Nc3 Nf6 4. Bg5 Be7 5. e5 Nfd7 6. Bxe7 Qxe7 7. f4",
+      "summary": "Black prepares ...d5 with ...e6. The pawn chains lock: White gets space, Black hits the base of White's chain with ...c5 and ...f6.",
+      "plans": ["Attack the base of White's pawn chain (d4) with ...c5 and ...Nc6, ...Qb6.", "Use ...f6 to challenge e5 when White has advanced it.", "The light-squared bishop is your problem piece: trade it or free it with ...b6 and ...Ba6."],
+      "watch_for": ["White's kingside space (e5, f4) and attacks against h7."],
+      "traps": [
+        {"name": "Advance Variation: 7...Nxd4?", "moves": "1. e4 e6 2. d4 d5 3. e5 c5 4. c3 Nc6 5. Nf3 Qb6 6. Bd3 cxd4 7. cxd4 Nxd4 8. Nxd4 Qxd4 9. Bb5+", "mistake": 13, "explanation": "Grabbing d4 lets Bb5+ discover an attack on the queen from White's queen on d1: the queen on d4 falls."}
+      ],
+      "games": []
+    },
+    {
+      "id": "caro_kann", "title": "Caro-Kann Defense", "side": "black",
+      "names": ["Caro-Kann Defense"], "aliases": ["caro kann", "caro-kann", "caro kann defense", "caro"],
+      "catalog_topic": "caro_kann", "library_concept": "caro_kann",
+      "main": "1. e4 c6 2. d4 d5 3. Nd2 dxe4 4. Nxe4 Bf5 5. Ng3 Bg6 6. h4 h6 7. Nf3 Nd7 8. h5",
+      "summary": "Black supports ...d5 with ...c6, keeping the light-squared bishop free (it comes out to f5 before ...e6). Solid and hard to break.",
+      "plans": ["Develop the light-squared bishop to f5 or g4 before playing ...e6.", "Free your game with ...c5 or ...e5 when developed.", "In the Advance Variation, hit the pawn chain with ...c5 and ...Nc6."],
+      "watch_for": ["White's space advantage and h4-h5 tricks against your bishop on g6."],
+      "traps": [
+        {"name": "Smothered mate: 5...Ngf6??", "moves": "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nd7 5. Qe2 Ngf6 6. Nd6#", "mistake": 9, "explanation": "With the queen on e2 the e7 pawn is pinned: after 5...Ngf6 the knight jumps to d6 with a smothered mate."}
+      ],
+      "games": [
+        {"white": "Richard Réti", "black": "Savielly Tartakower", "event": "Vienna", "year": 1910, "result": "1-0",
+         "moves": "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Nf6 5. Qd3 e5 6. dxe5 Qa5+ 7. Bd2 Qxe5 8. O-O-O Nxe4 9. Qd8+ Kxd8 10. Bg5+ Kc7 11. Bd8#",
+         "lesson": "A queen sacrifice and a double check: Black's king, stuck in the centre, is mated by a bishop while the rook on d1 guards the d-file."}
+      ]
+    },
+    {
+      "id": "scandinavian_defense", "title": "Scandinavian Defense", "side": "black",
+      "names": ["Scandinavian Defense"], "aliases": ["scandinavian", "center counter", "centre counter", "scandinavian defense"],
+      "catalog_topic": "scandinavian_defense", "library_concept": null,
+      "main": "1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5 4. d4 Nf6 5. Nf3 Bg4 6. h3",
+      "summary": "Black attacks e4 straight away with ...d5. The queen comes out early but finds a safe square (a5 or d6), and Black gets an easy, solid setup.",
+      "plans": ["After Nc3, put the queen on a5 or d6, away from White's knights.", "Develop the light-squared bishop to f5 or g4, then play ...e6 and ...c6.", "Castle queenside or kingside depending on White's setup."],
+      "watch_for": ["White's quick development and tempo gains against your queen (Bd2, Nd5, Bc4)."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "pirc_defense", "title": "Pirc Defense", "side": "black",
+      "names": ["Pirc Defense"], "aliases": ["pirc", "pirc defense", "pirc defence"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 d6 2. d4 Nf6 3. Nc3 g6 4. Nf3 Bg7 5. Be2 O-O 6. O-O c6",
+      "summary": "Black lets White build a big centre, fianchettoes the bishop on g7, and attacks the centre later with ...c5, ...e5 or ...b5.",
+      "plans": ["Fianchetto with ...g6 and ...Bg7, castle, then strike with ...e5 or ...c5.", "Against the Austrian Attack (f4), react quickly in the centre.", "Use ...c6 and ...b5 for queenside space."],
+      "watch_for": ["White's pawn storms (f4-f5, h4-h5) and the e5 push."],
+      "traps": [],
+      "games": [
+        {"white": "Garry Kasparov", "black": "Veselin Topalov", "event": "Wijk aan Zee", "year": 1999, "result": "1-0",
+         "moves": "1. e4 d6 2. d4 Nf6 3. Nc3 g6 4. Be3 Bg7 5. Qd2 c6 6. f3 b5 7. Nge2 Nbd7 8. Bh6 Bxh6 9. Qxh6 Bb7 10. a3 e5 11. O-O-O Qe7 12. Kb1 a6 13. Nc1 O-O-O 14. Nb3 exd4 15. Rxd4 c5 16. Rd1 Nb6 17. g3 Kb8 18. Na5 Ba8 19. Bh3 d5 20. Qf4+ Ka7 21. Rhe1 d4 22. Nd5 Nbxd5 23. exd5 Qd6 24. Rxd4 cxd4 25. Re7+ Kb6 26. Qxd4+ Kxa5 27. b4+ Ka4 28. Qc3 Qxd5 29. Ra7 Bb7 30. Rxb7 Qc4 31. Qxf6 Kxa3 32. Qxa6+ Kxb4 33. c3+ Kxc3 34. Qa1+ Kd2 35. Qb2+ Kd1 36. Bf1 Rd2 37. Rd7 Rxd7 38. Bxc4 bxc4 39. Qxh8 Rd3 40. Qa8 c3 41. Qa4+ Ke1 42. f4 f5 43. Kc1 Rd2 44. Qa7",
+         "lesson": "Kasparov's rook sacrifice on d4 drives Black's king across the whole board."}
+      ]
+    },
+    {
+      "id": "alekhine_defense", "title": "Alekhine Defense", "side": "black",
+      "names": ["Alekhine Defense"], "aliases": ["alekhine", "alekhines defense", "alekhine defense", "alekhine defence"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. e4 Nf6 2. e5 Nd5 3. d4 d6 4. Nf3 Bg4 5. Be2 c6",
+      "summary": "Black provokes White's pawns forward with ...Nf6, then attacks the over-extended centre.",
+      "plans": ["Let White's pawns advance, then undermine them with ...d6, ...c5 or ...f6.", "Develop the light-squared bishop to g4 and pressure d4.", "Keep the knight on d5 or b6 safe from c4-c5."],
+      "watch_for": ["The Four Pawns Attack (c4, d4, e5, f4): huge space if Black plays slowly."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "queens_gambit_declined", "title": "Queen's Gambit Declined", "side": "black",
+      "names": ["Queen's Gambit Declined"], "aliases": ["queens gambit declined", "qgd", "queen's gambit declined"],
+      "catalog_topic": "queens_gambit", "library_concept": null,
+      "main": "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3 Nbd7 7. Rc1 c6 8. Bd3",
+      "summary": "Black holds the d5 pawn with ...e6 instead of taking on c4. Classical and solid: Black's main task is freeing the position and the c8-bishop.",
+      "plans": ["Hold d5 with ...e6, ...Nf6 and ...Be7, then castle.", "Free your game with ...dxc4 followed by ...Nd5, or the ...c5 and ...e5 breaks.", "Find a good diagonal for the light-squared bishop (...b6 and ...Bb7)."],
+      "watch_for": ["White's minority attack (b4-b5) in the Exchange Variation, and pins with Bg5."],
+      "traps": [
+        {"name": "Elephant Trap", "moves": "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Nbd7 5. cxd5 exd5 6. Nxd5 Nxd5 7. Bxd8 Bb4+ 8. Qd2 Bxd2+ 9. Kxd2 Kxd8", "mistake": 10, "explanation": "The knight on f6 looks pinned, but 6.Nxd5? Nxd5! 7.Bxd8 Bb4+ wins back the queen and leaves Black a piece up."},
+        {"name": "Lasker Trap (Albin Countergambit)", "moves": "1. d4 d5 2. c4 e5 3. dxe5 d4 4. e3 Bb4+ 5. Bd2 dxe3 6. Bxb4 exf2+ 7. Ke2 fxg1=N+", "mistake": 10, "explanation": "Against the Albin, 6.Bxb4? allows ...exf2+ and the famous underpromotion ...fxg1=N+, winning material."}
+      ],
+      "games": [
+        {"white": "Robert James Fischer", "black": "Boris Spassky", "event": "World Championship, Reykjavik, game 6", "year": 1972, "result": "1-0",
+         "moves": "1. c4 e6 2. Nf3 d5 3. d4 Nf6 4. Nc3 Be7 5. Bg5 O-O 6. e3 h6 7. Bh4 b6 8. cxd5 Nxd5 9. Bxe7 Qxe7 10. Nxd5 exd5 11. Rc1 Be6 12. Qa4 c5 13. Qa3 Rc8 14. Bb5 a6 15. dxc5 bxc5 16. O-O Ra7 17. Be2 Nd7 18. Nd4 Qf8 19. Nxe6 fxe6 20. e4 d4 21. f4 Qe7 22. e5 Rb8 23. Bc4 Kh8 24. Qh3 Nf8 25. b3 a5 26. f5 exf5 27. Rxf5 Nh7 28. Rcf1 Qd8 29. Qg3 Re7 30. h4 Rbb7 31. e6 Rbc7 32. Qe5 Qe8 33. a4 Qd8 34. R1f2 Qe8 35. R2f3 Qd8 36. Bd3 Qe8 37. Qe4 Nf6 38. Rxf6 gxf6 39. Rxf6 Kg8 40. Bc4 Kh8 41. Qf4",
+         "lesson": "The Tartakower QGD: White fixes Black's hanging pawns, then breaks through on the f-file."}
+      ]
+    },
+    {
+      "id": "queens_gambit_accepted", "title": "Queen's Gambit Accepted", "side": "black",
+      "names": ["Queen's Gambit Accepted"], "aliases": ["queens gambit accepted", "qga", "queen's gambit accepted"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6",
+      "summary": "Black takes the c4 pawn, not to keep it, but to get free development and strike back with ...c5 and ...e6.",
+      "plans": ["Don't try to hold the pawn with ...b5; develop instead.", "Hit White's centre with ...c5 and ...Nc6.", "Expand with ...a6 and ...b5 once White's bishop has taken back on c4."],
+      "watch_for": ["White's big centre with e4, and the isolated d-pawn positions that follow ...cxd4."],
+      "traps": [
+        {"name": "Holding the pawn: 5...cxb5??", "moves": "1. d4 d5 2. c4 dxc4 3. e3 b5 4. a4 c6 5. axb5 cxb5 6. Qf3", "mistake": 9, "explanation": "Defending the c4 pawn with ...b5 and ...c6 backfires: after axb5 cxb5, Qf3 attacks the rook on a8 along the long diagonal."}
+      ],
+      "games": []
+    },
+    {
+      "id": "slav_defense", "title": "Slav Defense", "side": "black",
+      "names": ["Slav Defense", "Semi-Slav Defense"], "aliases": ["slav", "slav defense", "semi slav", "semi-slav", "slav defence"],
+      "catalog_topic": "slav_defense", "library_concept": null,
+      "main": "1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 dxc4 5. a4 Bf5 6. e3 e6 7. Bxc4 Bb4 8. O-O O-O 9. Qe2",
+      "summary": "Black supports d5 with ...c6, keeping the c8-bishop free to come out to f5 or g4. The Semi-Slav (...e6 and ...c6) is its sharper cousin.",
+      "plans": ["Develop the light-squared bishop outside the pawn chain before ...e6.", "In the main line, take on c4 and bring the bishop to f5.", "Free your position with ...c5 or ...e5 later."],
+      "watch_for": ["White's e4 push and Ne5 hitting c4 and f7."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "london_system", "title": "London System", "side": "white",
+      "names": ["London System"], "aliases": ["london", "london system"],
+      "catalog_topic": "london_system", "library_concept": null,
+      "main": "1. d4 Nf6 2. Nf3 d5 3. Bf4 c5 4. e3 Qb6 5. Nc3",
+      "summary": "White sets up d4, Bf4, e3, Nf3, c3 and Bd3 against almost anything. Easy to learn, with a clear plan of a kingside attack or a central e4 push.",
+      "plans": ["Same setup every game: d4, Bf4, e3, Nf3, c3, Nbd2, Bd3, then castle.", "Ne5 with f4 gives a strong kingside attack.", "Watch b2: after ...c5 and ...Qb6, Qb3 or Qc1 defends."],
+      "watch_for": ["Black's ...c5 and ...Qb6 hitting b2, and ...Nh5 chasing the bishop."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "kings_indian_defense", "title": "King's Indian Defense", "side": "black",
+      "names": ["King's Indian Defense"], "aliases": ["kings indian", "king's indian", "kings indian defense", "kid"],
+      "catalog_topic": "kings_indian", "library_concept": null,
+      "main": "1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 e5 7. O-O Nc6 8. d5 Ne7 9. Ne1",
+      "summary": "Black lets White build a big centre, fianchettoes and castles, then strikes with ...e5 and a kingside pawn storm (...f5-f4, ...g5).",
+      "plans": ["Fianchetto, castle, then challenge the centre with ...e5.", "When White closes the centre with d5, attack on the kingside with ...Ne8 or ...Nd7, ...f5 and ...f4.", "The g7-bishop is your best piece: don't trade it lightly."],
+      "watch_for": ["White's queenside attack (c5, b4) racing against your kingside storm."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "nimzo_indian_defense", "title": "Nimzo-Indian Defense", "side": "black",
+      "names": ["Nimzo-Indian Defense"], "aliases": ["nimzo indian", "nimzo-indian", "nimzo"],
+      "catalog_topic": "nimzo_indian", "library_concept": null,
+      "main": "1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3 O-O 5. Bd3 d5 6. Nf3 c5 7. O-O Nbd7",
+      "summary": "Black pins the c3-knight with ...Bb4, fighting for e4. Black often gives the bishop pair to double White's c-pawns.",
+      "plans": ["Pin the knight with ...Bb4 to stop e4.", "Be ready to take on c3 and play against doubled c-pawns.", "Strike at the centre with ...d5 and ...c5."],
+      "watch_for": ["White's bishop pair after ...Bxc3, and a later e4 push when the pin is gone."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "queens_indian_defense", "title": "Queen's Indian Defense", "side": "black",
+      "names": ["Queen's Indian Defense"], "aliases": ["queens indian", "queen's indian", "queens indian defense", "qid"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. g3 Bb7 5. Bg2 Be7 6. O-O O-O 7. Nc3",
+      "summary": "Black fianchettoes the queen's bishop with ...b6 and ...Bb7 to control e4 and the long diagonal. Flexible and solid.",
+      "plans": ["Control e4 with ...Bb7, ...Nf6 and sometimes ...Ne4.", "Develop with ...Be7 and castle, then choose ...d5 or ...c5.", "Against g3, the ...Ba6 idea attacks c4."],
+      "watch_for": ["White's d5 push to block your bishop, and a fight over the long diagonal."],
+      "traps": [],
+      "games": []
+    },
+    {
+      "id": "grunfeld_defense", "title": "Grünfeld Defense", "side": "black",
+      "names": ["Grünfeld Defense"], "aliases": ["grunfeld", "gruenfeld", "grünfeld", "grunfeld defense", "grünfeld defense"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. cxd5 Nxd5 5. e4 Nxc3 6. bxc3 Bg7 7. Nf3 c5",
+      "summary": "Black lets White build a big centre (c3, d4, e4) on purpose and attacks it with ...Bg7, ...c5 and ...Nc6.",
+      "plans": ["Trade knights on c3 to take away a defender of the centre.", "Pressure d4 with the g7-bishop, ...c5, ...Nc6 and ...Qa5.", "Strike before White's centre can advance (d5 or e5)."],
+      "watch_for": ["White's d5 push and kingside attacks when your pressure on d4 is too slow."],
+      "traps": [],
+      "games": [
+        {"white": "Donald Byrne", "black": "Robert James Fischer", "event": "New York, Rosenwald Memorial (the \"Game of the Century\")", "year": 1956, "result": "0-1",
+         "moves": "1. Nf3 Nf6 2. c4 g6 3. Nc3 Bg7 4. d4 O-O 5. Bf4 d5 6. Qb3 dxc4 7. Qxc4 c6 8. e4 Nbd7 9. Rd1 Nb6 10. Qc5 Bg4 11. Bg5 Na4 12. Qa3 Nxc3 13. bxc3 Nxe4 14. Bxe7 Qb6 15. Bc4 Nxc3 16. Bc5 Rfe8+ 17. Kf1 Be6 18. Bxb6 Bxc4+ 19. Kg1 Ne2+ 20. Kf1 Nxd4+ 21. Kg1 Ne2+ 22. Kf1 Nc3+ 23. Kg1 axb6 24. Qb4 Ra4 25. Qxb6 Nxd1 26. h3 Rxa2 27. Kh2 Nxf2 28. Re1 Rxe1 29. Qd8+ Bf8 30. Nxe1 Bd5 31. Nf3 Ne4 32. Qb8 b5 33. h4 h5 34. Ne5 Kg7 35. Kg1 Bc5+ 36. Kf1 Ng3+ 37. Ke1 Bb4+ 38. Kd1 Bb3+ 39. Kc1 Ne2+ 40. Kb1 Nc3+ 41. Kc1 Rc2#",
+         "lesson": "Thirteen-year-old Fischer gives his queen (17...Be6) for a crushing attack with minor pieces and a rook."}
+      ]
+    },
+    {
+      "id": "dutch_defense", "title": "Dutch Defense", "side": "black",
+      "names": ["Dutch Defense"], "aliases": ["dutch", "dutch defense", "dutch defence", "stonewall", "leningrad dutch"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. d4 f5 2. c4 Nf6 3. g3 e6 4. Bg2 Be7 5. Nf3 O-O 6. O-O d6",
+      "summary": "Black answers 1.d4 with ...f5, fighting for e4 and preparing a kingside attack. Setups: Classical, Stonewall (...d5, ...c6, ...e6) and Leningrad (...g6).",
+      "plans": ["Control e4 with ...f5, ...Nf6 and sometimes ...Ne4.", "In the Classical, prepare ...e5 with ...d6 and ...Qe8, then ...Qh5 for an attack.", "Castle early: the f-pawn advance weakens your king a little."],
+      "watch_for": ["Early tricks against e8-h5 diagonal (Qh5+) and the e4 break."],
+      "traps": [
+        {"name": "Hopton Attack trap", "moves": "1. d4 f5 2. Bg5 h6 3. Bh4 g5 4. Bg3 f4 5. e3 h5 6. Bd3 Rh6 7. Qxh5+ Rxh5 8. Bg6#", "mistake": 11, "explanation": "Chasing the bishop with pawns weakens the e8-h5 diagonal: after 6...Rh6, Qxh5+ and Bg6# is mate."}
+      ],
+      "games": [
+        {"white": "Edward Lasker", "black": "George Alan Thomas", "event": "London", "year": 1912, "result": "1-0",
+         "moves": "1. d4 e6 2. Nf3 f5 3. Nc3 Nf6 4. Bg5 Be7 5. Bxf6 Bxf6 6. e4 fxe4 7. Nxe4 b6 8. Ne5 O-O 9. Bd3 Bb7 10. Qh5 Qe7 11. Qxh7+ Kxh7 12. Nxf6+ Kh6 13. Neg4+ Kg5 14. h4+ Kf4 15. g3+ Kf3 16. Be2+ Kg2 17. Rh2+ Kg1 18. Kd2#",
+         "lesson": "A queen sacrifice on h7 and a king hunt across the whole board, ending with a quiet king move that gives mate."}
+      ]
+    },
+    {
+      "id": "english_opening", "title": "English Opening", "side": "white",
+      "names": ["English Opening"], "aliases": ["english", "english opening"],
+      "catalog_topic": "english_opening", "library_concept": null,
+      "main": "1. c4 e5 2. Nc3 Nf6 3. Nf3 Nc6 4. g3 d5 5. cxd5 Nxd5 6. Bg2 Nb6",
+      "summary": "White starts with c4, controlling d5 from the side. It is often a reversed Sicilian, with a fianchettoed bishop on g2.",
+      "plans": ["Fianchetto the king's bishop (g3, Bg2) to work along the long diagonal.", "Control d5 with c4, Nc3 and Bg2.", "Expand on the queenside with a3, b4 and Rb1."],
+      "watch_for": ["Black's big centre with ...e5 and ...d5, and the Nd4 trick against an early Nxe5."],
+      "traps": [
+        {"name": "Smothered mate on f3", "moves": "1. c4 e5 2. Nc3 Nf6 3. Nf3 Nc6 4. g3 Nd4 5. Nxe5 Qe7 6. Nd3 Nf3#", "mistake": 8, "explanation": "After ...Nd4, grabbing e5 lets ...Qe7 pin the e2 pawn; when the knight retreats, ...Nf3 is mate."}
+      ],
+      "games": []
+    },
+    {
+      "id": "catalan_opening", "title": "Catalan Opening", "side": "white",
+      "names": ["Catalan Opening"], "aliases": ["catalan", "catalan opening"],
+      "catalog_topic": null, "library_concept": null,
+      "main": "1. d4 Nf6 2. c4 e6 3. Nf3 d5 4. g3 Be7 5. Bg2 O-O 6. O-O dxc4",
+      "summary": "White combines the Queen's Gambit (d4, c4) with a fianchetto on g2 aimed at Black's queenside. Positional pressure rather than a quick attack.",
+      "plans": ["Fianchetto the bishop: on g2 it presses on d5 and b7.", "If Black takes on c4, win it back calmly with Qc2 or Qa4.", "Use the long diagonal to stop Black from developing the c8-bishop."],
+      "watch_for": ["Black holding the c4 pawn with ...b5, and the ...c5 break."],
+      "traps": [],
+      "games": []
+    }
+  ]
+}
