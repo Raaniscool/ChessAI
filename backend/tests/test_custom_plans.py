@@ -649,7 +649,7 @@ def test_plan_for_goal_asks_then_builds_the_chosen_reading(tmp_path):
 
 def test_clear_requests_keep_the_existing_planners(tmp_path):
     mem = IntentMemory(tmp_path / "intents.json")
-    for goal, planner in (("knight forks", "knowledge"), ("teach me the windmill", "fallback")):
+    for goal, planner in (("knight forks", "knowledge"), ("teach me outposts", "fallback")):
         record = plan_for_goal(goal, clarify=True, memory=mem, use_qwen=False)
         assert record["plan"]["planner"] == planner
     assert mem.all() == {}

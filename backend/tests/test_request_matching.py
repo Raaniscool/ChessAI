@@ -34,16 +34,17 @@ def test_position_never_means_opposition(goal):
     assert "opposition" not in get_knowledge().match_concepts(goal)
 
 
-@pytest.mark.parametrize("goal, generic", [
-    ("teach me the greek gift sacrifice", "sacrifice"),
-    ("teach me epaulette mate", "checkmate"),
-    ("teach me mate in two", "checkmate"),
+@pytest.mark.parametrize("goal, generic, answer", [
+    # Greek gift and epaulette mate became verified concepts: answered precisely, never generically
+    ("teach me the greek gift sacrifice", "sacrifice", ["greek_gift"]),
+    ("teach me epaulette mate", "checkmate", ["epaulette_mate"]),
+    ("teach me mate in two", "checkmate", []),
 ])
-def test_a_named_variety_is_not_answered_with_the_generic_concept(goal, generic):
+def test_a_named_variety_is_not_answered_with_the_generic_concept(goal, generic, answer):
     library = get_knowledge()
     concepts, confident = resolve_concepts(library, goal)
     assert not (confident and generic in concepts), (goal, concepts)
-    assert lesson_request(library, goal) == []
+    assert lesson_request(library, goal) == answer
 
 
 def test_a_named_variety_with_verified_examples_is_answered_with_itself():

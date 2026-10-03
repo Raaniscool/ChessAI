@@ -57,7 +57,11 @@ def test_expansion_examples_were_verified_and_carry_provenance():
         stages = {st["name"]: st["outcome"] for st in rec["verification"]["stages"]}
         assert set(stages) >= {"fen", "position", "moves", "concept", "engine", "solution", "explanation",
                                "duplicate"}, rec["id"]
-        assert set(stages.values()) == {"pass"}, (rec["id"], stages)
+        # whole-game principle examples (no key move) skip only the solution stage, as in the seed
+        expected = {name: "pass" for name in stages}
+        if not rec.get("key_move"):
+            expected["solution"] = "skipped"
+        assert stages == expected, (rec["id"], stages)
         src = rec["source"]
         assert src["source_license"] and src["import_date"] and src["source_type"], rec["id"]
         if src["source_type"] == "lichess_puzzle":
@@ -87,7 +91,7 @@ def test_glossary_has_no_term_that_is_now_a_verified_concept():
 def test_curated_expansion_files_are_separate_from_the_seed_files():
     assert not set(curated.EXPANSION_FILES) & set(curated.FILES)
     recs = curated.candidates(files=curated.EXPANSION_FILES)
-    assert recs and all(r["category"] in ("endgames", "mistakes") for r in recs)
+    assert recs and all(r["category"] in ("endgames", "mistakes", "checkmates") for r in recs)
 
 
 # ------------------------------------------------------------------ tactics

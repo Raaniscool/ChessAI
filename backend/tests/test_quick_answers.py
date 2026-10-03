@@ -31,8 +31,14 @@ def test_library_concepts_answer_with_their_verified_summary():
 
 
 def test_glossary_terms_are_labelled_unverified():
-    a = quick_answer("What does zugzwang mean?", get_knowledge(), get_glossary())
+    a = quick_answer("What does fianchetto mean?", get_knowledge(), get_glossary())
     assert a["source"] == "glossary" and a["verified"] is False and a["examples"] == 0
+
+
+def test_a_glossary_idea_that_became_a_concept_is_answered_from_the_library():
+    """Zugzwang was a glossary term; it has verified examples now (library expansion)."""
+    a = quick_answer("What does zugzwang mean?", get_knowledge(), get_glossary())
+    assert a["source"] == "library" and a["verified"] is True and a["examples"] >= 3
 
 
 def test_unknown_terms_get_no_made_up_answer():

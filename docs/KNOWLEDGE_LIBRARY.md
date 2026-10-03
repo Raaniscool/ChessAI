@@ -20,9 +20,9 @@ Lookup order: **verified library → deterministic rules → Stockfish → Qwen*
 
 | Part | State |
 |------|-------|
-| Schema, concept graph (80 concepts), validators, verification pipeline | done |
+| Schema, concept graph (89 concepts), validators, verification pipeline | done |
 | Source importers: curated records, Lichess opening DB, Lichess puzzles | done |
-| Seed library: 409 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
+| Seed library: 489 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
 | Library expansion: new tactics, mates, endgame technique and beginner mistakes (`--expand`) | done (see *Library expansion*) |
 | Runtime tiers (generated / personal), review states, usage metadata | done (data model + library API) |
 | Tutor integration: retrieval layer, lessons from examples, chat/planner, teacher facts | done (see *Using the library in the tutor*) |
@@ -322,6 +322,19 @@ section):
 | Endgames | rule of the square, key squares, triangulation, Philidor position, wrong bishop, pawn breakthrough, outside passed pawn | 2 / 2 / 2 / 1 / 1 / 2 / 6 | curated textbook positions (triangulation also Alburt–Kasparov 1978); Lichess for the outside passed pawn |
 | Mistakes | ignoring the back rank, avoiding stalemate; more *missing a threat* | 6 / 2 / +6 | Lichess; curated for stalemate |
 
+**Finishing pass** (the remaining standard ideas, then topping up thin concepts):
+
+| Category | New concepts / top-ups | Examples | Where they come from |
+|----------|------------------------|---------:|----------------------|
+| Tactics | x-ray, Greek gift, windmill, desperado | 5 / 3 / 2 / 6 | Lichess |
+| Checkmates | epaulette mate, double-bishop mate; ladder mate topped up | 6 / 6 / 2 | Lichess; ladder curated |
+| Endgames | zugzwang (own concept), perpetual check, stalemate tricks; Lucena and Philidor topped up | 5 / 2 / 2 / 2 / 2 | Lichess for zugzwang; composed positions for the rest |
+| Mistakes / threats | early queen, repeated moves, ignoring development topped up; more double attack, spotting threats, relative pin, pawn fork, hanging queen, poisoned pawn | 2 / 2 / 2 / +6 / 3 / +6 each | curated miniatures (Stockfish-checked drops); Lichess |
+
+The composed positions (`endgames_expansion.json` (the ladder mate is in it too, with category
+`checkmates`) and `mistakes_expansion.json` in `sources/data/curated/`) carry a reference and the Stockfish
+fact that makes them a lesson (for example "only 1.Qg5+ draws, other moves lose").
+
 What each validator demands, so that a similar-looking position doesn't pass:
 
 - **Decoy:** the offered piece is captured on its square, and the next learner move uses it there
@@ -348,9 +361,25 @@ What each validator demands, so that a similar-looking position doesn't pass:
   three or more files away.
 - **Ignoring the back rank:** a real mistake (Stockfish) followed by a back-rank mate.
   **Avoiding stalemate:** some legal move would stalemate, the key move doesn't, and the line mates.
+- **X-ray:** a long-range piece hits a square *through* an enemy piece, and that piece is
+  exchanged or moves before the capture lands. **Epaulette / double-bishop:** the queen mates
+  from two squares straight in front of a king on the edge, both side squares blocked by the
+  king's own pieces; or a bishop mates while the other bishop covers at least one of the king's squares.
+- **Greek gift:** Bxh7+ (Bxh2+), the king takes, then a knight check on g5 (g4). **Windmill:**
+  the same piece gives discovered check at least twice. **Desperado:** an attacked piece
+  captures before it is lost, and the learner is *not* in check (escaping check isn't a choice).
+- **Zugzwang:** a quiet key move (no capture, no check), the learner not in check before it, and
+  the engine shows that having to move costs the opponent at least 200 cp.
+- **Perpetual check:** every learner move is a check, the learner is at least 3 points behind
+  at the start *and still at the end* (winning the material back isn't a perpetual), and
+  Stockfish calls the final position drawn. **Stalemate tricks:** the learner is behind,
+  and the line ends in stalemate.
 - **Missing a threat (imports):** on top of the validator, the whole punishment must have worked
   without the mistake, too (the same mate, or the same material). Otherwise the mistake created
   the threat rather than ignoring it.
+
+**Spotting threats (imports):** the defence may not check and the line may not end in mate,
+otherwise it is an attack, not a defence.
 
 **How the Lichess part was built.** The CC0 per-theme samples in github.com/pwenker/chessli2 were
 verified move by move with `scripts/build_puzzle_library.py` into `pool_expansion.json` (themes
@@ -359,6 +388,11 @@ zugzwang). Lichess tags some themes loosely: only 1 of 24 "interference" puzzles
 the CSVs were first filtered with the concept validators (rules only), and only the matches
 were verified with Stockfish into `pool_ideas.json`. Both files exclude every puzzle already in
 `puzzles.json`, `pool.json` and `pool_harder.json`.
+
+The finishing pass used `scripts/prefilter_lichess_csv.py SRC DST [themes]` the same way: rules
+only, before Stockfish. `TAG_SUBSETS` builds stricter sub-themes from a tag *and* the puzzle's
+other tags (`zugzwangWin`: zugzwang with crushing/advantage/mate; `perpetualDraw`: perpetual
+without mate or material win). The Stockfish-verified results are in `pool_finish.json`.
 
 ```powershell
 .\.venv\Scripts\python scripts\build_knowledge_seed.py --expand
@@ -377,10 +411,26 @@ It writes only `examples/<category>/lichess_expansion.json` and `curated_expansi
   where they passed the stricter check.
 - Lichess "opposition" from pawn endings: the kings facing each other was incidental there.
 
-**Not covered yet** (they stay glossary entries with honest fallbacks): windmill, desperado, Greek
-gift, epaulette mate, perpetual check, x-ray, zugzwang as its own concept, and stalemate *tricks* (saving
-a lost game). The glossary no longer lists decoy, interference, the Philidor position or
-triangulation, because they are verified concepts now.
+**Refused in the finishing pass:**
+- Six Lichess "perpetual" puzzles: their checks end in mate (Stockfish ±mate), not a draw.
+  Plus every perpetual where the checks win the material back. Real perpetuals from a lost
+  position are rare in the sample (5 of 120 tagged rows), so the concept has 2 examples.
+- Draw-saving zugzwangs (a zugzwang that only holds a draw), and one where having to move cost
+  the opponent only 99 cp.
+- Lichess *earlyQueen*: a mid-game position can't prove the queen came out early. Those
+  examples are curated whole games instead.
+- An x-ray and a windmill where Stockfish sees the learner only 8 cp and 52 cp better.
+- Lichess has no stalemate-trick puzzles in the sample, and only 3 Greek gifts and 3 windmills
+  that pass the rules.
+
+**Still thin, honestly:** wrong bishop (1: the lite engine can't confirm a second one is
+drawn), opposition, key squares, rule of the square, triangulation and pawn breakthrough
+(2–3 each, textbook positions only). Nothing was relaxed to grow these.
+
+The glossary no longer lists the ideas that became concepts (decoy, interference, Philidor,
+triangulation, x-ray, Greek gift, windmill, desperado, epaulette mate, perpetual check,
+stalemate tricks). Its remaining entries (outposts, pawn structure, isolated/doubled/backward
+pawns, open files, fianchetto, calculation) keep the honest fallback plans.
 
 ## Rebuilding the seed library
 

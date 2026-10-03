@@ -30,7 +30,7 @@ comes with tests. Rules that hold everywhere:
 | 15 | Libraries communicate | training plans combine library concepts + puzzles | Concept explanation + puzzle set in one training session → P3 |
 | 16 | Training page | history report + training/puzzle buttons | "Your Training" card: main weakness (found in X of Y games), 5 puzzles, other weaknesses, recommended lesson → **P1** |
 | 17 | Continuous loop | re-analysis updates the profile | "New games since last analysis" prompt, adaptation summary → P5 |
-| 18–20 | Deep Knowledge Library | 409 verified entries (10 openings; tactics, endgame and mistake expansion) | Opening trees from the Lichess opening database (CC0), verified move by move, importance-scaled targets → P4 |
+| 18–20 | Deep Knowledge Library | 489 verified entries (10 openings; tactics, endgame and mistake expansion) | Opening trees from the Lichess opening database (CC0), verified move by move, importance-scaled targets → P4 |
 | 21 | Verified pipeline for everything | `knowledge/pipeline.py` | Reused by P2–P4 |
 | 22–24 | Qwen role, exact intent, request satisfaction | done for lessons (`planner/intent`, `custom/satisfy.py`, `request_satisfied`) | Same request check for puzzle sets (concept + weakness) → P3 |
 | 25 | Debug visibility | plan debug panel (`?debug=1`); **P2:** targeted puzzles show USER WEAKNESS / SOURCE / LIBRARY MATCH / CUSTOM GENERATION / PUZZLE VALIDATION | Per-candidate generation rejections and progression level → P3 |

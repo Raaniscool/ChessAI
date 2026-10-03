@@ -63,15 +63,16 @@ def test_glossary_never_shadows_a_concept():
 
 def test_glossary_matching_prefers_the_longest_alias():
     glossary = get_glossary()
-    assert glossary.match("teach me the Greek gift sacrifice").id == "greek_gift"
-    assert glossary.match("stalemate tricks please").id == "stalemate_tricks"
+    # "isolated queen pawn" (3 words) beats "pawn structures" (2 words)
+    assert glossary.match("isolated queen pawn structures").id == "isolated_pawn"
+    assert glossary.match("doubled pawns please").id == "doubled_pawns"
     assert glossary.match("I want to learn forks") is None
 
 
 # ------------------------------------------------------------------ resolving the request
 def test_resolve_glossary_term_with_a_broader_concept():
-    res = missing.resolve("teach me the windmill", get_knowledge(), get_glossary(), use_qwen=False)
-    assert res.term == "Windmill" and res.text_source == "glossary" and res.broader == "discovered_check"
+    res = missing.resolve("teach me calculation", get_knowledge(), get_glossary(), use_qwen=False)
+    assert res.term == "Calculation" and res.text_source == "glossary" and res.broader == "tactics"
     assert res.concept is None and res.via == "text"
 
 
@@ -86,9 +87,9 @@ def test_resolve_nonsense_is_none_without_qwen():
 
 def test_qwen_may_only_map_to_an_existing_id():
     library, glossary = get_knowledge(), get_glossary()
-    good = FakeTeacher(json.dumps({"id": "windmill", "match": "same"}))
-    res = missing.resolve("le moulin", library, glossary, use_qwen=True, teacher=good)
-    assert res.term == "Windmill" and res.via == "qwen" and good.calls == 1
+    good = FakeTeacher(json.dumps({"id": "outpost", "match": "same"}))
+    res = missing.resolve("l'avant-poste", library, glossary, use_qwen=True, teacher=good)
+    assert res.term == "Outpost" and res.via == "qwen" and good.calls == 1
     invented = FakeTeacher(json.dumps({"id": "zorblax_gambit", "match": "same"}))
     assert missing.resolve("zorblax gambit", library, glossary, teacher=invented) is None
     merely_related = FakeTeacher(json.dumps({"id": "openings", "match": "related"}))
@@ -99,8 +100,8 @@ def test_qwen_may_only_map_to_an_existing_id():
 
 def test_qwen_is_not_asked_when_the_words_are_known():
     teacher = FakeTeacher(json.dumps({"id": "fork", "match": "same"}))
-    res = missing.resolve("teach me the windmill", get_knowledge(), get_glossary(), teacher=teacher)
-    assert res.term == "Windmill" and teacher.calls == 0
+    res = missing.resolve("teach me calculation", get_knowledge(), get_glossary(), teacher=teacher)
+    assert res.term == "Calculation" and teacher.calls == 0
 
 
 # ------------------------------------------------------------------ the fallback plan
@@ -168,10 +169,10 @@ def test_nonsense_still_gets_the_honest_answer():
 
 
 @pytest.mark.parametrize("goal, term", [
-    ("teach me the greek gift sacrifice", "Greek gift sacrifice"),
-    ("I want to learn the desperado", "Desperado"),
-    ("windmill", "Windmill"),
-    ("teach me epaulette mate", "Epaulette mate"),
+    ("teach me isolated pawns", "Isolated pawn"),
+    ("I want to learn about outposts", "Outpost"),
+    ("backward pawns", "Backward pawn"),
+    ("teach me doubled pawns", "Doubled pawns"),
 ])
 def test_named_ideas_without_examples_get_a_fallback_plan(goal, term):
     record = plan_for_goal(goal, use_qwen=False)
@@ -180,11 +181,17 @@ def test_named_ideas_without_examples_get_a_fallback_plan(goal, term):
 
 def test_stalemate_tricks_is_not_a_king_and_queen_lesson():
     """Audit B11: the K+Q mate topic lists "stalemate" (avoid it); "stalemate tricks" (use it
-    to save a lost game) matched that topic. A glossary term that matches more wins."""
+    to save a lost game) matched that topic. Stalemate tricks is a verified concept now, so the
+    knowledge planner teaches it, still never as a king-and-queen lesson."""
     record = plan_for_goal("teach me stalemate tricks", use_qwen=False)
-    assert record["plan"]["planner"] == "fallback"
-    assert record["plan"]["units"][0]["title"] == "Stalemate tricks: what it is"
-    assert all("king and queen" not in u["title"].lower() for u in record["plan"]["units"])
+    assert record["plan"]["planner"] == "knowledge"
+    units = record["plan"]["units"]
+    assert units[0]["title"] == "Stalemate tricks: the idea"
+    assert all(u["concepts"] == ["stalemate_tricks"] for u in units)
+    assert all("king and queen" not in u["title"].lower() for u in units)
+    lib = get_knowledge()
+    examples = [lib.get(ex) for u in units for ex in u["example_ids"]]
+    assert examples and all(e.concept == "stalemate_tricks" for e in examples)
 
 
 def test_catalog_topics_that_are_the_named_idea_still_win():
@@ -199,7 +206,7 @@ def test_api_returns_fallback_plans_with_playable_lessons():
     from app.main import app as fastapi_app
     try:
         with TestClient(fastapi_app) as client:
-            res = client.post("/api/plans", json={"goal": "teach me the windmill", "library": True})
+            res = client.post("/api/plans", json={"goal": "teach me outposts", "library": True})
             assert res.status_code == 200, res.text
             data = res.json()
             assert data["source"] == "fallback"
