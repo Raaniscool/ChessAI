@@ -16,6 +16,7 @@ from .chess_system import ChessError
 from .engine.classification import Classification
 from .lessons import Lesson, LessonLibrary, get_library
 from .lessons.schema import DemonstrateStep, ExerciseStep, TeachStep
+from .teacher.library_feedback import library_feedback, strip_said
 
 _CATEGORY_RANK = [
     Classification.EXCELLENT,
@@ -82,6 +83,7 @@ class Session:
     outcomes: list = field(default_factory=list)       # learner.adapt.Outcome per finished example
     changes: int = 0                     # adaptations made in this lesson
     notes: dict = field(default_factory=dict)          # id(step) -> coach note shown with it
+    said: dict = field(default_factory=dict)           # example id -> sentences the instant feedback showed
     learner_id: str = "local"
 
 
@@ -203,7 +205,11 @@ class SessionManager:
             board = chess_system.validate_board_spec(
                 {**(step.board or {}), "fen": session.board.fen()}
             )
-            return {**base, "text": step.text, "board": board}
+            text = step.text
+            said = session.said.get(getattr(step, "example", None) or "")
+            if said:  # the instant feedback already said part of this example's explanation
+                text = strip_said(text, said) or text
+            return {**base, "text": text, "board": board}
         if isinstance(step, DemonstrateStep):
             after = chess_system.validate_board_spec(
                 step.board or {}, board=chess_system.parse_fen(step.fen)
@@ -336,6 +342,20 @@ class SessionManager:
             "read_aloud": read_aloud(importance),
             "san": san,
         }
+        if accepted and example is not None:
+            # A verified library example: its stored, verified teaching text is the feedback, at
+            # once. The AI teacher is not asked to re-explain what the library already knows; it
+            # stays available on request ("Explain deeper") and for wrong moves.
+            final = not self._solution_pending(session, example.id)
+            concept = self.knowledge_concept_name(example)
+            verified = library_feedback(example, before, san, list(step.accepted_san or []), final=final,
+                                        said=step.continue_text or "", idea=concept)
+            if verified:
+                result.update(explanation=verified["text"], teacher="library", ai_explanation=False,
+                              deeper=final)
+                session.said.setdefault(example.id, set()).update(verified["sentences"])
+            else:
+                result["ai_explanation"] = False  # still nothing for the language model to add here
         if accepted:
             result["continue_text"] = step.continue_text
             adapted = self._exercise_resolved(session, step)
@@ -406,6 +426,15 @@ class SessionManager:
             except ValueError:
                 pass
         return out
+
+    @staticmethod
+    def knowledge_concept_name(example) -> str | None:
+        try:
+            from .knowledge.library import get_knowledge
+            concept = get_knowledge().concepts.get(example.concept)
+        except Exception:  # the name is a nicety
+            return None
+        return concept.name if concept else None
 
     def _teaching_prefs(self, lesson, importance: str) -> tuple[str, str, str]:
         """(level, explanation style, learner note) for explanations in this lesson."""

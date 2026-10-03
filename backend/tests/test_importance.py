@@ -168,4 +168,7 @@ def test_move_results_carry_importance_and_skip_ai_for_minor_moves(api):
     # FakeEngine calls every move excellent: a sound move that isn't the exercise's
     assert wrong[0]["importance"] == IMPORTANT and wrong[0]["ai_explanation"] is True and wrong[0]["read_aloud"]
     for r in results:
+        if r["accepted"]:  # a verified library example: its stored explanation, no AI call (test_library_feedback)
+            assert r["teacher"] == "library" and r["ai_explanation"] is False
+            continue
         assert r["ai_explanation"] == (r["importance"] in (CRITICAL, IMPORTANT))

@@ -583,6 +583,16 @@ function renderFeedback(result) {
     `<div class="meta"><span class="teacher-label"></span></div>`
   slot.appendChild(card)
   if (result.continue_text) addMsg(result.continue_text)
+  if (result.teacher === "library") {
+    // verified library text, shown at once; the AI teacher only when asked for more
+    card.querySelector(".teacher-label").textContent = "✓ From the verified library"
+    if (result.deeper) {
+      const btn = document.getElementById("btn-explain-example")
+      btn.textContent = "🧠 Explain deeper"
+      btn.title = "Ask the AI teacher for a deeper explanation of this position"
+      showBtn("btn-explain-example")
+    }
+  }
   // Read out only when the move matters (importance), never every recapture.
   if (result.ai_explanation) streamExplanation(card, result.importance)
   else { makeSpeakable(card); narrator.auto(card, "explanations", result.importance) }
@@ -663,7 +673,12 @@ async function renderStep(step) {
     const msg = addMsg(step.text)
     await showPosition(step.board.fen, {highlights: step.board.highlights || []})
     showContinue()
-    if (step.example && step.example.explainable) showBtn("btn-explain-example")
+    if (step.example && step.example.explainable) {
+      const btn = document.getElementById("btn-explain-example")
+      btn.textContent = "🧠 Explain this example"
+      btn.title = "The AI teacher explains this verified example"
+      showBtn("btn-explain-example")
+    }
     setStatus("")
     narrator.auto(msg, "lessons")
   } else if (step.type === "demonstrate") {
