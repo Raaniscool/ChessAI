@@ -456,6 +456,10 @@ from .tts_api import router as tts_router  # noqa: E402
 
 app.include_router(tts_router)
 
+from .training_api import router as training_router  # noqa: E402
+
+app.include_router(training_router)  # before the puzzle router: /api/puzzles/training/...
+
 from .puzzle_api import router as puzzle_router  # noqa: E402
 
 app.include_router(puzzle_router)
