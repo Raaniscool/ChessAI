@@ -297,6 +297,44 @@ teacher. The closing explanation doesn't repeat sentences already shown.
 **No spoilers before solving:** puzzle and lesson exercise prompts say "find the best move". The
 concept, the objective and any reason that names the idea appear only after the solve or reveal.
 
-Tests: `test_training_level.py`, `test_library_feedback.py`, `test_learner.py`, `test_adaptive_lessons.py`, `test_lesson_wording.py`,
+**When the learner asked for an explanation** (`learner/help.py`): performance tells us what the
+learner did; explanation requests tell us how much additional understanding they sought. Both
+are stored side by side and never mixed.
+- *What counts:* only explicit requests in a lesson. That means "Explain this example"
+  (`explain`), "🧠 Explain deeper" after the instant feedback (`deeper`), and a question typed
+  in the lesson chat (`question`). A chat message counts when it asks something ("why", "what
+  was wrong", "I don't understand", a "?"); "thanks" or "ok" doesn't.
+- *What never counts:* the instant verified feedback, the automatic AI explanation that the
+  importance rule streams for some moves, and the stored explanation shown after a puzzle.
+  Hints and revealed solutions have their own separate counters. The Puzzles tab has no
+  explain button, so its results only log hints and reveals.
+- *Stored* in the learner profile (private, `DATA_DIR/learners/`, never in the Knowledge
+  Library):
+  - Per concept: `explain_requests`, `explain_kinds`, `explained` (exercises with at least one
+    request), and `recent_explained` (one flag per entry of `recent`).
+  - `exercise_log`: the last 200 resolved exercises. Each entry holds source, lesson, session,
+    exercise, concept, difficulty, result, solved, first try, hints, revealed,
+    `explanation_requested` and the request kinds.
+  - A request made while solving is attached when the exercise resolves. A later one (Explain
+    deeper) is attached to the logged result, and each exercise counts once.
+- *Signal* (deterministic, per concept, over the last 6 results): there is no signal unless at
+  least 3 results had a request, and at least half of them did. So one request, or an
+  occasional one, has no effect at all.
+  - Mostly solved: **understanding** ("I can solve this, but I don't fully understand why").
+  - Mostly not solved: **difficulty**.
+  - An incorrect answer without a request stays an ordinary performance failure.
+- *Effect:*
+  - Requests never change a score, a puzzle or lesson rating, the overall level or another
+    concept's skill.
+  - With a signal, the concept isn't called mastered ("understanding" keeps it at practicing,
+    never weak).
+  - The next lesson on it starts with one more worked example, with a reason that says so.
+  - Only that concept's difficulty target eases by 40, less than a game weakness (50).
+  - Inside a lesson, an explained solve doesn't count as "clean" for the step-up rule. After
+    two explained solves, one worked example of the same idea is inserted (`teach`, never
+    harder, once per lesson). Nothing is made easier just because the learner asked.
+- Qwen never sees or decides any of this.
+
+Tests: `test_explanation_tracking.py`, `test_training_level.py`, `test_library_feedback.py`, `test_learner.py`, `test_adaptive_lessons.py`, `test_lesson_wording.py`,
 `test_questions_and_skills.py`, `test_importance.py`, `test_request_matching.py`, and the UI e2e
 onboarding flow.
