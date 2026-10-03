@@ -44,7 +44,7 @@ def key_note(kind: str, f: dict) -> str | None:
         return f"The {_p(f['trapped'])} is trapped: every square it can go to is covered."
     if kind in ("checkmate", "back_rank_mate", "smothered_mate", "anastasia_mate", "arabian_mate",
                 "boden_mate", "ladder_mate", "queen_mate", "rook_mate", "scholars_mate", "early_mate",
-                "mate_in_two", "hook_mate", "dovetail_mate"):
+                "mate_in_two", "hook_mate", "dovetail_mate", "double_bishop_mate", "epaulette_mate"):
         return "Checkmate! " + mate_sentence(f)
     if kind == "promotion":
         return f"The pawn promotes to a {f['promoted_to']} on {f['square']}."
@@ -69,6 +69,27 @@ def key_note(kind: str, f: dict) -> str | None:
     if kind == "pawn_breakthrough":
         return (f"Breakthrough: {_list(f['sacrifices'])} give{'s' if len(f['sacrifices']) == 1 else ''} up "
                 f"material to break the pawn chain, and {f['promotes']} promotes.")
+    if kind == "x_ray":
+        return (f"X-ray: the {_p(f['slider'])} is lined up through the {_p(f['through'])}. Once that piece is "
+                f"gone, the line is open and {f['capture']} lands on {f['square']}.")
+    if kind == "greek_gift":
+        return (f"The Greek gift: {f['sacrifice']} gives up the bishop on {f['square']}, {f['king_takes']} "
+                f"accepts it, and {f['knight_check']} brings the knight in with check.")
+    if kind == "windmill":
+        return (f"Windmill! {_list(f['discovered_checks'])}: the same piece moves again and again, uncovering "
+                f"check each time, and grabs material on the way.")
+    if kind == "desperado":
+        return (f"Desperado: the {_p(f['desperado'])} can't be saved, so it takes the {_p(f['captured'])} "
+                f"before it goes.")
+    if kind == "zugzwang":
+        return (f"Zugzwang: {f['move']} is a quiet move — no capture, no check. But now the opponent has to "
+                f"move, and every move makes their position worse.")
+    if kind == "perpetual_check":
+        return (f"Perpetual check: {_list(f['checks'])}. {f['side']} is {f['behind_by']} points behind, but "
+                f"the king can't get away from the checks, so the game is drawn.")
+    if kind == "stalemate_trick":
+        return (f"Stalemate trick: after {f['final_move']} {f['stalemated']} has no legal move and is not in "
+                f"check. Stalemate is a draw, although {f['side']} was {f['behind_by']} points behind.")
     if kind == "stalemate_trap":
         return (f"Careful: {_list(f['stalemating_moves'])} would be stalemate. {f['key_move']} leaves the "
                 f"opponent a move and keeps the win.")
@@ -125,6 +146,22 @@ def hints(kind: str, f: dict, concept_hint: str | None = None) -> list[str]:
         out.append("Which of your pawns is furthest away from all the others? Use it to pull the enemy king away.")
     elif kind == "pawn_breakthrough":
         out.append("Your pawns face a wall of enemy pawns. Can a sacrifice open a path for one of them?")
+    elif kind == "x_ray":
+        out.append("One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?")
+        out.append(f"Look at the line from your {f['slider']['piece']} on {f['slider']['square']}.")
+    elif kind == "greek_gift":
+        out.append(f"Is the pawn on {f['square']} defended only by the king?")
+        out.append("Bishop, knight, queen: can all three join the attack, one with check after the other?")
+    elif kind == "windmill":
+        out.append("One of your pieces can uncover a check. Can it do that more than once?")
+    elif kind == "desperado":
+        out.append("One of your pieces can't be saved anyway. Make it count before it goes.")
+    elif kind == "zugzwang":
+        out.append("There's no good capture or check. Can a quiet move leave your opponent without a good move?")
+    elif kind == "perpetual_check":
+        out.append("You are behind in material. Can you give check after check, without end?")
+    elif kind == "stalemate_trick":
+        out.append("You are lost on material. Could you end up with no legal move at all?")
     elif kind == "stalemate_trap":
         out.append("You are winning easily. After your move, will your opponent still have a legal move?")
     elif "escape_squares" in f:

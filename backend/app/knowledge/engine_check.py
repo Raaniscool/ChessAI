@@ -23,6 +23,9 @@ Each concept has an engine *profile* (concepts.json → "engine"):
     endgame_draw  the final position is a draw (|eval| <= 80 cp or stalemate)
     defence       a defensive key move: it must be good, and ignoring the threat (passing)
                   must cost at least THREAT_MIN_CP (200 cp) — the threat is real
+    zugzwang      as tactic, and the key move is quiet and leaves the opponent in zugzwang:
+                  could they pass instead of moving, they would be at least ZUGZWANG_MIN_CP
+                  (200 cp) better off
     principle     principle violations (early queen, same piece twice, no development):
                   rarely a single blunder, so the violating side must simply end the
                   line measurably worse (>= 80 cp, 40-80 = needs review)
@@ -49,6 +52,7 @@ PRINCIPLE_MIN_DROP = 80
 PRINCIPLE_REVIEW_DROP = 40
 GOOD_CATEGORIES = ("best", "strong_alternative", "acceptable")
 THREAT_MIN_CP = 200
+ZUGZWANG_MIN_CP = 200
 
 
 @dataclass
@@ -309,6 +313,33 @@ def _defence(example, rep, engine, depth) -> EngineReport:
     return EngineReport("pass", "defence", [], details)
 
 
+def _zugzwang(example, rep, engine, depth) -> EngineReport:
+    """The tactic checks, then the zugzwang itself: after the quiet key move the opponent is
+    to move, and moving costs them at least ZUGZWANG_MIN_CP compared with passing."""
+    report = _tactic(example, rep, engine, depth)
+    report.profile = "zugzwang"
+    if report.outcome != "pass":
+        return report
+    after = rep.boards[example.key_ply + 1]
+    opponent = after.turn
+    if after.is_check() or not any(after.legal_moves):
+        return EngineReport("fail", "zugzwang", ["the opponent is in check or has no move: not a zugzwang"],
+                            report.details)
+    passed = chess.Board(after.fen())
+    passed.turn = not opponent  # "pass": same position, the learner to move again
+    passed.ep_square = None
+    if passed.is_check() or not passed.is_valid():
+        return EngineReport("fail", "zugzwang", ["passing can't be measured in this position"], report.details)
+    to_move, _ = eval_cp(engine, after, opponent, depth)
+    if_passing, _ = eval_cp(engine, passed, opponent, depth)
+    cost = if_passing - to_move
+    report.details.update({"opponent_to_move": to_move, "opponent_if_passing": if_passing, "zugzwang_cp": cost})
+    if cost < ZUGZWANG_MIN_CP:
+        return EngineReport("fail", "zugzwang", [f"having to move only costs the opponent {cost} cp — "
+                                                 f"not a zugzwang"], report.details)
+    return report
+
+
 PRACTICAL_ACCEPT_CP = 40   # the key move may be this much below Stockfish's best
 PRACTICAL_GAP_CP = 100     # ...and some natural alternative must be at least this much worse
 PRACTICAL_DECIDED_CP = 900
@@ -377,5 +408,5 @@ def _underpromotion(example, rep, engine, depth) -> EngineReport:
     return EngineReport("fail", "underpromotion", ["no underpromotion in the learner's moves"], report.details)
 
 
-_PROFILES = {"practical": _practical, "underpromotion": _underpromotion, "defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
+_PROFILES = {"zugzwang": _zugzwang, "practical": _practical, "underpromotion": _underpromotion, "defence": _defence, "principle": _principle, "tactic": _tactic, "mate": _mate, "opening": _opening, "mistake": _mistake,
              "endgame_win": _endgame_win, "endgame_draw": _endgame_draw}

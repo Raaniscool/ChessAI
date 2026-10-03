@@ -1521,6 +1521,221 @@ def v_stalemate_trap(ctx: Ctx, params: dict) -> dict:
     return {"stalemating_moves": sorted(traps), "key_move": ctx.label(ctx.key_ply), "side": _side_name(color)}
 
 
+# ------------------------------------------------- library expansion, part 2 (item 9)
+# x-ray, double-bishop and epaulette mates, Greek gift, windmill, desperado, zugzwang, perpetual
+# check, stalemate tricks.
+
+def _moves_along(piece: chess.Piece, a: int, b: int) -> bool:
+    """Can this slider move along the line a-b at all (rook: file/rank, bishop: diagonal)?"""
+    same_line = chess.square_file(a) == chess.square_file(b) or chess.square_rank(a) == chess.square_rank(b)
+    if piece.piece_type == chess.ROOK:
+        return same_line
+    if piece.piece_type == chess.BISHOP:
+        return not same_line and bool(chess.ray(a, b))
+    return bool(chess.ray(a, b))
+
+
+@validator("x_ray")
+def v_x_ray(ctx: Ctx, params: dict) -> dict:
+    """A long-range piece works through an enemy piece: at the start it is lined up on a square
+    behind that piece, and once the piece in between has gone, it captures on that square."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    for j in _plies(ctx, params):
+        if j == start:
+            continue  # the line has to clear first
+        mv = r.moves[j]
+        piece = r.boards[j].piece_at(mv.from_square)
+        if piece.piece_type not in SLIDERS or not r.boards[j].piece_at(mv.to_square):
+            continue
+        if any(r.boards[k].piece_at(mv.from_square) != piece for k in range(start, j + 1)):
+            continue  # the slider must have stood there all along
+        if not _moves_along(piece, mv.from_square, mv.to_square):
+            continue
+        between = [sq for sq in chess.SquareSet(chess.between(mv.from_square, mv.to_square))
+                   if r.boards[start].piece_at(sq) is not None]
+        if len(between) != 1 or r.boards[start].color_at(between[0]) == color:
+            continue
+        return {"slider": piece_fact(r.boards[start], mv.from_square),
+                "through": piece_fact(r.boards[start], between[0]),
+                "square": chess.square_name(mv.to_square), "capture": ctx.label(j)}
+    raise Fail("no x-ray: no long-range piece takes on a square it was lined up on through an enemy piece")
+
+
+@validator("double_bishop_mate")
+def v_double_bishop_mate(ctx: Ctx, params: dict) -> dict:
+    """A bishop mates, and the other bishop covers the king's escape squares."""
+    board, facts = _mate(ctx, params)
+    color = board.turn
+    king = board.king(color)
+    checkers = list(board.checkers())
+    if len(checkers) != 1 or board.piece_at(checkers[0]).piece_type != chess.BISHOP:
+        raise Fail("in a double-bishop mate a bishop gives the mate")
+    others = [b for b in board.pieces(chess.BISHOP, not color) if b != checkers[0]]
+    probe = board.copy(stack=False)
+    probe.remove_piece_at(king)
+    covered = [sq for sq in chess.SquareSet(chess.BB_KING_ATTACKS[king]) if board.color_at(sq) != color
+               and any(sq in probe.attacks(b) for b in others)]
+    if not covered:
+        raise Fail("the second bishop doesn't cover any of the king's squares")
+    facts["pattern"] = "double-bishop mate"
+    facts["second_bishop"] = piece_fact(board, others[0])
+    return facts
+
+
+@validator("epaulette_mate")
+def v_epaulette_mate(ctx: Ctx, params: dict) -> dict:
+    """The queen mates from two squares in front of a king on the edge, whose own pieces stand
+    on both sides of it like epaulettes."""
+    board, facts = _mate(ctx, params)
+    color = board.turn
+    king = board.king(color)
+    checkers = list(board.checkers())
+    if len(checkers) != 1 or board.piece_at(checkers[0]).piece_type != chess.QUEEN:
+        raise Fail("an epaulette mate is delivered by the queen")
+    q = checkers[0]
+    kf, kr = chess.square_file(king), chess.square_rank(king)
+    if kr in (0, 7) and chess.square_file(q) == kf and abs(chess.square_rank(q) - kr) == 2:
+        sides = [(kf - 1, kr), (kf + 1, kr)]
+    elif kf in (0, 7) and chess.square_rank(q) == kr and abs(chess.square_file(q) - kf) == 2:
+        sides = [(kf, kr - 1), (kf, kr + 1)]
+    else:
+        raise Fail("in an epaulette mate the queen checks from two squares straight in front of a king on the edge")
+    blockers = []
+    for f, rk in sides:
+        if not (0 <= f < 8 and 0 <= rk < 8):
+            raise Fail("the king isn't flanked on both sides")
+        sq = chess.square(f, rk)
+        if board.color_at(sq) != color:
+            raise Fail(f"{chess.square_name(sq)} is not blocked by the king's own piece")
+        blockers.append(piece_fact(board, sq))
+    facts["pattern"] = "epaulette mate"
+    facts["blocked_by"] = blockers
+    return facts
+
+
+@validator("greek_gift")
+def v_greek_gift(ctx: Ctx, params: dict) -> dict:
+    """The classic bishop sacrifice: Bxh7+ (…Bxh2+), the king takes, and a knight checks on g5 (g4)."""
+    r = ctx.replay
+    color = ctx.learner
+    h, g = (chess.H7, chess.G5) if color == chess.WHITE else (chess.H2, chess.G4)
+    for i in _plies(ctx, params):
+        if i + 2 >= len(r.moves):
+            break
+        mv, reply, follow = r.moves[i], r.moves[i + 1], r.moves[i + 2]
+        bishop = r.boards[i].piece_at(mv.from_square)
+        if bishop.piece_type != chess.BISHOP or mv.to_square != h or not r.boards[i + 1].is_check():
+            continue
+        if r.boards[i + 1].piece_at(reply.from_square).piece_type != chess.KING or reply.to_square != h:
+            continue
+        knight = r.boards[i + 2].piece_at(follow.from_square)
+        if knight.piece_type != chess.KNIGHT or follow.to_square != g or not r.boards[i + 3].is_check():
+            continue
+        return {"sacrifice": ctx.label(i), "king_takes": ctx.label(i + 1), "knight_check": ctx.label(i + 2),
+                "square": chess.square_name(h), "ends_in_mate": r.final.is_checkmate()}
+    raise Fail(f"no Greek gift: no bishop sacrifice on {chess.square_name(h)} followed by a knight check")
+
+
+@validator("windmill")
+def v_windmill(ctx: Ctx, params: dict) -> dict:
+    """The same piece gives discovered check again and again, winning material on the way."""
+    r = ctx.replay
+    color = ctx.learner
+    track: int | None = None  # where the windmill piece stands
+    count, captures, labels = 0, 0, []
+    for i in _plies(ctx, params):
+        mv = r.moves[i]
+        after = r.boards[i + 1]
+        discovered = after.is_check() and any(c != mv.to_square for c in after.checkers())
+        if discovered and (track is None or mv.from_square == track):
+            count += 1
+            captures += r.boards[i].piece_at(mv.to_square) is not None
+            labels.append(ctx.label(i))
+            track = mv.to_square
+        elif track is not None and mv.from_square == track:
+            track = mv.to_square  # the windmill piece swings back (often with a direct check)
+    if count < 2:
+        raise Fail("no windmill: the same piece doesn't give discovered check twice")
+    if captures < 1:
+        raise Fail("the windmill doesn't win anything")
+    return {"discovered_checks": labels, "captures": captures, "side": _side_name(color)}
+
+
+@validator("desperado")
+def v_desperado(ctx: Ctx, params: dict) -> dict:
+    """A piece that is lost anyway sells itself dearly: attacked and not saveable, it captures
+    something first and is only then taken."""
+    r = ctx.replay
+    color = ctx.learner
+    for i in _plies(ctx, params):
+        if i + 1 >= len(r.moves):
+            break
+        board, mv = r.boards[i], r.moves[i]
+        piece = board.piece_at(mv.from_square)
+        victim = board.piece_at(mv.to_square)
+        if piece.piece_type in (chess.KING, chess.PAWN) or victim is None:
+            continue
+        if VALUES[victim.piece_type] > VALUES[piece.piece_type]:
+            continue  # taking something bigger is simply winning material, not a desperado
+        attackers = board.attackers(not color, mv.from_square)
+        if not attackers:
+            continue
+        cheapest = min(VALUES[board.piece_at(a).piece_type] for a in attackers)
+        doomed = not board.attackers(color, mv.from_square) or cheapest < VALUES[piece.piece_type]
+        if not doomed or r.moves[i + 1].to_square != mv.to_square:
+            continue
+        return {"move": ctx.label(i), "desperado": piece_fact(board, mv.from_square),
+                "captured": piece_fact(board, mv.to_square), "recaptured": ctx.label(i + 1)}
+    raise Fail("no desperado: no attacked piece grabs material before it is taken")
+
+
+@validator("zugzwang")
+def v_zugzwang(ctx: Ctx, params: dict) -> dict:
+    """The rule part: a quiet key move (no capture, no check) that hands the move to the opponent.
+    Stockfish checks the zugzwang itself — the opponent would rather pass (engine_check.py)."""
+    r = ctx.replay
+    i = ctx.key_ply if ctx.key_ply is not None else 0
+    if i + 1 >= len(r.moves):
+        raise Fail("show the opponent's forced reply after the quiet move")
+    board, mv = r.boards[i], r.moves[i]
+    if board.is_capture(mv) or r.boards[i + 1].is_check():
+        raise Fail("the key move of a zugzwang is a quiet move, not a capture or a check")
+    return {"move": ctx.label(i), "forced_reply": ctx.label(i + 1), "side": _side_name(board.turn)}
+
+
+@validator("perpetual_check")
+def v_perpetual_check(ctx: Ctx, params: dict) -> dict:
+    """The side that is behind gives check after check and the opponent can't escape: a draw
+    (Stockfish checks the final position is drawn)."""
+    r = ctx.replay
+    color = ctx.learner
+    plies = _plies(ctx, params)
+    start = plies[0] if plies else 0
+    if _balance(r.boards[start], color) > -3:
+        raise Fail("a perpetual saves a lost game: the learner should be clearly behind")
+    if len(plies) < 2 or not all(r.boards[i + 1].is_check() for i in plies):
+        raise Fail("every learner move of a perpetual is a check (at least two)")
+    return {"checks": [ctx.label(i) for i in plies], "behind_by": -_balance(r.boards[start], color),
+            "side": _side_name(color)}
+
+
+@validator("stalemate_trick")
+def v_stalemate_trick(ctx: Ctx, params: dict) -> dict:
+    """The side that is behind saves the game by stalemate: the line ends with the learner (or
+    the opponent) having no legal move while not in check."""
+    r = ctx.replay
+    color = ctx.learner
+    start = ctx.key_ply or 0
+    if _balance(r.boards[start], color) > -3:
+        raise Fail("a stalemate trick saves a lost game: the learner should be clearly behind")
+    if not r.final.is_stalemate():
+        raise Fail("the line doesn't end in stalemate")
+    return {"stalemated": _side_name(r.final.turn), "behind_by": -_balance(r.boards[start], color),
+            "final_move": ctx.label(len(r.moves) - 1), "side": _side_name(color)}
+
+
 @validator("all")
 def v_all(ctx: Ctx, params: dict) -> dict:
     """Combine validators: {"type": "all", "of": [{"type": "fork"}, {"type": "check"}]}."""
