@@ -75,6 +75,7 @@ check(!$("plan-input") && !$("btn-reset"), "no duplicate plan box, no free-move 
 check(!/engine|plies|teacher/i.test($("health").textContent), "header status has no technical text when all is well")
 check(document.querySelectorAll("#welcome .chip").length >= 3, "welcome offers starter topics")
 
+
 // ---- Puzzles tab helpers: the solution comes from the API, the moves go through the board
 const visible = id => !$(id).classList.contains("hidden")
 const puzzleNow = () => { const a = $("pz-set").querySelector(".pz-item.active"); return a && a.dataset.id }
@@ -119,6 +120,22 @@ $("pz-mode-practice").click()
   check(visible("pz-practice") && pins && /Pins/.test(pins.textContent), "Practice lists themes (Pins: " + (pins && pins.textContent) + ")")
   pins.click()
   await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "solver open", 20000)
+  // Check highlight: a king in check glows red on its square, in its own layer (markers can't erase it)
+  {
+    const svg = document.querySelector("#board svg")
+    const layer = svg && svg.querySelector(".markers-layer .check-highlight")
+    check(!!layer && !layer.querySelector(".check-square"), "check highlight: layer present, nothing lit at the start")
+    const before = board.getPosition()
+    {
+      await board.setPosition("4k3/8/8/8/8/8/8/4R1K1 b - - 0 1", false)
+      const lit = [...layer.querySelectorAll(".check-square")].map(r => r.dataset.square)
+      if (board.removeMarkers) board.removeMarkers()
+      check(lit.join() === "e8" && layer.querySelectorAll(".check-square").length === 1,
+        "check highlight: the checked king's square (e8) is lit and survives clearing markers: " + lit.join())
+      await board.setPosition(before, false)
+      check(!layer.querySelector(".check-square"), "check highlight: gone once the king is out of check")
+    }
+  }
   check(/(White|Black) to move/.test($("pz-info").textContent) && /^1\/\d+$/.test($("pz-counter").textContent) &&
     $("pz-set").querySelectorAll(".pz-item").length >= 3, "puzzles 4+5: general practice works without analysis and opens the solver: " +
     $("pz-info").textContent.replace(/\s+/g, " ").trim())
@@ -345,8 +362,10 @@ await waitFor(() => /Smothered/.test($("lesson-title").textContent), "smothered 
 $("btn-continue").click()                                   // teach -> demo of the opponent's move
 await finishDemo("puzzle demo")
 $("btn-continue").click()
-await waitFor(() => /smothered mate/i.test(lastMsgs(1)[0]) && /Your move/.test($("board-status").textContent), "puzzle exercise")
+await waitFor(() => /Exercise/.test(lastMsgs(1)[0]) && /Your move/.test($("board-status").textContent), "puzzle exercise")
 console.log("  prompt:", lastMsgs(1)[0])
+check(/find the best move/i.test(lastMsgs(1)[0]) && !/smother/i.test(lastMsgs(1)[0]),
+  "no spoiler: the exercise asks for the best move, not for 'the smothered mate'")
 check(move("h6", "f5") === "ok", "wrong knight move can be played")
 await waitFor(() => /Try again/i.test($("board-status").textContent) || !$("btn-continue").classList.contains("hidden"), "wrong move graded", 60000)
 check($("btn-continue").classList.contains("hidden"), "wrong move (Nf5) is not accepted")
@@ -642,8 +661,16 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
   const before = (await (await realFetch(new URL("api/puzzles/dashboard", BASE))).json()).personalized.main
   profileBox.querySelector("button").click()
   await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "personalized set", 180000)
-  check(/Missed knight fork/.test($("pz-title").textContent) && /Knight fork/.test($("pz-info").textContent),
-    "the set trains the weakness: " + $("pz-title").textContent)
+  {
+    // the dashboard named the weakness the learner chose; the solving screen doesn't name the idea
+    const shown = $("pz-title").textContent + " " + $("pz-info").textContent
+    check(/Your puzzles/.test($("pz-title").textContent) && !/fork/i.test(shown),
+      "no spoiler while solving the weakness set: " + shown.replace(/\s+/g, " ").trim().slice(0, 120))
+    const ids = [...$("pz-set").querySelectorAll(".pz-item")].map(b => b.dataset.id)
+    const data = await Promise.all(ids.map(puzzleData))
+    check(data.filter(d => d.concept).every(d => /fork/.test(d.concept) || d.role === "defend"),
+      "the set trains the weakness: " + data.map(d => d.concept).join(", "))
+  }
   {
     const info = $("pz-info").textContent.replace(/\s+/g, " ").trim()
     const items = [...$("pz-set").querySelectorAll(".pz-item")].map(b => b.textContent.replace(/\s+/g, " ").trim())
