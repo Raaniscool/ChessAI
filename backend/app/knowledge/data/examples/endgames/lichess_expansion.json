@@ -970,5 +970,777 @@
     }
    }
   }
+ },
+ {
+  "id": "lichess_20fgc",
+  "status": "verified",
+  "title": "Zugzwang",
+  "concept": "zugzwang",
+  "category": "endgames",
+  "subcategory": "zugzwangQuiet",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the quiet winning move.",
+  "start_fen": "8/8/8/6p1/3k2Pp/5K1P/8/8 w - - 1 45",
+  "moves": [
+   "Ke2",
+   "Ke4",
+   "Kf2",
+   "Kf4"
+  ],
+  "final_fen": "8/8/8/6p1/5kPp/7P/5K2/8 w - - 5 47",
+  "key_move": "45...Ke4",
+  "prompt": "What would you play here? Find the quiet winning move.",
+  "hints": [
+   "There's no good capture or check. Can a quiet move leave your opponent without a good move?"
+  ],
+  "notes": {
+   "45.Ke2": "The opponent's last move. Something is now possible — look closely.",
+   "45...Ke4": "Zugzwang: 45...Ke4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse."
+  },
+  "explanation": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game. Zugzwang: 45...Ke4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse.",
+  "tags": [
+   "zugzwangQuiet",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zugzwang": {
+    "move": "45...Ke4",
+    "forced_reply": "46.Kf2",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "20FgC",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/20FgC",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "zugzwang",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ke4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 555,
+     "best_move": "Ke4",
+     "best_cp": 555,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "45...Ke4"
+    },
+    "learner_moves": [
+     {
+      "move": "Kf4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 374,
+      "best_move": "Kf4",
+      "best_cp": 374,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "46...Kf4"
+     }
+    ],
+    "alternatives": [],
+    "opponent_to_move": -801,
+    "opponent_if_passing": 0,
+    "zugzwang_cp": 801
+   }
+  }
+ },
+ {
+  "id": "lichess_5jckt",
+  "status": "verified",
+  "title": "Zugzwang",
+  "concept": "zugzwang",
+  "category": "endgames",
+  "subcategory": "zugzwangQuiet",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the quiet winning move.",
+  "start_fen": "8/8/3kPp2/6p1/4K1P1/8/8/8 w - - 3 52",
+  "moves": [
+   "Kf5",
+   "Ke7",
+   "Ke4",
+   "Kxe6"
+  ],
+  "final_fen": "8/8/4kp2/6p1/4K1P1/8/8/8 w - - 0 54",
+  "key_move": "52...Ke7",
+  "prompt": "What would you play here? Find the quiet winning move.",
+  "hints": [
+   "There's no good capture or check. Can a quiet move leave your opponent without a good move?"
+  ],
+  "notes": {
+   "52.Kf5": "The opponent's last move. Something is now possible — look closely.",
+   "52...Ke7": "Zugzwang: 52...Ke7 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse.",
+   "53...Kxe6": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game. Zugzwang: 52...Ke7 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse. Black comes out 1 point of material ahead.",
+  "tags": [
+   "zugzwangQuiet",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zugzwang": {
+    "move": "52...Ke7",
+    "forced_reply": "53.Ke4",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "5jCKT",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/5jCKT",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "zugzwang",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ke7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 422,
+     "best_move": "Ke7",
+     "best_cp": 422,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "52...Ke7"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxe6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 581,
+      "best_move": "Kxe6",
+      "best_cp": 581,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "53...Kxe6"
+     }
+    ],
+    "alternatives": [],
+    "opponent_to_move": -610,
+    "opponent_if_passing": 1190,
+    "zugzwang_cp": 1800
+   }
+  }
+ },
+ {
+  "id": "lichess_5wiub",
+  "status": "verified",
+  "title": "Zugzwang",
+  "concept": "zugzwang",
+  "category": "endgames",
+  "subcategory": "zugzwangQuiet",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the quiet winning move.",
+  "start_fen": "8/5p2/7p/5P2/4k1PK/8/8/8 b - - 4 60",
+  "moves": [
+   "Kf4",
+   "Kh5",
+   "Ke5",
+   "Kxh6"
+  ],
+  "final_fen": "8/5p2/7K/4kP2/6P1/8/8/8 b - - 0 62",
+  "key_move": "61.Kh5",
+  "prompt": "What would you play here? Find the quiet winning move.",
+  "hints": [
+   "There's no good capture or check. Can a quiet move leave your opponent without a good move?"
+  ],
+  "notes": {
+   "60...Kf4": "The opponent's last move. Something is now possible — look closely.",
+   "61.Kh5": "Zugzwang: 61.Kh5 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse.",
+   "62.Kxh6": "White comes out 1 point of material ahead."
+  },
+  "explanation": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game. Zugzwang: 61.Kh5 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse. White comes out 1 point of material ahead.",
+  "tags": [
+   "zugzwangQuiet",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zugzwang": {
+    "move": "61.Kh5",
+    "forced_reply": "61...Ke5",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "5WIUb",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/5WIUb",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "zugzwang",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Kh5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 584,
+     "best_move": "Kh5",
+     "best_cp": 584,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "61.Kh5"
+    },
+    "learner_moves": [
+     {
+      "move": "Kxh6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 609,
+      "best_move": "Kxh6",
+      "best_cp": 609,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "62.Kxh6"
+     }
+    ],
+    "alternatives": [],
+    "opponent_to_move": -1285,
+    "opponent_if_passing": 0,
+    "zugzwang_cp": 1285
+   }
+  }
+ },
+ {
+  "id": "lichess_87dzp",
+  "status": "verified",
+  "title": "Zugzwang",
+  "concept": "zugzwang",
+  "category": "endgames",
+  "subcategory": "zugzwangQuiet",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the quiet winning move.",
+  "start_fen": "8/8/3k4/p1p5/2K5/1P6/P7/8 b - - 5 56",
+  "moves": [
+   "Kc6",
+   "a4",
+   "Kb6",
+   "Kd5"
+  ],
+  "final_fen": "8/8/1k6/p1pK4/P7/1P6/8/8 b - - 2 58",
+  "key_move": "57.a4",
+  "prompt": "What would you play here? Find the quiet winning move.",
+  "hints": [
+   "There's no good capture or check. Can a quiet move leave your opponent without a good move?"
+  ],
+  "notes": {
+   "56...Kc6": "The opponent's last move. Something is now possible — look closely.",
+   "57.a4": "Zugzwang: 57.a4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse."
+  },
+  "explanation": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game. Zugzwang: 57.a4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse.",
+  "tags": [
+   "zugzwangQuiet",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zugzwang": {
+    "move": "57.a4",
+    "forced_reply": "57...Kb6",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "87DZp",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/87DZp",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "zugzwang",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "a4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 634,
+     "best_move": "a4",
+     "best_cp": 634,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "57.a4"
+    },
+    "learner_moves": [
+     {
+      "move": "Kd5",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 779,
+      "best_move": "Kd5",
+      "best_cp": 779,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "58.Kd5"
+     }
+    ],
+    "alternatives": [],
+    "opponent_to_move": -678,
+    "opponent_if_passing": 0,
+    "zugzwang_cp": 678
+   }
+  }
+ },
+ {
+  "id": "lichess_89fl8",
+  "status": "verified",
+  "title": "Zugzwang",
+  "concept": "zugzwang",
+  "category": "endgames",
+  "subcategory": "zugzwangQuiet",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the quiet winning move.",
+  "start_fen": "8/8/8/4kp2/6p1/4P1P1/5K2/8 w - - 3 49",
+  "moves": [
+   "Ke2",
+   "Ke4",
+   "Kd2",
+   "Kf3"
+  ],
+  "final_fen": "8/8/8/5p2/6p1/4PkP1/3K4/8 w - - 7 51",
+  "key_move": "49...Ke4",
+  "prompt": "What would you play here? Find the quiet winning move.",
+  "hints": [
+   "There's no good capture or check. Can a quiet move leave your opponent without a good move?"
+  ],
+  "notes": {
+   "49.Ke2": "The opponent's last move. Something is now possible — look closely.",
+   "49...Ke4": "Zugzwang: 49...Ke4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse."
+  },
+  "explanation": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game. Zugzwang: 49...Ke4 is a quiet move — no capture, no check. But now the opponent has to move, and every move makes their position worse.",
+  "tags": [
+   "zugzwangQuiet",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "zugzwang": {
+    "move": "49...Ke4",
+    "forced_reply": "50.Kd2",
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "89FL8",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/89FL8",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "zugzwang"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "zugzwang",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ke4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 593,
+     "best_move": "Ke4",
+     "best_cp": 593,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "49...Ke4"
+    },
+    "learner_moves": [
+     {
+      "move": "Kf3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 620,
+      "best_move": "Kf3",
+      "best_cp": 620,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "50...Kf3"
+     }
+    ],
+    "alternatives": [],
+    "opponent_to_move": -989,
+    "opponent_if_passing": 0,
+    "zugzwang_cp": 989
+   }
+  }
  }
 ]

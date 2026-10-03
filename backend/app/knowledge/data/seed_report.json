@@ -2,17 +2,17 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 409,
+  "verified": 489,
   "rejected": 20,
   "needs_review": 35
  },
  "by_category": {
   "basics": 26,
-  "checkmates": 89,
-  "endgames": 22,
-  "mistakes": 34,
+  "checkmates": 102,
+  "endgames": 37,
+  "mistakes": 52,
   "openings": 10,
-  "tactics": 228
+  "tactics": 262
  },
  "by_concept": {
   "absolute_pin": 15,
@@ -29,30 +29,35 @@
   "check": 1,
   "clearance": 4,
   "deflection": 11,
+  "desperado": 6,
   "discovered_attack": 11,
   "discovered_check": 15,
+  "double_attack": 6,
+  "double_bishop_mate": 6,
   "double_check": 15,
   "dovetail_mate": 6,
-  "early_queen": 1,
+  "early_queen": 2,
   "en_passant": 2,
+  "epaulette_mate": 6,
   "evans_gambit": 1,
   "fools_mate": 1,
   "fork": 11,
   "fried_liver": 1,
+  "greek_gift": 3,
   "hanging_piece": 15,
-  "hanging_queen": 1,
+  "hanging_queen": 7,
   "hook_mate": 6,
   "hung_piece": 6,
-  "ignoring_development": 1,
+  "ignoring_development": 2,
   "interference": 4,
   "italian_game": 2,
   "key_squares": 2,
   "king_safety_mistake": 2,
   "knight_fork": 15,
-  "ladder_mate": 1,
+  "ladder_mate": 2,
   "legal_moves": 1,
   "legals_mate": 1,
-  "lucena_position": 1,
+  "lucena_position": 2,
   "mate_in_one": 10,
   "mate_in_two": 6,
   "missed_threat": 7,
@@ -61,29 +66,35 @@
   "overloaded_piece": 15,
   "passed_pawn": 1,
   "pawn_breakthrough": 2,
-  "pawn_fork": 3,
-  "philidor_position": 1,
-  "poisoned_pawn": 1,
+  "pawn_fork": 9,
+  "perpetual_check": 2,
+  "philidor_position": 2,
+  "poisoned_pawn": 7,
   "promotion": 15,
   "queen_fork": 8,
-  "queen_mate": 1,
-  "relative_pin": 2,
+  "queen_mate": 3,
+  "relative_pin": 8,
   "removing_defender": 14,
-  "repeated_moves": 1,
-  "rook_mate": 1,
+  "repeated_moves": 2,
+  "rook_mate": 3,
   "rule_of_the_square": 2,
   "sacrifice": 15,
   "scholars_mate": 1,
   "skewer": 15,
   "smothered_mate": 12,
+  "spotting_threats": 3,
   "stalemate": 2,
   "stalemate_trap": 2,
+  "stalemate_tricks": 2,
   "trapped_piece": 14,
   "triangulation": 2,
   "two_knights_defense": 1,
   "underpromotion": 6,
   "walked_into_fork": 6,
+  "windmill": 2,
   "wrong_bishop": 1,
+  "x_ray": 5,
+  "zugzwang": 5,
   "zwischenzug": 14
  },
  "needs_review": [
@@ -6201,27 +6212,50 @@
  "expansion": {
   "import_date": "2026-10-02",
   "totals": {
-   "verified": 68,
-   "needs_review": 4
+   "verified": 148,
+   "needs_review": 12,
+   "rejected": 1
   },
   "by_concept": {
    "attraction": 6,
    "back_rank_weakness": 6,
    "clearance": 4,
+   "desperado": 6,
+   "double_attack": 6,
+   "double_bishop_mate": 6,
    "dovetail_mate": 6,
+   "early_queen": 1,
+   "epaulette_mate": 6,
+   "greek_gift": 3,
+   "hanging_queen": 6,
    "hook_mate": 6,
+   "ignoring_development": 1,
    "interference": 4,
    "key_squares": 2,
+   "ladder_mate": 1,
+   "lucena_position": 1,
    "mate_in_two": 6,
    "missed_threat": 6,
    "outside_passed_pawn": 6,
    "pawn_breakthrough": 2,
-   "philidor_position": 1,
+   "pawn_fork": 6,
+   "perpetual_check": 2,
+   "philidor_position": 2,
+   "poisoned_pawn": 6,
+   "queen_mate": 2,
+   "relative_pin": 6,
+   "repeated_moves": 1,
+   "rook_mate": 2,
    "rule_of_the_square": 2,
+   "spotting_threats": 3,
    "stalemate_trap": 2,
+   "stalemate_tricks": 2,
    "triangulation": 2,
    "underpromotion": 6,
-   "wrong_bishop": 1
+   "windmill": 2,
+   "wrong_bishop": 1,
+   "x_ray": 5,
+   "zugzwang": 5
   },
   "not_verified": [
    {
@@ -6254,6 +6288,78 @@
     "status": "needs_review",
     "reasons": [
      "engine: after 36.Re5+ the learner is only 61 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_7cunk",
+    "concept": "x_ray",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 36.Rxb4 the learner is only 8 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_qxwus",
+    "concept": "windmill",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 21.dxc6+ the learner is only 52 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_4ootv",
+    "concept": "zugzwang",
+    "status": "rejected",
+    "reasons": [
+     "engine: having to move only costs the opponent 99 cp — not a zugzwang"
+    ]
+   },
+   {
+    "id": "lichess_3ikh9",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (-10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_4fqbg",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_5fdsr",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (-10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_dnqng",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (-10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_gjrcu",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_t1sm5",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
     ]
    }
   ]

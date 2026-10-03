@@ -1,5 +1,1134 @@
 [
  {
+  "id": "lichess_9ygpv",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/2k5/2b2p2/R1p3b1/2B5/2B5/7P/6K1 w - - 6 39",
+  "moves": [
+   "Bf1",
+   "Be3#"
+  ],
+  "final_fen": "8/2k5/2b2p2/R1p5/8/2B1b3/7P/5BK1 w - - 8 40",
+  "key_move": "39...Be3#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on g1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "39.Bf1": "The opponent's last move. Something is now possible — look closely.",
+   "39...Be3#": "Checkmate! The white king on g1 is attacked by the bishop on e3, its own pieces block f1 and h2; h1, f2 and g2 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. Checkmate! The white king on g1 is attacked by the bishop on e3, its own pieces block f1 and h2; h1, f2 and g2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "white",
+    "king": "g1",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f1",
+      "blocked_by": "bishop"
+     },
+     {
+      "square": "h1",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c6"
+      }
+     },
+     {
+      "square": "f2",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e3"
+      }
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c6"
+      }
+     },
+     {
+      "square": "h2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "39...Be3#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "c6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9YgPv",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9YgPv",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Be3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Be3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "39...Be3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_k2j8y",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/7k/8/3BBP2/4PK2/bp4P1/4b3/8 w - - 4 53",
+  "moves": [
+   "Bxb3",
+   "Bc1#"
+  ],
+  "final_fen": "8/7k/8/4BP2/4PK2/1B4P1/4b3/2b5 w - - 1 54",
+  "key_move": "53...Bc1#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on f4 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "53.Bxb3": "The opponent's last move. Something is now possible — look closely.",
+   "53...Bc1#": "Checkmate! The white king on f4 is attacked by the bishop on c1, its own pieces block g3, e4, e5 and f5; e3, f3, g4 and g5 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. Checkmate! The white king on f4 is attacked by the bishop on c1, its own pieces block g3, e4, e5 and f5; e3, f3, g4 and g5 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "white",
+    "king": "f4",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "c1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "e3",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c1"
+      }
+     },
+     {
+      "square": "f3",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e2"
+      }
+     },
+     {
+      "square": "g3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "e4",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g4",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e2"
+      }
+     },
+     {
+      "square": "e5",
+      "blocked_by": "bishop"
+     },
+     {
+      "square": "f5",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g5",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c1"
+      }
+     }
+    ],
+    "mating_move": "53...Bc1#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "e2"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "K2j8Y",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/K2j8Y",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bc1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Bc1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "53...Bc1#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_zfwzr",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/8/3k4/6R1/1P6/K4P2/P1bb2PP/8 w - - 1 44",
+  "moves": [
+   "Rh5",
+   "Bc1#"
+  ],
+  "final_fen": "8/8/3k4/7R/1P6/K4P2/P1b3PP/2b5 w - - 3 45",
+  "key_move": "44...Bc1#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on a3 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "44.Rh5": "The opponent's last move. Something is now possible — look closely.",
+   "44...Bc1#": "Checkmate! The white king on a3 is attacked by the bishop on c1, its own pieces block a2 and b4; b2, b3 and a4 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. Checkmate! The white king on a3 is attacked by the bishop on c1, its own pieces block a2 and b4; b2, b3 and a4 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "white",
+    "king": "a3",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "c1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "a2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "b2",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c1"
+      }
+     },
+     {
+      "square": "b3",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c2"
+      }
+     },
+     {
+      "square": "a4",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "c2"
+      }
+     },
+     {
+      "square": "b4",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "44...Bc1#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "c2"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "ZFWzr",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/ZFWzr",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bc1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Bc1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "44...Bc1#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_b1a6j",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "7k/7p/5bp1/2PB4/3p4/3P2P1/1r3B2/5K2 b - - 0 40",
+  "moves": [
+   "Bg5",
+   "Bxd4+",
+   "Bf6",
+   "Bxf6#"
+  ],
+  "final_fen": "7k/7p/5Bp1/2PB4/8/3P2P1/1r6/5K2 b - - 0 42",
+  "key_move": "41.Bxd4+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on h8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "40...Bg5": "The opponent's last move. Something is now possible — look closely.",
+   "42.Bxf6#": "Checkmate! The black king on h8 is attacked by the bishop on f6, its own pieces block h7; g7 and g8 are covered; and nothing can block or capture the checking piece.",
+   "41.Bxd4+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on h8 is attacked by the bishop on f6, its own pieces block h7; g7 and g8 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "black",
+    "king": "h8",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "white",
+      "square": "f6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "f6"
+      }
+     },
+     {
+      "square": "h7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g8",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "d5"
+      }
+     }
+    ],
+    "mating_move": "42.Bxf6#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "d5"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "B1A6j",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/B1A6j",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxd4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Bxd4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41.Bxd4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxf6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Bxf6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "42.Bxf6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_cdgkw",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "3k4/p5Q1/b7/4p3/3b4/P1r5/7P/3R3K w - - 0 34",
+  "moves": [
+   "Qxe5",
+   "Bb7+",
+   "Qe4",
+   "Bxe4#"
+  ],
+  "final_fen": "3k4/p7/8/8/3bb3/P1r5/7P/3R3K w - - 0 36",
+  "key_move": "34...Bb7+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on h1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "34.Qxe5": "The opponent's last move. Something is now possible — look closely.",
+   "35...Bxe4#": "Checkmate! The white king on h1 is attacked by the bishop on e4, its own pieces block h2; g1 and g2 are covered; and nothing can block or capture the checking piece.",
+   "34...Bb7+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on h1 is attacked by the bishop on e4, its own pieces block h2; g1 and g2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "white",
+    "king": "h1",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "black",
+      "square": "e4"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g1",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "d4"
+      }
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e4"
+      }
+     },
+     {
+      "square": "h2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "35...Bxe4#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "d4"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "CdGKW",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/CdGKW",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bb7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Bb7+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "34...Bb7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxe4#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Bxe4#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "35...Bxe4#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_fvpoh",
+  "status": "verified",
+  "title": "Double-bishop mate",
+  "concept": "double_bishop_mate",
+  "category": "checkmates",
+  "subcategory": "doubleBishopMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "7k/pp5p/4B3/2B1bKp1/8/1P2P3/6r1/8 b - - 3 29",
+  "moves": [
+   "Bb8",
+   "Bd4+",
+   "Be5",
+   "Bxe5#"
+  ],
+  "final_fen": "7k/pp5p/4B3/4BKp1/8/1P2P3/6r1/8 b - - 0 31",
+  "key_move": "30.Bd4+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on h8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "29...Bb8": "The opponent's last move. Something is now possible — look closely.",
+   "31.Bxe5#": "Checkmate! The black king on h8 is attacked by the bishop on e5, its own pieces block h7; g7 and g8 are covered; and nothing can block or capture the checking piece.",
+   "30.Bd4+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on h8 is attacked by the bishop on e5, its own pieces block h7; g7 and g8 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "doubleBishopMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_bishop_mate": {
+    "mated_side": "black",
+    "king": "h8",
+    "checkers": [
+     {
+      "piece": "bishop",
+      "color": "white",
+      "square": "e5"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "e5"
+      }
+     },
+     {
+      "square": "h7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g8",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "e6"
+      }
+     }
+    ],
+    "mating_move": "31.Bxe5#",
+    "pattern": "double-bishop mate",
+    "second_bishop": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "e6"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "FVPoh",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/FVPoh",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_bishop_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bd4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Bd4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "30.Bd4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxe5#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Bxe5#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "31.Bxe5#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
   "id": "lichess_7yoiw",
   "status": "verified",
   "title": "Dovetail mate",
@@ -1328,6 +2457,1185 @@
       "alternatives": [],
       "mate_after": true,
       "label": "50...Qf5#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_fezh0",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "6k1/p5pn/7p/3p3N/1b1P4/PP1Q1P1P/K1r5/R1q5 w - - 7 32",
+  "moves": [
+   "Qxc2",
+   "Qxc2#"
+  ],
+  "final_fen": "6k1/p5pn/7p/3p3N/1b1P4/PP3P1P/K1q5/R7 w - - 0 33",
+  "key_move": "32...Qxc2#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on a2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "32.Qxc2": "The opponent's last move. Something is now possible — look closely.",
+   "32...Qxc2#": "Checkmate! The white king on a2 is attacked by the queen on c2, its own pieces block a1, a3 and b3; b1 and b2 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. Checkmate! The white king on a2 is attacked by the queen on c2, its own pieces block a1, a3 and b3; b1 and b2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "white",
+    "king": "a2",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "c2"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "a1",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "b1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c2"
+      }
+     },
+     {
+      "square": "b2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "c2"
+      }
+     },
+     {
+      "square": "a3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "b3",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "32...Qxc2#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "a1"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "a3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "fEzH0",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/fEzH0",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxc2#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxc2#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "32...Qxc2#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_lc9nu",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "8/Q7/1r3p2/k3p1p1/r3P3/5PK1/5P2/8 b - - 7 68",
+  "moves": [
+   "Ra6",
+   "Qc5#"
+  ],
+  "final_fen": "8/8/r4p2/k1Q1p1p1/r3P3/5PK1/5P2/8 b - - 9 69",
+  "key_move": "69.Qc5#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on a5 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "68...Ra6": "The opponent's last move. Something is now possible — look closely.",
+   "69.Qc5#": "Checkmate! The black king on a5 is attacked by the queen on c5, its own pieces block a4 and a6; b4, b5 and b6 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. Checkmate! The black king on a5 is attacked by the queen on c5, its own pieces block a4 and a6; b4, b5 and b6 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "black",
+    "king": "a5",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "c5"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "a4",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "b4",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "b5",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "c5"
+      }
+     },
+     {
+      "square": "a6",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "b6",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "c5"
+      }
+     }
+    ],
+    "mating_move": "69.Qc5#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "a4"
+     },
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "a6"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "lC9nu",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/lC9nu",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qc5#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qc5#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "69.Qc5#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_vby0c",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "8/8/7k/6p1/P7/8/4R3/3q1KR1 w - - 1 80",
+  "moves": [
+   "Re1",
+   "Qf3#"
+  ],
+  "final_fen": "8/8/7k/6p1/P7/5q2/8/4RKR1 w - - 3 81",
+  "key_move": "80...Qf3#",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on f1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "80.Re1": "The opponent's last move. Something is now possible — look closely.",
+   "80...Qf3#": "Checkmate! The white king on f1 is attacked by the queen on f3, its own pieces block e1 and g1; e2, f2 and g2 are covered; and nothing can block or capture the checking piece."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. Checkmate! The white king on f1 is attacked by the queen on f3, its own pieces block e1 and g1; e2, f2 and g2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "white",
+    "king": "f1",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "f3"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "e1",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "g1",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "e2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "f2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f3"
+      }
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f3"
+      }
+     }
+    ],
+    "mating_move": "80...Qf3#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "e1"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "g1"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "vby0c",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/vby0c",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qf3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qf3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "80...Qf3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_j5jei",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "3n1r1r/2qB2k1/2PR1pp1/8/3QP3/3P2P1/2P5/6K1 b - - 0 37",
+  "moves": [
+   "Nf7",
+   "Qxf6+",
+   "Kg8",
+   "Qxg6#"
+  ],
+  "final_fen": "5rkr/2qB1n2/2PR2Q1/8/4P3/3P2P1/2P5/6K1 b - - 0 39",
+  "key_move": "38.Qxf6+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on g8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "37...Nf7": "The opponent's last move. Something is now possible — look closely.",
+   "39.Qxg6#": "Checkmate! The black king on g8 is attacked by the queen on g6, its own pieces block f7, f8 and h8; g7 and h7 are covered; and nothing can block or capture the checking piece.",
+   "38.Qxf6+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on g8 is attacked by the queen on g6, its own pieces block f7, f8 and h8; g7 and h7 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "black",
+    "king": "g8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "g6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f7",
+      "blocked_by": "knight"
+     },
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g6"
+      }
+     },
+     {
+      "square": "h7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "g6"
+      }
+     },
+     {
+      "square": "f8",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "h8",
+      "blocked_by": "rook"
+     }
+    ],
+    "mating_move": "39.Qxg6#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "f8"
+     },
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "h8"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "J5jeI",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/J5jeI",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxf6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qxf6+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "38.Qxf6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxg6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qxg6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "39.Qxg6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_k0u0e",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the checkmate.",
+  "start_fen": "2kr1r2/p7/2p1bp2/3p4/1Q3B2/7P/3N1K2/q7 b - - 1 40",
+  "moves": [
+   "Kd7",
+   "Qd6+",
+   "Ke8",
+   "Qxe6#"
+  ],
+  "final_fen": "3rkr2/p7/2p1Qp2/3p4/5B2/7P/3N1K2/q7 b - - 0 42",
+  "key_move": "41.Qd6+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on e8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "40...Kd7": "The opponent's last move. Something is now possible — look closely.",
+   "42.Qxe6#": "Checkmate! The black king on e8 is attacked by the queen on e6, its own pieces block d8 and f8; d7, e7 and f7 are covered; and nothing can block or capture the checking piece.",
+   "41.Qd6+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the black king on e8 is attacked by the queen on e6, its own pieces block d8 and f8; d7, e7 and f7 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "black",
+    "king": "e8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "e6"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "e6"
+      }
+     },
+     {
+      "square": "d8",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "f8",
+      "blocked_by": "rook"
+     }
+    ],
+    "mating_move": "42.Qxe6#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "d8"
+     },
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "f8"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "K0U0e",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/K0U0e",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qd6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qd6+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41.Qd6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxe6#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qxe6#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "42.Qxe6#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_o1a4g",
+  "status": "verified",
+  "title": "Epaulette mate",
+  "concept": "epaulette_mate",
+  "category": "checkmates",
+  "subcategory": "epauletteMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the checkmate.",
+  "start_fen": "r7/1p2kp1p/p3bp1Q/2qpp3/3n4/PB1P2PP/2P3P1/R5KR w - - 1 21",
+  "moves": [
+   "Kh2",
+   "Nf3+",
+   "gxf3",
+   "Qf2#"
+  ],
+  "final_fen": "r7/1p2kp1p/p3bp1Q/3pp3/8/PB1P1PPP/2P2q1K/R6R w - - 1 23",
+  "key_move": "21...Nf3+",
+  "prompt": "What would you play here? Find the checkmate.",
+  "hints": [
+   "The king on h2 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "21.Kh2": "The opponent's last move. Something is now possible — look closely.",
+   "22...Qf2#": "Checkmate! The white king on h2 is attacked by the queen on f2, its own pieces block h1, g3 and h3; g1 and g2 are covered; and nothing can block or capture the checking piece.",
+   "21...Nf3+": "This starts a forced checkmate: whatever the reply, mate follows."
+  },
+  "explanation": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it. This starts a forced checkmate: whatever the reply, mate follows. In the final position, the white king on h2 is attacked by the queen on f2, its own pieces block h1, g3 and h3; g1 and g2 are covered; and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "epauletteMate",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "epaulette_mate": {
+    "mated_side": "white",
+    "king": "h2",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "f2"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f2"
+      }
+     },
+     {
+      "square": "h1",
+      "blocked_by": "rook"
+     },
+     {
+      "square": "g2",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "f2"
+      }
+     },
+     {
+      "square": "g3",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h3",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "22...Qf2#",
+    "pattern": "epaulette mate",
+    "blocked_by": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "h1"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "h3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "O1a4G",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/O1a4G",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "epaulette_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nf3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Nf3+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "21...Nf3+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qf2#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qf2#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "22...Qf2#"
      }
     ],
     "alternatives": []

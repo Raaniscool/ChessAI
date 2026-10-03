@@ -1,5 +1,422 @@
 [
  {
+  "id": "mistake_early_queen_h5_chased",
+  "status": "verified",
+  "title": "The early queen loses time",
+  "concept": "early_queen",
+  "category": "mistakes",
+  "difficulty": 2,
+  "description": "White brings the queen out on move two. Black develops and attacks it again and again.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Qh5",
+   "Nc6",
+   "Bc4",
+   "g6",
+   "Qf3",
+   "Nf6",
+   "Qb3",
+   "Nd4",
+   "Qa4",
+   "c6"
+  ],
+  "final_fen": "r1bqkb1r/pp1p1p1p/2p2np1/4p3/Q1BnP3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7",
+  "mistake_move": "2.Qh5",
+  "notes": {
+   "2.Qh5": "The queen comes out on move two.",
+   "3...g6": "The pawn attacks the queen, which has to move.",
+   "5...Nd4": "The knight attacks the queen on b3 and the pawn on c2.",
+   "6...c6": "Black is ready to push the b-pawn, and White's queen is running out of squares."
+  },
+  "explanation": "White's queen moved four times in the first six moves: g6 and Nd4 attacked it, and every time it had to move, Black developed with gain of time. After six moves Black has both knights out and White is clearly worse. Develop your knights and bishops first; the queen comes later.",
+  "tags": [
+   "opening principles",
+   "early queen",
+   "development"
+  ],
+  "related": [
+   "ignoring_development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "facts": {
+   "early_queen": {
+    "mistake": "2.Qh5",
+    "queen_chased_by": [
+     "3...g6",
+     "5...Nd4"
+    ],
+    "queen_lost": false,
+    "mistake_by": "white"
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "early-queen-h5-chased",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: White +0.22 before 2.Qh5, -2.77 at the end",
+   "import_date": "2026-10-03"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "early_queen"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "white",
+    "eval_before": 22,
+    "eval_end": -292,
+    "drop_cp": 314
+   }
+  }
+ },
+ {
+  "id": "mistake_edge_pawns_black_develops",
+  "status": "verified",
+  "title": "Edge pawns instead of development",
+  "concept": "ignoring_development",
+  "category": "mistakes",
+  "difficulty": 1,
+  "description": "White plays pawn moves on the edge of the board. Black develops and castles.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "a3",
+   "e5",
+   "h3",
+   "d5",
+   "b3",
+   "Nf6",
+   "g3",
+   "Bc5",
+   "c3",
+   "Nc6",
+   "Bb2",
+   "O-O"
+  ],
+  "final_fen": "r1bq1rk1/ppp2ppp/2n2n2/2bpp3/8/PPP3PP/1B1PPP2/RN1QKBNR w KQ - 3 7",
+  "mistake_move": "2.h3",
+  "notes": {
+   "2.h3": "Another edge pawn move: no piece comes out.",
+   "3...Nf6": "Black develops.",
+   "6.Bb2": "White's first developed piece.",
+   "6...O-O": "Black has three pieces out and has castled; White has developed one bishop."
+  },
+  "explanation": "White spent five of six moves on pawn moves, four of them at the edge of the board. Black used the same time to take the centre, bring out three pieces and castle. In the opening, put pawns in the centre and get your knights and bishops out.",
+  "tags": [
+   "opening principles",
+   "development"
+  ],
+  "related": [
+   "early_queen"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "black",
+   "ahead_by": 2
+  },
+  "facts": {
+   "development_lead": {
+    "side": "black",
+    "developed": 3,
+    "opponent_developed": 1,
+    "lead": 2
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "edge-pawns-black-develops",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: White -0.18 before 2.h3, -1.44 at the end",
+   "import_date": "2026-10-03"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "12 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "development_lead"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "white",
+    "eval_before": -14,
+    "eval_end": -115,
+    "drop_cp": 101
+   }
+  }
+ },
+ {
+  "id": "mistake_bishop_wanders",
+  "status": "verified",
+  "title": "Moving the same bishop again and again",
+  "concept": "repeated_moves",
+  "category": "mistakes",
+  "difficulty": 2,
+  "description": "White's bishop moves four times, and every move gives Black a free pawn move forward.",
+  "start_fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "moves": [
+   "e4",
+   "e5",
+   "Bc4",
+   "Nf6",
+   "Bb5",
+   "c6",
+   "Ba4",
+   "b5",
+   "Bb3",
+   "d5",
+   "exd5",
+   "cxd5",
+   "Nf3",
+   "e4",
+   "Nd4",
+   "Bc5"
+  ],
+  "final_fen": "rnbqk2r/p4ppp/5n2/1pbp4/3Np3/1B6/PPPP1PPP/RNBQK2R w KQkq - 2 9",
+  "mistake_move": "3.Bb5",
+  "notes": {
+   "3.Bb5": "The bishop moves a second time.",
+   "3...c6": "The pawn attacks the bishop.",
+   "4...b5": "Again: the b-pawn attacks the bishop on a4.",
+   "5...d5": "Black takes the centre.",
+   "7...e4": "The pawn attacks the knight on f3.",
+   "8...Bc5": "Black develops with an attack on the knight on d4."
+  },
+  "explanation": "White's bishop went c4-b5-a4-b3: four moves, each answered by a black pawn move that gained space. Now Black has a big pawn centre, chases White's knight as well and develops with gain of time. Move each piece once, to a good square, before moving any piece again.",
+  "tags": [
+   "opening principles",
+   "tempo",
+   "development"
+  ],
+  "related": [
+   "ignoring_development"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "deep_dive"
+  ],
+  "concept_params": {
+   "side": "white",
+   "min": 4
+  },
+  "facts": {
+   "repeated_moves": {
+    "side": "white",
+    "moves_by_one_piece": 4,
+    "development": {
+     "white": 2,
+     "black": 2
+    }
+   }
+  },
+  "source": {
+   "source_type": "curated",
+   "source_id": "bishop-wanders",
+   "source_license": "CC0-1.0 (original)",
+   "reference": "opening principle; Stockfish 19: White -0.01 before 3.Bb5, -1.60 at the end",
+   "import_date": "2026-10-03"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "16 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "repeated_moves"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "principle"
+    },
+    {
+     "name": "solution",
+     "outcome": "skipped",
+     "detail": "no key move"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "principle",
+    "reasons": [],
+    "depth": 14,
+    "side": "white",
+    "eval_before": 5,
+    "eval_end": -181,
+    "drop_cp": 186
+   }
+  }
+ },
+ {
   "id": "mistake_stalemate_queen_corner",
   "status": "verified",
   "title": "Avoiding stalemate: one move mates, one draws",

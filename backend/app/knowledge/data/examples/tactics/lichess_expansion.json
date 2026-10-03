@@ -1635,6 +1635,2495 @@
   }
  },
  {
+  "id": "lichess_108tf",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best move.",
+  "start_fen": "8/3R1p2/1pk1r1b1/p1p1q3/P7/1PQ1B3/1KPP4/8 w - - 2 37",
+  "moves": [
+   "d4",
+   "Qxe3",
+   "Qxe3",
+   "Rxe3"
+  ],
+  "final_fen": "8/3R1p2/1pk3b1/p1p5/P2P4/1P2r3/1KP5/8 w - - 0 39",
+  "key_move": "37...Qxe3",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "37.d4": "The opponent's last move. Something is now possible — look closely.",
+   "37...Qxe3": "Desperado: the queen on e5 can't be saved, so it takes the bishop on e3 before it goes.",
+   "38...Rxe3": "Black comes out 3 points of material ahead."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the queen on e5 can't be saved, so it takes the bishop on e3 before it goes. Black comes out 3 points of material ahead.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "37...Qxe3",
+    "desperado": {
+     "piece": "queen",
+     "color": "black",
+     "square": "e5"
+    },
+    "captured": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "e3"
+    },
+    "recaptured": "38.Qxe3"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "108tF",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/108tF",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxe3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 590,
+     "best_move": "Qxe3",
+     "best_cp": 590,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "37...Qxe3"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxe3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 581,
+      "best_move": "Rxe3",
+      "best_cp": 581,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "38...Rxe3"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_4ywpj",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the best move.",
+  "start_fen": "8/5kpp/5p2/1p6/1Nr5/P6P/1Pn2PP1/2R3K1 b - - 6 37",
+  "moves": [
+   "Nxb4",
+   "Rxc4",
+   "bxc4",
+   "axb4"
+  ],
+  "final_fen": "8/5kpp/5p2/8/1Pp5/7P/1P3PP1/6K1 b - - 0 39",
+  "key_move": "38.Rxc4",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "37...Nxb4": "The opponent's last move. Something is now possible — look closely.",
+   "38.Rxc4": "Desperado: the rook on c1 can't be saved, so it takes the rook on c4 before it goes.",
+   "39.axb4": "White comes out 3 points of material ahead."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the rook on c1 can't be saved, so it takes the rook on c4 before it goes. White comes out 3 points of material ahead.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "38.Rxc4",
+    "desperado": {
+     "piece": "rook",
+     "color": "white",
+     "square": "c1"
+    },
+    "captured": {
+     "piece": "rook",
+     "color": "black",
+     "square": "c4"
+    },
+    "recaptured": "38...bxc4"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4YWPJ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4YWPJ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxc4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 292,
+     "best_move": "Rxc4",
+     "best_cp": 292,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "38.Rxc4"
+    },
+    "learner_moves": [
+     {
+      "move": "axb4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 249,
+      "best_move": "axb4",
+      "best_cp": 249,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "39.axb4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_8cyui",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the best move.",
+  "start_fen": "6rk/6pp/8/8/Q7/4N2P/p5P1/1q1R3K b - - 3 35",
+  "moves": [
+   "a1=Q",
+   "Qxa1",
+   "Qxa1",
+   "Rxa1"
+  ],
+  "final_fen": "6rk/6pp/8/8/8/4N2P/6P1/R6K b - - 0 37",
+  "key_move": "36.Qxa1",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "35...a1=Q": "The opponent's last move. Something is now possible — look closely.",
+   "36.Qxa1": "Desperado: the queen on a4 can't be saved, so it takes the queen on a1 before it goes.",
+   "37.Rxa1": "White comes out 9 points of material ahead."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the queen on a4 can't be saved, so it takes the queen on a1 before it goes. White comes out 9 points of material ahead.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "36.Qxa1",
+    "desperado": {
+     "piece": "queen",
+     "color": "white",
+     "square": "a4"
+    },
+    "captured": {
+     "piece": "queen",
+     "color": "black",
+     "square": "a1"
+    },
+    "recaptured": "36...Qxa1"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "8CYui",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/8CYui",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxa1",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 555,
+     "best_move": "Qxa1",
+     "best_cp": 555,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "36.Qxa1"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxa1",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 501,
+      "best_move": "Rxa1",
+      "best_cp": 501,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "37.Rxa1"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_8io6m",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best move.",
+  "start_fen": "6k1/1r4b1/8/p1P1p2Q/P7/2P4P/4pqPN/4R2K w - - 2 41",
+  "moves": [
+   "Qxe2",
+   "Qxe2",
+   "Rxe2",
+   "Rb1+"
+  ],
+  "final_fen": "6k1/6b1/8/p1P1p3/P7/2P4P/4R1PN/1r5K w - - 1 43",
+  "key_move": "41...Qxe2",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "41.Qxe2": "The opponent's last move. Something is now possible — look closely.",
+   "41...Qxe2": "Desperado: the queen on f2 can't be saved, so it takes the queen on e2 before it goes."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the queen on f2 can't be saved, so it takes the queen on e2 before it goes.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "41...Qxe2",
+    "desperado": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f2"
+    },
+    "captured": {
+     "piece": "queen",
+     "color": "white",
+     "square": "e2"
+    },
+    "recaptured": "42.Rxe2"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "8iO6M",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/8iO6M",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxe2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 363,
+     "best_move": "Qxe2",
+     "best_cp": 363,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "41...Qxe2"
+    },
+    "learner_moves": [
+     {
+      "move": "Rb1+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 318,
+      "best_move": "Rb1+",
+      "best_cp": 318,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "42...Rb1+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9gsey",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best move.",
+  "start_fen": "8/5k2/R6K/7P/8/p5r1/8/8 w - - 3 45",
+  "moves": [
+   "Rg6",
+   "Rxg6+",
+   "hxg6+",
+   "Kg8"
+  ],
+  "final_fen": "6k1/8/6PK/8/8/p7/8/8 w - - 1 47",
+  "key_move": "45...Rxg6+",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "45.Rg6": "The opponent's last move. Something is now possible — look closely.",
+   "45...Rxg6+": "Desperado: the rook on g3 can't be saved, so it takes the rook on g6 before it goes."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the rook on g3 can't be saved, so it takes the rook on g6 before it goes.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "45...Rxg6+",
+    "desperado": {
+     "piece": "rook",
+     "color": "black",
+     "square": "g3"
+    },
+    "captured": {
+     "piece": "rook",
+     "color": "white",
+     "square": "g6"
+    },
+    "recaptured": "46.hxg6+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9GSeY",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9GSeY",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxg6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 659,
+     "best_move": "Rxg6+",
+     "best_cp": 659,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "45...Rxg6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Kg8",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 668,
+      "best_move": "Kg8",
+      "best_cp": 668,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "46...Kg8"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_aaudu",
+  "status": "verified",
+  "title": "Desperado",
+  "concept": "desperado",
+  "category": "tactics",
+  "subcategory": "desperado",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the best move.",
+  "start_fen": "8/2b1rppk/2qN3p/2P2P2/4P3/3Q2P1/6KP/4R3 w - - 3 36",
+  "moves": [
+   "Qd5",
+   "Qxd5",
+   "exd5",
+   "Rxe1"
+  ],
+  "final_fen": "8/2b2ppk/3N3p/2PP1P2/8/6P1/6KP/4r3 w - - 0 38",
+  "key_move": "36...Qxd5",
+  "prompt": "What would you play here? Find the best move.",
+  "hints": [
+   "One of your pieces can't be saved anyway. Make it count before it goes."
+  ],
+  "notes": {
+   "36.Qd5": "The opponent's last move. Something is now possible — look closely.",
+   "36...Qxd5": "Desperado: the queen on c6 can't be saved, so it takes the queen on d5 before it goes.",
+   "37...Rxe1": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing. Desperado: the queen on c6 can't be saved, so it takes the queen on d5 before it goes. Black comes out 5 points of material ahead.",
+  "tags": [
+   "desperado",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "desperado": {
+    "move": "36...Qxd5",
+    "desperado": {
+     "piece": "queen",
+     "color": "black",
+     "square": "c6"
+    },
+    "captured": {
+     "piece": "queen",
+     "color": "white",
+     "square": "d5"
+    },
+    "recaptured": "37.exd5"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "AaudU",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/AaudU",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "desperado"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxd5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 367,
+     "best_move": "Qxd5",
+     "best_cp": 367,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "36...Qxd5"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxe1",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 327,
+      "best_move": "Rxe1",
+      "best_cp": 327,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "37...Rxe1"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_48cna",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Attack two things at once.",
+  "start_fen": "6k1/1R3p1p/6p1/8/P3N3/8/1b3PPK/1r6 w - - 0 37",
+  "moves": [
+   "a5",
+   "Be5+",
+   "Kh3",
+   "Rxb7"
+  ],
+  "final_fen": "6k1/1r3p1p/6p1/P3b3/4N3/7K/5PP1/8 w - - 0 39",
+  "key_move": "37...Be5+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and rook."
+  ],
+  "notes": {
+   "37.a5": "The opponent's last move. Something is now possible — look closely.",
+   "37...Be5+": "Double attack: after 37...Be5+ the bishop on e5 attacks the king on h2 and the rook on b1 attacks the rook on b7. Only one threat can be met.",
+   "38...Rxb7": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 37...Be5+ the bishop on e5 attacks the king on h2 and the rook on b1 attacks the rook on b7. Only one threat can be met. Black comes out 5 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "37...Be5+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "king",
+       "color": "white",
+       "square": "h2"
+      },
+      "by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e5"
+      }
+     },
+     {
+      "target": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b7"
+      },
+      "by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "b1"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "48cnA",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/48cnA",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Be5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 553,
+     "best_move": "Be5+",
+     "best_cp": 553,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "37...Be5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxb7",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 584,
+      "best_move": "Rxb7",
+      "best_cp": 584,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "38...Rxb7"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_77xbb",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack two things at once.",
+  "start_fen": "8/6pp/p2r4/5k2/PRP2B2/3p3P/6K1/8 b - - 0 45",
+  "moves": [
+   "Kxf4",
+   "c5+",
+   "Ke5",
+   "cxd6"
+  ],
+  "final_fen": "8/6pp/p2P4/4k3/PR6/3p3P/6K1/8 b - - 0 47",
+  "key_move": "46.c5+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and rook."
+  ],
+  "notes": {
+   "45...Kxf4": "The opponent's last move. Something is now possible — look closely.",
+   "46.c5+": "Double attack: after 46.c5+ the rook on b4 attacks the king on f4 and the pawn on c5 attacks the rook on d6. Only one threat can be met.",
+   "47.cxd6": "White comes out 5 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 46.c5+ the rook on b4 attacks the king on f4 and the pawn on c5 attacks the rook on d6. Only one threat can be met. White comes out 5 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "46.c5+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "king",
+       "color": "black",
+       "square": "f4"
+      },
+      "by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b4"
+      }
+     },
+     {
+      "target": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d6"
+      },
+      "by": {
+       "piece": "pawn",
+       "color": "white",
+       "square": "c5"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "77XBB",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/77XBB",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "c5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 716,
+     "best_move": "c5+",
+     "best_cp": 716,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "46.c5+"
+    },
+    "learner_moves": [
+     {
+      "move": "cxd6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 648,
+      "best_move": "cxd6",
+      "best_cp": 648,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "47.cxd6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_dirfz",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack two things at once.",
+  "start_fen": "4r3/5p2/7p/1R1N1k2/3K2n1/8/5PPP/8 b - - 0 44",
+  "moves": [
+   "Nxf2",
+   "Nc7+",
+   "Re5",
+   "Rxe5+"
+  ],
+  "final_fen": "8/2N2p2/7p/4Rk2/3K4/8/5nPP/8 b - - 0 46",
+  "key_move": "45.Nc7+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and rook."
+  ],
+  "notes": {
+   "44...Nxf2": "The opponent's last move. Something is now possible — look closely.",
+   "45.Nc7+": "Double attack: after 45.Nc7+ the rook on b5 attacks the king on f5 and the knight on c7 attacks the rook on e8. Only one threat can be met.",
+   "46.Rxe5+": "White comes out 5 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 45.Nc7+ the rook on b5 attacks the king on f5 and the knight on c7 attacks the rook on e8. Only one threat can be met. White comes out 5 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "45.Nc7+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "king",
+       "color": "black",
+       "square": "f5"
+      },
+      "by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b5"
+      }
+     },
+     {
+      "target": {
+       "piece": "rook",
+       "color": "black",
+       "square": "e8"
+      },
+      "by": {
+       "piece": "knight",
+       "color": "white",
+       "square": "c7"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "dIRFz",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/dIRFz",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Nc7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 541,
+     "best_move": "Nc7+",
+     "best_cp": 541,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "45.Nc7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxe5+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 562,
+      "best_move": "Rxe5+",
+      "best_cp": 562,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "46.Rxe5+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_kcmq1",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack two things at once.",
+  "start_fen": "5k2/5p2/5b2/4p2q/3pQ3/3B2P1/1p4K1/8 b - - 15 70",
+  "moves": [
+   "Qg6",
+   "Qa8+",
+   "Kg7",
+   "Bxg6"
+  ],
+  "final_fen": "Q7/5pk1/5bB1/4p3/3p4/6P1/1p4K1/8 b - - 0 72",
+  "key_move": "71.Qa8+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and queen."
+  ],
+  "notes": {
+   "70...Qg6": "The opponent's last move. Something is now possible — look closely.",
+   "71.Qa8+": "Double attack: after 71.Qa8+ the bishop on d3 attacks the queen on g6 and the queen on a8 attacks the king on f8. Only one threat can be met.",
+   "72.Bxg6": "White comes out 9 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 71.Qa8+ the bishop on d3 attacks the queen on g6 and the queen on a8 attacks the king on f8. Only one threat can be met. White comes out 9 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "71.Qa8+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "queen",
+       "color": "black",
+       "square": "g6"
+      },
+      "by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "d3"
+      }
+     },
+     {
+      "target": {
+       "piece": "king",
+       "color": "black",
+       "square": "f8"
+      },
+      "by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "a8"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "kcmq1",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/kcmq1",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qa8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 427,
+     "best_move": "Qa8+",
+     "best_cp": 427,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "71.Qa8+"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxg6",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 494,
+      "best_move": "Bxg6",
+      "best_cp": 494,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "72.Bxg6"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_kkyff",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Attack two things at once.",
+  "start_fen": "8/1Q3pk1/2R1p1p1/8/3b2q1/4B3/3K1P2/8 w - - 0 45",
+  "moves": [
+   "Qb4",
+   "Bxe3+",
+   "Kxe3",
+   "Qxb4"
+  ],
+  "final_fen": "8/5pk1/2R1p1p1/8/1q6/4K3/5P2/8 w - - 0 47",
+  "key_move": "45...Bxe3+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and queen."
+  ],
+  "notes": {
+   "45.Qb4": "The opponent's last move. Something is now possible — look closely.",
+   "45...Bxe3+": "Double attack: after 45...Bxe3+ the bishop on e3 attacks the king on d2 and the queen on g4 attacks the queen on b4. Only one threat can be met.",
+   "46...Qxb4": "Black comes out 9 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 45...Bxe3+ the bishop on e3 attacks the king on d2 and the queen on g4 attacks the queen on b4. Only one threat can be met. Black comes out 9 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "45...Bxe3+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "king",
+       "color": "white",
+       "square": "d2"
+      },
+      "by": {
+       "piece": "bishop",
+       "color": "black",
+       "square": "e3"
+      }
+     },
+     {
+      "target": {
+       "piece": "queen",
+       "color": "white",
+       "square": "b4"
+      },
+      "by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "g4"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "kkYFF",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/kkYFF",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxe3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 718,
+     "best_move": "Bxe3+",
+     "best_cp": 718,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "45...Bxe3+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxb4",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 703,
+      "best_move": "Qxb4",
+      "best_cp": 703,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "46...Qxb4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_xyxcp",
+  "status": "verified",
+  "title": "Double attack",
+  "concept": "double_attack",
+  "category": "tactics",
+  "subcategory": "doubleAttack",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack two things at once.",
+  "start_fen": "6k1/4B3/1r4p1/2p5/3r4/5p2/5Kn1/5B1R b - - 5 44",
+  "moves": [
+   "Rd1",
+   "Bc4+",
+   "Kg7",
+   "Rxd1"
+  ],
+  "final_fen": "8/4B1k1/1r4p1/2p5/2B5/5p2/5Kn1/3R4 b - - 0 46",
+  "key_move": "45.Bc4+",
+  "prompt": "What would you play here? Attack two things at once.",
+  "hints": [
+   "Can one move create two threats at once?",
+   "Look for a move that attacks the king and rook."
+  ],
+  "notes": {
+   "44...Rd1": "The opponent's last move. Something is now possible — look closely.",
+   "45.Bc4+": "Double attack: after 45.Bc4+ the rook on h1 attacks the rook on d1 and the bishop on c4 attacks the king on g8. Only one threat can be met.",
+   "46.Rxd1": "White comes out 5 points of material ahead."
+  },
+  "explanation": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces. Double attack: after 45.Bc4+ the rook on h1 attacks the rook on d1 and the bishop on c4 attacks the king on g8. Only one threat can be met. White comes out 5 points of material ahead.",
+  "tags": [
+   "doubleAttack",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "double_attack": {
+    "move": "45.Bc4+",
+    "attacks": [
+     {
+      "target": {
+       "piece": "rook",
+       "color": "black",
+       "square": "d1"
+      },
+      "by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "h1"
+      }
+     },
+     {
+      "target": {
+       "piece": "king",
+       "color": "black",
+       "square": "g8"
+      },
+      "by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "c4"
+      }
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "XyXcP",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/XyXcP",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "double_attack"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bc4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 256,
+     "best_move": "Bc4+",
+     "best_cp": 256,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "45.Bc4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxd1",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 266,
+      "best_move": "Rxd1",
+      "best_cp": 266,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "46.Rxd1"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_6tgls",
+  "status": "verified",
+  "title": "Greek gift sacrifice",
+  "concept": "greek_gift",
+  "category": "tactics",
+  "subcategory": "greekGift",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack the king.",
+  "start_fen": "r1b2rk1/3pppbp/p1n3B1/3qP3/1p5P/5N2/PP2QPP1/3RR1K1 b - - 0 16",
+  "moves": [
+   "Qa5",
+   "Bxh7+",
+   "Kxh7",
+   "Ng5+"
+  ],
+  "final_fen": "r1b2r2/3pppbk/p1n5/q3P1N1/1p5P/8/PP2QPP1/3RR1K1 b - - 1 18",
+  "key_move": "17.Bxh7+",
+  "prompt": "What would you play here? Attack the king.",
+  "hints": [
+   "Is the pawn on h7 defended only by the king?",
+   "Bishop, knight, queen: can all three join the attack, one with check after the other?"
+  ],
+  "notes": {
+   "16...Qa5": "The opponent's last move. Something is now possible — look closely.",
+   "17.Bxh7+": "The Greek gift: 17.Bxh7+ gives up the bishop on h7, 17...Kxh7 accepts it, and 18.Ng5+ brings the knight in with check."
+  },
+  "explanation": "The Greek gift is a bishop sacrifice on h7 (or h2) against a castled king, usually followed by a knight check on g5 (g4) and the queen joining the attack. It only works when those follow-up moves really are available, so check the defender's replies before sacrificing. The Greek gift: 17.Bxh7+ gives up the bishop on h7, 17...Kxh7 accepts it, and 18.Ng5+ brings the knight in with check.",
+  "tags": [
+   "greekGift",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "greek_gift": {
+    "sacrifice": "17.Bxh7+",
+    "king_takes": "17...Kxh7",
+    "knight_check": "18.Ng5+",
+    "square": "h7",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "6tgLS",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/6tgLS",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "greek_gift"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxh7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 230,
+     "best_move": "Bxh7+",
+     "best_cp": 230,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "17.Bxh7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Ng5+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 286,
+      "best_move": "Ng5+",
+      "best_cp": 286,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "18.Ng5+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_df3o5",
+  "status": "verified",
+  "title": "Greek gift sacrifice",
+  "concept": "greek_gift",
+  "category": "tactics",
+  "subcategory": "greekGift",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Attack the king.",
+  "start_fen": "r1b2rk1/pp1n1ppp/2p1p3/4P3/8/1P1B1NQ1/q4PPP/5RK1 b - - 1 19",
+  "moves": [
+   "Qxb3",
+   "Bxh7+",
+   "Kxh7",
+   "Ng5+"
+  ],
+  "final_fen": "r1b2r2/pp1n1ppk/2p1p3/4P1N1/8/1q4Q1/5PPP/5RK1 b - - 1 21",
+  "key_move": "20.Bxh7+",
+  "prompt": "What would you play here? Attack the king.",
+  "hints": [
+   "Is the pawn on h7 defended only by the king?",
+   "Bishop, knight, queen: can all three join the attack, one with check after the other?"
+  ],
+  "notes": {
+   "19...Qxb3": "The opponent's last move. Something is now possible — look closely.",
+   "20.Bxh7+": "The Greek gift: 20.Bxh7+ gives up the bishop on h7, 20...Kxh7 accepts it, and 21.Ng5+ brings the knight in with check."
+  },
+  "explanation": "The Greek gift is a bishop sacrifice on h7 (or h2) against a castled king, usually followed by a knight check on g5 (g4) and the queen joining the attack. It only works when those follow-up moves really are available, so check the defender's replies before sacrificing. The Greek gift: 20.Bxh7+ gives up the bishop on h7, 20...Kxh7 accepts it, and 21.Ng5+ brings the knight in with check.",
+  "tags": [
+   "greekGift",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "greek_gift": {
+    "sacrifice": "20.Bxh7+",
+    "king_takes": "20...Kxh7",
+    "knight_check": "21.Ng5+",
+    "square": "h7",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Df3o5",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Df3o5",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "greek_gift"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxh7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 241,
+     "best_move": "Bxh7+",
+     "best_cp": 241,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "20.Bxh7+"
+    },
+    "learner_moves": [
+     {
+      "move": "Ng5+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 193,
+      "best_move": "Ng5+",
+      "best_cp": 193,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "21.Ng5+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_rpmht",
+  "status": "verified",
+  "title": "Greek gift sacrifice",
+  "concept": "greek_gift",
+  "category": "tactics",
+  "subcategory": "greekGift",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Attack the king.",
+  "start_fen": "5rk1/3nqpp1/p1pb1n1p/3p1B2/P1PPp1b1/4P3/1BQN1PPP/R4RK1 w - - 0 17",
+  "moves": [
+   "Bxg4",
+   "Bxh2+",
+   "Kxh2",
+   "Nxg4+"
+  ],
+  "final_fen": "5rk1/3nqpp1/p1p4p/3p4/P1PPp1n1/4P3/1BQN1PPK/R4R2 w - - 0 19",
+  "key_move": "17...Bxh2+",
+  "prompt": "What would you play here? Attack the king.",
+  "hints": [
+   "Is the pawn on h2 defended only by the king?",
+   "Bishop, knight, queen: can all three join the attack, one with check after the other?"
+  ],
+  "notes": {
+   "17.Bxg4": "The opponent's last move. Something is now possible — look closely.",
+   "17...Bxh2+": "The Greek gift: 17...Bxh2+ gives up the bishop on h2, 18.Kxh2 accepts it, and 18...Nxg4+ brings the knight in with check.",
+   "18...Nxg4+": "Black comes out 1 point of material ahead."
+  },
+  "explanation": "The Greek gift is a bishop sacrifice on h7 (or h2) against a castled king, usually followed by a knight check on g5 (g4) and the queen joining the attack. It only works when those follow-up moves really are available, so check the defender's replies before sacrificing. The Greek gift: 17...Bxh2+ gives up the bishop on h2, 18.Kxh2 accepts it, and 18...Nxg4+ brings the knight in with check. Black comes out 1 point of material ahead.",
+  "tags": [
+   "greekGift",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "greek_gift": {
+    "sacrifice": "17...Bxh2+",
+    "king_takes": "18.Kxh2",
+    "knight_check": "18...Nxg4+",
+    "square": "h2",
+    "ends_in_mate": false
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "rPMHT",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/rPMHT",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "greek_gift"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxh2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 201,
+     "best_move": "Bxh2+",
+     "best_cp": 201,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "17...Bxh2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Nxg4+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 251,
+      "best_move": "Nxg4+",
+      "best_cp": 251,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "18...Nxg4+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
   "id": "lichess_4km56",
   "status": "verified",
   "title": "Interference",
@@ -2260,6 +4749,1902 @@
       "alternatives": [],
       "mate_after": false,
       "label": "34.Qxg4"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_bzmml",
+  "status": "verified",
+  "title": "Pawn fork: rook and king",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the pawn fork.",
+  "start_fen": "4r1k1/5P1R/1p2N1PK/p3n3/8/8/1P6/8 b - - 0 38",
+  "moves": [
+   "Nxf7+",
+   "gxf7#"
+  ],
+  "final_fen": "4r1k1/5P1R/1p2N2K/p7/8/8/1P6/8 b - - 0 39",
+  "key_move": "39.gxf7#",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the rook and king."
+  ],
+  "notes": {
+   "38...Nxf7+": "The opponent's last move. Something is now possible — look closely.",
+   "39.gxf7#": "Fork! The pawn on f7 attacks the rook on e8 and king on g8 at once. It's check, so the king must move first."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on f7 attacks the rook on e8 and king on g8 at once. It's check, so the king must move first. The line ends in checkmate.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "39.gxf7#",
+    "attacker": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "f7"
+    },
+    "targets": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "e8"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "g8"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "BZMMl",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/BZMMl",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "gxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "gxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "39.gxf7#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_h43sx",
+  "status": "verified",
+  "title": "Pawn fork: knight and king",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the pawn fork.",
+  "start_fen": "2k4r/1bpn1p2/6p1/p2P2B1/P1p1P3/7p/2B2qPP/R2Q1N1K w - - 0 26",
+  "moves": [
+   "Qd2",
+   "hxg2#"
+  ],
+  "final_fen": "2k4r/1bpn1p2/6p1/p2P2B1/P1p1P3/8/2BQ1qpP/R4N1K w - - 0 27",
+  "key_move": "26...hxg2#",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the knight and king."
+  ],
+  "notes": {
+   "26.Qd2": "The opponent's last move. Something is now possible — look closely.",
+   "26...hxg2#": "Fork! The pawn on g2 attacks the knight on f1 and king on h1 at once. It's check, so the king must move first."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on g2 attacks the knight on f1 and king on h1 at once. It's check, so the king must move first. The line ends in checkmate.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "26...hxg2#",
+    "attacker": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "g2"
+    },
+    "targets": [
+     {
+      "piece": "knight",
+      "color": "white",
+      "square": "f1"
+     },
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "h1"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "h43sX",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/h43sX",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "hxg2#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "hxg2#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "26...hxg2#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_h6gev",
+  "status": "verified",
+  "title": "Pawn fork: king and rook",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the pawn fork.",
+  "start_fen": "r1bqkb1r/ppppnp2/4P2p/6p1/2BQ3B/8/PPP2PPP/RN2K2R b KQkq - 0 10",
+  "moves": [
+   "Rg8",
+   "exf7#"
+  ],
+  "final_fen": "r1bqkbr1/ppppnP2/7p/6p1/2BQ3B/8/PPP2PPP/RN2K2R b KQq - 0 11",
+  "key_move": "11.exf7#",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the king and rook."
+  ],
+  "notes": {
+   "10...Rg8": "The opponent's last move. Something is now possible — look closely.",
+   "11.exf7#": "Fork! The pawn on f7 attacks the king on e8 and rook on g8 at once. It's check, so the king must move first."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on f7 attacks the king on e8 and rook on g8 at once. It's check, so the king must move first. The line ends in checkmate.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "11.exf7#",
+    "attacker": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "f7"
+    },
+    "targets": [
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "e8"
+     },
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "g8"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "H6gev",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/H6gev",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "exf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "exf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "11.exf7#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_oysxk",
+  "status": "verified",
+  "title": "Pawn fork: rook and king",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the pawn fork.",
+  "start_fen": "6r1/pQ6/8/P4p1k/7p/4PRqP/5RPK/2r5 w - - 3 43",
+  "moves": [
+   "Rxg3",
+   "hxg3#"
+  ],
+  "final_fen": "6r1/pQ6/8/P4p1k/8/4P1pP/5RPK/2r5 w - - 0 44",
+  "key_move": "43...hxg3#",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the rook and king."
+  ],
+  "notes": {
+   "43.Rxg3": "The opponent's last move. Something is now possible — look closely.",
+   "43...hxg3#": "Fork! The pawn on g3 attacks the rook on f2 and king on h2 at once. It's check, so the king must move first."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on g3 attacks the rook on f2 and king on h2 at once. It's check, so the king must move first. The line ends in checkmate.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "43...hxg3#",
+    "attacker": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "g3"
+    },
+    "targets": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "f2"
+     },
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "h2"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "oYsxk",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/oYsxk",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "hxg3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "hxg3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "43...hxg3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_p82b9",
+  "status": "verified",
+  "title": "Pawn fork: rook and king",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the pawn fork.",
+  "start_fen": "r1b2rn1/2p2pbk/2p2P2/p3B1p1/8/3B2R1/P1P3PP/4R2K b - - 0 31",
+  "moves": [
+   "Kh8",
+   "fxg7#"
+  ],
+  "final_fen": "r1b2rnk/2p2pP1/2p5/p3B1p1/8/3B2R1/P1P3PP/4R2K b - - 0 32",
+  "key_move": "32.fxg7#",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the rook and king."
+  ],
+  "notes": {
+   "31...Kh8": "The opponent's last move. Something is now possible — look closely.",
+   "32.fxg7#": "Fork! The pawn on g7 attacks the rook on f8 and king on h8 at once. It's check, so the king must move first."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on g7 attacks the rook on f8 and king on h8 at once. It's check, so the king must move first. The line ends in checkmate.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "32.fxg7#",
+    "attacker": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "g7"
+    },
+    "targets": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "f8"
+     },
+     {
+      "piece": "king",
+      "color": "black",
+      "square": "h8"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "P82B9",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/P82B9",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "fxg7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "fxg7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "32.fxg7#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_27dec",
+  "status": "verified",
+  "title": "Pawn fork: queen and king",
+  "concept": "pawn_fork",
+  "category": "tactics",
+  "subcategory": "pawnFork",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the pawn fork.",
+  "start_fen": "3r1k2/5p2/8/3rQ3/1P3PK1/8/7P/8 w - - 1 55",
+  "moves": [
+   "Qe4",
+   "f5+",
+   "Qxf5+",
+   "Rxf5"
+  ],
+  "final_fen": "3r1k2/8/8/5r2/1P3PK1/8/7P/8 w - - 0 57",
+  "key_move": "55...f5+",
+  "prompt": "What would you play here? Find the pawn fork.",
+  "hints": [
+   "Your pawn can attack two things at once.",
+   "Find a square that hits the queen and king."
+  ],
+  "notes": {
+   "55.Qe4": "The opponent's last move. Something is now possible — look closely.",
+   "55...f5+": "Fork! The pawn on f5 attacks the queen on e4 and king on g4 at once. It's check, so the king must move first.",
+   "56...Rxf5": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits. Fork! The pawn on f5 attacks the queen on e4 and king on g4 at once. It's check, so the king must move first. Black comes out 8 points of material ahead.",
+  "tags": [
+   "pawnFork",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "fork": {
+    "move": "55...f5+",
+    "attacker": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "f5"
+    },
+    "targets": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "e4"
+     },
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "g4"
+     }
+    ],
+    "gives_check": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "27dec",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/27dec",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "fork"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "f5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 477,
+     "best_move": "f5+",
+     "best_cp": 477,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "55...f5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rxf5",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 505,
+      "best_move": "Rxf5",
+      "best_cp": 505,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "56...Rxf5"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_14xwr",
+  "status": "verified",
+  "title": "Relative pin: pawn pinned to the queen",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the pin.",
+  "start_fen": "3r1q1k/pp4p1/6Qp/4B1Pn/3p4/1Bb4P/P4P2/5RK1 b - - 2 28",
+  "moves": [
+   "Nf4",
+   "Qxh6#"
+  ],
+  "final_fen": "3r1q1k/pp4p1/7Q/4B1P1/3p1n2/1Bb4P/P4P2/5RK1 b - - 0 29",
+  "key_move": "29.Qxh6#",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the pawn to the queen behind it."
+  ],
+  "notes": {
+   "28...Nf4": "The opponent's last move. Something is now possible — look closely.",
+   "29.Qxh6#": "The queen on h6 pins the pawn on g7 to the queen on f8."
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The queen on h6 pins the pawn on g7 to the queen on f8. The line ends in checkmate.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "queen",
+     "color": "white",
+     "square": "h6"
+    },
+    "pinned": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "g7"
+    },
+    "behind": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f8"
+    },
+    "kind": "relative",
+    "move": "29.Qxh6#",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "14XWr",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/14XWr",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxh6#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxh6#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "29.Qxh6#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_jg6q4",
+  "status": "verified",
+  "title": "Relative pin: pawn pinned to the rook",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black to move: Find the pin.",
+  "start_fen": "5q2/2Q2pk1/5bp1/3p3p/3Nb3/Pr3P2/1P2B3/K1R5 w - - 0 31",
+  "moves": [
+   "Nxb3",
+   "Qxa3#"
+  ],
+  "final_fen": "8/2Q2pk1/5bp1/3p3p/4b3/qN3P2/1P2B3/K1R5 w - - 0 32",
+  "key_move": "31...Qxa3#",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the pawn to the rook behind it."
+  ],
+  "notes": {
+   "31.Nxb3": "The opponent's last move. Something is now possible — look closely.",
+   "31...Qxa3#": "The queen on a3 pins the pawn on b2 to the rook on c1."
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The queen on a3 pins the pawn on b2 to the rook on c1. The line ends in checkmate.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "queen",
+     "color": "black",
+     "square": "a3"
+    },
+    "pinned": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "b2"
+    },
+    "behind": {
+     "piece": "rook",
+     "color": "white",
+     "square": "c1"
+    },
+    "kind": "relative",
+    "move": "31...Qxa3#",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "JG6Q4",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/JG6Q4",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qxa3#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxa3#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "31...Qxa3#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ku1ga",
+  "status": "verified",
+  "title": "Relative pin: pawn pinned to the queen",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White to move: Find the pin.",
+  "start_fen": "6rk/p4pp1/2q1p2p/1p6/2PQ4/1P5R/P4PPP/6K1 b - - 5 28",
+  "moves": [
+   "bxc4",
+   "Rxh6#"
+  ],
+  "final_fen": "6rk/p4pp1/2q1p2R/8/2pQ4/1P6/P4PPP/6K1 b - - 0 29",
+  "key_move": "29.Rxh6#",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the pawn to the queen behind it."
+  ],
+  "notes": {
+   "28...bxc4": "The opponent's last move. Something is now possible — look closely.",
+   "29.Rxh6#": "The rook on h6 pins the pawn on e6 to the queen on c6."
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The rook on h6 pins the pawn on e6 to the queen on c6. The line ends in checkmate.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "1-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "rook",
+     "color": "white",
+     "square": "h6"
+    },
+    "pinned": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "e6"
+    },
+    "behind": {
+     "piece": "queen",
+     "color": "black",
+     "square": "c6"
+    },
+    "kind": "relative",
+    "move": "29.Rxh6#",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "kU1GA",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/kU1GA",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxh6#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Rxh6#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "29.Rxh6#"
+    },
+    "learner_moves": [],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_0tbay",
+  "status": "verified",
+  "title": "Relative pin: bishop pinned to the rook",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the pin.",
+  "start_fen": "6k1/4q1p1/7p/3bB3/2r2PQ1/6PK/5P2/2R5 w - - 2 49",
+  "moves": [
+   "Re1",
+   "Be6",
+   "Qxe6+",
+   "Qxe6+"
+  ],
+  "final_fen": "6k1/6p1/4q2p/4B3/2r2P2/6PK/5P2/4R3 w - - 0 51",
+  "key_move": "49...Be6",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the bishop to the rook behind it."
+  ],
+  "notes": {
+   "49.Re1": "The opponent's last move. Something is now possible — look closely.",
+   "49...Be6": "The queen on e6 pins the bishop on e5 to the rook on e1.",
+   "50...Qxe6+": "Black comes out 6 points of material ahead."
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The queen on e6 pins the bishop on e5 to the rook on e1. Black comes out 6 points of material ahead.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "queen",
+     "color": "black",
+     "square": "e6"
+    },
+    "pinned": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "e5"
+    },
+    "behind": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e1"
+    },
+    "kind": "relative",
+    "move": "50...Qxe6+",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0TBAy",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0TBAy",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Be6",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 545,
+     "best_move": "Be6",
+     "best_cp": 545,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "49...Be6"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxe6+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 617,
+      "best_move": "Qxe6+",
+      "best_cp": 617,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "50...Qxe6+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_29oza",
+  "status": "verified",
+  "title": "Relative pin: pawn pinned to the rook",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the pin.",
+  "start_fen": "8/R4pkp/6p1/6K1/3N2P1/p3n2P/r7/8 b - - 1 34",
+  "moves": [
+   "Ra1",
+   "Ne6+",
+   "Kh8",
+   "Ra8#"
+  ],
+  "final_fen": "R6k/5p1p/4N1p1/6K1/6P1/p3n2P/8/r7 b - - 5 36",
+  "key_move": "35.Ne6+",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the pawn to the rook behind it."
+  ],
+  "notes": {
+   "34...Ra1": "The opponent's last move. Something is now possible — look closely.",
+   "35.Ne6+": "The rook on a8 pins the pawn on a3 to the rook on a1.",
+   "36.Ra8#": "Checkmate!"
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The rook on a8 pins the pawn on a3 to the rook on a1. The line ends in checkmate.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "rook",
+     "color": "white",
+     "square": "a8"
+    },
+    "pinned": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "a3"
+    },
+    "behind": {
+     "piece": "rook",
+     "color": "black",
+     "square": "a1"
+    },
+    "kind": "relative",
+    "move": "36.Ra8#",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "29Oza",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/29Oza",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ne6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ne6+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "35.Ne6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Ra8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Ra8#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "36.Ra8#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_ajdou",
+  "status": "verified",
+  "title": "Relative pin: pawn pinned to the bishop",
+  "concept": "relative_pin",
+  "category": "tactics",
+  "subcategory": "relativePin",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the pin.",
+  "start_fen": "8/7p/r4Bp1/6Pk/3P4/4P2P/1p3P2/5RK1 w - - 0 37",
+  "moves": [
+   "Rb1",
+   "Ra1",
+   "Rxa1",
+   "bxa1=Q+"
+  ],
+  "final_fen": "8/7p/5Bp1/6Pk/3P4/4P2P/5P2/q5K1 w - - 0 39",
+  "key_move": "37...Ra1",
+  "prompt": "What would you play here? Find the pin.",
+  "hints": [
+   "Look for a line through the pawn to the bishop behind it."
+  ],
+  "notes": {
+   "37.Rb1": "The opponent's last move. Something is now possible — look closely.",
+   "37...Ra1": "The queen on a1 pins the pawn on d4 to the bishop on f6.",
+   "38...bxa1=Q+": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material. The queen on a1 pins the pawn on d4 to the bishop on f6. Black comes out 8 points of material ahead.",
+  "tags": [
+   "relativePin",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "pin": {
+    "pinner": {
+     "piece": "queen",
+     "color": "black",
+     "square": "a1"
+    },
+    "pinned": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "d4"
+    },
+    "behind": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "f6"
+    },
+    "kind": "relative",
+    "move": "38...bxa1=Q+",
+    "created_by_move": true
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "ajDou",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/ajDou",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "pin"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Ra1",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 506,
+     "best_move": "Ra1",
+     "best_cp": 506,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "37...Ra1"
+    },
+    "learner_moves": [
+     {
+      "move": "bxa1=Q+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 440,
+      "best_move": "bxa1=Q+",
+      "best_cp": 440,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "38...bxa1=Q+"
      }
     ],
     "alternatives": []
@@ -3178,6 +7563,1126 @@
     ],
     "alternatives": [],
     "queen_instead_cp": -9990
+   }
+  }
+ },
+ {
+  "id": "lichess_2i5ab",
+  "status": "verified",
+  "title": "Windmill",
+  "concept": "windmill",
+  "category": "tactics",
+  "subcategory": "windmill",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the windmill.",
+  "start_fen": "3k3r/1pp1b1p1/p2p2q1/3P4/1P5p/2N2QP1/P1P2P1n/4RRK1 w - - 0 23",
+  "moves": [
+   "Kxh2",
+   "hxg3+",
+   "Kg2",
+   "gxf2+"
+  ],
+  "final_fen": "3k3r/1pp1b1p1/p2p2q1/3P4/1P6/2N2Q2/P1P2pK1/4RR2 w - - 0 25",
+  "key_move": "23...hxg3+",
+  "prompt": "What would you play here? Find the windmill.",
+  "hints": [
+   "One of your pieces can uncover a check. Can it do that more than once?"
+  ],
+  "notes": {
+   "23.Kxh2": "The opponent's last move. Something is now possible — look closely.",
+   "23...hxg3+": "Windmill! 23...hxg3+ and 24...gxf2+: the same piece moves again and again, uncovering check each time, and grabs material on the way.",
+   "24...gxf2+": "Black comes out 2 points of material ahead."
+  },
+  "explanation": "A windmill is a repeated discovered check: one piece moves back and forth, uncovering check from a rook or bishop behind it each time, and uses every move to capture something. Windmill! 23...hxg3+ and 24...gxf2+: the same piece moves again and again, uncovering check each time, and grabs material on the way. Black comes out 2 points of material ahead.",
+  "tags": [
+   "windmill",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "windmill": {
+    "discovered_checks": [
+     "23...hxg3+",
+     "24...gxf2+"
+    ],
+    "captures": 2,
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2i5aB",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2i5aB",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "windmill"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "hxg3+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 214,
+     "best_move": "hxg3+",
+     "best_cp": 214,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "23...hxg3+"
+    },
+    "learner_moves": [
+     {
+      "move": "gxf2+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 232,
+      "best_move": "gxf2+",
+      "best_cp": 232,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "24...gxf2+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_f7nyp",
+  "status": "verified",
+  "title": "Windmill",
+  "concept": "windmill",
+  "category": "tactics",
+  "subcategory": "windmill",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the windmill.",
+  "start_fen": "1r5Q/1b2kp2/p3pp2/2b5/P7/1P6/2P2rPP/R4BK1 w - - 2 26",
+  "moves": [
+   "Qxb8",
+   "Rxg2+",
+   "Kh1",
+   "Rg1#"
+  ],
+  "final_fen": "1Q6/1b2kp2/p3pp2/2b5/P7/1P6/2P4P/R4BrK w - - 2 28",
+  "key_move": "26...Rxg2+",
+  "prompt": "What would you play here? Find the windmill.",
+  "hints": [
+   "One of your pieces can uncover a check. Can it do that more than once?"
+  ],
+  "notes": {
+   "26.Qxb8": "The opponent's last move. Something is now possible — look closely.",
+   "26...Rxg2+": "Windmill! 26...Rxg2+ and 27...Rg1#: the same piece moves again and again, uncovering check each time, and grabs material on the way.",
+   "27...Rg1#": "Checkmate!"
+  },
+  "explanation": "A windmill is a repeated discovered check: one piece moves back and forth, uncovering check from a rook or bishop behind it each time, and uses every move to capture something. Windmill! 26...Rxg2+ and 27...Rg1#: the same piece moves again and again, uncovering check each time, and grabs material on the way. The line ends in checkmate.",
+  "tags": [
+   "windmill",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "windmill": {
+    "discovered_checks": [
+     "26...Rxg2+",
+     "27...Rg1#"
+    ],
+    "captures": 1,
+    "side": "black"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "F7NYp",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/F7NYp",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "windmill"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxg2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rxg2+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "26...Rxg2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rg1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rg1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "27...Rg1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_0kfaa",
+  "status": "verified",
+  "title": "X-ray",
+  "concept": "x_ray",
+  "category": "tactics",
+  "subcategory": "xRay",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the x-ray.",
+  "start_fen": "2r4k/6b1/2Q4p/p1P2q2/8/3R2P1/P1KB4/8 w - - 3 38",
+  "moves": [
+   "Qd5",
+   "Rxc5+",
+   "Qxc5",
+   "Qxc5+"
+  ],
+  "final_fen": "7k/6b1/7p/p1q5/8/3R2P1/P1KB4/8 w - - 0 40",
+  "key_move": "38...Rxc5+",
+  "prompt": "What would you play here? Find the x-ray.",
+  "hints": [
+   "One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?",
+   "Look at the line from your queen on f5."
+  ],
+  "notes": {
+   "38.Qd5": "The opponent's last move. Something is now possible — look closely.",
+   "38...Rxc5+": "X-ray: the queen on f5 is lined up through the queen on d5. Once that piece is gone, the line is open and 39...Qxc5+ lands on c5.",
+   "39...Qxc5+": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it. X-ray: the queen on f5 is lined up through the queen on d5. Once that piece is gone, the line is open and 39...Qxc5+ lands on c5. Black comes out 5 points of material ahead.",
+  "tags": [
+   "xRay",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "x_ray": {
+    "slider": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f5"
+    },
+    "through": {
+     "piece": "queen",
+     "color": "white",
+     "square": "d5"
+    },
+    "square": "c5",
+    "capture": "39...Qxc5+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "0KfAA",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/0KfAA",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "x_ray"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxc5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 636,
+     "best_move": "Rxc5+",
+     "best_cp": 636,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "38...Rxc5+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxc5+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 636,
+      "best_move": "Qxc5+",
+      "best_cp": 636,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "39...Qxc5+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_2i6yz",
+  "status": "verified",
+  "title": "X-ray",
+  "concept": "x_ray",
+  "category": "tactics",
+  "subcategory": "xRay",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the x-ray.",
+  "start_fen": "6k1/6r1/5R1Q/1p6/8/3q2B1/6PP/1q2R2K w - - 1 42",
+  "moves": [
+   "Re6",
+   "Qf1+",
+   "Rxf1",
+   "Qxf1#"
+  ],
+  "final_fen": "6k1/6r1/4R2Q/1p6/8/6B1/6PP/5q1K w - - 0 44",
+  "key_move": "42...Qf1+",
+  "prompt": "What would you play here? Find the x-ray.",
+  "hints": [
+   "One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?",
+   "Look at the line from your queen on b1."
+  ],
+  "notes": {
+   "42.Re6": "The opponent's last move. Something is now possible — look closely.",
+   "42...Qf1+": "X-ray: the queen on b1 is lined up through the rook on e1. Once that piece is gone, the line is open and 43...Qxf1# lands on f1.",
+   "43...Qxf1#": "Checkmate!"
+  },
+  "explanation": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it. X-ray: the queen on b1 is lined up through the rook on e1. Once that piece is gone, the line is open and 43...Qxf1# lands on f1. The line ends in checkmate.",
+  "tags": [
+   "xRay",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "x_ray": {
+    "slider": {
+     "piece": "queen",
+     "color": "black",
+     "square": "b1"
+    },
+    "through": {
+     "piece": "rook",
+     "color": "white",
+     "square": "e1"
+    },
+    "square": "f1",
+    "capture": "43...Qxf1#"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2I6yZ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2I6yZ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "x_ray"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Qf1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qf1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "42...Qf1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxf1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qxf1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "43...Qxf1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_5crt7",
+  "status": "verified",
+  "title": "X-ray",
+  "concept": "x_ray",
+  "category": "tactics",
+  "subcategory": "xRay",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the x-ray.",
+  "start_fen": "8/1k6/1p1b4/3p4/3N1P2/2P1Q3/2BK4/5q2 w - - 8 56",
+  "moves": [
+   "Qf3",
+   "Bxf4+",
+   "Qxf4",
+   "Qxf4+"
+  ],
+  "final_fen": "8/1k6/1p6/3p4/3N1q2/2P5/2BK4/8 w - - 0 58",
+  "key_move": "56...Bxf4+",
+  "prompt": "What would you play here? Find the x-ray.",
+  "hints": [
+   "One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?",
+   "Look at the line from your queen on f1."
+  ],
+  "notes": {
+   "56.Qf3": "The opponent's last move. Something is now possible — look closely.",
+   "56...Bxf4+": "X-ray: the queen on f1 is lined up through the queen on f3. Once that piece is gone, the line is open and 57...Qxf4+ lands on f4.",
+   "57...Qxf4+": "Black comes out 7 points of material ahead."
+  },
+  "explanation": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it. X-ray: the queen on f1 is lined up through the queen on f3. Once that piece is gone, the line is open and 57...Qxf4+ lands on f4. Black comes out 7 points of material ahead.",
+  "tags": [
+   "xRay",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "x_ray": {
+    "slider": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f1"
+    },
+    "through": {
+     "piece": "queen",
+     "color": "white",
+     "square": "f3"
+    },
+    "square": "f4",
+    "capture": "57...Qxf4+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "5CrT7",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/5CrT7",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "x_ray"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 365,
+     "best_move": "Bxf4+",
+     "best_cp": 365,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "56...Bxf4+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxf4+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 314,
+      "best_move": "Qxf4+",
+      "best_cp": 314,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "57...Qxf4+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_6qlai",
+  "status": "verified",
+  "title": "X-ray",
+  "concept": "x_ray",
+  "category": "tactics",
+  "subcategory": "xRay",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: Find the x-ray.",
+  "start_fen": "7k/1p4p1/2q2n2/p4Qp1/5b2/5P2/2R3KP/8 b - - 3 43",
+  "moves": [
+   "Qd7",
+   "Rc8+",
+   "Qxc8",
+   "Qxc8+"
+  ],
+  "final_fen": "2Q4k/1p4p1/5n2/p5p1/5b2/5P2/6KP/8 b - - 0 45",
+  "key_move": "44.Rc8+",
+  "prompt": "What would you play here? Find the x-ray.",
+  "hints": [
+   "One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?",
+   "Look at the line from your queen on f5."
+  ],
+  "notes": {
+   "43...Qd7": "The opponent's last move. Something is now possible — look closely.",
+   "44.Rc8+": "X-ray: the queen on f5 is lined up through the queen on d7. Once that piece is gone, the line is open and 45.Qxc8+ lands on c8.",
+   "45.Qxc8+": "White comes out 4 points of material ahead."
+  },
+  "explanation": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it. X-ray: the queen on f5 is lined up through the queen on d7. Once that piece is gone, the line is open and 45.Qxc8+ lands on c8. White comes out 4 points of material ahead.",
+  "tags": [
+   "xRay",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "x_ray": {
+    "slider": {
+     "piece": "queen",
+     "color": "white",
+     "square": "f5"
+    },
+    "through": {
+     "piece": "queen",
+     "color": "black",
+     "square": "d7"
+    },
+    "square": "c8",
+    "capture": "45.Qxc8+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "6qlAi",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/6qlAi",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "x_ray"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rc8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 195,
+     "best_move": "Rc8+",
+     "best_cp": 195,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "44.Rc8+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxc8+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 207,
+      "best_move": "Qxc8+",
+      "best_cp": 207,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "45.Qxc8+"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9pz37",
+  "status": "verified",
+  "title": "X-ray",
+  "concept": "x_ray",
+  "category": "tactics",
+  "subcategory": "xRay",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: Find the x-ray.",
+  "start_fen": "8/4b3/1k2p1p1/4P1P1/p1K2P2/1p6/1P1B4/8 w - - 6 49",
+  "moves": [
+   "Bb4",
+   "a3",
+   "Bxa3",
+   "Bxa3"
+  ],
+  "final_fen": "8/8/1k2p1p1/4P1P1/2K2P2/bp6/1P6/8 w - - 0 51",
+  "key_move": "49...a3",
+  "prompt": "What would you play here? Find the x-ray.",
+  "hints": [
+   "One of your long-range pieces is aimed through an enemy piece. What if that piece disappears?",
+   "Look at the line from your bishop on e7."
+  ],
+  "notes": {
+   "49.Bb4": "The opponent's last move. Something is now possible — look closely.",
+   "49...a3": "X-ray: the bishop on e7 is lined up through the bishop on b4. Once that piece is gone, the line is open and 50...Bxa3 lands on a3.",
+   "50...Bxa3": "Black comes out 2 points of material ahead."
+  },
+  "explanation": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it. X-ray: the bishop on e7 is lined up through the bishop on b4. Once that piece is gone, the line is open and 50...Bxa3 lands on a3. Black comes out 2 points of material ahead.",
+  "tags": [
+   "xRay",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "x_ray": {
+    "slider": {
+     "piece": "bishop",
+     "color": "black",
+     "square": "e7"
+    },
+    "through": {
+     "piece": "bishop",
+     "color": "white",
+     "square": "b4"
+    },
+    "square": "a3",
+    "capture": "50...Bxa3"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9PZ37",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9PZ37",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "x_ray"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "tactic"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "tactic",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "a3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 355,
+     "best_move": "a3",
+     "best_cp": 355,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "49...a3"
+    },
+    "learner_moves": [
+     {
+      "move": "Bxa3",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 513,
+      "best_move": "Bxa3",
+      "best_cp": 513,
+      "alternatives": [],
+      "mate_after": false,
+      "label": "50...Bxa3"
+     }
+    ],
+    "alternatives": []
    }
   }
  }
