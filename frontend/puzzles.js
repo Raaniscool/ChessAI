@@ -1,6 +1,8 @@
-// Puzzles tab: a dashboard (Personalized / Practice) and a board-focused solver.
+// Puzzles tab: a dashboard (Personalized / Practice / Training) and a board-focused solver.
+// Training (short games against a bot, analysed afterwards) lives in training.js.
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
+import {createTrainer} from "./training.js"
 import {applyAdapt, autoNextDelay, cardLine, focusLine, header, itemLabel, judge, needsMore, newAttempt, nextHint,
   pendingIds, resultBody, retry, reveal, sameMove, shouldRecord} from "./puzzle-solver.js"
 
@@ -18,6 +20,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     practice: $("pz-practice"), status: $("pz-status"), info: $("pz-info"), feedback: $("pz-feedback"),
     explain: $("pz-explain"), hint: $("pz-hint"), solution: $("pz-solution"), retry: $("pz-retry"),
     next: $("pz-next"), back: $("pz-back"), set: $("pz-set"),
+    modeTraining: $("pz-mode-training"), training: $("pz-training"), trainer: $("pz-trainer"),
   }
   const view = {
     mode: "personal", screen: "dashboard", dashboard: null, set: [], title: "", pos: 0, attempt: null,
@@ -39,13 +42,41 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   // ------------------------------------------------------------------ dashboard
   function setMode(mode) {
     view.mode = mode
-    for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"]]) {
+    for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"], [el.modeTraining, "training"]]) {
       btn.classList.toggle("active", m === mode)
       btn.setAttribute("aria-selected", String(m === mode))
     }
     show(el.personal, mode === "personal")
     show(el.practice, mode === "practice")
+    show(el.training, mode === "training")
+    if (mode === "training") trainer.loadHome(el.training)
   }
+
+  // ------------------------------------------------------------------ Training (training.js)
+  const trainer = createTrainer({api, board, showPosition, Chess, COLOR, legalInputHandler, escapeHtml, setStatus,
+    nav, MoveHistory, showNode, sounds,
+    el: {info: $("tr-info"), feedback: $("tr-feedback"), report: $("tr-report"), end: $("tr-end"),
+      cont: $("tr-continue"), back: $("tr-back"), title: el.title},
+    onShow() {
+      cancelAuto()
+      view.screen = "trainer"
+      el.counter.textContent = ""
+      show(el.dashboard, false)
+      show(el.solver, false)
+      show(el.trainer, true)
+    },
+    async onExit() {
+      view.screen = "dashboard"
+      if (nav) nav.set("puzzles", null)
+      show(el.trainer, false)
+      show(el.dashboard, true)
+      el.title.textContent = "Puzzles"
+      board.disableMoveInput()
+      await showPosition(new Chess().fen(), {orientation: COLOR.white})
+      setMode("training")
+      loadDashboard()
+    },
+  })
 
   async function loadDashboard() {
     el.status.textContent = ""
@@ -571,6 +602,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
 
   el.modePersonal.addEventListener("click", () => setMode("personal"))
   el.modePractice.addEventListener("click", () => setMode("practice"))
+  el.modeTraining.addEventListener("click", () => setMode("training"))
   el.hint.addEventListener("click", onHint)
   el.solution.addEventListener("click", onSolution)
   el.retry.addEventListener("click", onRetry)
@@ -585,6 +617,11 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     // Called when the Puzzles tab is shown: everything is where the learner left it.
     async enter() {
       view.active = true
+      trainer.activate()
+      if (view.screen === "trainer") {
+        await trainer.enter()
+        return
+      }
       if (view.screen === "solver" && puzzle()) {
         const a = view.attempt
         const learner = puzzle().side === "black" ? "b" : "w"
@@ -609,10 +646,12 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
         await showPosition(new Chess().fen(), {orientation: COLOR.white})
         setStatus("")
         if (view.dashboard) renderDashboard()
+        if (view.mode === "training") trainer.loadHome(el.training)
         await loadDashboard()
       }
     },
     leave() {
+      trainer.leave()
       cancelAuto()
       view.active = false
       view.token++  // a pending reply animation stops; the attempt stays as it was
@@ -620,11 +659,11 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       board.disableMoveInput()
     },
     readable() {
-      return view.screen === "solver" ? el.feedback : el.personal
+      return view.screen === "trainer" ? $("tr-report") : view.screen === "solver" ? el.feedback : el.personal
     },
     // for the e2e test / debugging
     state: () => ({screen: view.screen, mode: view.mode, pos: view.pos, total: view.set.length,
-      id: puzzle() && puzzle().id, done: Boolean(view.attempt && view.attempt.done)}),
+      id: puzzle() && puzzle().id, done: Boolean(view.attempt && view.attempt.done), training: trainer.state()}),
     sameMove,
   }
 }

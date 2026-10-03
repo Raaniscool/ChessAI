@@ -599,6 +599,20 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
   color: var(--text); border: 1px solid #343c45; border-radius: 9px; padding: 11px 13px; font-size: 14px; cursor: pointer; }
 .pz-theme:hover { border-color: var(--accent); }
 .pz-status { min-height: 18px; font-size: 13px; }
+/* Training (Puzzles tab) */
+.tr-modes { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.tr-mode { flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; }
+.tr-mode span:first-child { font-weight: 600; }
+.tr-mode .muted { font-size: 12.5px; line-height: 1.35; }
+.tr-mode:disabled { opacity: .5; cursor: default; }
+.tr-profile { margin-top: 12px; }
+.tr-list { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; }
+.tr-report { display: flex; flex-direction: column; gap: 8px; }
+.tr-section h3 { margin: 0 0 2px; }
+.tr-section p { margin: 0; }
+.tr-good li::marker { color: var(--accent); }
+.tr-work li::marker, .tr-mistakes li::marker, .tr-missed li::marker { color: #e3b341; }
+.tr-reveal { border-top: 1px solid #343c45; padding-top: 6px; font-size: 13px; }
 .pz-solver { flex: 1; display: flex; flex-direction: column; gap: 12px; padding-top: 10px; overflow-y: auto; }
 .pz-info { display: flex; flex-direction: column; gap: 6px; }
 .pz-side { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 9px; }

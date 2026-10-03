@@ -111,9 +111,12 @@
                     title="Puzzles chosen from your weaknesses and results">🎯 Personalized</button>
             <button id="pz-mode-practice" class="pz-mode" role="tab" aria-selected="false"
                     title="Pick any theme — no game analysis needed">📚 Practice</button>
+            <button id="pz-mode-training" class="pz-mode" role="tab" aria-selected="false"
+                    title="Short games against a bot near your level — they show what to practise">🏁 Training</button>
           </div>
           <div id="pz-personal" class="pz-section"></div>
           <div id="pz-practice" class="pz-section hidden"></div>
+          <div id="pz-training" class="pz-section hidden"></div>
           <div id="pz-status" class="pz-status muted" aria-live="polite"></div>
         </div>
         <div id="pz-solver" class="pz-solver hidden">
@@ -126,6 +129,16 @@
             <button id="pz-retry" class="btn hidden">↻ Retry</button>
             <button id="pz-next" class="btn primary hidden">Next →</button>
             <button id="pz-back" class="btn pz-back">← Back to Puzzles</button>
+          </div>
+        </div>
+        <div id="pz-trainer" class="pz-solver hidden">
+          <div id="tr-info" class="pz-info"></div>
+          <div id="tr-feedback" class="pz-feedback" aria-live="polite"></div>
+          <div id="tr-report" class="tr-report hidden" aria-live="polite"></div>
+          <div class="controls pz-controls">
+            <button id="tr-end" class="btn" title="Stop here and analyse what you played">End segment</button>
+            <button id="tr-continue" class="btn primary hidden">Continue →</button>
+            <button id="tr-back" class="btn pz-back">← Back to Puzzles</button>
           </div>
         </div>
       </section>
