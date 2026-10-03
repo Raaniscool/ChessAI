@@ -136,7 +136,7 @@ $("pz-mode-practice").click()
       check(!layer.querySelector(".check-square"), "check highlight: gone once the king is out of check")
     }
   }
-  check(/(White|Black) to move/.test($("pz-info").textContent) && /^1\/\d+$/.test($("pz-counter").textContent) &&
+  check(/(White|Black) to move/.test($("pz-info").textContent) && /^Puzzle 1$/.test($("pz-counter").textContent) &&
     $("pz-set").querySelectorAll(".pz-item").length >= 3, "puzzles 4+5: general practice works without analysis and opens the solver: " +
     $("pz-info").textContent.replace(/\s+/g, " ").trim())
   const level = $("pz-info").querySelector(".pz-level")
@@ -159,7 +159,7 @@ $("pz-mode-practice").click()
   check(stats.attempts === 1 && stats.last_result === "failed", "puzzles 6: completing a puzzle records the result (" + JSON.stringify(stats).slice(0, 90) + ")")
   // the next one, solved cleanly
   $("pz-next").click()
-  await waitFor(() => /^2\//.test($("pz-counter").textContent) && board.state.moveInputCallback, "second puzzle")
+  await waitFor(() => /^Puzzle 2$/.test($("pz-counter").textContent) && board.state.moveInputCallback, "second puzzle")
   const p2 = await puzzleData(puzzleNow())
   for (const [i, step] of p2.steps.entries()) {
     await playStep(step, i === p2.steps.length - 1)
@@ -662,10 +662,9 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
   profileBox.querySelector("button").click()
   await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "personalized set", 180000)
   {
-    // the dashboard named the weakness the learner chose; the solving screen doesn't name the idea
-    const shown = $("pz-title").textContent + " " + $("pz-info").textContent
-    check(/Your puzzles/.test($("pz-title").textContent) && !/fork/i.test(shown),
-      "no spoiler while solving the weakness set: " + shown.replace(/\s+/g, " ").trim().slice(0, 120))
+    // a personalized set keeps naming the identified type (only Mixed practice hides it)
+    check(/Missed knight fork/.test($("pz-title").textContent) && /Knight fork/.test($("pz-info").textContent),
+      "the personalized set names the weakness it trains: " + $("pz-title").textContent)
     const ids = [...$("pz-set").querySelectorAll(".pz-item")].map(b => b.dataset.id)
     const data = await Promise.all(ids.map(puzzleData))
     check(data.filter(d => d.concept).every(d => /fork/.test(d.concept) || d.role === "defend"),
@@ -694,13 +693,13 @@ check(rerun[0].type === "select" && rerun[0].cached === 10 && rerun[0].to_analyz
   $("tab-puzzles").click()
   await waitFor(() => visible("pz-solver") && board.state.moveInputCallback, "puzzle again")
   await sleep(300)
-  check(puzzleNow() === id && board.getPosition() === fen && /^1\//.test($("pz-counter").textContent),
+  check(puzzleNow() === id && board.getPosition() === fen && /^Puzzle 1$/.test($("pz-counter").textContent),
     "puzzles 8: switching between Analysis, Lessons and Puzzles keeps the half-solved puzzle")
   // two missed puzzles -> the weakness climbs and says how puzzles are going
   $("pz-solution").click()
   await waitFor(() => visible("pz-next"), "solution shown", 20000)
   $("pz-next").click()
-  await waitFor(() => /^2\//.test($("pz-counter").textContent) && board.state.moveInputCallback, "second personalized puzzle")
+  await waitFor(() => /^Puzzle 2$/.test($("pz-counter").textContent) && board.state.moveInputCallback, "second personalized puzzle")
   $("pz-solution").click()
   await waitFor(() => visible("pz-next"), "solution shown", 20000)
   $("pz-back").click()
@@ -747,6 +746,49 @@ check(/knight fork/i.test(hist.querySelector(".history-explain").textContent), "
 }
 try { w.localStorage.removeItem("chessai.historyCount"); w.localStorage.removeItem("chessai.chosenGames") } catch (_) { /* none */ }
 for (const id of await gameIds()) if (!gamesBefore.has(id)) await realFetch(new URL(`api/games/${id}`, BASE), {method: "DELETE"})
+
+// Mixed practice (near the end: revealing solutions adds puzzle-based weaknesses): the idea stays hidden until the puzzle is over; the session never ends by itself
+{
+  $("tab-puzzles").click()
+  await waitFor(() => visible("pz-dashboard") || visible("pz-solver"), "puzzles tab")
+  if (visible("pz-solver")) { $("pz-back").click(); await waitFor(() => visible("pz-dashboard"), "dashboard") }
+  $("pz-mode-practice").click()
+  const mixed = $("pz-practice").querySelector('.pz-theme[data-concept="tactics"]')
+  check(!!mixed, "Practice offers Mixed tactics")
+  mixed.click()
+  await waitFor(() => visible("pz-solver") && board.state.moveInputCallback && /^Puzzle 1$/.test($("pz-counter").textContent),
+    "mixed set", 60000)
+  const before = $("pz-title").textContent + " " + $("pz-info").textContent + " " + $("pz-set").textContent
+  check(/Mixed practice/.test($("pz-title").textContent) && !$("pz-info").querySelector(".pz-concept") &&
+    /Find the best move/.test($("pz-info").textContent) && $("pz-info").querySelector(".pz-meta span"),
+    "mixed: no concept before solving, difficulty still shown: " + before.replace(/\s+/g, " ").trim().slice(0, 100))
+  $("pz-solution").click()
+  await waitFor(() => visible("pz-next") && $("pz-info").querySelector(".pz-concept"), "mixed: solution shown", 20000)
+  const concept = $("pz-info").querySelector(".pz-concept").textContent
+  check(concept && !before.includes(concept) && $("pz-set").querySelector(".pz-item.active").textContent.includes(concept),
+    `mixed: the concept (${concept}) is revealed only after the puzzle`)
+  check(!!$("pz-explain").querySelector(".pz-auto"), "continuous: a countdown to the next puzzle: " +
+    ($("pz-explain").querySelector(".pz-auto") || {}).textContent)
+  // no click: the next puzzle loads by itself
+  await waitFor(() => /^Puzzle 2$/.test($("pz-counter").textContent) && board.state.moveInputCallback, "next puzzle by itself", 15000)
+  check(true, "continuous: after a puzzle the next one loads automatically")
+  const first = $("pz-set").querySelectorAll(".pz-item").length
+  for (let n = 2; n <= first + 2; n++) {
+    $("pz-solution").click()
+    await waitFor(() => visible("pz-next"), `mixed puzzle ${n} solved`, 20000)
+    $("pz-next").click()
+    await waitFor(() => $("pz-counter").textContent === `Puzzle ${n + 1}` && board.state.moveInputCallback, `puzzle ${n + 1}`, 120000)
+  }
+  check(visible("pz-solver") && $("pz-set").querySelectorAll(".pz-item").length > first,
+    `continuous: past the first ${first} puzzles the session goes on (${$("pz-counter").textContent}, ` +
+    `${$("pz-set").querySelectorAll(".pz-item").length} in the session)`)
+  const ids = [...$("pz-set").querySelectorAll(".pz-item")].map(b => b.dataset.id)
+  check(new Set(ids).size === ids.length, "continuous: no puzzle served twice in a session")
+  $("pz-back").click()
+  await waitFor(() => visible("pz-dashboard") && /Session: 0 of \d+ solved/.test($("pz-personal").textContent + $("pz-dashboard").textContent),
+    "back to Puzzles ends the session", 20000)
+  check(true, "continuous: only Back to Puzzles ends the session")
+}
 
 // Coach panel: what the coach knows, and editing my details (at the end: it changes the level)
 $("tab-lessons").click()
