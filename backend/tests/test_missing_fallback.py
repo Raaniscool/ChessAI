@@ -169,7 +169,7 @@ def test_nonsense_still_gets_the_honest_answer():
 
 @pytest.mark.parametrize("goal, term", [
     ("teach me the greek gift sacrifice", "Greek gift sacrifice"),
-    ("I want to learn the philidor position", "Philidor position"),
+    ("I want to learn the desperado", "Desperado"),
     ("windmill", "Windmill"),
     ("teach me epaulette mate", "Epaulette mate"),
 ])
