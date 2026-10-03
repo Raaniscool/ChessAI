@@ -6,6 +6,7 @@
   <title>AI Chess Tutor</title>
   <link rel="stylesheet" href="./vendor/cm-chessboard/assets/chessboard.css">
   <link rel="stylesheet" href="./vendor/cm-chessboard/assets/extensions/markers/markers.css">
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/extensions/arrows/arrows.css">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -67,6 +68,12 @@
     <main class="main">
       <section class="board-pane">
         <div id="board"></div>
+        <div id="board-nav" class="board-nav" role="group" aria-label="Move navigation">
+          <button id="nav-prev" class="btn nav-btn" disabled title="Previous move (←)" aria-label="Previous move">←</button>
+          <span id="nav-label" class="nav-label" aria-live="polite"></span>
+          <button id="nav-next" class="btn nav-btn" disabled title="Next move (→)" aria-label="Next move">→</button>
+          <button id="nav-back" class="btn nav-return hidden" title="Back to the position you were on">↩ Back</button>
+        </div>
         <div id="board-status" class="board-status"></div>
       </section>
 

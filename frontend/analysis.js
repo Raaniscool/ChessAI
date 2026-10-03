@@ -22,7 +22,16 @@ const store = {
 
 export function setupGameAnalysis(ctx) {
   const {api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
-    setStatus, makeSpeakable, narrator, onTraining} = ctx
+    setStatus, makeSpeakable, narrator, onTraining, nav = null, MoveHistory = null} = ctx
+
+  // ← → under the board step through what the review last put on it (board-nav.js).
+  let lineRuns = 0  // the newest engine line owns the navigation lock
+  function track(fen, moves = []) {
+    if (!nav || !MoveHistory) return null
+    const h = MoveHistory.fromMoves(fen, moves, Chess)
+    nav.set("games", h)
+    return h
+  }
 
   const el = {
     pgn: document.getElementById("ga-pgn"),
@@ -277,6 +286,7 @@ export function setupGameAnalysis(ctx) {
 
   async function renderOverview() {
     view.token++
+    if (nav) nav.set("games", null)  // no position under review
     view.game = null
     view.items = []
     stopStream()
@@ -1033,12 +1043,14 @@ export function setupGameAnalysis(ctx) {
 
   async function showBefore(m) {
     view.token++
+    track(m.fen_before)
     await showPosition(m.fen_before, {orientation: orientation()})
     setStatus(`${m.side === "black" ? "Black" : "White"} to move — this is the position before ${m.san}.`)
   }
 
   async function showMine(m) {
     const token = ++view.token
+    track(m.fen_before, [m.uci])
     await showPosition(m.fen_before, {orientation: orientation()})
     if (token !== view.token) return
     await board.setPosition(m.fen_after, true)
@@ -1051,6 +1063,7 @@ export function setupGameAnalysis(ctx) {
     const token = ++view.token
     await showPosition(m.fen_before, {orientation: orientation()})
     if (token !== view.token || !m.best_move_uci) return
+    track(m.fen_before, [m.best_move_uci])
     const chess = new Chess(m.fen_before)
     const u = m.best_move_uci
     chess.move({from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] || "q"})
@@ -1062,19 +1075,27 @@ export function setupGameAnalysis(ctx) {
 
   async function playLine(m) {
     const token = ++view.token
-    await showPosition(m.fen_before, {orientation: orientation()})
-    const chess = new Chess(m.fen_before)
-    const line = (m.best_line || []).slice(0, 6)
-    for (let i = 0; i < line.length; i++) {
-      await new Promise(r => setTimeout(r, 650))
-      if (token !== view.token) return
-      let move
-      try { move = chess.move(line[i]) } catch (_) { move = null }
-      if (!move) break
-      await board.setPosition(chess.fen(), true)
-      clearMarkers()
-      mark([move.from, move.to], i === 0 ? MARKER_TYPE.square : MARKER_TYPE.frame)
-      setStatus(`Stockfish's line: ${line.slice(0, i + 1).join(" ")}`)
+    const h = track(m.fen_before)
+    const run = ++lineRuns
+    if (nav) nav.lock("demo", "games")  // the line plays by itself: ← → once it's done
+    try {
+      await showPosition(m.fen_before, {orientation: orientation()})
+      const chess = new Chess(m.fen_before)
+      const line = (m.best_line || []).slice(0, 6)
+      for (let i = 0; i < line.length; i++) {
+        await new Promise(r => setTimeout(r, 650))
+        if (token !== view.token) return
+        let move
+        try { move = chess.move(line[i]) } catch (_) { move = null }
+        if (!move) break
+        if (h) { h.append(chess.fen(), move.from + move.to + (move.promotion || ""), move.san); nav.refresh() }
+        await board.setPosition(chess.fen(), true)
+        clearMarkers()
+        mark([move.from, move.to], i === 0 ? MARKER_TYPE.square : MARKER_TYPE.frame)
+        setStatus(`Stockfish's line: ${line.slice(0, i + 1).join(" ")}`)
+      }
+    } finally {
+      if (nav && run === lineRuns) nav.unlock("demo", "games")
     }
   }
 

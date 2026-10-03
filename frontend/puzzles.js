@@ -10,7 +10,7 @@ const REVERT_DELAY = 550
 const SOLUTION_STEP = 700
 
 export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler,
-  escapeHtml, setStatus}) {
+  escapeHtml, setStatus, nav = null, MoveHistory = null, showNode = null}) {
   const $ = id => document.getElementById(id)
   const el = {
     title: $("pz-title"), counter: $("pz-counter"), dashboard: $("pz-dashboard"), solver: $("pz-solver"),
@@ -23,6 +23,8 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     mode: "personal", screen: "dashboard", dashboard: null, set: [], title: "", pos: 0, attempt: null,
     chess: null, inputOpen: false, token: 0, active: false, results: {}, summary: null,
     body: null, done: [], difficulty: null, adaptNote: null,
+    history: MoveHistory ? new MoveHistory(new Chess().fen()) : null,   // what's been played (← →)
+    explore: null,   // after the puzzle: a board to try other moves on (never graded or recorded)
   }
 
   const puzzle = () => view.set[view.pos]
@@ -195,7 +197,53 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   function setInput(open) {
     view.inputOpen = open && view.active
     board.disableMoveInput()
-    if (view.inputOpen) board.enableMoveInput(input, orientation())
+    // once the puzzle is over, either side may be moved to try things out
+    if (view.inputOpen) board.enableMoveInput(input, exploring() ? undefined : orientation())
+  }
+
+  // ------------------------------------------------------------------ move history (← →)
+  // While solving, earlier positions are for looking only: moves are played at the latest
+  // position. After the puzzle, any position can be explored; a different move there starts a
+  // new continuation (MoveHistory.play). Exploring never counts and never asks the engine.
+  const exploring = () => Boolean(view.attempt && view.attempt.done && view.history)
+
+  function track() {
+    if (nav && view.history) nav.set("puzzles", view.history, {onView})
+  }
+
+  function lock(on) {
+    if (!nav) return
+    if (on) nav.lock("auto", "puzzles")
+    else nav.unlock("auto", "puzzles")
+  }
+
+  async function onView(h) {
+    const a = view.attempt
+    if (!a || view.screen !== "solver") return
+    if (a.done) {
+      view.explore = new Chess(h.current.fen)
+      setInput(true)
+      return
+    }
+    if (h.atLatest) {
+      setStatus("")
+      setInput(true)
+    } else {
+      setInput(false)
+      setStatus("Looking at an earlier position — press → to get back to the puzzle.")
+    }
+  }
+
+  async function explore(from, to) {
+    const chess = new Chess(view.history.current.fen)
+    const legal = chess.moves({square: from, verbose: true}).filter(m => m.to === to)
+    if (!legal.length) return
+    const move = chess.move({from, to, promotion: legal.some(m => m.promotion) ? "q" : undefined})
+    view.history.play(chess.fen(), move.from + move.to + (move.promotion || ""), move.san)
+    view.explore = new Chess(chess.fen())
+    nav.refresh()
+    await showNode(view.history.current)
+    setInput(true)
   }
 
   async function openPuzzle(i) {
@@ -203,6 +251,8 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     const p = puzzle()
     view.attempt = newAttempt(p)
     view.chess = new Chess(p.fen)
+    if (view.history) view.history.reset(p.fen)
+    track()
     view.token++
     feedback("")
     show(el.explain, false)
@@ -220,7 +270,8 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     await openPuzzle(i)
   }
 
-  const input = legalInputHandler(() => (view.inputOpen ? view.chess : null), (from, to) => onMove(from, to))
+  const input = legalInputHandler(() => (!view.inputOpen ? null : exploring() ? view.explore : view.chess),
+    (from, to) => (exploring() ? explore(from, to) : onMove(from, to)))
 
   function uciOf(from, to) {
     const legal = view.chess.moves({square: from, verbose: true}).filter(m => m.to === to)
@@ -233,6 +284,16 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   async function onMove(from, to) {
+    if (view.history && !view.history.atLatest) return   // earlier positions are for looking
+    lock(true)   // the opponent's reply / the take-back is played by the program
+    try {
+      await judgeMove(from, to)
+    } finally {
+      lock(false)
+    }
+  }
+
+  async function judgeMove(from, to) {
     const uci = uciOf(from, to)
     if (!uci) return
     const p = puzzle()
@@ -250,7 +311,9 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       setInput(true)
       return
     }
-    play(view.chess, uci)
+    const mine = play(view.chess, uci)
+    if (view.history) view.history.append(view.chess.fen(), uci, mine && mine.san)
+    if (nav) nav.refresh()
     clearMarkers()
     board.addMarker(MARKER_TYPE.square, from); board.addMarker(MARKER_TYPE.square, to)
     feedback(r.message, "correct")
@@ -264,7 +327,9 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     await sleep(REPLY_DELAY)
     if (token !== view.token) return
     if (r.reply) {
-      play(view.chess, r.reply)
+      const reply = play(view.chess, r.reply)
+      if (view.history) view.history.append(view.chess.fen(), r.reply, reply && reply.san)
+      if (nav) nav.refresh()
       await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
         highlights: [{square: r.reply.slice(0, 2), color: "grey"}, {square: r.reply.slice(2, 4), color: "grey"}]})
     }
@@ -283,12 +348,18 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     else feedback("Finished — but with a mistake, so it counts as missed. Try it again later.", "failed")
     el.explain.innerHTML = `<div class="pz-line"><b>Solution:</b> ${escapeHtml(p.solution.join(" "))}</div>
       ${p.explanation ? `<p>${escapeHtml(p.explanation)}</p>` : ""}
-      <p class="muted pz-source">${escapeHtml(p.source || "")}</p>`
+      <p class="muted pz-source">${escapeHtml(p.source || "")}</p>
+      ${view.history ? `<p class="muted pz-explore">← → steps through the moves. You can also try other moves on
+        the board — they don't count.</p>` : ""}`
     show(el.explain, true)
     show(el.hint, false); show(el.solution, false); show(el.retry, true); show(el.next, true)
     el.next.textContent = view.pos < view.set.length - 1 ? "Next →" : "Finish set"
     view.results[p.id] = solved ? "solved" : "failed"
     renderSetList()
+    if (view.history) {   // free exploration from here (MoveHistory keeps what was played)
+      view.explore = new Chess(view.history.current.fen)
+      setInput(true)
+    }
     await recordIfNeeded()
   }
 
@@ -341,13 +412,24 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     const a = view.attempt
     const token = view.token
     setInput(false)
+    if (view.history && !view.history.atLatest) {   // was looking back: continue from the latest position
+      view.history.toLatest()
+      await showPosition(view.chess.fen(), {orientation: orientation()})
+    }
     const line = reveal(puzzle(), a)
-    for (const uci of line) {
-      await sleep(SOLUTION_STEP)
-      if (token !== view.token) return
-      play(view.chess, uci)
-      await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
-        highlights: [{square: uci.slice(0, 2), color: "green"}, {square: uci.slice(2, 4), color: "green"}]})
+    lock(true)   // the solution plays by itself
+    try {
+      for (const uci of line) {
+        await sleep(SOLUTION_STEP)
+        if (token !== view.token) return
+        const move = play(view.chess, uci)
+        if (view.history) view.history.append(view.chess.fen(), uci, move && move.san)
+        if (nav) nav.refresh()
+        await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
+          highlights: [{square: uci.slice(0, 2), color: "green"}, {square: uci.slice(2, 4), color: "green"}]})
+      }
+    } finally {
+      lock(false)
     }
     await finish()
   }
@@ -357,6 +439,8 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     retry(p, view.attempt)
     view.attempt.revealed = false
     view.chess = new Chess(p.fen)
+    if (view.history) view.history.reset(p.fen)
+    track()
     view.token++
     feedback("Try it again.", "")
     show(el.explain, false)
@@ -378,6 +462,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     await recordIfNeeded()
     view.token++
     setInput(false)
+    if (nav) nav.set("puzzles", null)   // nothing to step through on the dashboard
     view.screen = "dashboard"
     show(el.solver, false)
     show(el.dashboard, true)
@@ -404,13 +489,19 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
         if (!a.done && view.chess.turn() !== learner && a.index > 0) {
           // left while the opponent's reply was on its way: play it now
           const reply = puzzle().steps[a.index - 1].reply_uci
-          if (reply) play(view.chess, reply)
+          if (reply) {
+            const move = play(view.chess, reply)
+            if (view.history) view.history.append(view.chess.fen(), reply, move && move.san)
+          }
         }
         renderInfo()
-        await showPosition(view.chess.fen(), {orientation: orientation()})
+        track()
+        if (view.history && showNode) await showNode(view.history.current, view.history, orientation())
+        else await showPosition(view.chess.fen(), {orientation: orientation()})
         if (!view.active) return
         setStatus("")
-        setInput(!view.attempt.done)
+        if (view.history && (a.done || !view.history.atLatest)) await onView(view.history)
+        else setInput(!view.attempt.done)
       } else {
         board.disableMoveInput()
         await showPosition(new Chess().fen(), {orientation: COLOR.white})

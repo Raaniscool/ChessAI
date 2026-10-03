@@ -12,6 +12,8 @@ import {errorMessage, readEvents, reach} from "./net.js"
 import {OTHER, clarifyBody, debugEnabled, debugLines, optionLabel, puzzleReasons, understoodLine, verificationBadge} from "./plan-view.js"
 import {setupCoach} from "./coach.js"
 import {setupPuzzles} from "./puzzles.js"
+import {MoveHistory, createBoardNav, navKey} from "./board-nav.js"
+import {CalcArrows} from "./calc-arrows.js"
 
 // ---------- stale page guard ----------
 // A browser can combine a cached old index.html with a newer app.js. Instead of
@@ -25,7 +27,8 @@ const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "les
   "ga-back", "ga-prev", "ga-next", "ga-body",
   "tab-puzzles", "puzzles-side", "puzzles-pane", "pz-set", "pz-title", "pz-counter", "pz-dashboard", "pz-solver",
   "pz-mode-personal", "pz-mode-practice", "pz-personal", "pz-practice", "pz-status", "pz-info", "pz-feedback",
-  "pz-explain", "pz-hint", "pz-solution", "pz-retry", "pz-next", "pz-back"]
+  "pz-explain", "pz-hint", "pz-solution", "pz-retry", "pz-next", "pz-back",
+  "board-nav", "nav-prev", "nav-next", "nav-label", "nav-back"]
 const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))
 if (missingIds.length) {
   const bar = document.createElement("div")
@@ -98,11 +101,13 @@ function stopStream() {
 
 // ---------- board ----------
 
+let nav = null  // the ← → controls (below), created once the board exists
 const board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
   style: {cssClass: "green", borderType: BORDER_TYPE.frame, showCoordinates: true},
   assetsUrl: "./vendor/cm-chessboard/assets/",
-  extensions: [{class: Markers, props: {}}],
+  // right-drag arrows for calculation: off while the AI is moving pieces by itself
+  extensions: [{class: Markers, props: {}}, {class: CalcArrows, props: {isDisabled: () => Boolean(nav && nav.isLocked())}}],
 })
 
 const HIGHLIGHT_MARKERS = {
@@ -144,6 +149,59 @@ function showPosition(fen, {orientation = COLOR.white, highlights = [], animated
 function applyUci(chess, uci) {
   return chess.move({from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || "q"})
 }
+
+// ---------- move history: ← → under the board ----------
+// Each view keeps a MoveHistory of what it put on the board (board-nav.js); the buttons and the
+// arrow keys step through the one of the view being shown. Locked while the AI moves pieces.
+
+const LASTMOVE_MARKER = {class: "marker-lastmove", slice: "markerSquare"}
+
+async function showNode(node, _history = null, orientation = board.getOrientation()) {
+  await showPosition(node.fen, {orientation})
+  if (node.uci) {
+    board.addMarker(LASTMOVE_MARKER, node.uci.slice(0, 2))
+    board.addMarker(LASTMOVE_MARKER, node.uci.slice(2, 4))
+  }
+}
+
+nav = createBoardNav({
+  prev: document.getElementById("nav-prev"), next: document.getElementById("nav-next"),
+  label: document.getElementById("nav-label"), back: document.getElementById("nav-back"),
+  root: document.getElementById("board-nav"), show: showNode, getView: () => state.view,
+})
+
+document.addEventListener("keydown", ev => {
+  const step = navKey(ev)
+  if (!step || document.querySelector("dialog[open]")) return
+  ev.preventDefault()
+  nav.go(step)
+})
+
+// Lessons: the current step's sequence (a demonstration's moves, an exercise and its answer).
+const lessonHistory = new MoveHistory(FEN.start)
+let reviewStatus = null  // the status line to put back when the learner returns to the latest position
+
+async function lessonOnView(h) {
+  const step = state.step
+  if (!step) return
+  if (!h.atLatest) {
+    if (reviewStatus === null) reviewStatus = document.getElementById("board-status").textContent
+    setStatus("Reviewing earlier moves — → steps forward again.")
+    return
+  }
+  if (reviewStatus !== null) setStatus(reviewStatus)
+  reviewStatus = null
+  const highlights = step.type === "teach" ? (step.board || {}).highlights
+    : step.type === "demonstrate" ? (step.board_after || {}).highlights : null
+  if (highlights) applyHighlights(highlights)
+}
+
+function resetLessonHistory(fen) {
+  lessonHistory.reset(fen)
+  reviewStatus = null
+  nav.set("lessons", lessonHistory, {onView: lessonOnView})
+}
+resetLessonHistory(FEN.start)
 
 // ---------- move input (exercise) ----------
 
@@ -199,9 +257,14 @@ function boardAcceptsMoves() {
   return state.step && state.step.type === "exercise" && !state.step.accepted && !state.busy
 }
 
-document.getElementById("board").addEventListener("pointerdown", () => {
-  // only the lesson view nudges; the other tabs own the board while they are shown
-  if (state.view !== "lessons" || !state.step || boardAcceptsMoves()) return
+document.getElementById("board").addEventListener("pointerdown", ev => {
+  // only the lesson view nudges; the other tabs own the board while they are shown.
+  // A right click draws calculation arrows: no nudge for that.
+  if (ev.button > 0 || state.view !== "lessons" || !state.step || boardAcceptsMoves()) return
+  if (!lessonHistory.atLatest && !state.demoPlaying) {
+    setStatus("You're looking at an earlier position — press → to step forward again.")
+    return
+  }
   if (state.demoPlaying) {
     setStatus("Watch the demonstration — you'll get your turn right after.")
     return
@@ -225,7 +288,7 @@ async function handleUserMove(from, to) {
   const promotion = candidates.some(m => m.promotion) ? "q" : undefined
   const uci = from + to + (promotion || "")
   const fenBefore = state.chess.fen()
-  applyUci(state.chess, uci)
+  const played = applyUci(state.chess, uci)
   stopStream()
   narrator.stop()
 
@@ -239,6 +302,8 @@ async function handleUserMove(from, to) {
       state.step.accepted = true
       hideBtn("btn-hint"); hideBtn("btn-reveal")
       setStatus("")
+      lessonHistory.append(state.chess.fen(), uci, played && played.san)
+      nav.refresh()
       await board.setPosition(state.chess.fen(), true)
       showContinue()  // only once the board has settled, so the click isn't ignored
     } else {
@@ -338,7 +403,7 @@ function squaresFor(mark, element) {
 // In a game review, a line of moves ("the line goes Nc7+ Kd8 Nxa7") is shown by playing it
 // on the board — while it's read aloud, when pointed at, or all at once on a click. Only
 // single squares are highlighted. The board goes back to where it was afterwards.
-const lineView = {restore: null, timer: null, token: 0}
+const lineView = {restore: null, timer: null, token: 0, run: 0}
 
 const placementOf = fen => (fen || "").split(" ")[0]
 
@@ -348,6 +413,7 @@ async function showLineMove(span) {
   clearTimeout(lineView.timer)
   const token = ++lineView.token
   if (lineView.restore === null) lineView.restore = board.getPosition()
+  nav.lock("line-preview", "*")  // a move is being shown for a moment: the board goes back afterwards
   board.removeMarkers(SPEECH_MARKER)
   board.removeMarkers(HOVER_MARKER)
   if (placementOf(board.getPosition()) !== placementOf(positions[index])) await board.setPosition(positions[index], false)
@@ -363,6 +429,7 @@ function endLineView(delay) {
     lineView.restore = null
     lineView.token++
     if (board && fen) await board.setPosition(fen, true)
+    nav.unlock("line-preview", "*")
   }, delay)
 }
 
@@ -372,13 +439,23 @@ async function playWholeLine(span) {
   clearTimeout(lineView.timer)
   lineView.restore = null  // asked for: the line's final position stays on the board
   const token = ++lineView.token
+  const run = ++lineView.run
+  const view = state.view
+  nav.unlock("line-preview", "*")
+  nav.lock("line", "*")  // the line is playing by itself: ← → wait until it's done
   board.removeMarkers(SPEECH_MARKER)
   board.removeMarkers(HOVER_MARKER)
-  await board.setPosition(positions[0], false)
-  for (let i = 1; i < positions.length; i++) {
-    await new Promise(r => setTimeout(r, 600))
-    if (token !== lineView.token) return
-    await board.setPosition(positions[i], true)
+  try {
+    await board.setPosition(positions[0], false)
+    for (let i = 1; i < positions.length; i++) {
+      await new Promise(r => setTimeout(r, 600))
+      if (token !== lineView.token) return
+      await board.setPosition(positions[i], true)
+    }
+    // then it can be stepped through; "↩ Back" returns to the view's own position
+    if (state.view === view) nav.overlay(view, MoveHistory.fromPositions(positions, Chess))
+  } finally {
+    if (run === lineView.run) nav.unlock("line", "*")
   }
 }
 
@@ -575,6 +652,7 @@ async function renderStep(step) {
   document.getElementById("step-indicator").textContent = `Step ${step.index + 1} / ${step.total_steps}`
   board.disableMoveInput()
   if (step.coach_note) showCoachNote(step.coach_note)
+  resetLessonHistory(step.type === "demonstrate" ? step.start_fen : step.board.fen)
 
   if (step.type === "teach") {
     const msg = addMsg(step.text)
@@ -613,17 +691,22 @@ async function renderStep(step) {
 async function playDemonstration() {
   if (state.demoPlaying || !state.step || state.step.type !== "demonstrate") return
   state.demoPlaying = true
+  nav.lock("demo", "lessons")  // the AI is moving the pieces: no ← → and no arrows until it's done
   board.disableMoveInput()
   hideBtn("btn-play"); hideBtn("btn-continue")
   const step = state.step
   const demoChess = new Chess(step.start_fen)
+  resetLessonHistory(step.start_fen)
   clearMarkers()
+  board.clearCalculation()
   await board.setPosition(step.start_fen, false)
   setStatus("Watch the demonstration…")
   try {
     for (let i = 0; i < step.moves.length; i++) {
       if (state.step !== step || state.view !== "lessons") return  // learner moved on
-      applyUci(demoChess, step.moves[i])
+      const move = applyUci(demoChess, step.moves[i])
+      lessonHistory.append(demoChess.fen(), step.moves[i], move && move.san)
+      nav.refresh()
       await board.setPosition(demoChess.fen(), true)
       const comment = step.comments && step.comments[i]
       if (comment) {
@@ -641,6 +724,7 @@ async function playDemonstration() {
     setStatus(step.next_type === "exercise" ? "Now it's your turn." : "")
   } finally {
     state.demoPlaying = false
+    nav.unlock("demo", "lessons")
     if (state.step === step) {
       showBtn("btn-play")
       showContinue()
@@ -742,6 +826,9 @@ async function revealSolution() {
       try {
         const chess = new Chess(state.step.board.fen)
         const move = applyUci(chess, res.uci)
+        resetLessonHistory(state.step.board.fen)
+        lessonHistory.append(chess.fen(), res.uci, move.san)
+        nav.refresh()
         await showPosition(state.step.board.fen, {orientation: board.getOrientation()})
         await board.setPosition(chess.fen(), true)
         clearMarkers()
@@ -1143,7 +1230,7 @@ async function loadHealth() {
 
 const gameAnalysis = setupGameAnalysis({
   api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
-  setStatus, makeSpeakable, narrator,
+  setStatus, makeSpeakable, narrator, nav, MoveHistory,
   // A training plan built from the learner's games is an ordinary plan: show it in the lessons view.
   onTraining: async res => {
     await switchView("lessons")
@@ -1154,6 +1241,7 @@ const gameAnalysis = setupGameAnalysis({
 
 const puzzles = setupPuzzles({
   api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler, escapeHtml, setStatus,
+  nav, MoveHistory, showNode,
 })
 
 let lessonBoard = null  // what the lesson view showed, restored when coming back
@@ -1183,6 +1271,7 @@ async function switchView(name) {
     puzzles.leave()
   }
   state.view = name
+  nav.refresh()  // the ← → buttons follow the view being shown
   for (const [view, [tabId, sideId, paneId]] of Object.entries(VIEWS)) {
     const on = view === name
     const tab = document.getElementById(tabId)

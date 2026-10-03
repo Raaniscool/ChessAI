@@ -113,6 +113,15 @@ header h1 { margin: 0; font-size: 20px; }
 .board-pane { background: var(--panel); border: 1px solid #343c45; border-radius: var(--radius); padding: 14px;
   align-self: start; }
 #board { width: 100%; }
+.board-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+.board-nav .nav-btn { min-width: 64px; font-size: 18px; line-height: 1; padding: 6px 14px; }
+.board-nav .nav-btn:disabled { opacity: .35; cursor: default; }
+.board-nav .nav-label { min-width: 110px; text-align: center; font-size: 12.5px; color: var(--muted);
+  font-variant-numeric: tabular-nums; }
+.board-nav.reviewing .nav-label { color: #e3b341; }
+.board-nav .nav-return { font-size: 12.5px; padding: 5px 10px; }
+.cm-chessboard .markers .marker.marker-lastmove { fill: #cdd26a; opacity: .45; }
+#board { user-select: none; -webkit-user-select: none; }
 .board-status { font-size: 13.5px; color: #c3cad2; text-align: center; margin-top: 10px; min-height: 16px; }
 
 .lesson-pane {
