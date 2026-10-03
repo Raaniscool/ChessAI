@@ -20,9 +20,10 @@ Lookup order: **verified library → deterministic rules → Stockfish → Qwen*
 
 | Part | State |
 |------|-------|
-| Schema, concept graph (62 concepts), validators, verification pipeline | done |
+| Schema, concept graph (80 concepts), validators, verification pipeline | done |
 | Source importers: curated records, Lichess opening DB, Lichess puzzles | done |
-| Seed library: 268 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
+| Seed library: 409 verified examples (about 10 per tactic and mating pattern), reproducible build | done |
+| Library expansion: new tactics, mates, endgame technique and beginner mistakes (`--expand`) | done (see *Library expansion*) |
 | Runtime tiers (generated / personal), review states, usage metadata | done (data model + library API) |
 | Tutor integration: retrieval layer, lessons from examples, chat/planner, teacher facts | done (see *Using the library in the tutor*) |
 | New positions on a library miss: constructors + Qwen proposals, verified before saving | done (see *Generated positions*) |
@@ -97,6 +98,8 @@ Any fail → `rejected`; any uncertain (e.g. no engine) → `needs_review`; else
 | Standard patterns, classic traps, textbook endgames | public-domain facts, original text | `curated/{checkmates,endgames,mistakes}.json` |
 | [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) | CC0 | opening lines; the moves come from the database, max. 6 extra moves |
 | Lichess puzzle database (via `planner/data/puzzles.json` and the larger `sources/data/lichess_puzzles/pool.json`) | CC0 | tactics/mates from real games, and "walked into a fork / hung a piece" mistakes |
+| Lichess puzzle database, expansion pools (`pool_expansion.json`, `pool_ideas.json`) | CC0 | decoys, clearance, interference, underpromotion, mate in two, hook/dovetail mates, pawn endings, back-rank and missed-threat mistakes |
+| Textbook endgames and one historical game (Alburt–Kasparov 1978) | public-domain facts, original text | `curated/{endgames,mistakes}_expansion.json` |
 
 ## Using the library in the tutor
 
@@ -303,6 +306,81 @@ A lesson request never fails just because there is no verified example:
 
 The plan carries `plan.fallback = {term, concept, understood_via, text_source, broader, generated,
 verified_examples}` so the UI can say exactly what was checked and by what.
+
+## Library expansion (`build_knowledge_seed.py --expand`)
+
+The original lists for this step weren't available, so the expansion follows the standard
+beginner-to-club syllabus (the Lichess puzzle themes, and the usual first endgame and
+beginner-mistake chapters of the classic textbooks). Anything already in the library was left
+alone. New concepts, each with its own validator in `validators.py` (the *library expansion*
+section):
+
+| Category | New concepts | Examples | Where they come from |
+|----------|--------------|---------:|----------------------|
+| Tactics | decoy (`attraction`), clearance, interference, underpromotion | 6 / 4 / 4 / 6 | Lichess (real games) |
+| Checkmates | mate in two, hook mate, dovetail mate | 6 / 6 / 6 | Lichess |
+| Endgames | rule of the square, key squares, triangulation, Philidor position, wrong bishop, pawn breakthrough, outside passed pawn | 2 / 2 / 2 / 1 / 1 / 2 / 6 | curated textbook positions (triangulation also Alburt–Kasparov 1978); Lichess for the outside passed pawn |
+| Mistakes | ignoring the back rank, avoiding stalemate; more *missing a threat* | 6 / 2 / +6 | Lichess; curated for stalemate |
+
+What each validator demands, so that a similar-looking position doesn't pass:
+
+- **Decoy:** the offered piece is captured on its square, and the next learner move uses it there
+  (a check, an attack or a capture on that square, or mate). Then the line must end in mate or a material gain.
+- **Clearance:** a later move by *another* piece uses the vacated square. If you put the
+  first piece back, that move would be impossible.
+- **Interference:** a piece lands between an enemy long-range piece and a square it guarded. Then
+  another learner piece uses that square (the interposed piece moving on would reopen the line).
+- **Underpromotion:** a knight, bishop or rook promotion. It is refused if a queen mates too. The new
+  `underpromotion` engine profile also demands that a queen be at least 150 cp worse, or stalemate.
+- **Mate in two / hook / dovetail:** exactly two learner moves to mate. A rook mating from the
+  next square, guarded by a knight that a pawn guards. A queen mating diagonally next to the king,
+  with the two squares behind it blocked by the king's own pieces.
+- **Rule of the square:** a lone king outside the pawn's square. The pawn's double step and the
+  defender's tempo are counted, and the line must promote. **Key squares:** K+P vs K, the king
+  steps onto a key square it wasn't on (rook pawns: b7/b8 or g7/g8).
+- **Triangulation:** the same piece placement returns with the other side to move after
+  three or more learner king moves. **Wrong bishop:** bishop + rook pawn against a lone king,
+  the bishop can't cover the corner, and the defender reaches it (Stockfish: a draw).
+- **Philidor:** rook against rook and pawn. The defending rook holds its third rank and, once the pawn
+  reaches it, checks from at least three ranks behind (Stockfish: a draw).
+- **Breakthrough / outside passer:** pawn endings only. A pawn sacrifice and a promotion. A
+  passed pawn two or more files away from every other pawn, after which the learner's king takes a pawn
+  three or more files away.
+- **Ignoring the back rank:** a real mistake (Stockfish) followed by a back-rank mate.
+  **Avoiding stalemate:** some legal move would stalemate, the key move doesn't, and the line mates.
+- **Missing a threat (imports):** on top of the validator, the whole punishment must have worked
+  without the mistake, too (the same mate, or the same material). Otherwise the mistake created
+  the threat rather than ignoring it.
+
+**How the Lichess part was built.** The CC0 per-theme samples in github.com/pwenker/chessli2 were
+verified move by move with `scripts/build_puzzle_library.py` into `pool_expansion.json` (themes
+mateIn2, hookMate, dovetailMate, underPromotion, attraction, clearance, interference, pawnEndgame,
+zugzwang). Lichess tags some themes loosely: only 1 of 24 "interference" puzzles really is one. So
+the CSVs were first filtered with the concept validators (rules only), and only the matches
+were verified with Stockfish into `pool_ideas.json`. Both files exclude every puzzle already in
+`puzzles.json`, `pool.json` and `pool_harder.json`.
+
+```powershell
+.\.venv\Scripts\python scripts\build_knowledge_seed.py --expand
+```
+
+This verifies the candidates against the library as it is (every pipeline stage, nothing relaxed).
+It writes only `examples/<category>/lichess_expansion.json` and `curated_expansion.json`, plus the
+`expansion` section of `seed_report.json`. Up to 6 examples per concept (`--expand-per-concept`).
+
+**What was refused (and stays out):**
+- Four Lichess tactics where Stockfish sees the learner only 0–61 cp better (`needs_review`).
+- The wrong-bishop a-pawn example: at depth 14 Stockfish shows −84 to −103 cp, not "clearly drawn".
+- Two missed-threat candidates whose "mistake" lost only 10–20 cp.
+- All Lichess *exposedKing / attackingF2F7* puzzles as "weakening the king". Their setup moves were
+  king walks into skewers or moves elsewhere on the board, so they went to *missing a threat*,
+  where they passed the stricter check.
+- Lichess "opposition" from pawn endings: the kings facing each other was incidental there.
+
+**Not covered yet** (they stay glossary entries with honest fallbacks): windmill, desperado, Greek
+gift, epaulette mate, perpetual check, x-ray, zugzwang as its own concept, and stalemate *tricks* (saving
+a lost game). The glossary no longer lists decoy, interference, the Philidor position or
+triangulation, because they are verified concepts now.
 
 ## Rebuilding the seed library
 
