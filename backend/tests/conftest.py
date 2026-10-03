@@ -30,7 +30,11 @@ def _fresh_learner(tmp_path_factory):
     # the learner's own game puzzles (puzzles.from_game): per test
     from app.puzzles.from_game import GamePuzzleStore, set_game_puzzles
     set_game_puzzles(GamePuzzleStore(tmp_path_factory.mktemp("game_puzzles") / "game_puzzles.json"))
+    # example usage and puzzle/lesson results: per test (they feed the difficulty calibration)
+    from app.knowledge.usage import UsageTracker, set_usage
+    set_usage(UsageTracker(tmp_path_factory.mktemp("usage") / "usage.json"))
     yield
+    set_usage(None)
     set_store(None)
     set_quota(None)
     set_engine_profiles(None)

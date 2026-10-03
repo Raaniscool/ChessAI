@@ -572,6 +572,9 @@ class SessionManager:
                                               revealed=revealed, concept=concept)
             except OSError:
                 pass
+        if example is not None:  # adaptation works on the calibrated scale (learner.training_level)
+            from .learner.training_level import rating_of
+            rating = rating_of(library)(example)
         outcome = Outcome(key, concept, rating, score, learner_moves=len(idx), wrong=wrong, hints=hints,
                           revealed=revealed, key_found=bool(state.get("key_found")))
         session.outcomes.append(outcome)
@@ -593,9 +596,10 @@ class SessionManager:
         return [tuple(b) for b in blocks]
 
     def _adapt(self, session: Session, library) -> dict | None:
-        from .knowledge.difficulty import puzzle_rating
         from .learner import get_profile
         from .learner.adapt import decide
+        from .learner.training_level import rating_of
+        puzzle_rating = rating_of(library)
 
         blocks = self._example_blocks(session)
         here = next((b for b in blocks if b[1] <= session.step_index < b[2]), None)
@@ -618,7 +622,7 @@ class SessionManager:
         except OSError:
             seen, last_used = {}, {}
         decision = decide(session.outcomes, upcoming, used, session.changes, library, level=profile.level,
-                          known=known, seen=seen, last_used=last_used)
+                          known=known, seen=seen, last_used=last_used, rating_of=puzzle_rating)
         if decision is None:
             return None
         new_steps = self._steps_for(library, decision)

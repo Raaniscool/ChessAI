@@ -388,7 +388,7 @@ def _personal_intro(intro: str, why: str) -> str:
     return f"{head}\n\n{why} I picked {rest}" if rest else f"{head}\n\n{why}"
 
 
-def _personal_request(goal: str, library, level: str | None, profile) -> tuple[dict, dict | None]:
+def _personal_request(goal: str, library, level: str | None, profile, usage=None) -> tuple[dict, dict | None]:
     """RetrievalRequest settings for this learner (learner.personalize), or the defaults."""
     from ..knowledge.retrieval import resolve_concepts
     from ..learner.personalize import personalized, retrieval_settings
@@ -399,7 +399,7 @@ def _personal_request(goal: str, library, level: str | None, profile) -> tuple[d
     concepts, confident = resolve_concepts(library, goal)
     if not concepts or not confident:
         return defaults, None
-    out = retrieval_settings(profile, concepts[0], concepts, library)
+    out = retrieval_settings(profile, concepts[0], concepts, library, usage=usage)
     settings = out["settings"]
     if level:  # an explicit level for this request (the words, or the API) wins
         settings["level"] = level
@@ -417,6 +417,9 @@ def _review_intro(retrieval, shape: dict | None, subject: str) -> str | None:
     from statistics import mean
 
     from ..knowledge.difficulty import puzzle_rating
+    if shape is not None and shape.get("calibration"):
+        from ..learner.training_level import rating_of
+        puzzle_rating = rating_of()  # noqa: F811 - the calibrated targets' scale
     practice = [puzzle_rating(e) for e in retrieval.practice]
     if shape is not None and max(practice) < shape["target_rating"] - REVIEW_TOO_EASY:
         return None
@@ -442,7 +445,7 @@ def create_knowledge_plan(goal: str, library=None, usage=None, level: str | None
 
     library = library or get_knowledge()
     usage = usage if usage is not None else get_usage()
-    settings, shape = _personal_request(goal, library, level, profile)
+    settings, shape = _personal_request(goal, library, level, profile, usage)
     retrieval = retrieve(library, RetrievalRequest(text=goal, **settings), usage)
     if not retrieval.found and shape is not None and settings.get("exclude"):
         settings["exclude"] = set()  # the calculation filter left too little: plain examples then

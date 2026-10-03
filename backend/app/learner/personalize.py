@@ -39,7 +39,8 @@ def personalized(profile: LearnerProfile | None) -> bool:
     if profile is None:
         return False
     told_us = profile.onboarding.get("done") and not profile.onboarding.get("skipped")
-    return bool(told_us or profile.concepts or profile.weaknesses)
+    games = int((getattr(profile, "game_skill", None) or {}).get("games") or 0)
+    return bool(told_us or profile.concepts or profile.weaknesses or games)
 
 
 def roles_for(shape: dict) -> list[str]:
@@ -66,14 +67,25 @@ def _multi_move_only(library, concepts: list[str]) -> set[str]:
     return out
 
 
-def retrieval_settings(profile: LearnerProfile, concept: str | None, concepts: list[str], library) -> dict:
+def retrieval_settings(profile: LearnerProfile, concept: str | None, concepts: list[str], library,
+                       usage=None) -> dict:
     """Keyword arguments for RetrievalRequest, plus the shape they came from."""
     shape = lesson_shape(profile, concept, library)
     known = {c for c, st in profile.concepts.items() if st.attempts or st.lessons_completed}
+    # How hard: the same skill profile as the Puzzles tab (games, puzzles and lesson results, per
+    # concept; learner.training_level). The learner model's own rating is the fallback.
+    from .training_level import calibrated_target, rating_of
+    calibration = calibrated_target(profile, concept, shape["purpose"], library, usage)
+    rate = None
+    if calibration is not None:
+        shape["target_rating"] = calibration["target"]
+        shape["calibration"] = calibration
+        rate = rating_of(library)
     settings = {
         "level": shape["level"],
         "target_rating": shape["target_rating"],
-        "practice_rating": shape["target_rating"] + 120,
+        "practice_rating": calibration["practice"] if calibration else shape["target_rating"] + 120,
+        "rating_of": rate,
         "roles": roles_for(shape),
         "practice_count": shape["practice"],
         "include_prerequisites": shape["prerequisites"],

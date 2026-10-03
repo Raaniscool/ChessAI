@@ -9,12 +9,16 @@ from app.knowledge.library import get_knowledge
 from app.knowledge.usage import UsageTracker
 from app.learner import LearnerProfile, get_profile, get_store
 from app.learner.adapt import MAX_CHANGES, Outcome, decide, help_offer
+from app.learner.training_level import rating_of
 from app.learner.personalize import piece_reminder, roles_for
 from app.learner.recommend import suggestions
 from app.planner.knowledge_lessons import create_knowledge_plan
 from tests.test_api import _fresh_state, client  # noqa: F401  (fixtures)
 
 LIB = get_knowledge()
+# Personalized plans pick examples on the skill profile's scale (learner.training_level), so their
+# difficulty is measured on that scale; learner.adapt.decide is tested on its default scale.
+CAL = rating_of(LIB)
 
 
 def usage():
@@ -32,7 +36,7 @@ def learner(**onboarding):
 
 
 def ratings(record):
-    return [puzzle_rating(LIB.get(e)) for e in record["plan"]["knowledge"]["example_ids"]]
+    return [CAL(LIB.get(e)) for e in record["plan"]["knowledge"]["example_ids"]]
 
 
 def mean(xs):
@@ -336,7 +340,7 @@ def _solved(record):
     """Puzzle ratings of the positions the learner solves in the main lesson (not demonstrations)."""
     lesson = record["lessons"][0]
     ids = [s["example"] for s in lesson["steps"] if s.get("example") and s.get("type") == "exercise"]
-    return [puzzle_rating(LIB.get(e)) for e in dict.fromkeys(ids)]
+    return [CAL(LIB.get(e)) for e in dict.fromkeys(ids)]
 
 
 @pytest.mark.parametrize("goal", ["teach me knight forks", "teach me pins", "teach me skewers"])
@@ -353,7 +357,7 @@ def test_same_request_three_learners_three_difficulties(goal):
 
 def test_a_beginners_first_positions_are_simple():
     record = plan("teach me knight forks", learner(rating=600, experience="casual"))
-    first = [puzzle_rating(LIB.get(e)) for e in record["plan"]["knowledge"]["example_ids"][:2]]
+    first = [CAL(LIB.get(e)) for e in record["plan"]["knowledge"]["example_ids"][:2]]
     assert max(first) <= 950, first
 
 
@@ -364,7 +368,7 @@ def test_review_says_harder_only_when_it_is_and_is_dropped_when_far_too_easy():
         if review is None:
             continue
         intro = review["steps"][0]["text"]
-        practice = [puzzle_rating(LIB.get(s["example"])) for s in review["steps"] if s.get("example")]
+        practice = [CAL(LIB.get(s["example"])) for s in review["steps"] if s.get("example")]
         solved = _solved(record)
         if "a little harder" in intro:
             assert mean(practice) > mean(solved), (rating, practice, solved)
@@ -372,7 +376,7 @@ def test_review_says_harder_only_when_it_is_and_is_dropped_when_far_too_easy():
     target = strong["plan"]["personalization"]["target_rating"]
     for lesson in strong["lessons"]:
         if lesson["title"].endswith(": review"):
-            ratings_ = [puzzle_rating(LIB.get(s["example"])) for s in lesson["steps"] if s.get("example")]
+            ratings_ = [CAL(LIB.get(s["example"])) for s in lesson["steps"] if s.get("example")]
             assert max(ratings_) >= target - 350, (ratings_, target)
 
 

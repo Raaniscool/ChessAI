@@ -77,6 +77,7 @@ class RetrievalRequest:
     # Learner-model personalization (learner.views.lesson_shape); all optional:
     target_rating: int | None = None      # choose examples near this puzzle rating (knowledge.difficulty)
     practice_rating: int | None = None    # ... and the extra practice near this one
+    rating_of: object = None              # example -> rating on the targets' scale (learner.training_level)
     roles: list[str] | None = None        # explicit role pattern, e.g. ["guided", "practice", "practice"]
     known_concepts: set[str] = field(default_factory=set)  # already met: no prerequisite demo needed
     prefer_real: bool = False             # prefer positions from real games (puzzles → games transfer)
@@ -313,7 +314,7 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
         return Query(concepts=cids, count=n, level=kw.get("level", level), simplest=parsed.simplest,
                      mode=kw.get("mode", mode), tags=request.tags, category=request.category,
                      exclude=exclude | kw.get("exclude", set()), not_seen_recently=request.avoid_seen,
-                     target_rating=kw.get("target", target))
+                     target_rating=kw.get("target", target), rating_of=request.rating_of)
 
     picked: list[Example] = []
     # Personalization: one example of something the learner found hard, when it fits the request.
@@ -325,7 +326,8 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
                              seen, last_used)
     if target is not None:
         from .difficulty import puzzle_rating
-        picked = _trusted(sorted(picked, key=lambda e: (puzzle_rating(e), e.id)))
+        rate = request.rating_of or puzzle_rating
+        picked = _trusted(sorted(picked, key=lambda e: (rate(e), e.id)))
     else:
         picked = _trusted(sorted(picked, key=lambda e: (e.difficulty, e.id)))
 

@@ -43,8 +43,12 @@ def _library():
 
 
 def _out(profile) -> dict:
+    from .learner.training_level import skill_profile
     library = _library()
-    return {"profile": summary(profile, library), "suggestions": suggestions(profile, library)}
+    out = summary(profile, library)
+    # one skill profile drives Puzzles and Training difficulty (games, puzzles, lesson results)
+    out["skill_profile"] = skill_profile(profile, library) if library is not None else None
+    return {"profile": out, "suggestions": suggestions(profile, library)}
 
 
 @router.get("")

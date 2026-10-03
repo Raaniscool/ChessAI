@@ -43,6 +43,19 @@ test("coach panel lines say what the coach knows, in words", () => {
   assert.deepEqual(fresh.map(l => l.label), ["Level"])
 })
 
+test("the skill profile line appears only with real evidence", () => {
+  const skills = Object.fromEntries(["tactical_skill", "calculation_skill", "defensive_skill", "endgame_skill",
+    "opening_skill"].map(k => [k, {level: "improving"}]))
+  skills.defensive_skill = {level: "beginner"}
+  const base = {level: "beginner", rating: 800, rating_source: "games", concepts: {}, stats: {}}
+  const withGames = Object.fromEntries(profileLines({...base, skill_profile: {skills, games: 12, puzzles: 1}})
+    .map(l => [l.label, l.text]))
+  assert.equal(withGames.Skills, "Tactics: improving · Calculation: improving · Defence: beginner · " +
+    "Endgames: improving · Openings: improving (from 12 analyzed games and 1 solved position)")
+  const none = profileLines({...base, skill_profile: {skills, games: 0, puzzles: 0}})
+  assert.equal(none.some(l => l.label === "Skills"), false)  // only the rating prior: nothing to show
+})
+
 test("onboarding is offered once, only to someone new", () => {
   assert.equal(wantsOnboarding({new: true, onboarding: {done: false}}), true)
   assert.equal(wantsOnboarding({new: true, onboarding: {done: true, skipped: true}}), false)

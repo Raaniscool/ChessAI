@@ -73,10 +73,13 @@ def note_for(kind: str, seed: str, **fmt) -> str:
 
 def decide(outcomes: list[Outcome], upcoming: list[tuple[str, int, str]], used: set[str], changes: int,
            library, level: str = "beginner", known: set[str] | None = None, seen=None,
-           last_used=None) -> Decision | None:
-    """`upcoming`: (example_id, rating, role) of the examples still ahead in the lesson."""
-    from ..knowledge.difficulty import puzzle_rating
+           last_used=None, rating_of=None) -> Decision | None:
+    """`upcoming`: (example_id, rating, role) of the examples still ahead in the lesson.
+    `rating_of`: example -> rating on the same scale as the outcomes' ratings (default
+    knowledge.difficulty; the session passes learner.training_level.rating_of)."""
+    from ..knowledge.difficulty import puzzle_rating as _library_rating
     from ..knowledge.library import Query
+    puzzle_rating = rating_of or _library_rating
 
     if not outcomes or changes >= MAX_CHANGES:
         return None
@@ -86,7 +89,7 @@ def decide(outcomes: list[Outcome], upcoming: list[tuple[str, int, str]], used: 
     def find(target: int, ok, mode: str = "interactive", concept: str | None = None, extra=None):
         # nearest to the target among a few verified candidates, never reusing one
         picks = library.select(Query(concepts=[concept or last.concept], count=6, mode=mode,
-                                     target_rating=target, exclude=set(used),
+                                     target_rating=target, rating_of=rating_of, exclude=set(used),
                                      not_seen_recently=True), seen or {}, last_used or {})
         picks = [e for e in picks if e.status == "verified" and e.tier != "personal" and ok(e)
                  and (extra is None or extra(e))]

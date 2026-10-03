@@ -45,10 +45,14 @@ class Query:
     not_seen_recently: bool = True
     include_personal: bool = False
     target_rating: int | None = None  # learner-matched difficulty (knowledge.difficulty scale)
+    rating_of: object = None          # example -> rating for target_rating (None: knowledge.difficulty)
 
     def as_dict(self) -> dict:
         return {"concepts": self.concepts, "count": self.count, "level": self.level,
                 "simplest": self.simplest, "mode": self.mode, "tags": self.tags, "category": self.category}
+
+
+FAR_ABOVE_TARGET = 400  # rating points: a concept group starting this far above the target waits
 
 
 class KnowledgeLibrary:
@@ -373,21 +377,32 @@ class KnowledgeLibrary:
             if query.target_rating is not None:
                 # nearest to the learner's level first, in 100-point buckets so freshness still counts
                 from .difficulty import puzzle_rating
-                return fresh[:1] + (abs(puzzle_rating(e) - query.target_rating) // 100,) + fresh[1:] + (e.id,)
+                rate = query.rating_of or puzzle_rating
+                return fresh[:1] + (abs(rate(e) - query.target_rating) // 100,) + fresh[1:] + (e.id,)
             return fresh + (_level_distance(e.difficulty, query.level), e.difficulty, e.id)
 
         groups: dict[str, list[Example]] = {}
         for e in sorted(pool, key=score):
             groups.setdefault(e.concept, []).append(e)
         order = sorted(groups.values(), key=lambda g: score(g[0]))
+        tiers = [order]
+        if query.target_rating is not None:
+            # a sub-idea whose easiest position is far above the learner's level waits until the
+            # ideas at their level have run out (no 1600 relative pin in a beginner's pin lesson)
+            from .difficulty import puzzle_rating
+            rate = query.rating_of or puzzle_rating
+            near = [g for g in order if rate(g[0]) - query.target_rating <= FAR_ABOVE_TARGET]
+            tiers = [near, [g for g in order if g not in near]] if near else [order]
         picked: list[Example] = []
-        while len(picked) < query.count and any(order):
-            for group in order:
-                if group and len(picked) < query.count:
-                    picked.append(group.pop(0))
+        for tier in tiers:
+            while len(picked) < query.count and any(tier):
+                for group in tier:
+                    if group and len(picked) < query.count:
+                        picked.append(group.pop(0))
         if query.target_rating is not None:
             from .difficulty import puzzle_rating
-            return sorted(picked, key=lambda e: (puzzle_rating(e), e.id))
+            rate = query.rating_of or puzzle_rating
+            return sorted(picked, key=lambda e: (rate(e), e.id))
         return sorted(picked, key=lambda e: (e.difficulty, e.id))
 
     def stats(self) -> dict:

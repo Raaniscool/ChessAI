@@ -75,6 +75,16 @@ export function profileLines(profile) {
     lines.push({label: "Practice", text: `${p.attempts} position${p.attempts === 1 ? "" : "s"} tried, ` +
       `${rate}% solved first try, ${s.hints_used || 0} hint${s.hints_used === 1 ? "" : "s"} used`})
   }
+  const sp = profile.skill_profile
+  if (sp && sp.skills && (sp.games || sp.puzzles)) {
+    // the skill profile behind Puzzles and Training difficulty (only once there is real evidence)
+    const show = [["tactical_skill", "Tactics"], ["calculation_skill", "Calculation"], ["defensive_skill", "Defence"],
+      ["endgame_skill", "Endgames"], ["opening_skill", "Openings"]]
+    const parts = show.filter(([k]) => sp.skills[k]).map(([k, label]) => `${label}: ${sp.skills[k].level}`)
+    const basis = [sp.games ? `${sp.games} analyzed game${sp.games === 1 ? "" : "s"}` : "",
+      sp.puzzles ? `${sp.puzzles} solved position${sp.puzzles === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ")
+    lines.push({label: "Skills", text: `${parts.join(" · ")} (from ${basis})`})
+  }
   const lessons = (s.lessons || {}).completed || 0
   if (lessons) lines.push({label: "Lessons", text: `${lessons} completed`})
   return lines
