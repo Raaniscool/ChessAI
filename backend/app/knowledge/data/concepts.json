@@ -1815,6 +1815,216 @@
     "stalemate"
    ],
    "engine": "mate"
+  },
+  {
+   "id": "x_ray",
+   "name": "X-ray",
+   "category": "tactics",
+   "summary": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it.",
+   "aliases": [
+    "x ray",
+    "x-ray",
+    "xray",
+    "x ray attack",
+    "x-ray attack",
+    "x-rays"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "x_ray"
+   },
+   "related": [
+    "skewer",
+    "pin",
+    "discovered_attack"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "double_bishop_mate",
+   "name": "Double-bishop mate",
+   "category": "checkmates",
+   "summary": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares.",
+   "aliases": [
+    "double bishop mate",
+    "double-bishop mate",
+    "two bishops mate",
+    "mate with two bishops",
+    "bishop pair mate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "double_bishop_mate"
+   },
+   "related": [
+    "boden_mate"
+   ],
+   "engine": "mate"
+  },
+  {
+   "id": "epaulette_mate",
+   "name": "Epaulette mate",
+   "category": "checkmates",
+   "summary": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it.",
+   "aliases": [
+    "epaulette mate",
+    "epaulet mate",
+    "epaulette checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "epaulette_mate"
+   },
+   "related": [
+    "back_rank_mate",
+    "smothered_mate"
+   ],
+   "engine": "mate"
+  },
+  {
+   "id": "greek_gift",
+   "name": "Greek gift sacrifice",
+   "category": "tactics",
+   "summary": "The Greek gift is a bishop sacrifice on h7 (or h2) against a castled king, usually followed by a knight check on g5 (g4) and the queen joining the attack. It only works when those follow-up moves really are available, so check the defender's replies before sacrificing.",
+   "aliases": [
+    "greek gift",
+    "greek gift sacrifice",
+    "classic bishop sacrifice",
+    "bxh7 sacrifice"
+   ],
+   "parents": [
+    "sacrifice"
+   ],
+   "validator": {
+    "type": "greek_gift"
+   },
+   "related": [
+    "sacrifice",
+    "king_safety"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "windmill",
+   "name": "Windmill",
+   "category": "tactics",
+   "summary": "A windmill is a repeated discovered check: one piece moves back and forth, uncovering check from a rook or bishop behind it each time, and uses every move to capture something.",
+   "aliases": [
+    "windmill",
+    "windmill tactic",
+    "see-saw",
+    "seesaw"
+   ],
+   "parents": [
+    "discovered_check"
+   ],
+   "validator": {
+    "type": "windmill"
+   },
+   "related": [
+    "discovered_check",
+    "discovered_attack",
+    "double_check"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "desperado",
+   "name": "Desperado",
+   "category": "tactics",
+   "summary": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing.",
+   "aliases": [
+    "desperado",
+    "desperado piece"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "desperado"
+   },
+   "related": [
+    "trapped_piece",
+    "zwischenzug",
+    "hanging_piece"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "zugzwang",
+   "name": "Zugzwang",
+   "category": "endgames",
+   "summary": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game.",
+   "aliases": [
+    "zugzwang",
+    "zugswang"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "zugzwang"
+   },
+   "related": [
+    "opposition",
+    "triangulation",
+    "key_squares"
+   ],
+   "engine": "zugzwang"
+  },
+  {
+   "id": "perpetual_check",
+   "name": "Perpetual check",
+   "category": "endgames",
+   "summary": "Perpetual check is a series of checks the opponent can't escape. It saves a lost game: the same position repeats and the game is drawn.",
+   "aliases": [
+    "perpetual check",
+    "perpetual",
+    "draw by perpetual",
+    "perpetual checks"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "perpetual_check"
+   },
+   "related": [
+    "stalemate_tricks",
+    "repeated_moves"
+   ],
+   "engine": "endgame_draw"
+  },
+  {
+   "id": "stalemate_tricks",
+   "name": "Stalemate tricks",
+   "category": "endgames",
+   "summary": "A stalemate trick saves a lost game: the losing side gets rid of its last moves so that it is left with no legal move while not in check — and stalemate is a draw.",
+   "aliases": [
+    "stalemate tricks",
+    "stalemate trick",
+    "swindle with stalemate",
+    "saving stalemate",
+    "stalemate swindle"
+   ],
+   "parents": [
+    "stalemate"
+   ],
+   "validator": {
+    "type": "stalemate_trick"
+   },
+   "related": [
+    "stalemate",
+    "stalemate_trap",
+    "perpetual_check"
+   ],
+   "engine": "endgame_draw"
   }
  ]
 }
