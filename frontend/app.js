@@ -5,6 +5,7 @@
 import {Chessboard, COLOR, INPUT_EVENT_TYPE, FEN, BORDER_TYPE} from "./vendor/cm-chessboard/src/Chessboard.js"
 import {Markers, MARKER_TYPE} from "./vendor/cm-chessboard/src/extensions/markers/Markers.js"
 import {Chess} from "./vendor/chess.mjs/Chess.js"
+import {CheckHighlight} from "./check-highlight.js"
 import {annotateLines} from "./lines.js"
 import {Narrator, decorateMoves, targetSquare} from "./speech.js"
 import {setupGameAnalysis} from "./analysis.js"
@@ -108,7 +109,9 @@ const board = new Chessboard(document.getElementById("board"), {
   style: {cssClass: "green", borderType: BORDER_TYPE.frame, showCoordinates: true},
   assetsUrl: "./vendor/cm-chessboard/assets/",
   // right-drag arrows for calculation: off while the AI is moving pieces by itself
-  extensions: [{class: Markers, props: {}}, {class: CalcArrows, props: {isDisabled: () => Boolean(nav && nav.isLocked())}}],
+  // a king in check glows red (check-highlight.js), whatever put the position on the board
+  extensions: [{class: Markers, props: {}}, {class: CheckHighlight, props: {}},
+    {class: CalcArrows, props: {isDisabled: () => Boolean(nav && nav.isLocked())}}],
 })
 
 // Move / capture / check sounds (sounds.js): played once where a move is made, never on redraws.
