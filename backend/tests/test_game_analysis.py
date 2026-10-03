@@ -190,3 +190,19 @@ def test_opening_habits_need_the_engine_to_confirm_they_cost_something():
     assert {"early_queen", "repeated_moves", "missed_castling"} <= found
     assert all(h["category"] == "habit" and h["id"].startswith(f"{game.id}:habit:") for h in habits)
     assert {h["concept"] for h in habits} & {"early_queen", "repeated_moves", "castling"}
+
+
+def test_phase_uses_the_positions_own_move_number_not_the_index_in_the_move_list():
+    """A game (or a Training segment) that starts at move 25 isn't an opening just because its
+    first move is index 0; from the normal start the result is unchanged."""
+    middlegame = chess.Board("r1bq1rk1/pp2bppp/2n1pn2/3p4/3P4/2NBPN2/PP3PPP/R2Q1RK1 w - - 0 25")
+    assert analyzer_mod.game_ply(middlegame) == 48
+    assert analyzer_mod.phase_of(middlegame) == "middlegame"
+    assert analyzer_mod.phase_of(middlegame, 0) == "opening"   # an explicit ply still wins
+    start = chess.Board()
+    for i, san in enumerate(["e4", "e5", "Nf3", "Nc6"]):
+        assert analyzer_mod.game_ply(start) == i
+        assert analyzer_mod.phase_of(start) == analyzer_mod.phase_of(start, i) == "opening"
+        start.push_san(san)
+    endgame = chess.Board("8/5k2/8/3K4/8/8/5P2/8 b - - 0 60")
+    assert analyzer_mod.phase_of(endgame) == "endgame"

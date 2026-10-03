@@ -82,7 +82,7 @@ def game_evidence(game: dict, analysis: dict) -> dict | None:
             break
         entry = plies[i]
         if board.turn == side and "category" in entry:
-            phase = phase_of(board, i)
+            phase = phase_of(board)
             err = entry["category"] in ERROR_CATEGORIES
             out["moves"] += 1
             out["errors"] += int(err)

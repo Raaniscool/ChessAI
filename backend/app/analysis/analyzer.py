@@ -35,7 +35,17 @@ CANDIDATE_MIN_LOSS = 90         # quick-pass inaccuracies this big get a second 
 CP_CAP = 2000                   # display cap for mate-ish scores (never shown as pawns beyond this)
 
 
-def phase_of(board: chess.Board, ply: int) -> str:
+def game_ply(board: chess.Board) -> int:
+    """Plies played in the real game before this position (from its move number and side to move)."""
+    return (board.fullmove_number - 1) * 2 + (0 if board.turn == chess.WHITE else 1)
+
+
+def phase_of(board: chess.Board, ply: int | None = None) -> str:
+    """opening | middlegame | endgame. `ply` defaults to the position's own game ply, so a game or a
+    Training segment that starts from a later position (a FEN at move 25) isn't called an opening
+    just because it is early in the move list."""
+    if ply is None:
+        ply = game_ply(board)
     npm = non_pawn_material(board)
     queens = board.pieces(chess.QUEEN, chess.WHITE) | board.pieces(chess.QUEEN, chess.BLACK)
     if npm <= 18 or (not queens and npm <= 26):
@@ -230,7 +240,7 @@ class GameAnalyzer:
             return None  # already decided either way, and it didn't change much: not worth a beginner's time
         best_line = _uci_line(before, deep_before.pv_san)
         reply_line = _uci_line(after, deep_after.pv_san)
-        phase = phase_of(before, i)
+        phase = phase_of(before)
         findings = detect(before, move, best_line, reply_line, deep_before.score, deep_after.score, phase)
         from .motifs import replay_moves, swing
         actual_gain = swing(replay_moves(before, [move] + reply_line[:6]), side)
