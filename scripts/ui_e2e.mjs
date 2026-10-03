@@ -381,6 +381,23 @@ check(move("h6", "f7") === "ok", "Nf7# playable")
 await waitFor(() => !$("btn-continue").classList.contains("hidden"), "Nf7# accepted", 60000)
 check(/Checkmate!/.test($("feedback-slot").textContent + lastMsgs(2).join(" ")), "Nf7# accepted as checkmate")
 
+// 7b) An opening is a tree: the plan teaches ONE verified branch; the other branches are chips
+$("chat-input").value = "I want to learn the Dutch Defense"
+await sendChat()
+await waitFor(() => /Learn: Dutch Defense/.test(lastMsgs(1)[0]), "Dutch plan message", 30000)
+{
+  const msg = [...document.querySelectorAll("#messages .msg")].pop()
+  check(/one branch of the Dutch Defense tree/.test(msg.textContent), "opening plan names the branch it teaches")
+  check(/Other branches of the Dutch Defense/.test(msg.textContent), "opening plan offers the other branches")
+  const chips = [...msg.querySelectorAll(".suggestions .chip")]
+  const stonewall = chips.find(c => /Stonewall/.test(c.textContent))
+  check(chips.length >= 3 && !!stonewall && !/Dutch Defense:/.test(stonewall.textContent),
+    "branch chips use the variation name: " + chips.map(c => c.textContent).join(" | "))
+  stonewall.click()
+  await waitFor(() => /Learn: Dutch Defense: Stonewall/.test(lastMsgs(1)[0]), "Stonewall plan from the chip", 30000)
+  check(true, "a branch chip plans that branch")
+}
+
 // 8) Unknown subject: honest answer + suggestions, no substitute plan
 const plansBefore = (await planIds()).length
 $("chat-input").value = "I want to learn the zorblax gambit"

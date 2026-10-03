@@ -1154,6 +1154,19 @@ function renderPlan(res) {
     div.appendChild(label)
     div.appendChild(suggestionChips(plan.related.map(t => `I want to learn ${t}`)))
   }
+  // An opening is a tree: the plan teaches one branch, the others are one click away.
+  const branches = (plan.branches && plan.branches.names) || []
+  if (branches.length) {
+    const label = document.createElement("div")
+    label.className = "muted"
+    label.textContent = `Other branches of the ${plan.branches.opening} (not in this plan):`
+    div.appendChild(label)
+    div.appendChild(suggestionChips(branches.map(b => `I want to learn ${b}`),
+      branches.map(b => {
+        const short = b.includes(": ") ? b.split(": ").slice(1).join(": ") : b
+        return short === plan.branches.opening ? b : short  // "Queen's Pawn Game: London System"
+      })))
+  }
 }
 
 function suggestionChips(suggestions, labels = suggestions) {
