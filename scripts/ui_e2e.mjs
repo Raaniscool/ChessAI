@@ -94,6 +94,17 @@ async function wrongMove(p) {
   await waitFor(() => board.getPosition() === before && board.state.moveInputCallback, "wrong move taken back", 5000)
 }
 
+// While solving, earlier positions are for looking: no moves there; → gets back to the puzzle.
+async function reviewMidPuzzle() {
+  const latest = board.getPosition()
+  $("nav-prev").click()
+  await waitFor(() => board.getPosition() !== latest && !board.isMoveInputEnabled(), "nav: mid-puzzle review", 5000)
+  check(/earlier position/.test($("board-status").textContent), "nav: mid-puzzle ← shows an earlier position, moves paused: " +
+    $("board-status").textContent)
+  $("nav-next").click()
+  await waitFor(() => board.getPosition() === latest && board.isMoveInputEnabled(), "nav: back to the puzzle", 5000)
+}
+
 // P) Puzzles tab — usable on its own, before any game analysis or lesson
 check(!!$("tab-puzzles") && /Puzzles/.test($("tab-puzzles").textContent) && $("tab-puzzles").parentElement === document.querySelector("nav.tabs"),
   "puzzles 1: Puzzles is a top-level tab")
@@ -120,7 +131,10 @@ $("pz-mode-practice").click()
   await wrongMove(p)
   $("pz-hint").click()
   check(/💡/.test($("pz-feedback").textContent), "hint shows the idea: " + $("pz-feedback").textContent)
-  for (const [i, step] of p.steps.entries()) await playStep(step, i === p.steps.length - 1)
+  for (const [i, step] of p.steps.entries()) {
+    await playStep(step, i === p.steps.length - 1)
+    if (i === 0 && p.steps.length > 1) await reviewMidPuzzle()
+  }
   check(/counts as missed/.test($("pz-feedback").textContent) && visible("pz-explain") && /Solution:/.test($("pz-explain").textContent),
     "after a mistake the finished puzzle counts as missed and shows the solution + explanation")
   await sleep(300)
@@ -130,8 +144,39 @@ $("pz-mode-practice").click()
   $("pz-next").click()
   await waitFor(() => /^2\//.test($("pz-counter").textContent) && board.state.moveInputCallback, "second puzzle")
   const p2 = await puzzleData(puzzleNow())
-  for (const [i, step] of p2.steps.entries()) await playStep(step, i === p2.steps.length - 1)
+  for (const [i, step] of p2.steps.entries()) {
+    await playStep(step, i === p2.steps.length - 1)
+    if (i === 0 && p2.steps.length > 1) await reviewMidPuzzle()
+  }
   check(/✓ Solved/.test($("pz-feedback").textContent), "a clean solve: " + $("pz-feedback").textContent)
+  // ← → review what was played (nothing is erased); afterwards other moves can be tried
+  await sleep(300)
+  const endFen = board.getPosition()
+  check(!$("nav-prev").disabled && $("nav-next").disabled && /\d+\/\d+/.test($("nav-label").textContent),
+    "nav: ← is available once puzzle moves were played: " + $("nav-label").textContent)
+  $("nav-prev").click()
+  await waitFor(() => board.getPosition() !== endFen, "nav: ← shows the previous puzzle position", 5000)
+  check($("board-nav").classList.contains("reviewing") && !$("nav-next").disabled, "nav: reviewing an earlier position, → available")
+  $("nav-next").click()
+  await waitFor(() => board.getPosition() === endFen, "nav: → returns to the latest position", 5000)
+  check(board.isMoveInputEnabled() && /try other moves/.test($("pz-explain").textContent),
+    "nav: after the puzzle the board can be explored (moves don't count)")
+  // right-click + drag: a calculation arrow, never a move
+  const sq = s => board.context.querySelector(`[data-square="${s}"]`)
+  const fire = (s, type, button) => sq(s).dispatchEvent(new w.MouseEvent(type, {button, bubbles: true, cancelable: true}))
+  const files = "abcdefgh"
+  const all = [...files].flatMap(f => [1, 2, 3, 4, 5, 6, 7, 8].map(r => f + r))
+  const occupied = all.find(s => board.getPiece(s))
+  const empty = all.filter(s => !board.getPiece(s) && s !== occupied)
+  const feedbackBefore = $("pz-feedback").textContent
+  fire(occupied, "mousedown", 2); fire(empty[0], "mousemove", 2); fire(empty[0], "mouseup", 2)
+  fire(empty[1], "mousedown", 2); fire(empty[2], "mousemove", 2); fire(empty[2], "mouseup", 2)
+  check(board.getArrows().length === 2 && board.getPosition() === endFen && $("pz-feedback").textContent === feedbackBefore,
+    `arrows: right-drag draws calculation arrows (${occupied}->${empty[0]}) and moves nothing`)
+  fire(empty[1], "mousedown", 2); fire(empty[2], "mouseup", 2)
+  check(board.getArrows().length === 1, "arrows: drawing the same arrow again removes it")
+  fire(empty[3], "mousedown", 0); fire(empty[3], "mouseup", 0)
+  check(board.getArrows().length === 0 && board.getPosition() === endFen, "arrows: a left click clears them")
   $("pz-back").click()
   await waitFor(() => visible("pz-dashboard"), "back to the dashboard")
 }
@@ -210,7 +255,31 @@ check(/press/i.test($("board-status").textContent), "clicking the locked board s
 $("btn-continue").click()
 await waitFor(() => $("step-indicator").textContent.startsWith("Step 2"), "step 2")
 check(!board.isMoveInputEnabled(), "during the demonstration the board is locked")
+await waitFor(() => $("board-nav").classList.contains("locked"), "navigation locked while the AI demonstrates", 20000)
+check($("nav-prev").disabled && $("nav-next").disabled, "nav: during the demonstration ← → are disabled")
 await finishDemo("demo complete")
+{
+  await sleep(200)
+  const demoEnd = board.getPosition()
+  check(!$("board-nav").classList.contains("locked") && !$("nav-prev").disabled,
+    "nav: after the demonstration ← is enabled: " + $("nav-label").textContent)
+  const label = $("nav-label").textContent
+  let steps = 0
+  while (!$("nav-prev").disabled && steps < 40) {
+    const before = board.getPosition()
+    $("nav-prev").click()
+    await waitFor(() => board.getPosition() !== before, "nav: ← steps back", 5000)
+    steps++
+  }
+  check(steps >= 2 && /^Start/.test($("nav-label").textContent), `nav: ← walks back through the demonstrated line (${steps} moves, from "${label}")`)
+  while (!$("nav-next").disabled) { $("nav-next").click(); await sleep(50) }
+  await waitFor(() => board.getPosition() === demoEnd, "nav: → returns to the end of the line", 5000)
+  check($("nav-label").textContent === label, "nav: → walks forward to the same final move")
+  board.context.dispatchEvent(new w.KeyboardEvent("keydown", {key: "ArrowLeft", bubbles: true}))
+  await waitFor(() => board.getPosition() !== demoEnd, "nav: the ← key works too", 5000)
+  document.dispatchEvent(new w.KeyboardEvent("keydown", {key: "ArrowRight", bubbles: true}))
+  await waitFor(() => board.getPosition() === demoEnd, "nav: the → key works too", 5000)
+}
 check(!board.isMoveInputEnabled(), "after the demonstration the board stays locked (no dead moves)")
 check(/Your turn/.test($("btn-continue").textContent), "Continue says 'Your turn — practise it': " + $("btn-continue").textContent)
 $("btn-continue").click()
