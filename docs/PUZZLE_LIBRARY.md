@@ -270,6 +270,9 @@ The shortfall goes to constrained generation for the exact concept, never to a g
   learner model.
 - Each tab keeps its state: a half-solved puzzle is still there after visiting Lessons or
   Analysis.
+- ← → under the board step through the moves played. While solving, earlier positions are
+  look-only. After the puzzle, you can try other moves (not graded). Right-drag draws
+  calculation arrows. See "Board" in `ARCHITECTURE.md`.
 
 ## Difficulty calibration
 

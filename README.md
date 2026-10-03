@@ -68,6 +68,7 @@ backend/tests/         # pytest suite (chess, classification, lessons, engine, t
 frontend/              # web UI (vendored cm-chessboard + chess.mjs, no CDNs)
 frontend/speech.js     # read-aloud: notation → words, move/square highlighting (tests: frontend/tests)
 frontend/analysis.js   # Game Analysis screen (game-format.js, history-view.js: pure display helpers)
+frontend/board-nav.js  # move history + ← → under the board; calc-arrows.js: right-drag calculation arrows
 scripts/ui_e2e.mjs     # browser-level UI smoke test (jsdom) against a running server
 docs/ARCHITECTURE.md, docs/KNOWLEDGE_LIBRARY.md, docs/PUZZLE_LIBRARY.md, docs/GAME_ANALYSIS.md, docs/PERSONALIZATION.md, docs/TTS.md
 requirements.txt

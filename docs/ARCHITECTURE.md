@@ -133,6 +133,42 @@ goal ─► Catalog.search (aliases → "as Black against e4" → categories →
 - Lesson flow: the board takes moves only in exercises. Demonstrations auto-play; step payloads carry `next_type` so the button can say "Your turn — practise it".
 - Read aloud (`frontend/speech.js`): Web Speech API, no server. `tokenize` finds SAN moves/squares, `buildSpeech` turns them into words and records their offsets; word-boundary events (or a time estimate for voices without them) map the spoken position back to a move, whose squares get a `marker-speech` on the board and whose text span is highlighted. In game review text (elements with `data-fens`), `frontend/lines.js` turns runs of adjacent moves that chess.js can play from one of those positions into lines: speaking, pointing at or clicking them moves the pieces instead of highlighting; bare squares stay highlights. Pure functions are unit-tested with `node --test` (run from pytest by `test_frontend_js.py`).
 
+## Board: move history, ← →, calculation arrows
+
+The board is shared by Lessons, Game Analysis and Puzzles. Each view keeps a `MoveHistory`
+(`frontend/board-nav.js`): the positions it put on the board, in order, plus a cursor. That is the
+same sequence the view already plays (a demonstration's moves, the puzzle moves and replies, an
+engine line). It is not a second game state. The ← → buttons under the board (and the arrow keys,
+unless you are typing) step through the history of the view being shown. The last move gets a
+soft highlight.
+
+- **Going back never erases anything.** A move made at an earlier position either steps forward
+  (if it is the move already there) or becomes the new continuation, replacing the old moves
+  after that point (`MoveHistory.play`). The program's own moves (a demonstration, a puzzle
+  reply, a revealed solution) are always appended at the end of the line.
+- **Locked while the AI moves pieces.** A lesson demonstration, a puzzle reply or solution, an
+  engine line in a game review, and a line played from review text all lock navigation. The
+  buttons are disabled and calculation arrows are off until the moves stop.
+- **Lessons:** each step has its own history: a teach position, a demonstration line, or an
+  exercise plus the accepted or revealed answer. Navigation is look-only. The step's
+  highlights come back at the latest position.
+- **Puzzles:**
+  - While solving, earlier positions are look-only. Move input pauses until → returns to the
+    latest position, so the stored solution line and the attempt state can't get out of step.
+  - Once the puzzle is over, any position can be explored with legal moves for either side.
+    These moves are never graded, recorded or sent to the engine.
+- **Game Analysis:** "Your move", "Best move" and "▶ Best line" record what they show. A line
+  clicked in review text can be stepped through on top of the view's own history. "↩ Back"
+  returns to the view's position.
+- **Calculation arrows** (`frontend/calc-arrows.js`) are built on cm-chessboard's
+  `RightClickAnnotator`:
+  - Right-drag draws an arrow, and a right-click on one square draws a circle. Drawing the same
+    arrow again removes it.
+  - Hold Shift for red, Alt for blue, Shift+Alt for orange.
+  - A left click or any position change clears them.
+  - cm-chessboard's move input only reacts to the left button, so a right-drag can never move a
+    piece. Arrows never touch the history, the engine or the AI.
+
 ## Roadmap alignment
 
 - **Phase 1 (current):** core modules + tests ✅; session API, web UI, end-to-end MVP loop.
