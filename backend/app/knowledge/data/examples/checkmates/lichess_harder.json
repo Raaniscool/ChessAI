@@ -1,0 +1,856 @@
+[
+ {
+  "id": "lichess_1m0sb",
+  "status": "verified",
+  "title": "Back-rank mate",
+  "concept": "back_rank_mate",
+  "category": "checkmates",
+  "subcategory": "backRankMate",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. Black to move: Exploit the weak back rank.",
+  "start_fen": "4r1k1/Q4pp1/4q2p/5b2/5B2/2P5/P1r2PPP/R4RK1 w - - 1 20",
+  "moves": [
+   "Rfc1",
+   "Rxc1+",
+   "Rxc1",
+   "Qe1+",
+   "Rxe1",
+   "Rxe1#"
+  ],
+  "final_fen": "6k1/Q4pp1/7p/5b2/5B2/2P5/P4PPP/4r1K1 w - - 0 23",
+  "key_move": "20...Rxc1+",
+  "prompt": "What would you play here? Exploit the weak back rank.",
+  "hints": [
+   "The king is stuck behind its own pawns. Can a rook or queen reach the back rank?",
+   "The king on g1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "20.Rfc1": "The opponent's last move. Something is now possible — look closely.",
+   "20...Rxc1+": "Checkmate! The white king on g1 is attacked by the rook on e1, its own pieces block f2, g2 and h2, f1 and h1 are covered, and nothing can block or capture the checking piece.",
+   "22...Rxe1#": "Checkmate!"
+  },
+  "explanation": "A back-rank mate: a rook or queen mates the king on its first rank, where its own pawns stop it from escaping. Checkmate! The white king on g1 is attacked by the rook on e1, its own pieces block f2, g2 and h2, f1 and h1 are covered, and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "backRankMate",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_mate": {
+    "mated_side": "white",
+    "king": "g1",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "black",
+      "square": "e1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "e1"
+      }
+     },
+     {
+      "square": "h1",
+      "covered_by": {
+       "piece": "rook",
+       "color": "black",
+       "square": "e1"
+      }
+     },
+     {
+      "square": "f2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "22...Rxe1#",
+    "pattern": "back-rank mate",
+    "boxed_in_by": [
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "f2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "g2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "h2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "1M0sB",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/1M0sB",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxc1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Rxc1+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "20...Rxc1+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qe1+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Qe1+",
+      "best_cp": 9980,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "21...Qe1+"
+     },
+     {
+      "move": "Rxe1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rxe1#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "22...Rxe1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_7hdn6",
+  "status": "verified",
+  "title": "Back-rank mate",
+  "concept": "back_rank_mate",
+  "category": "checkmates",
+  "subcategory": "backRankMate",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Exploit the weak back rank.",
+  "start_fen": "4r1k1/p5pp/2n5/1p1p1B2/2p5/P1P2R2/1P2q1PP/5R1K b - - 3 25",
+  "moves": [
+   "Qxb2",
+   "Be6+",
+   "Kh8",
+   "Rf8+",
+   "Rxf8",
+   "Rxf8#"
+  ],
+  "final_fen": "5R1k/p5pp/2n1B3/1p1p4/2p5/P1P5/1q4PP/7K b - - 0 28",
+  "key_move": "26.Be6+",
+  "prompt": "What would you play here? Exploit the weak back rank.",
+  "hints": [
+   "The king is stuck behind its own pawns. Can a rook or queen reach the back rank?",
+   "The king on h8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "25...Qxb2": "The opponent's last move. Something is now possible — look closely.",
+   "26.Be6+": "Checkmate! The black king on h8 is attacked by the rook on f8, its own pieces block g7 and h7, g8 is covered, and nothing can block or capture the checking piece.",
+   "28.Rxf8#": "Checkmate!"
+  },
+  "explanation": "A back-rank mate: a rook or queen mates the king on its first rank, where its own pawns stop it from escaping. Checkmate! The black king on h8 is attacked by the rook on f8, its own pieces block g7 and h7, g8 is covered, and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "backRankMate",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_mate": {
+    "mated_side": "black",
+    "king": "h8",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "f8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g8",
+      "covered_by": {
+       "piece": "bishop",
+       "color": "white",
+       "square": "e6"
+      }
+     }
+    ],
+    "mating_move": "28.Rxf8#",
+    "pattern": "back-rank mate",
+    "boxed_in_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "g7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "h7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "7Hdn6",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/7Hdn6",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Be6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Be6+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "26.Be6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Rf8+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Rf8+",
+      "best_cp": 9980,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "27.Rf8+"
+     },
+     {
+      "move": "Rxf8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Rxf8#",
+      "best_cp": 9990,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "28.Rxf8#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_9uzvd",
+  "status": "verified",
+  "title": "Back-rank mate",
+  "concept": "back_rank_mate",
+  "category": "checkmates",
+  "subcategory": "backRankMate",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. White to move: Exploit the weak back rank.",
+  "start_fen": "rqb1kb1r/p2p1ppp/3N4/2ppP3/1p6/8/PPPPQPPP/R1B1K2R b KQkq - 1 13",
+  "moves": [
+   "Bxd6",
+   "exd6+",
+   "Kf8",
+   "Qe7+",
+   "Kg8",
+   "Qd8#"
+  ],
+  "final_fen": "rqbQ2kr/p2p1ppp/3P4/2pp4/1p6/8/PPPP1PPP/R1B1K2R b KQ - 4 16",
+  "key_move": "14.exd6+",
+  "prompt": "What would you play here? Exploit the weak back rank.",
+  "hints": [
+   "The king is stuck behind its own pawns. Can a rook or queen reach the back rank?",
+   "The king on g8 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "13...Bxd6": "The opponent's last move. Something is now possible — look closely.",
+   "14.exd6+": "Checkmate! The black king on g8 is attacked by the queen on d8, its own pieces block f7, g7, h7 and h8, f8 is covered, and nothing can block or capture the checking piece.",
+   "16.Qd8#": "Checkmate!"
+  },
+  "explanation": "A back-rank mate: a rook or queen mates the king on its first rank, where its own pawns stop it from escaping. Checkmate! The black king on g8 is attacked by the queen on d8, its own pieces block f7, g7, h7 and h8, f8 is covered, and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "backRankMate",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_mate": {
+    "mated_side": "black",
+    "king": "g8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "g7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h7",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "d8"
+      }
+     },
+     {
+      "square": "h8",
+      "blocked_by": "rook"
+     }
+    ],
+    "mating_move": "16.Qd8#",
+    "pattern": "back-rank mate",
+    "boxed_in_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "f7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "g7"
+     },
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "h7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "9UZVd",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/9UZVd",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "exd6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "exd6+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "14.exd6+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qe7+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Qe7+",
+      "best_cp": 9980,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "15.Qe7+"
+     },
+     {
+      "move": "Qd8#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qd8#",
+      "best_cp": 9990,
+      "alternatives": [
+       "Qe8#"
+      ],
+      "mate_after": true,
+      "label": "16.Qd8#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ },
+ {
+  "id": "lichess_r8rbc",
+  "status": "verified",
+  "title": "Back-rank mate",
+  "concept": "back_rank_mate",
+  "category": "checkmates",
+  "subcategory": "backRankMate",
+  "difficulty": 4,
+  "description": "A position from a real Lichess game. Black to move: Exploit the weak back rank.",
+  "start_fen": "7R/pQ3ppp/5k2/2b2q2/4n3/8/PP3PPP/R5K1 w - - 2 24",
+  "moves": [
+   "Rf1",
+   "Bxf2+",
+   "Rxf2",
+   "Qxf2+",
+   "Kh1",
+   "Qe1#"
+  ],
+  "final_fen": "7R/pQ3ppp/5k2/8/4n3/8/PP4PP/4q2K w - - 2 27",
+  "key_move": "24...Bxf2+",
+  "prompt": "What would you play here? Exploit the weak back rank.",
+  "hints": [
+   "The king is stuck behind its own pawns. Can a rook or queen reach the back rank?",
+   "The king on h1 has almost no squares. Which check can't be answered?"
+  ],
+  "notes": {
+   "24.Rf1": "The opponent's last move. Something is now possible — look closely.",
+   "24...Bxf2+": "Checkmate! The white king on h1 is attacked by the queen on e1, its own pieces block g2 and h2, g1 is covered, and nothing can block or capture the checking piece.",
+   "26...Qe1#": "Checkmate!"
+  },
+  "explanation": "A back-rank mate: a rook or queen mates the king on its first rank, where its own pawns stop it from escaping. Checkmate! The white king on h1 is attacked by the queen on e1, its own pieces block g2 and h2, g1 is covered, and nothing can block or capture the checking piece. The line ends in checkmate.",
+  "tags": [
+   "backRankMate",
+   "lichess",
+   "real game",
+   "3-move",
+   "harder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_mate": {
+    "mated_side": "white",
+    "king": "h1",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "black",
+      "square": "e1"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "g1",
+      "covered_by": {
+       "piece": "queen",
+       "color": "black",
+       "square": "e1"
+      }
+     },
+     {
+      "square": "g2",
+      "blocked_by": "pawn"
+     },
+     {
+      "square": "h2",
+      "blocked_by": "pawn"
+     }
+    ],
+    "mating_move": "26...Qe1#",
+    "pattern": "back-rank mate",
+    "boxed_in_by": [
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "g2"
+     },
+     {
+      "piece": "pawn",
+      "color": "white",
+      "square": "h2"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "R8rBc",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/R8rBc",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mate"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mate",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bxf2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Bxf2+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "24...Bxf2+"
+    },
+    "learner_moves": [
+     {
+      "move": "Qxf2+",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 9980,
+      "best_move": "Qxf2+",
+      "best_cp": 9980,
+      "alternatives": [],
+      "mate_after": true,
+      "label": "25...Qxf2+"
+     },
+     {
+      "move": "Qe1#",
+      "category": "best",
+      "loss_cp": 0,
+      "eval_cp": 10000,
+      "best_move": "Qe1#",
+      "best_cp": 9990,
+      "alternatives": [
+       "Qf1#"
+      ],
+      "mate_after": true,
+      "label": "26...Qe1#"
+     }
+    ],
+    "alternatives": []
+   }
+  }
+ }
+]

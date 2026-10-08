@@ -1,0 +1,21 @@
+{
+  "id": "italian_game",
+  "title": "Italian Game",
+  "description": "Learn the Italian Game through ideas, demonstrations, and practice — not memorization. Start with 1.e4 e5 2.Nf3 Nc6 3.Bc4 and understand why every move is played.",
+  "lessons": [
+    {
+      "id": "italian_01",
+      "title": "1. Basic setup",
+      "file": "lesson_01.json",
+      "status": "available"
+    },
+    { "id": "italian_02", "title": "2. Why e4, Nf3, and Bc4 are played", "status": "planned" },
+    { "id": "italian_03", "title": "3. King safety and castling", "status": "planned" },
+    { "id": "italian_04", "title": "4. Black's common responses", "status": "planned" },
+    { "id": "italian_05", "title": "5. Common plans", "status": "planned" },
+    { "id": "italian_06", "title": "6. Common tactical ideas", "status": "planned" },
+    { "id": "italian_07", "title": "7. Typical mistakes", "status": "planned" },
+    { "id": "italian_08", "title": "8. Interactive practice", "status": "planned" },
+    { "id": "italian_09", "title": "9. Opening quiz", "status": "planned" }
+  ]
+}

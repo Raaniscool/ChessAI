@@ -1,0 +1,509 @@
+[
+ {
+  "id": "rules_check_block",
+  "title": "Check — and the three ways out",
+  "concept": "check",
+  "difficulty": 1,
+  "description": "White gives check with the bishop. Black must deal with it right away.",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "d6",
+   "Bb5+",
+   "c6"
+  ],
+  "notes": {
+   "3.Bb5+": "Check! The bishop attacks the king on e8 along the diagonal.",
+   "3...c6": "Black blocks the check by putting a pawn in the way. The pawn also attacks the bishop."
+  },
+  "explanation": "A king in check must get out of check on the very next move. There are only three ways: move the king, block the line of attack, or capture the checking piece. Here Black blocks with a pawn — the best way, because it also attacks the bishop.",
+  "highlights": [
+   {
+    "square": "b5",
+    "color": "red"
+   },
+   {
+    "square": "e8",
+    "color": "yellow"
+   },
+   {
+    "square": "c6",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "check",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.9",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.9 (the king in check)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_stalemate_queen",
+  "title": "Stalemate: winning becomes a draw",
+  "concept": "stalemate",
+  "difficulty": 1,
+  "description": "White has a queen against a lone king — and throws the win away with one careless move.",
+  "start_fen": "7k/8/4Q3/8/8/8/8/K7 w - - 0 1",
+  "moves": [
+   "Qg6"
+  ],
+  "notes": {
+   "1.Qg6": "The queen covers g8, g7 and h7. The black king isn't in check, but it has nowhere to go — and Black has no other piece to move."
+  },
+  "explanation": "Black is not in check, but has no legal move: that is stalemate, and the game is a draw. With a queen against a lone king, always leave the king at least one square until you can give checkmate.",
+  "highlights": [
+   {
+    "square": "h8",
+    "color": "yellow"
+   },
+   {
+    "square": "g8",
+    "color": "red"
+   },
+   {
+    "square": "g7",
+    "color": "red"
+   },
+   {
+    "square": "h7",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "stalemate",
+   "draw",
+   "fide"
+  ],
+  "related": [
+   "queen_mate"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-5.2.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 5.2.1 (stalemate)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_stalemate_pawn",
+  "title": "Stalemate with king and pawn",
+  "concept": "stalemate",
+  "difficulty": 2,
+  "description": "A pawn on the seventh rank and a careless king move: the black king is left without a single legal move.",
+  "start_fen": "4k3/8/3K4/4P3/8/8/8/8 w - - 0 1",
+  "moves": [
+   "e6",
+   "Kd8",
+   "e7+",
+   "Ke8",
+   "Ke6"
+  ],
+  "notes": {
+   "1.e6": "White pushes the pawn — but this lets Black's king get in front of it.",
+   "2.e7+": "Check with the pawn; the black king must step back to e8.",
+   "3.Ke6": "The king protects the pawn, but now the black king has no legal move and is not in check: stalemate."
+  },
+  "explanation": "The black king on e8 can't move: d7 and f7 are next to White's king, and d8 and f8 are attacked by the pawn. It isn't in check, so it's stalemate — a draw. When the defending king reaches the square in front of the pawn, the stronger side has to be very careful.",
+  "tags": [
+   "rules",
+   "stalemate",
+   "pawn endgame"
+  ],
+  "related": [
+   "opposition"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-5.2.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 5.2.1 (stalemate); standard king-and-pawn theory",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_castling_kingside",
+  "title": "Castling kingside",
+  "concept": "castling",
+  "difficulty": 1,
+  "description": "In the Italian Game, White develops the knight and bishop and then castles.",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "Nc6",
+   "Bc4",
+   "Bc5",
+   "O-O"
+  ],
+  "notes": {
+   "2.Nf3": "The knight leaves g1.",
+   "3.Bc4": "The bishop leaves f1. Now nothing stands between the king and the rook.",
+   "4.O-O": "Castling: the king jumps two squares to g1 and the rook lands on f1, next to it."
+  },
+  "explanation": "Castling is the only move where two pieces move at once. The king goes two squares towards the rook and the rook jumps over to the other side. The king gets a safe home behind its pawns and the rook comes towards the centre.",
+  "highlights": [
+   {
+    "square": "g1",
+    "color": "green"
+   },
+   {
+    "square": "f1",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "king safety",
+   "fide"
+  ],
+  "related": [
+   "king_safety",
+   "italian_game"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2 (castling)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_castling_queenside",
+  "title": "Castling queenside",
+  "concept": "castling",
+  "difficulty": 2,
+  "concept_params": {
+   "wing": "queenside"
+  },
+  "description": "To castle queenside, three squares must be empty: the knight, the bishop and the queen all move first.",
+  "moves": [
+   "d4",
+   "d5",
+   "Nc3",
+   "Nc6",
+   "Bf4",
+   "Bf5",
+   "Qd2",
+   "Qd7",
+   "O-O-O"
+  ],
+  "notes": {
+   "5.O-O-O": "Queenside castling: the king goes two squares to c1 and the rook from a1 lands on d1."
+  },
+  "explanation": "Queenside castling works like kingside castling, but the rook travels further: the king ends on c1 and the rook on d1, ready to use the d-file.",
+  "highlights": [
+   {
+    "square": "c1",
+    "color": "green"
+   },
+   {
+    "square": "d1",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2 (castling)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_no_castling_through_check",
+  "title": "You can't castle through an attacked square",
+  "concept": "cannot_castle",
+  "difficulty": 2,
+  "concept_params": {
+   "side": "white",
+   "wing": "kingside"
+  },
+  "description": "White would like to castle, but a black bishop controls f1 — the square the king has to cross.",
+  "start_fen": "4k3/8/8/8/8/1b6/8/4K2R b K - 0 1",
+  "moves": [
+   "Bc4"
+  ],
+  "notes": {
+   "1...Bc4": "The bishop now attacks f1. White still has the right to castle, but can't do it this move."
+  },
+  "explanation": "The king may not castle out of check, through an attacked square, or onto an attacked square. The bishop on c4 attacks f1, which the king would pass over, so castling kingside is illegal until that changes.",
+  "highlights": [
+   {
+    "square": "f1",
+    "color": "red"
+   },
+   {
+    "square": "c4",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "castling",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2.2 (castling is prevented temporarily)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_no_castling_in_check",
+  "title": "You can't castle out of check",
+  "concept": "cannot_castle",
+  "difficulty": 2,
+  "concept_params": {
+   "side": "white",
+   "wing": "kingside"
+  },
+  "description": "A rook check stops White from castling — even though neither the king nor the rook has moved.",
+  "start_fen": "4k3/r7/8/8/8/8/8/4K2R b K - 0 1",
+  "moves": [
+   "Re7+"
+  ],
+  "notes": {
+   "1...Re7+": "Check along the e-file. Castling is not a way out of check."
+  },
+  "explanation": "When you are in check you must answer the check: move the king, block, or capture. Castling doesn't count — it's illegal while the king is in check. Once the check is gone (and the king and rook still haven't moved), castling is allowed again.",
+  "tags": [
+   "rules",
+   "castling",
+   "check",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.8.2.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.8.2.2",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_en_passant_white",
+  "title": "En passant",
+  "concept": "en_passant",
+  "difficulty": 2,
+  "description": "Black's d-pawn jumps two squares and lands right next to White's pawn on e5.",
+  "moves": [
+   "e4",
+   "e6",
+   "e5",
+   "d5",
+   "exd6"
+  ],
+  "key_move": "3.exd6",
+  "prompt": "Black's pawn just moved two squares, from d7 to d5. Can you capture it?",
+  "hints": [
+   "Your pawn on e5 is right next to Black's pawn.",
+   "A pawn that jumps two squares can be captured as if it had moved only one."
+  ],
+  "notes": {
+   "2...d5": "The pawn moves two squares and lands beside White's pawn on e5.",
+   "3.exd6": "En passant! White's pawn captures diagonally onto d6, and the black pawn on d5 disappears."
+  },
+  "explanation": "En passant ('in passing') is a special pawn capture. When a pawn moves two squares and lands beside an enemy pawn, that pawn may capture it as if it had moved only one square. It is only allowed on the very next move.",
+  "highlights": [
+   {
+    "square": "d6",
+    "color": "green"
+   },
+   {
+    "square": "d5",
+    "color": "red"
+   }
+  ],
+  "tags": [
+   "rules",
+   "en passant",
+   "pawn",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.3.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.3.2 (en passant)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_en_passant_black",
+  "title": "En passant for Black",
+  "concept": "en_passant",
+  "difficulty": 2,
+  "description": "White's e-pawn jumps past Black's pawn on d4 — and Black captures it in passing.",
+  "moves": [
+   "Nf3",
+   "d5",
+   "g3",
+   "d4",
+   "e4",
+   "dxe3"
+  ],
+  "notes": {
+   "3.e4": "The pawn jumps two squares to e4, right beside the black pawn on d4.",
+   "3...dxe3": "En passant: Black captures onto e3 and White's pawn on e4 is removed."
+  },
+  "explanation": "En passant works for both sides. Black's pawn on d4 captures White's e-pawn as if it had stopped on e3. If Black had waited one move, the chance would be gone.",
+  "tags": [
+   "rules",
+   "en passant",
+   "pawn",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.3.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.3.2 (en passant)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_promotion_queen",
+  "title": "Promotion: a new queen",
+  "concept": "promotion",
+  "difficulty": 1,
+  "description": "White's pawn is one step from the last rank.",
+  "start_fen": "8/4P3/8/8/8/k7/8/K7 w - - 0 1",
+  "moves": [
+   "e8=Q"
+  ],
+  "key_move": "1.e8=Q",
+  "prompt": "Your pawn is about to reach the last rank. What do you play?",
+  "hints": [
+   "A pawn that reaches the last rank becomes a new piece.",
+   "Which piece is the strongest?"
+  ],
+  "notes": {
+   "1.e8=Q": "The pawn reaches the eighth rank and becomes a queen."
+  },
+  "explanation": "When a pawn reaches the last rank it must be promoted to a queen, rook, bishop or knight of the same colour. You almost always choose a queen, the strongest piece. You can have two or more queens at once.",
+  "highlights": [
+   {
+    "square": "e8",
+    "color": "green"
+   }
+  ],
+  "tags": [
+   "rules",
+   "promotion",
+   "pawn",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.7.5",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.7.5 (promotion)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_capture_scandinavian",
+  "title": "Captures",
+  "concept": "captures",
+  "difficulty": 1,
+  "description": "Pawns and pieces capture in the first moves of the Scandinavian Defense.",
+  "moves": [
+   "e4",
+   "d5",
+   "exd5",
+   "Qxd5"
+  ],
+  "notes": {
+   "2.exd5": "A pawn captures diagonally forward: e4 takes d5.",
+   "2...Qxd5": "The queen captures the same way it moves — in a straight line."
+  },
+  "explanation": "To capture, a piece moves onto the square of an enemy piece, which is removed from the board. Every piece captures the way it moves, except the pawn: it moves straight ahead but captures diagonally forward.",
+  "tags": [
+   "rules",
+   "captures",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.1",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Articles 3.1-3.7 (moves and captures)",
+   "import_date": "2026-09-25"
+  }
+ },
+ {
+  "id": "rules_pinned_knight_illegal",
+  "title": "A pinned piece can't move",
+  "concept": "legal_moves",
+  "concepts": [
+   "absolute_pin"
+  ],
+  "difficulty": 2,
+  "concept_params": {
+   "move": "Nd4",
+   "uci": "c6d4"
+  },
+  "description": "Black's knight on c6 blocks a check. Now it is stuck: moving it would expose the king.",
+  "moves": [
+   "e4",
+   "e5",
+   "Nf3",
+   "d6",
+   "Bb5+",
+   "Nc6",
+   "O-O"
+  ],
+  "notes": {
+   "3.Bb5+": "Check from the bishop.",
+   "3...Nc6": "Black blocks with the knight. Now the knight stands between the bishop and the king.",
+   "4.O-O": "It's Black's move. The knight on c6 has squares to go to — but moving it is illegal."
+  },
+  "explanation": "A move that leaves your own king in check is illegal. The knight on c6 is pinned to the king by the bishop on b5, so a knight move like Nd4 would open the diagonal to the king and is not allowed.",
+  "highlights": [
+   {
+    "square": "c6",
+    "color": "red"
+   },
+   {
+    "square": "b5",
+    "color": "yellow"
+   },
+   {
+    "square": "e8",
+    "color": "yellow"
+   }
+  ],
+  "tags": [
+   "rules",
+   "legal moves",
+   "pin",
+   "fide"
+  ],
+  "source": {
+   "source_type": "rules_reference",
+   "source_id": "FIDE-LoC-3.9.2",
+   "source_license": "facts of the game rules",
+   "reference": "FIDE Laws of Chess, Article 3.9.2 (no move may expose one's own king to check)",
+   "import_date": "2026-09-25"
+  }
+ }
+]

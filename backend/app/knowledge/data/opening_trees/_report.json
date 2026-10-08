@@ -1,0 +1,443 @@
+{
+ "openings": {
+  "alekhine_defense": {
+   "counts": {
+    "db_positions": 128,
+    "dubious": 3,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 56,
+    "mistake": 0,
+    "named": 56,
+    "positions": 128,
+    "sound": 125,
+    "traps": 0,
+    "unique_positions": 127
+   },
+   "dropped": []
+  },
+  "caro_kann": {
+   "counts": {
+    "db_positions": 239,
+    "dubious": 5,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 110,
+    "mistake": 1,
+    "named": 110,
+    "positions": 239,
+    "sound": 233,
+    "traps": 1,
+    "unique_positions": 232
+   },
+   "dropped": []
+  },
+  "catalan_opening": {
+   "counts": {
+    "db_positions": 154,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 32,
+    "mistake": 0,
+    "named": 32,
+    "positions": 154,
+    "sound": 154,
+    "traps": 0,
+    "unique_positions": 109
+   },
+   "dropped": []
+  },
+  "dutch_defense": {
+   "counts": {
+    "db_positions": 132,
+    "dubious": 1,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 69,
+    "mistake": 0,
+    "named": 69,
+    "positions": 132,
+    "sound": 131,
+    "traps": 1,
+    "unique_positions": 132
+   },
+   "dropped": [
+    {
+     "game": "Edward Lasker - George Alan Thomas, 1912",
+     "reason": "the game leaves the opening tree after 1 plies"
+    }
+   ]
+  },
+  "english_opening": {
+   "counts": {
+    "db_positions": 446,
+    "dubious": 6,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 175,
+    "mistake": 0,
+    "named": 175,
+    "positions": 446,
+    "sound": 440,
+    "traps": 0,
+    "unique_positions": 412
+   },
+   "dropped": [
+    {
+     "reason": "the mistake Nxe5 only loses 60 cp (needs 150)",
+     "trap": "Smothered mate on f3"
+    }
+   ]
+  },
+  "four_knights_game": {
+   "counts": {
+    "db_positions": 164,
+    "dubious": 2,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 49,
+    "mistake": 1,
+    "named": 49,
+    "positions": 164,
+    "sound": 161,
+    "traps": 0,
+    "unique_positions": 154
+   },
+   "dropped": []
+  },
+  "french_defense": {
+   "counts": {
+    "db_positions": 412,
+    "dubious": 7,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 212,
+    "mistake": 0,
+    "named": 212,
+    "positions": 412,
+    "sound": 405,
+    "traps": 1,
+    "unique_positions": 391
+   },
+   "dropped": []
+  },
+  "grunfeld_defense": {
+   "counts": {
+    "db_positions": 178,
+    "dubious": 1,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 59,
+    "mistake": 0,
+    "named": 59,
+    "positions": 178,
+    "sound": 177,
+    "traps": 0,
+    "unique_positions": 163
+   },
+   "dropped": []
+  },
+  "italian_game": {
+   "counts": {
+    "db_positions": 471,
+    "dubious": 7,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 187,
+    "mistake": 1,
+    "named": 187,
+    "positions": 471,
+    "sound": 463,
+    "traps": 1,
+    "unique_positions": 424
+   },
+   "dropped": [
+    {
+     "reason": "the mistake Nxd5 only loses 105 cp (needs 150)",
+     "trap": "Fried Liver Attack"
+    }
+   ]
+  },
+  "kings_gambit": {
+   "counts": {
+    "db_positions": 395,
+    "dubious": 25,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 191,
+    "mistake": 6,
+    "named": 191,
+    "positions": 395,
+    "sound": 364,
+    "traps": 1,
+    "unique_positions": 380
+   },
+   "dropped": []
+  },
+  "kings_indian_defense": {
+   "counts": {
+    "db_positions": 288,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 119,
+    "mistake": 0,
+    "named": 119,
+    "positions": 288,
+    "sound": 288,
+    "traps": 0,
+    "unique_positions": 263
+   },
+   "dropped": []
+  },
+  "london_system": {
+   "counts": {
+    "db_positions": 50,
+    "dubious": 0,
+    "engine_positions": 54,
+    "games": 0,
+    "lines": 22,
+    "mistake": 0,
+    "named": 22,
+    "positions": 104,
+    "sound": 104,
+    "traps": 0,
+    "unique_positions": 93
+   },
+   "dropped": []
+  },
+  "nimzo_indian_defense": {
+   "counts": {
+    "db_positions": 234,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 99,
+    "mistake": 0,
+    "named": 99,
+    "positions": 234,
+    "sound": 234,
+    "traps": 0,
+    "unique_positions": 228
+   },
+   "dropped": []
+  },
+  "petrovs_defense": {
+   "counts": {
+    "db_positions": 94,
+    "dubious": 3,
+    "engine_positions": 6,
+    "games": 0,
+    "lines": 50,
+    "mistake": 0,
+    "named": 50,
+    "positions": 100,
+    "sound": 97,
+    "traps": 0,
+    "unique_positions": 94
+   },
+   "dropped": [
+    {
+     "reason": "the trapping side's Nxd8 loses 203 cp",
+     "trap": "Copying White: 3...Nxe4?"
+    },
+    {
+     "reason": "the trap ends only 41 cp up for the trapping side",
+     "trap": "Marshall Trap"
+    }
+   ]
+  },
+  "philidor_defense": {
+   "counts": {
+    "db_positions": 107,
+    "dubious": 4,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 44,
+    "mistake": 0,
+    "named": 44,
+    "positions": 107,
+    "sound": 103,
+    "traps": 1,
+    "unique_positions": 98
+   },
+   "dropped": []
+  },
+  "pirc_defense": {
+   "counts": {
+    "db_positions": 39,
+    "dubious": 0,
+    "engine_positions": 66,
+    "games": 1,
+    "lines": 28,
+    "mistake": 0,
+    "named": 28,
+    "positions": 105,
+    "sound": 105,
+    "traps": 0,
+    "unique_positions": 105
+   },
+   "dropped": []
+  },
+  "queens_gambit_accepted": {
+   "counts": {
+    "db_positions": 126,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 58,
+    "mistake": 0,
+    "named": 58,
+    "positions": 126,
+    "sound": 126,
+    "traps": 1,
+    "unique_positions": 116
+   },
+   "dropped": []
+  },
+  "queens_gambit_declined": {
+   "counts": {
+    "db_positions": 681,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 1,
+    "lines": 198,
+    "mistake": 0,
+    "named": 198,
+    "positions": 681,
+    "sound": 681,
+    "traps": 2,
+    "unique_positions": 508
+   },
+   "dropped": []
+  },
+  "queens_indian_defense": {
+   "counts": {
+    "db_positions": 204,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 73,
+    "mistake": 0,
+    "named": 73,
+    "positions": 204,
+    "sound": 204,
+    "traps": 0,
+    "unique_positions": 191
+   },
+   "dropped": []
+  },
+  "ruy_lopez": {
+   "counts": {
+    "db_positions": 474,
+    "dubious": 12,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 235,
+    "mistake": 4,
+    "named": 235,
+    "positions": 474,
+    "sound": 458,
+    "traps": 3,
+    "unique_positions": 467
+   },
+   "dropped": []
+  },
+  "scandinavian_defense": {
+   "counts": {
+    "db_positions": 83,
+    "dubious": 3,
+    "engine_positions": 18,
+    "games": 0,
+    "lines": 45,
+    "mistake": 0,
+    "named": 45,
+    "positions": 101,
+    "sound": 98,
+    "traps": 0,
+    "unique_positions": 101
+   },
+   "dropped": []
+  },
+  "scotch_game": {
+   "counts": {
+    "db_positions": 128,
+    "dubious": 1,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 53,
+    "mistake": 2,
+    "named": 53,
+    "positions": 128,
+    "sound": 125,
+    "traps": 0,
+    "unique_positions": 125
+   },
+   "dropped": [
+    {
+     "reason": "move 14 (Ne5) before the mistake already loses 650 cp",
+     "trap": "Sea-Cadet Mate"
+    }
+   ]
+  },
+  "sicilian_defense": {
+   "counts": {
+    "db_positions": 873,
+    "dubious": 10,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 391,
+    "mistake": 0,
+    "named": 391,
+    "positions": 873,
+    "sound": 863,
+    "traps": 1,
+    "unique_positions": 811
+   },
+   "dropped": [
+    {
+     "reason": "the mistake g6 only loses 52 cp (needs 150)",
+     "trap": "Magnus Smith Trap"
+    }
+   ]
+  },
+  "slav_defense": {
+   "counts": {
+    "db_positions": 385,
+    "dubious": 0,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 122,
+    "mistake": 0,
+    "named": 122,
+    "positions": 385,
+    "sound": 385,
+    "traps": 0,
+    "unique_positions": 283
+   },
+   "dropped": []
+  },
+  "vienna_game": {
+   "counts": {
+    "db_positions": 139,
+    "dubious": 2,
+    "engine_positions": 0,
+    "games": 0,
+    "lines": 56,
+    "mistake": 1,
+    "named": 56,
+    "positions": 139,
+    "sound": 136,
+    "traps": 0,
+    "unique_positions": 131
+   },
+   "dropped": [
+    {
+     "reason": "the mistake Qh5 only loses 0 cp (needs 150)",
+     "trap": "Wurzburger Trap"
+    }
+   ]
+  }
+ }
+}

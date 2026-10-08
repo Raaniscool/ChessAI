@@ -1,0 +1,2030 @@
+{
+ "version": 1,
+ "concepts": [
+  {
+   "id": "check",
+   "name": "Check",
+   "category": "basics",
+   "summary": "A king is in check when an enemy piece attacks it. The player in check must get out of it at once: move the king, block the check, or capture the checking piece.",
+   "aliases": [
+    "check",
+    "checks",
+    "in check",
+    "giving check",
+    "what is check"
+   ],
+   "related": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "check"
+   },
+   "engine": "none"
+  },
+  {
+   "id": "checkmate",
+   "name": "Checkmate",
+   "category": "checkmates",
+   "summary": "Checkmate is check with no way out: the king is attacked and no legal move stops the attack. Checkmate ends the game.",
+   "aliases": [
+    "checkmate",
+    "checkmates",
+    "mate",
+    "mates",
+    "checkmating",
+    "how to checkmate",
+    "checkmate patterns",
+    "mating patterns",
+    "mate patterns"
+   ],
+   "related": [
+    "stalemate"
+   ],
+   "prerequisites": [
+    "check"
+   ],
+   "validator": {
+    "type": "checkmate"
+   },
+   "engine": "mate",
+   "topics": [
+    "mate_in_1",
+    "back_rank_mate"
+   ]
+  },
+  {
+   "id": "mate_in_one",
+   "name": "Mate in one",
+   "category": "checkmates",
+   "summary": "A checkmate that takes a single move. Always look at every check first — one of them may end the game.",
+   "aliases": [
+    "mate in one",
+    "mate in 1",
+    "checkmate in one",
+    "one move checkmate",
+    "find checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "topics": [
+    "mate_in_1"
+   ]
+  },
+  {
+   "id": "stalemate",
+   "name": "Stalemate",
+   "category": "basics",
+   "summary": "Stalemate: the player to move is NOT in check but has no legal move. The game is a draw — a big danger when you are winning.",
+   "aliases": [
+    "stalemate",
+    "stalemates",
+    "stalemated"
+   ],
+   "related": [
+    "checkmate"
+   ],
+   "prerequisites": [
+    "check"
+   ],
+   "validator": {
+    "type": "stalemate"
+   },
+   "engine": "none",
+   "topics": [
+    "kq_vs_k"
+   ]
+  },
+  {
+   "id": "castling",
+   "name": "Castling",
+   "category": "basics",
+   "summary": "Castling moves the king two squares towards a rook and puts the rook on the other side of the king, in one move. It tucks the king away and brings the rook into play.",
+   "aliases": [
+    "castling",
+    "castle",
+    "castles",
+    "how to castle",
+    "kingside castling",
+    "queenside castling",
+    "o-o"
+   ],
+   "related": [
+    "king_safety"
+   ],
+   "validator": {
+    "type": "castling"
+   },
+   "engine": "none",
+   "topics": [
+    "opening_principles"
+   ]
+  },
+  {
+   "id": "cannot_castle",
+   "name": "When you can't castle",
+   "category": "basics",
+   "summary": "You may not castle if the king or that rook has moved, if you are in check, if a piece stands between them, or if the king would pass through or land on an attacked square.",
+   "aliases": [
+    "cant castle",
+    "can't castle",
+    "cannot castle",
+    "castling rules",
+    "castle through check",
+    "castling out of check"
+   ],
+   "parents": [
+    "castling"
+   ],
+   "validator": {
+    "type": "cannot_castle"
+   }
+  },
+  {
+   "id": "en_passant",
+   "name": "En passant",
+   "category": "basics",
+   "summary": "En passant: when a pawn moves two squares and lands beside an enemy pawn, that enemy pawn may capture it as if it had moved only one square — but only on the very next move.",
+   "aliases": [
+    "en passant",
+    "enpassant",
+    "en-passant",
+    "in passing",
+    "e.p."
+   ],
+   "validator": {
+    "type": "en_passant"
+   },
+   "engine": "none"
+  },
+  {
+   "id": "promotion",
+   "name": "Promotion",
+   "category": "basics",
+   "summary": "A pawn that reaches the last rank is promoted: it becomes a queen, rook, bishop or knight of the same colour — almost always a queen.",
+   "aliases": [
+    "promotion",
+    "promote",
+    "promoting",
+    "pawn promotion",
+    "queening",
+    "promote a pawn"
+   ],
+   "validator": {
+    "type": "promotion"
+   },
+   "engine": "none",
+   "topics": [
+    "promotion"
+   ]
+  },
+  {
+   "id": "captures",
+   "name": "Captures",
+   "category": "basics",
+   "summary": "A piece captures by moving onto a square occupied by an enemy piece, which is removed from the board. Pawns capture diagonally forward.",
+   "aliases": [
+    "capture",
+    "captures",
+    "capturing",
+    "taking pieces",
+    "how pieces capture"
+   ],
+   "validator": {
+    "type": "capture"
+   },
+   "engine": "none"
+  },
+  {
+   "id": "legal_moves",
+   "name": "Legal and illegal moves",
+   "category": "basics",
+   "summary": "A move is illegal if the piece can't move that way, or if it would leave your own king in check — for example moving a piece that is pinned to the king.",
+   "aliases": [
+    "legal moves",
+    "legal move",
+    "illegal move",
+    "illegal moves",
+    "allowed moves"
+   ],
+   "related": [
+    "pin"
+   ],
+   "validator": {
+    "type": "illegal_move"
+   },
+   "engine": "none"
+  },
+  {
+   "id": "king_safety",
+   "name": "King safety",
+   "category": "basics",
+   "summary": "Keep your king safe: castle early, keep the pawns in front of the king, and don't open lines towards it.",
+   "aliases": [
+    "king safety",
+    "safe king",
+    "protect the king",
+    "protecting the king",
+    "exposed king"
+   ],
+   "related": [
+    "castling"
+   ],
+   "topics": [
+    "opening_principles"
+   ]
+  },
+  {
+   "id": "tactics",
+   "name": "Tactics",
+   "category": "tactics",
+   "summary": "Tactics are short forcing sequences that win material or give mate: forks, pins, skewers, discovered attacks and more.",
+   "aliases": [
+    "tactics",
+    "tactic",
+    "tactical",
+    "combinations",
+    "tactical patterns"
+   ]
+  },
+  {
+   "id": "fork",
+   "name": "Fork",
+   "category": "tactics",
+   "summary": "A fork is one piece attacking two or more enemy pieces at once. The opponent can usually save only one of them.",
+   "aliases": [
+    "fork",
+    "forks",
+    "forking",
+    "family fork"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "double_attack"
+   ],
+   "validator": {
+    "type": "fork"
+   },
+   "engine": "tactic",
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "knight_fork",
+   "name": "Knight fork",
+   "category": "tactics",
+   "summary": "Knights are the best forking pieces: they jump, and their attack can't be blocked.",
+   "aliases": [
+    "knight fork",
+    "knight forks",
+    "forking knight"
+   ],
+   "parents": [
+    "fork"
+   ],
+   "validator": {
+    "type": "fork",
+    "piece": "knight"
+   },
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "pawn_fork",
+   "name": "Pawn fork",
+   "category": "tactics",
+   "summary": "A pawn attacks two squares diagonally forward. Pushed between two pieces, it attacks both — and a pawn is cheaper than anything it hits.",
+   "aliases": [
+    "pawn fork",
+    "pawn forks",
+    "fork trick"
+   ],
+   "parents": [
+    "fork"
+   ],
+   "validator": {
+    "type": "fork",
+    "piece": "pawn"
+   },
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "queen_fork",
+   "name": "Queen fork",
+   "category": "tactics",
+   "summary": "The queen moves in eight directions, so it can often attack two loose pieces — or the king and a piece — at once.",
+   "aliases": [
+    "queen fork",
+    "queen forks"
+   ],
+   "parents": [
+    "fork"
+   ],
+   "validator": {
+    "type": "fork",
+    "piece": "queen"
+   },
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "double_attack",
+   "name": "Double attack",
+   "category": "tactics",
+   "summary": "A double attack is one move that creates two threats at once — by one piece (a fork) or by two pieces.",
+   "aliases": [
+    "double attack",
+    "double attacks",
+    "two threats"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "fork",
+    "discovered_attack"
+   ],
+   "validator": {
+    "type": "double_attack"
+   },
+   "engine": "tactic",
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "pin",
+   "name": "Pin",
+   "category": "tactics",
+   "summary": "A pin: a bishop, rook or queen attacks a piece that can't move away without exposing something more valuable behind it.",
+   "aliases": [
+    "pin",
+    "pins",
+    "pinned",
+    "pinning"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "skewer"
+   ],
+   "validator": {
+    "type": "pin"
+   },
+   "engine": "tactic",
+   "topics": [
+    "pins"
+   ]
+  },
+  {
+   "id": "absolute_pin",
+   "name": "Absolute pin",
+   "category": "tactics",
+   "summary": "In an absolute pin the piece behind is the king, so the pinned piece may not legally move at all.",
+   "aliases": [
+    "absolute pin",
+    "pinned to the king"
+   ],
+   "parents": [
+    "pin"
+   ],
+   "related": [
+    "legal_moves"
+   ],
+   "validator": {
+    "type": "pin",
+    "kind": "absolute"
+   },
+   "topics": [
+    "pins"
+   ]
+  },
+  {
+   "id": "relative_pin",
+   "name": "Relative pin",
+   "category": "tactics",
+   "summary": "In a relative pin the piece behind is valuable (not the king): the pinned piece may move, but it would lose material.",
+   "aliases": [
+    "relative pin",
+    "pinned to the queen"
+   ],
+   "parents": [
+    "pin"
+   ],
+   "validator": {
+    "type": "pin",
+    "kind": "relative"
+   },
+   "topics": [
+    "pins"
+   ]
+  },
+  {
+   "id": "skewer",
+   "name": "Skewer",
+   "category": "tactics",
+   "summary": "A skewer is a pin in reverse: a line piece attacks a valuable piece, and when it moves away, the piece behind it is captured.",
+   "aliases": [
+    "skewer",
+    "skewers",
+    "skewering"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "pin"
+   ],
+   "validator": {
+    "type": "skewer"
+   },
+   "engine": "tactic",
+   "topics": [
+    "skewers"
+   ]
+  },
+  {
+   "id": "discovered_attack",
+   "name": "Discovered attack",
+   "category": "tactics",
+   "summary": "A discovered attack: one piece moves out of the way and uncovers an attack by the piece behind it — two threats with one move.",
+   "aliases": [
+    "discovered attack",
+    "discovered attacks",
+    "discovery",
+    "uncovered attack"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "discovered_check"
+   ],
+   "validator": {
+    "type": "discovered_attack"
+   },
+   "engine": "tactic",
+   "topics": [
+    "discovered_attacks"
+   ]
+  },
+  {
+   "id": "discovered_check",
+   "name": "Discovered check",
+   "category": "tactics",
+   "summary": "A discovered check: moving one piece reveals check from another. The piece that moved is free to grab something while the king deals with the check.",
+   "aliases": [
+    "discovered check",
+    "discovered checks"
+   ],
+   "parents": [
+    "discovered_attack",
+    "check"
+   ],
+   "validator": {
+    "type": "discovered_check"
+   },
+   "topics": [
+    "discovered_attacks"
+   ]
+  },
+  {
+   "id": "double_check",
+   "name": "Double check",
+   "category": "tactics",
+   "summary": "Double check: two pieces give check at once. Blocking or capturing can't stop both, so the king must move.",
+   "aliases": [
+    "double check",
+    "double checks"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "discovered_check"
+   ],
+   "validator": {
+    "type": "double_check"
+   },
+   "engine": "tactic",
+   "topics": [
+    "double_check"
+   ]
+  },
+  {
+   "id": "deflection",
+   "name": "Deflection",
+   "category": "tactics",
+   "summary": "Deflection lures a defender away from its job — then the square or piece it guarded falls.",
+   "aliases": [
+    "deflection",
+    "deflect",
+    "deflecting"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "related": [
+    "overloaded_piece"
+   ],
+   "validator": {
+    "type": "deflection"
+   },
+   "engine": "tactic",
+   "topics": [
+    "deflection"
+   ]
+  },
+  {
+   "id": "overloaded_piece",
+   "name": "Overloaded piece",
+   "category": "tactics",
+   "summary": "An overloaded piece has two defensive jobs at once. Attack one of them and the other collapses.",
+   "aliases": [
+    "overloaded piece",
+    "overloaded",
+    "overloading",
+    "overworked piece",
+    "overloaded defender"
+   ],
+   "parents": [
+    "deflection"
+   ],
+   "validator": {
+    "type": "overloaded_piece"
+   },
+   "topics": [
+    "deflection"
+   ]
+  },
+  {
+   "id": "removing_defender",
+   "name": "Removing the defender",
+   "category": "tactics",
+   "summary": "Capture (or chase away) the piece that defends something, and what it defended is left hanging.",
+   "aliases": [
+    "removing the defender",
+    "remove the defender",
+    "capturing the defender",
+    "eliminate the defender",
+    "undermining"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "removing_defender"
+   },
+   "engine": "tactic",
+   "topics": [
+    "removing_defender"
+   ]
+  },
+  {
+   "id": "zwischenzug",
+   "name": "Zwischenzug (in-between move)",
+   "category": "tactics",
+   "summary": "A zwischenzug is an in-between move: instead of the expected recapture, you first play a stronger forcing move.",
+   "aliases": [
+    "zwischenzug",
+    "in between move",
+    "in-between move",
+    "intermezzo",
+    "intermediate move"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "zwischenzug"
+   },
+   "engine": "tactic",
+   "topics": [
+    "intermezzo"
+   ]
+  },
+  {
+   "id": "trapped_piece",
+   "name": "Trapped piece",
+   "category": "tactics",
+   "summary": "A trapped piece is attacked and has no safe square to go to, so it will be lost.",
+   "aliases": [
+    "trapped piece",
+    "trapped pieces",
+    "trapping pieces",
+    "trap a piece",
+    "trapping a piece"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "trapped_piece"
+   },
+   "engine": "tactic",
+   "topics": [
+    "trapped_piece"
+   ]
+  },
+  {
+   "id": "hanging_piece",
+   "name": "Free pieces (hanging pieces)",
+   "category": "tactics",
+   "summary": "A hanging piece is one that is attacked and not defended. Always check: can I take something for free?",
+   "aliases": [
+    "hanging piece",
+    "hanging pieces",
+    "free piece",
+    "free pieces",
+    "loose pieces",
+    "undefended pieces",
+    "missing captures",
+    "missed capture",
+    "free material"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "hanging_piece"
+   },
+   "engine": "tactic",
+   "topics": [
+    "hanging_piece"
+   ]
+  },
+  {
+   "id": "sacrifice",
+   "name": "Sacrifice",
+   "category": "tactics",
+   "summary": "A sacrifice gives up material on purpose to get something bigger: a mating attack, or even more material back.",
+   "aliases": [
+    "sacrifice",
+    "sacrifices",
+    "sacrificing",
+    "sac",
+    "piece sacrifice"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "sacrifice"
+   },
+   "engine": "tactic",
+   "topics": [
+    "sacrifice"
+   ]
+  },
+  {
+   "id": "back_rank_mate",
+   "name": "Back-rank mate",
+   "category": "checkmates",
+   "summary": "A back-rank mate: a rook or queen mates the king on its first rank, where its own pawns stop it from escaping.",
+   "aliases": [
+    "back rank mate",
+    "back-rank mate",
+    "back rank",
+    "back-rank",
+    "back rank checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "back_rank_mate"
+   },
+   "topics": [
+    "back_rank_mate"
+   ]
+  },
+  {
+   "id": "smothered_mate",
+   "name": "Smothered mate",
+   "category": "checkmates",
+   "summary": "A smothered mate: a knight mates a king that is completely surrounded by its own pieces.",
+   "aliases": [
+    "smothered mate",
+    "smothered checkmate",
+    "smothered",
+    "philidors legacy",
+    "knight checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "smothered_mate"
+   },
+   "topics": [
+    "smothered_mate"
+   ]
+  },
+  {
+   "id": "anastasia_mate",
+   "name": "Anastasia's mate",
+   "category": "checkmates",
+   "summary": "Anastasia's mate: a knight and a rook (or queen) trap the king on the edge of the board, next to its own pawn.",
+   "aliases": [
+    "anastasia mate",
+    "anastasias mate",
+    "anastasia"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "anastasia_mate"
+   },
+   "topics": [
+    "anastasia_mate"
+   ]
+  },
+  {
+   "id": "arabian_mate",
+   "name": "Arabian mate",
+   "category": "checkmates",
+   "summary": "The Arabian mate: a rook next to the king, protected by a knight that also covers the king's escape square.",
+   "aliases": [
+    "arabian mate",
+    "arabian checkmate",
+    "arabian"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "arabian_mate"
+   },
+   "topics": [
+    "arabian_mate"
+   ]
+  },
+  {
+   "id": "boden_mate",
+   "name": "Boden's mate",
+   "category": "checkmates",
+   "summary": "Boden's mate: two bishops on crossing diagonals mate a king (often after queenside castling).",
+   "aliases": [
+    "bodens mate",
+    "boden mate",
+    "boden"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "boden_mate"
+   },
+   "topics": [
+    "boden_mate"
+   ]
+  },
+  {
+   "id": "ladder_mate",
+   "name": "Ladder mate",
+   "category": "checkmates",
+   "summary": "The ladder (lawnmower) mate: two rooks or queens take turns checking and push the king rank by rank to the edge.",
+   "aliases": [
+    "ladder mate",
+    "ladder checkmate",
+    "lawnmower mate",
+    "two rook mate",
+    "two rooks mate",
+    "rook roller"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "ladder_mate"
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "kr_vs_k"
+   ]
+  },
+  {
+   "id": "scholars_mate",
+   "name": "Scholar's mate",
+   "category": "checkmates",
+   "summary": "Scholar's mate: the queen, backed by the bishop, takes on f7 (or f2) with checkmate in the first few moves.",
+   "aliases": [
+    "scholars mate",
+    "scholar's mate",
+    "four move checkmate",
+    "4 move checkmate",
+    "quick checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "related": [
+    "early_queen"
+   ],
+   "validator": {
+    "type": "scholars_mate"
+   },
+   "topics": [
+    "attacking_f7"
+   ]
+  },
+  {
+   "id": "fools_mate",
+   "name": "Fool's mate",
+   "category": "checkmates",
+   "summary": "Fool's mate is the fastest possible checkmate: after two weakening pawn moves, the queen mates on move two.",
+   "aliases": [
+    "fools mate",
+    "fool's mate",
+    "fastest checkmate",
+    "two move checkmate",
+    "2 move checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "related": [
+    "king_safety"
+   ],
+   "validator": {
+    "type": "early_mate",
+    "max_plies": 4
+   }
+  },
+  {
+   "id": "legals_mate",
+   "name": "Légal's mate",
+   "category": "checkmates",
+   "summary": "Légal's mate: a queen 'sacrifice' that isn't — if the opponent grabs the queen, three minor pieces mate the king.",
+   "aliases": [
+    "legals mate",
+    "legal's mate",
+    "legal mate",
+    "legal trap",
+    "blackburne trap"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "related": [
+    "sacrifice"
+   ],
+   "validator": {
+    "type": "early_mate",
+    "max_plies": 14
+   },
+   "engine": "tactic"
+  },
+  {
+   "id": "endgames",
+   "name": "Endgames",
+   "category": "endgames",
+   "summary": "The endgame: few pieces are left, the king becomes a fighting piece, and pawns race to promote.",
+   "aliases": [
+    "endgame",
+    "endgames",
+    "endings",
+    "ending",
+    "endgame technique"
+   ]
+  },
+  {
+   "id": "material_endgames",
+   "name": "Endgames with given material",
+   "category": "endgames",
+   "summary": "Practical endgame positions with an exact material balance for each side (for example two rooks against a queen), generated and verified on request.",
+   "aliases": [],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "material"
+   },
+   "engine": "practical"
+  },
+  {
+   "id": "queen_mate",
+   "name": "King and queen mate",
+   "category": "endgames",
+   "summary": "King and queen against a lone king always wins: the queen boxes the king in, your king comes closer, and together they mate on the edge. Beware of stalemate!",
+   "aliases": [
+    "king and queen mate",
+    "queen checkmate",
+    "queen mate",
+    "kq vs k",
+    "kqk",
+    "mate with queen",
+    "checkmate with queen",
+    "checkmate with a queen"
+   ],
+   "parents": [
+    "endgames",
+    "checkmate"
+   ],
+   "validator": {
+    "type": "queen_mate"
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "kq_vs_k"
+   ]
+  },
+  {
+   "id": "rook_mate",
+   "name": "King and rook mate",
+   "category": "endgames",
+   "summary": "King and rook against a lone king always wins: the rook cuts the king off, your king takes the opposition, and the rook mates on the edge.",
+   "aliases": [
+    "king and rook mate",
+    "rook checkmate",
+    "rook mate",
+    "kr vs k",
+    "krk",
+    "mate with rook",
+    "checkmate with rook",
+    "checkmate with a rook"
+   ],
+   "parents": [
+    "endgames",
+    "checkmate"
+   ],
+   "validator": {
+    "type": "rook_mate"
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "kr_vs_k"
+   ]
+  },
+  {
+   "id": "opposition",
+   "name": "Opposition",
+   "category": "endgames",
+   "summary": "Kings are in opposition when they face each other with one square between them. The side NOT to move has the opposition — and in pawn endings that often decides the game.",
+   "aliases": [
+    "opposition",
+    "the opposition",
+    "king opposition",
+    "direct opposition"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "opposition"
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "king_pawn_opposition"
+   ]
+  },
+  {
+   "id": "passed_pawn",
+   "name": "Passed pawn",
+   "category": "endgames",
+   "summary": "A passed pawn has no enemy pawns in front of it or on the neighbouring files. Nothing but pieces can stop it from promoting.",
+   "aliases": [
+    "passed pawn",
+    "passed pawns",
+    "passer",
+    "pawn race"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "related": [
+    "promotion"
+   ],
+   "validator": {
+    "type": "passed_pawn"
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "advanced_pawn",
+    "pawn_endgames"
+   ]
+  },
+  {
+   "id": "lucena_position",
+   "name": "Lucena position",
+   "category": "endgames",
+   "summary": "The Lucena position is the key winning rook endgame: king in front of its pawn on the 7th rank. White wins by 'building a bridge' with the rook.",
+   "aliases": [
+    "lucena",
+    "lucena position",
+    "building a bridge",
+    "build a bridge"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "prerequisites": [
+    "passed_pawn"
+   ],
+   "validator": {
+    "type": "passed_pawn",
+    "must_promote": false
+   },
+   "engine": "endgame_win",
+   "topics": [
+    "rook_endgames"
+   ]
+  },
+  {
+   "id": "openings",
+   "name": "Openings",
+   "category": "openings",
+   "summary": "The opening is the first phase of the game: develop your pieces, fight for the centre, and get your king safe.",
+   "aliases": [
+    "opening",
+    "openings",
+    "opening moves",
+    "opening theory"
+   ],
+   "validator": {
+    "type": "opening_line"
+   },
+   "engine": "opening"
+  },
+  {
+   "id": "italian_game",
+   "name": "Italian Game",
+   "category": "openings",
+   "summary": "The Italian Game (1.e4 e5 2.Nf3 Nc6 3.Bc4): White develops quickly and aims the bishop at f7, Black's weakest point.",
+   "aliases": [
+    "italian",
+    "italian game",
+    "giuoco piano",
+    "giuoco",
+    "italian opening"
+   ],
+   "parents": [
+    "openings"
+   ],
+   "validator": {
+    "type": "opening_line",
+    "names": [
+     "Italian Game"
+    ]
+   },
+   "topics": [
+    "italian_game"
+   ]
+  },
+  {
+   "id": "two_knights_defense",
+   "name": "Two Knights Defense",
+   "category": "openings",
+   "summary": "In the Two Knights Defense (3...Nf6) Black counterattacks e4 instead of copying White's bishop move — sharp and tactical.",
+   "aliases": [
+    "two knights",
+    "two knights defense",
+    "two knights defence"
+   ],
+   "parents": [
+    "italian_game"
+   ],
+   "validator": {
+    "type": "opening_line",
+    "names": [
+     "Italian Game: Two Knights Defense"
+    ]
+   },
+   "topics": [
+    "two_knights_defense"
+   ]
+  },
+  {
+   "id": "fried_liver",
+   "name": "Fried Liver Attack",
+   "category": "openings",
+   "summary": "The Fried Liver Attack: White sacrifices a knight on f7 to drag Black's king into the open.",
+   "aliases": [
+    "fried liver",
+    "fried liver attack"
+   ],
+   "parents": [
+    "two_knights_defense"
+   ],
+   "related": [
+    "sacrifice",
+    "king_safety"
+   ],
+   "validator": {
+    "type": "opening_line",
+    "names": [
+     "Italian Game: Two Knights Defense, Fried Liver Attack"
+    ]
+   }
+  },
+  {
+   "id": "evans_gambit",
+   "name": "Evans Gambit",
+   "category": "openings",
+   "summary": "The Evans Gambit (4.b4): White gives a pawn to gain time for a big centre and fast development.",
+   "aliases": [
+    "evans",
+    "evans gambit"
+   ],
+   "parents": [
+    "italian_game"
+   ],
+   "validator": {
+    "type": "opening_line",
+    "names": [
+     "Italian Game: Evans Gambit"
+    ]
+   }
+  },
+  {
+   "id": "caro_kann",
+   "name": "Caro-Kann Defense",
+   "category": "openings",
+   "summary": "The Caro-Kann (1.e4 c6 2.d4 d5): a solid defence where Black challenges the centre and usually develops the light-squared bishop before playing ...e6.",
+   "aliases": [
+    "caro kann",
+    "caro-kann",
+    "caro",
+    "carokann",
+    "caro kann defense",
+    "caro-kann defence"
+   ],
+   "parents": [
+    "openings"
+   ],
+   "validator": {
+    "type": "opening_line",
+    "names": [
+     "Caro-Kann Defense"
+    ]
+   },
+   "topics": [
+    "caro_kann"
+   ]
+  },
+  {
+   "id": "beginner_mistakes",
+   "name": "Beginner mistakes",
+   "category": "mistakes",
+   "summary": "The most common ways games are lost early: loose pieces, ignored threats, an early queen, slow development and an unsafe king.",
+   "aliases": [
+    "beginner mistakes",
+    "common mistakes",
+    "typical mistakes",
+    "blunders",
+    "how not to lose",
+    "stop blundering",
+    "mistakes"
+   ],
+   "validator": {
+    "type": "mistake"
+   },
+   "engine": "mistake"
+  },
+  {
+   "id": "hung_piece",
+   "name": "Hanging a piece",
+   "category": "mistakes",
+   "summary": "Hanging a piece means leaving it attacked and undefended, so the opponent simply takes it. Before every move ask: what does my move leave unprotected?",
+   "aliases": [
+    "hanging a piece",
+    "hung a piece",
+    "hung piece",
+    "blundering a piece",
+    "leaving pieces undefended",
+    "losing pieces"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "related": [
+    "hanging_piece"
+   ],
+   "validator": {
+    "type": "hung_piece"
+   },
+   "topics": [
+    "hanging_piece"
+   ]
+  },
+  {
+   "id": "hanging_queen",
+   "name": "Hanging the queen",
+   "category": "mistakes",
+   "summary": "The costliest blunder: putting the queen where it can be taken. Check every square your queen goes to for attackers.",
+   "aliases": [
+    "hanging the queen",
+    "hanging queen",
+    "hung the queen",
+    "hung my queen",
+    "losing the queen",
+    "blundering the queen",
+    "queen blunder"
+   ],
+   "parents": [
+    "hung_piece"
+   ],
+   "validator": {
+    "type": "hung_piece",
+    "piece": "queen"
+   },
+   "topics": [
+    "hanging_piece"
+   ]
+  },
+  {
+   "id": "missed_threat",
+   "name": "Missing a threat",
+   "category": "mistakes",
+   "summary": "Before you play your idea, ask what your opponent's last move threatens. Ignoring a threat is how most games are lost.",
+   "aliases": [
+    "missing a threat",
+    "missing threats",
+    "missed threat",
+    "missed threats",
+    "ignoring threats",
+    "ignoring a threat",
+    "not seeing threats",
+    "what does my opponent threaten"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "related": [
+    "hung_piece"
+   ],
+   "validator": {
+    "type": "missed_threat"
+   }
+  },
+  {
+   "id": "spotting_threats",
+   "name": "Spotting threats",
+   "category": "mistakes",
+   "summary": "Before you move, ask what your opponent is threatening. If a piece of yours can be taken for free, deal with that first: move it, defend it, or block the attack.",
+   "aliases": [
+    "spotting threats",
+    "spot threats",
+    "spot the threat",
+    "identify threats",
+    "identify the threat",
+    "defending against threats",
+    "defend against threats",
+    "what is my opponent threatening",
+    "threat awareness"
+   ],
+   "parents": [
+    "missed_threat",
+    "hung_piece"
+   ],
+   "validator": {
+    "type": "parries_threat"
+   },
+   "engine": "defence",
+   "topics": []
+  },
+  {
+   "id": "walked_into_fork",
+   "name": "Walking into a fork",
+   "category": "mistakes",
+   "summary": "Walking into a fork: a move puts two pieces (or king and piece) where one enemy piece can attack both.",
+   "aliases": [
+    "walking into a fork",
+    "walked into a fork",
+    "allowing a fork",
+    "getting forked",
+    "got forked"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "related": [
+    "fork"
+   ],
+   "validator": {
+    "type": "walked_into_fork"
+   },
+   "topics": [
+    "forks"
+   ]
+  },
+  {
+   "id": "poisoned_pawn",
+   "name": "Grabbing poisoned material",
+   "category": "mistakes",
+   "summary": "Poisoned material: a pawn or piece that looks free, but taking it costs more than it gains.",
+   "aliases": [
+    "poisoned pawn",
+    "poisoned material",
+    "greedy",
+    "pawn grabbing",
+    "grabbing pawns",
+    "taking free pawns"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "validator": {
+    "type": "poisoned_pawn"
+   }
+  },
+  {
+   "id": "king_safety_mistake",
+   "name": "Weakening the king",
+   "category": "mistakes",
+   "summary": "Moving the pawns in front of your king, or walking the king into the open, lets enemy pieces reach it.",
+   "aliases": [
+    "weakening the king",
+    "king safety mistake",
+    "exposed king",
+    "weakened king",
+    "pushing pawns in front of the king",
+    "king in the center"
+   ],
+   "parents": [
+    "beginner_mistakes",
+    "king_safety"
+   ],
+   "validator": {
+    "type": "king_safety_mistake"
+   }
+  },
+  {
+   "id": "early_queen",
+   "name": "Bringing the queen out early",
+   "category": "mistakes",
+   "summary": "Bringing the queen out early lets the opponent develop with tempo — every new piece attacks your queen.",
+   "aliases": [
+    "early queen",
+    "queen out early",
+    "queen too early",
+    "bringing the queen out early",
+    "early queen development",
+    "developing the queen early"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "related": [
+    "scholars_mate"
+   ],
+   "validator": {
+    "type": "early_queen"
+   },
+   "engine": "principle",
+   "topics": [
+    "opening_principles"
+   ]
+  },
+  {
+   "id": "repeated_moves",
+   "name": "Moving the same piece repeatedly",
+   "category": "mistakes",
+   "summary": "Moving one piece again and again in the opening wastes time: the opponent develops while you shuffle.",
+   "aliases": [
+    "moving the same piece",
+    "same piece twice",
+    "moving a piece twice",
+    "repeated moves",
+    "wasting moves",
+    "wasting time",
+    "loss of tempo"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "related": [
+    "ignoring_development"
+   ],
+   "validator": {
+    "type": "repeated_moves"
+   },
+   "engine": "principle",
+   "topics": [
+    "opening_principles"
+   ]
+  },
+  {
+   "id": "ignoring_development",
+   "name": "Ignoring development",
+   "category": "mistakes",
+   "summary": "Pawn moves and queen trips don't develop pieces. Fall behind in development and the opponent attacks with more pieces.",
+   "aliases": [
+    "ignoring development",
+    "not developing",
+    "failing to develop",
+    "slow development",
+    "bad development",
+    "development"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "validator": {
+    "type": "development_lead"
+   },
+   "engine": "principle",
+   "topics": [
+    "opening_principles"
+   ]
+  },
+  {
+   "id": "attraction",
+   "name": "Decoy",
+   "category": "tactics",
+   "summary": "A decoy gives up material to drag an enemy piece — often the king — onto a square where it can be hit: the capture walks straight into a check, a fork or a mate.",
+   "aliases": [
+    "decoy",
+    "decoys",
+    "decoy sacrifice",
+    "attraction",
+    "attraction sacrifice",
+    "luring the king",
+    "lure the king"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "attraction"
+   },
+   "related": [
+    "deflection",
+    "sacrifice"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "clearance",
+   "name": "Clearance",
+   "category": "tactics",
+   "summary": "A clearance move gets one of your own pieces out of the way — ideally with a threat — so another piece can use the square or line it was blocking.",
+   "aliases": [
+    "clearance",
+    "clearances",
+    "clearance sacrifice",
+    "clearance sacrifices",
+    "clearing a square",
+    "clearing a line",
+    "line clearance"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "clearance"
+   },
+   "related": [
+    "sacrifice"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "interference",
+   "name": "Interference",
+   "category": "tactics",
+   "summary": "Interference puts a piece between an enemy long-range piece and a square it guards. With the line cut, that square is no longer defended.",
+   "aliases": [
+    "interference",
+    "interference tactic",
+    "line interference",
+    "cutting the line",
+    "cut off the defender"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "interference"
+   },
+   "related": [
+    "deflection",
+    "removing_defender"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "underpromotion",
+   "name": "Underpromotion",
+   "category": "tactics",
+   "summary": "Promoting to a knight, bishop or rook instead of a queen. It is rare, but sometimes a knight gives a winning check, or a queen would stalemate.",
+   "aliases": [
+    "underpromotion",
+    "underpromotions",
+    "underpromote",
+    "under promotion",
+    "promote to a knight",
+    "knight promotion",
+    "promoting to a knight"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "underpromotion"
+   },
+   "related": [
+    "promotion"
+   ],
+   "prerequisites": [
+    "promotion"
+   ],
+   "engine": "underpromotion"
+  },
+  {
+   "id": "mate_in_two",
+   "name": "Mate in two",
+   "category": "checkmates",
+   "summary": "A forced checkmate in two moves: the first move — often a check or a sacrifice — leaves no defence against the mate that follows.",
+   "aliases": [
+    "mate in two",
+    "mate in 2",
+    "checkmate in two",
+    "checkmate in 2"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "mate_in_two"
+   },
+   "prerequisites": [
+    "mate_in_one"
+   ]
+  },
+  {
+   "id": "hook_mate",
+   "name": "Hook mate",
+   "category": "checkmates",
+   "summary": "A hook mate: a rook mates from right next to the king, guarded by a knight that is itself guarded by a pawn.",
+   "aliases": [
+    "hook mate",
+    "hook checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "hook_mate"
+   }
+  },
+  {
+   "id": "dovetail_mate",
+   "name": "Dovetail mate",
+   "category": "checkmates",
+   "summary": "A dovetail mate: the queen mates from a square diagonally next to the king, and the king's own pieces block the two escape squares she doesn't cover.",
+   "aliases": [
+    "dovetail mate",
+    "dovetail checkmate",
+    "cozio mate",
+    "cozios mate",
+    "swallow's tail mate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "dovetail_mate"
+   }
+  },
+  {
+   "id": "rule_of_the_square",
+   "name": "Rule of the square",
+   "category": "endgames",
+   "summary": "Draw a square from the pawn to its promotion square. If the defending king can't step into that square, it can never catch the pawn — just push it.",
+   "aliases": [
+    "rule of the square",
+    "square of the pawn",
+    "the square rule",
+    "can the king catch the pawn"
+   ],
+   "parents": [
+    "endgames",
+    "passed_pawn"
+   ],
+   "validator": {
+    "type": "rule_of_the_square"
+   },
+   "related": [
+    "passed_pawn"
+   ],
+   "engine": "endgame_win"
+  },
+  {
+   "id": "key_squares",
+   "name": "Key squares",
+   "category": "endgames",
+   "summary": "In king and pawn against king, the attacking king wins if it reaches a key square — usually two squares in front of the pawn. Then the pawn walks in.",
+   "aliases": [
+    "key squares",
+    "key square",
+    "critical squares",
+    "king and pawn versus king",
+    "king and pawn vs king",
+    "kp vs k",
+    "kpk"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "key_squares"
+   },
+   "related": [
+    "opposition"
+   ],
+   "prerequisites": [
+    "opposition"
+   ],
+   "engine": "endgame_win"
+  },
+  {
+   "id": "philidor_position",
+   "name": "Philidor position",
+   "category": "endgames",
+   "summary": "The basic rook-ending draw: keep your rook on your third rank so the enemy king can't come forward. When the pawn steps onto that rank, drop the rook back and check from behind.",
+   "aliases": [
+    "philidor position",
+    "philidor draw",
+    "philidor rook endgame",
+    "philidor defense in rook endgames",
+    "philidor defence in rook endgames",
+    "third rank defence",
+    "third rank defense"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "philidor_position"
+   },
+   "related": [
+    "lucena_position"
+   ],
+   "engine": "endgame_draw"
+  },
+  {
+   "id": "triangulation",
+   "name": "Triangulation",
+   "category": "endgames",
+   "summary": "Triangulation: the king takes three moves to come back to a square it could reach in two, so the same position returns with the opponent to move.",
+   "aliases": [
+    "triangulation",
+    "triangulate",
+    "triangulating",
+    "losing a tempo",
+    "lose a tempo"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "triangulation"
+   },
+   "related": [
+    "opposition"
+   ],
+   "prerequisites": [
+    "opposition"
+   ],
+   "engine": "endgame_win"
+  },
+  {
+   "id": "wrong_bishop",
+   "name": "Wrong bishop",
+   "category": "endgames",
+   "summary": "Bishop and rook pawn can't win if the bishop doesn't control the promotion square: the defending king sits in the corner and it is a draw.",
+   "aliases": [
+    "wrong bishop",
+    "wrong coloured bishop",
+    "wrong colored bishop",
+    "wrong-colored bishop",
+    "wrong rook pawn",
+    "bishop and rook pawn"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "wrong_bishop"
+   },
+   "engine": "endgame_draw"
+  },
+  {
+   "id": "outside_passed_pawn",
+   "name": "Outside passed pawn",
+   "category": "endgames",
+   "summary": "A passed pawn far from the other pawns: the enemy king has to run over to stop it, and your king walks in and eats the pawns on the other side.",
+   "aliases": [
+    "outside passed pawn",
+    "outside passed pawns",
+    "outside passer",
+    "distant passed pawn",
+    "remote passed pawn"
+   ],
+   "parents": [
+    "endgames",
+    "passed_pawn"
+   ],
+   "validator": {
+    "type": "outside_passed_pawn"
+   },
+   "related": [
+    "passed_pawn"
+   ],
+   "engine": "endgame_win"
+  },
+  {
+   "id": "pawn_breakthrough",
+   "name": "Pawn breakthrough",
+   "category": "endgames",
+   "summary": "In a pawn ending, giving up one or two pawns to break the enemy pawn chain so that one of your pawns runs through to promote.",
+   "aliases": [
+    "pawn breakthrough",
+    "pawn breakthroughs",
+    "breakthrough",
+    "breakthrough sacrifice",
+    "pawn break through"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "pawn_breakthrough"
+   },
+   "related": [
+    "passed_pawn"
+   ],
+   "engine": "endgame_win"
+  },
+  {
+   "id": "back_rank_weakness",
+   "name": "Ignoring the back rank",
+   "category": "mistakes",
+   "summary": "With no escape square for the king, a single rook or queen check on the back rank can be mate. Before you move a defender away, check your back rank.",
+   "aliases": [
+    "back rank weakness",
+    "weak back rank",
+    "ignoring the back rank",
+    "back rank blunder",
+    "no luft",
+    "no escape square"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "validator": {
+    "type": "back_rank_weakness"
+   },
+   "related": [
+    "back_rank_mate"
+   ]
+  },
+  {
+   "id": "stalemate_trap",
+   "name": "Avoiding stalemate",
+   "category": "mistakes",
+   "summary": "When you are winning, check that your opponent still has a legal move. No legal move and no check is stalemate — a draw thrown away.",
+   "aliases": [
+    "avoiding stalemate",
+    "avoid stalemate",
+    "accidental stalemate",
+    "stalemating by accident",
+    "giving stalemate",
+    "throwing away a win"
+   ],
+   "parents": [
+    "beginner_mistakes"
+   ],
+   "validator": {
+    "type": "stalemate_trap"
+   },
+   "related": [
+    "stalemate"
+   ],
+   "prerequisites": [
+    "stalemate"
+   ],
+   "engine": "mate"
+  },
+  {
+   "id": "x_ray",
+   "name": "X-ray",
+   "category": "tactics",
+   "summary": "An x-ray attacks through an enemy piece: a rook, bishop or queen stands behind that piece on the same line, and as soon as the piece in between moves or is exchanged, the long-range piece strikes on the square behind it.",
+   "aliases": [
+    "x ray",
+    "x-ray",
+    "xray",
+    "x ray attack",
+    "x-ray attack",
+    "x-rays"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "x_ray"
+   },
+   "related": [
+    "skewer",
+    "pin",
+    "discovered_attack"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "double_bishop_mate",
+   "name": "Double-bishop mate",
+   "category": "checkmates",
+   "summary": "A double-bishop mate: one bishop gives check while the other bishop, on the other colour, takes away the king's escape squares.",
+   "aliases": [
+    "double bishop mate",
+    "double-bishop mate",
+    "two bishops mate",
+    "mate with two bishops",
+    "bishop pair mate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "double_bishop_mate"
+   },
+   "related": [
+    "boden_mate"
+   ],
+   "engine": "mate"
+  },
+  {
+   "id": "epaulette_mate",
+   "name": "Epaulette mate",
+   "category": "checkmates",
+   "summary": "In an epaulette mate the king is boxed in on both sides by its own pieces (often rooks), like shoulder pads, and a queen gives check from directly in front of it.",
+   "aliases": [
+    "epaulette mate",
+    "epaulet mate",
+    "epaulette checkmate"
+   ],
+   "parents": [
+    "checkmate"
+   ],
+   "validator": {
+    "type": "epaulette_mate"
+   },
+   "related": [
+    "back_rank_mate",
+    "smothered_mate"
+   ],
+   "engine": "mate"
+  },
+  {
+   "id": "greek_gift",
+   "name": "Greek gift sacrifice",
+   "category": "tactics",
+   "summary": "The Greek gift is a bishop sacrifice on h7 (or h2) against a castled king, usually followed by a knight check on g5 (g4) and the queen joining the attack. It only works when those follow-up moves really are available, so check the defender's replies before sacrificing.",
+   "aliases": [
+    "greek gift",
+    "greek gift sacrifice",
+    "classic bishop sacrifice",
+    "bxh7 sacrifice"
+   ],
+   "parents": [
+    "sacrifice"
+   ],
+   "validator": {
+    "type": "greek_gift"
+   },
+   "related": [
+    "sacrifice",
+    "king_safety"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "windmill",
+   "name": "Windmill",
+   "category": "tactics",
+   "summary": "A windmill is a repeated discovered check: one piece moves back and forth, uncovering check from a rook or bishop behind it each time, and uses every move to capture something.",
+   "aliases": [
+    "windmill",
+    "windmill tactic",
+    "see-saw",
+    "seesaw"
+   ],
+   "parents": [
+    "discovered_check"
+   ],
+   "validator": {
+    "type": "windmill"
+   },
+   "related": [
+    "discovered_check",
+    "discovered_attack",
+    "double_check"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "desperado",
+   "name": "Desperado",
+   "category": "tactics",
+   "summary": "A desperado is a piece that is lost anyway: before it is taken, it captures something, so at least it is sold for material instead of given away for nothing.",
+   "aliases": [
+    "desperado",
+    "desperado piece"
+   ],
+   "parents": [
+    "tactics"
+   ],
+   "validator": {
+    "type": "desperado"
+   },
+   "related": [
+    "trapped_piece",
+    "zwischenzug",
+    "hanging_piece"
+   ],
+   "engine": "tactic"
+  },
+  {
+   "id": "zugzwang",
+   "name": "Zugzwang",
+   "category": "endgames",
+   "summary": "Zugzwang is a position where the side to move would be fine if it could pass, but every legal move makes its position worse. A quiet move that hands the opponent the move can decide the game.",
+   "aliases": [
+    "zugzwang",
+    "zugswang"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "zugzwang"
+   },
+   "related": [
+    "opposition",
+    "triangulation",
+    "key_squares"
+   ],
+   "engine": "zugzwang"
+  },
+  {
+   "id": "perpetual_check",
+   "name": "Perpetual check",
+   "category": "endgames",
+   "summary": "Perpetual check is a series of checks the opponent can't escape. It saves a lost game: the same position repeats and the game is drawn.",
+   "aliases": [
+    "perpetual check",
+    "perpetual",
+    "draw by perpetual",
+    "perpetual checks"
+   ],
+   "parents": [
+    "endgames"
+   ],
+   "validator": {
+    "type": "perpetual_check"
+   },
+   "related": [
+    "stalemate_tricks",
+    "repeated_moves"
+   ],
+   "engine": "endgame_draw"
+  },
+  {
+   "id": "stalemate_tricks",
+   "name": "Stalemate tricks",
+   "category": "endgames",
+   "summary": "A stalemate trick saves a lost game: the losing side gets rid of its last moves so that it is left with no legal move while not in check — and stalemate is a draw.",
+   "aliases": [
+    "stalemate tricks",
+    "stalemate trick",
+    "swindle with stalemate",
+    "saving stalemate",
+    "stalemate swindle"
+   ],
+   "parents": [
+    "stalemate"
+   ],
+   "validator": {
+    "type": "stalemate_trick"
+   },
+   "related": [
+    "stalemate",
+    "stalemate_trap",
+    "perpetual_check"
+   ],
+   "engine": "endgame_draw"
+  }
+ ]
+}

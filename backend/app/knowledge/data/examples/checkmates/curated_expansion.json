@@ -1,0 +1,215 @@
+[
+ {
+  "id": "mate_ladder_two_rooks_kingside",
+  "status": "verified",
+  "title": "Ladder mate: two rooks climb the board",
+  "concept": "ladder_mate",
+  "category": "checkmates",
+  "difficulty": 1,
+  "description": "Two rooks against a lone king, which is far from your rooks.",
+  "start_fen": "8/8/8/6k1/R7/1R6/8/2K5 w - - 0 1",
+  "moves": [
+   "Rb5+",
+   "Kg6",
+   "Ra6+",
+   "Kg7",
+   "Rb7+",
+   "Kg8",
+   "Ra8#"
+  ],
+  "final_fen": "R5k1/1R6/8/8/8/8/8/2K5 b - - 7 4",
+  "key_move": "1.Rb5+",
+  "prompt": "White to move. Mate with the two rooks.",
+  "hints": [
+   "One rook holds a rank while the other checks on the next one.",
+   "Keep the rooks far away from the black king, so it can't attack them."
+  ],
+  "notes": {
+   "1.Rb5+": "The b-rook checks while the a-rook holds the fourth rank.",
+   "2.Ra6+": "Now the a-rook checks and the b-rook holds the fifth rank.",
+   "4.Ra8#": "Checkmate on the edge."
+  },
+  "explanation": "The ladder mate: the two rooks take turns. One rook guards a rank, the other checks on the next rank up, and the king is pushed back rank by rank until it is mated on the edge. The rooks stay on the far side of the board so the king can never attack them.",
+  "tags": [
+   "checkmate",
+   "rooks",
+   "basic mate",
+   "ladder"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "ladder_mate": {
+    "mated_side": "black",
+    "king": "g8",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "a8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "f7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b7"
+      }
+     },
+     {
+      "square": "g7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b7"
+      }
+     },
+     {
+      "square": "h7",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "b7"
+      }
+     },
+     {
+      "square": "f8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "a8"
+      }
+     },
+     {
+      "square": "h8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "a8"
+      }
+     }
+    ],
+    "mating_move": "4.Ra8#",
+    "pattern": "ladder mate",
+    "heavy_pieces": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "b7"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "a8"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "ladder-mate-kingside",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "Ladder (lawnmower) mate with two rooks (standard technique); verified with Stockfish 19",
+   "import_date": "2026-10-03"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "7 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "ladder_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Kc2, Ra5+, Kd2, Kb2"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 778,
+    "key_move": {
+     "move": "Rb5+",
+     "category": "acceptable",
+     "loss_cp": 216,
+     "eval_cp": 793,
+     "best_move": "Kc2",
+     "best_cp": 1009,
+     "alternatives": [
+      "Kc2",
+      "Ra5+",
+      "Kd2",
+      "Kb2"
+     ],
+     "mate_after": false
+    }
+   },
+   "alternatives": [
+    "Kc2",
+    "Ra5+",
+    "Kd2",
+    "Kb2"
+   ]
+  }
+ }
+]

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chess Tutor</title>
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/chessboard.css">
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/extensions/markers/markers.css">
+  <link rel="stylesheet" href="./vendor/cm-chessboard/assets/extensions/arrows/arrows.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">♞</span>
+      <h1>AI Chess Tutor</h1>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button id="tab-lessons" class="tab active" role="tab" aria-selected="true">📚 Lessons</button>
+      <button id="tab-games" class="tab" role="tab" aria-selected="false"
+              title="Import your Chess.com games and review your mistakes">🔍 Game Analysis</button>
+      <button id="tab-puzzles" class="tab" role="tab" aria-selected="false"
+              title="Solve puzzles: personalized to your weaknesses, or practice any theme">🧩 Puzzles</button>
+    </nav>
+    <div class="header-right">
+      <div id="speech-controls" class="speech-controls hidden">
+        <button id="btn-read-aloud" class="btn toggle" aria-pressed="false"
+                title="Read the coach's messages aloud; squares light up on the board as they're spoken">🔊 Read aloud</button>
+        <button id="btn-stop-speech" class="btn hidden" title="Stop reading">■ Stop</button>
+      </div>
+      <button id="btn-coach" class="btn" aria-expanded="false" aria-controls="coach-panel"
+              title="What your coach knows about you, and what to practise next">👤 Coach</button>
+      <button id="btn-settings" class="btn icon" aria-expanded="false" aria-controls="settings-panel"
+              title="Settings: voice, speed, what's read aloud, explanation length" aria-label="Settings">⚙</button>
+      <span id="health" class="health" title="checking…"></span>
+    </div>
+  </header>
+
+  <aside id="coach-panel" class="side-panel hidden" aria-label="Your coach">
+    <div class="panel-head"><h2>Your coach</h2><button class="icon-btn panel-close" aria-label="Close">✕</button></div>
+    <div class="panel-body"></div>
+  </aside>
+  <aside id="settings-panel" class="side-panel hidden" aria-label="Settings">
+    <div class="panel-head"><h2>Settings</h2><button class="icon-btn panel-close" aria-label="Close">✕</button></div>
+    <div class="panel-body"></div>
+    <div class="hidden">
+      <select id="speech-rate" title="Reading speed" aria-label="Reading speed"></select>
+      <select id="speech-voice" title="Voice" aria-label="Voice"></select>
+    </div>
+  </aside>
+
+  <div class="layout">
+    <aside id="sidebar">
+      <div id="lessons-side">
+        <h2>Your lessons</h2>
+        <div id="course-list" class="course-list"></div>
+      </div>
+      <div id="games-side" class="hidden">
+        <h2>Your games</h2>
+        <div id="ga-games" class="course-list"></div>
+      </div>
+      <div id="puzzles-side" class="hidden">
+        <h2>Puzzle set</h2>
+        <div id="pz-set" class="course-list"><p class="muted pz-set-empty">Start a set to see it here.</p></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="board-pane">
+        <div id="board"></div>
+        <div id="board-nav" class="board-nav" role="group" aria-label="Move navigation">
+          <button id="nav-prev" class="btn nav-btn" disabled title="Previous move (←)" aria-label="Previous move">←</button>
+          <span id="nav-label" class="nav-label" aria-live="polite"></span>
+          <button id="nav-next" class="btn nav-btn" disabled title="Next move (→)" aria-label="Next move">→</button>
+          <button id="nav-back" class="btn nav-return hidden" title="Back to the position you were on">↩ Back</button>
+        </div>
+        <div id="board-status" class="board-status"></div>
+      </section>
+
+      <section id="lesson-pane" class="lesson-pane">
+        <div class="lesson-header">
+          <h2 id="lesson-title">Welcome</h2>
+          <span id="step-indicator" class="step-indicator"></span>
+        </div>
+        <div id="messages" class="messages">
+          <div class="msg assistant" id="welcome">What do you want to learn? Type it below — for example <b>“teach me knight forks”</b> or <b>“I want to learn the London System”</b> — and I'll build a lesson for you. Or pick a topic:</div>
+        </div>
+        <div id="feedback-slot"></div>
+        <div class="controls">
+          <button id="btn-continue" class="btn primary hidden">Continue →</button>
+          <button id="btn-hint" class="btn hidden">💡 Hint</button>
+          <button id="btn-reveal" class="btn hidden">Show solution</button>
+          <button id="btn-play" class="btn hidden">↻ Watch again</button>
+          <button id="btn-explain-example" class="btn hidden" title="The AI teacher explains this verified example">🧠 Explain this example</button>
+        </div>
+        <div class="chat-row">
+          <input id="chat-input" type="text" placeholder="What do you want to learn? Or ask a question…"
+                 autocomplete="off">
+          <button id="btn-chat" class="btn primary">Send</button>
+        </div>
+      </section>
+
+      <section id="puzzles-pane" class="lesson-pane puzzles-pane hidden">
+        <div class="lesson-header">
+          <h2 id="pz-title">Puzzles</h2>
+          <span id="pz-counter" class="step-indicator"></span>
+        </div>
+        <div id="pz-dashboard" class="messages pz-body">
+          <div class="pz-modes" role="tablist" aria-label="Puzzle mode">
+            <button id="pz-mode-personal" class="pz-mode active" role="tab" aria-selected="true"
+                    title="Puzzles chosen from your weaknesses and results">🎯 Personalized</button>
+            <button id="pz-mode-practice" class="pz-mode" role="tab" aria-selected="false"
+                    title="Pick any theme — no game analysis needed">📚 Practice</button>
+            <button id="pz-mode-training" class="pz-mode" role="tab" aria-selected="false"
+                    title="Short games against a bot near your level — they show what to practise">🏁 Training</button>
+          </div>
+          <div id="pz-personal" class="pz-section"></div>
+          <div id="pz-practice" class="pz-section hidden"></div>
+          <div id="pz-training" class="pz-section hidden"></div>
+          <div id="pz-status" class="pz-status muted" aria-live="polite"></div>
+        </div>
+        <div id="pz-solver" class="pz-solver hidden">
+          <div id="pz-info" class="pz-info"></div>
+          <div id="pz-feedback" class="pz-feedback" aria-live="polite"></div>
+          <div id="pz-explain" class="pz-explain hidden"></div>
+          <div class="controls pz-controls">
+            <button id="pz-hint" class="btn">💡 Hint</button>
+            <button id="pz-solution" class="btn">Show solution</button>
+            <button id="pz-retry" class="btn hidden">↻ Retry</button>
+            <button id="pz-next" class="btn primary hidden">Next →</button>
+            <button id="pz-back" class="btn pz-back">← Back to Puzzles</button>
+          </div>
+        </div>
+        <div id="pz-trainer" class="pz-solver hidden">
+          <div id="tr-info" class="pz-info"></div>
+          <div id="tr-feedback" class="pz-feedback" aria-live="polite"></div>
+          <div id="tr-report" class="tr-report hidden" aria-live="polite"></div>
+          <div class="controls pz-controls">
+            <button id="tr-end" class="btn" title="Stop here and analyse what you played">End segment</button>
+            <button id="tr-continue" class="btn primary hidden">Continue →</button>
+            <button id="tr-back" class="btn pz-back">← Back to Puzzles</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="analysis-pane" class="lesson-pane analysis-pane hidden">
+        <div class="lesson-header">
+          <h2 id="ga-title">Game Analysis</h2>
+          <span id="ga-counter" class="step-indicator"></span>
+        </div>
+        <div id="ga-body" class="messages ga-body">
+          <div id="ga-import" class="ga-card">
+            <p>Type your <b>Chess.com</b> username: your most recent games are fetched automatically from
+              Chess.com's public game archive and checked by Stockfish. Your games stay private to you.</p>
+            <div class="ga-row">
+              <input id="ga-username" type="text" placeholder="Your Chess.com username" autocomplete="off"
+                     aria-label="Chess.com username">
+              <button id="ga-fetch-btn" class="btn primary">Fetch my last 10 games</button>
+            </div>
+            <details id="ga-paste" class="ga-paste">
+              <summary>Or paste games yourself (PGN)</summary>
+              <p class="muted">Open a game on Chess.com, click <b>Share → PGN</b>, and copy the text.
+                You can paste several games at once.</p>
+              <textarea id="ga-pgn" rows="6" spellcheck="false"
+                        placeholder='[Event "Live Chess"]&#10;[Site "Chess.com"]&#10;…&#10;&#10;1. e4 e5 2. Nf3 …'></textarea>
+              <div class="ga-row">
+                <button id="ga-import-btn" class="btn">Import &amp; analyze</button>
+              </div>
+            </details>
+            <div id="ga-status" class="ga-status"></div>
+          </div>
+          <div id="ga-overview"></div>
+          <div id="ga-review" class="hidden"></div>
+        </div>
+        <div class="controls">
+          <button id="ga-back" class="btn hidden">← All games</button>
+          <button id="ga-prev" class="btn hidden">← Previous</button>
+          <button id="ga-next" class="btn primary hidden">Next →</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

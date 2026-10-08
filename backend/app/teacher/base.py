@@ -1,0 +1,61 @@
+"""AI teacher layer.
+
+Philosophy: Stockfish determines WHAT happened; Qwen explains it. The teacher
+never invents chess facts — it receives structured engine facts and produces
+language. If engine facts are missing, it must say analysis is needed rather
+than making something up.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Protocol
+
+from ..engine import MoveFeedback
+
+
+@dataclass
+class LessonContext:
+    course_title: str
+    lesson_title: str
+    concepts: list[str]
+    exercise_prompt: str = ""
+    accepted_moves: list[str] | None = None
+    # Ground truth about the verified Knowledge Library example being taught (FEN, moves,
+    # legal moves, Stockfish verdicts, motif facts, explanation). Empty for other lessons.
+    facts: list[str] = field(default_factory=list)
+    example_id: str | None = None
+    # Did the graded move solve the exercise? (None: not a graded exercise move.)
+    move_accepted: bool | None = None
+    # Who is learning, and how much this move deserves (teacher.importance):
+    level: str = "beginner"
+    style: str = "balanced"            # brief | balanced | detailed
+    importance: str | None = None      # critical | important | supporting | obvious
+    learner_note: str = ""             # a line about the learner (learner.views.prompt_context)
+    # Derived on demand from SessionManager; no board/FEN is duplicated in learning state.
+    learning_state: dict = field(default_factory=dict)
+    board_facts: list[str] = field(default_factory=list)
+    route_intent: dict = field(default_factory=dict)
+
+
+class Teacher(Protocol):
+    name: str
+
+    def explain_move(self, feedback: MoveFeedback, context: LessonContext) -> str: ...
+
+    def chat(self, message: str, context: LessonContext, transcript: list[dict]) -> str: ...
+
+
+def _fmt_eval(score_dict: dict | None, for_white: bool = True) -> str:
+    if not score_dict:
+        return "unknown"
+    if score_dict["kind"] == "checkmate":
+        won = (score_dict["value"] > 0) == for_white
+        return f"checkmate - {'White' if for_white else 'Black'} {'wins' if won else 'is mated'}"
+    if score_dict["kind"] == "mate":
+        m = score_dict["value"]
+        if (m > 0) == for_white:
+            return f"forced mate in {abs(m)} for {'White' if for_white else 'Black'}"
+        return f"forced mate in {abs(m)} against {'White' if for_white else 'Black'}"
+    cp = score_dict["value"] if for_white else -score_dict["value"]
+    pawns = cp / 100.0
+    return f"{pawns:+.2f}"

@@ -1,0 +1,4904 @@
+[
+ {
+  "id": "lichess_61q01_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "r5k1/5ppp/8/3p1q2/3P4/1Q2P2P/R5P1/6K1 b - - 0 38",
+  "moves": [
+   "Rxa2",
+   "Qb8+",
+   "Qc8",
+   "Qxc8#"
+  ],
+  "final_fen": "2Q3k1/5ppp/8/3p4/3P4/4P2P/r5P1/6K1 b - - 0 40",
+  "key_move": "39.Qb8+",
+  "mistake_move": "38...Rxa2",
+  "prompt": "Black just played 38...Rxa2. You are White: how do you punish it?",
+  "hints": [
+   "The black king on g8 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "38...Rxa2": "The mistake: the black king on g8 has no escape square.",
+   "39.Qb8+": "White goes for the back rank.",
+   "40.Qxc8#": "Checkmate!"
+  },
+  "explanation": "After 38...Rxa2 the black king was stuck on its back rank, and White mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "38...Rxa2",
+    "mistake_by": "black",
+    "punishment": "39.Qb8+",
+    "material_lost": 4,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "black",
+     "king": "g8",
+     "checkers": [
+      {
+       "piece": "queen",
+       "color": "white",
+       "square": "c8"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "f7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "f8",
+       "covered_by": {
+        "piece": "queen",
+        "color": "white",
+        "square": "c8"
+       }
+      },
+      {
+       "square": "h8",
+       "covered_by": {
+        "piece": "queen",
+        "color": "white",
+        "square": "c8"
+       }
+      }
+     ],
+     "mating_move": "40.Qxc8#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "f7"
+      },
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g7"
+      },
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "h7"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "61q01",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/61q01",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxa2",
+     "category": "blunder",
+     "loss_cp": 9989,
+     "eval_cp": -9980,
+     "best_move": "Rc8",
+     "best_cp": 9,
+     "alternatives": [
+      "Rc8",
+      "Rf8",
+      "Re8",
+      "Rd8"
+     ],
+     "mate_after": false,
+     "label": "38...Rxa2"
+    },
+    "punishment": {
+     "move": "Qb8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qb8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "39.Qb8+"
+    },
+    "key_move": {
+     "move": "Qb8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qb8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_b2pnc_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "3r2k1/5ppp/4p3/2p5/2p5/2K1P3/5PPP/R7 b - - 1 25",
+  "moves": [
+   "Rd5",
+   "Ra8+",
+   "Rd8",
+   "Rxd8#"
+  ],
+  "final_fen": "3R2k1/5ppp/4p3/2p5/2p5/2K1P3/5PPP/8 b - - 0 27",
+  "key_move": "26.Ra8+",
+  "mistake_move": "25...Rd5",
+  "prompt": "Black just played 25...Rd5. You are White: how do you punish it?",
+  "hints": [
+   "The black king on g8 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "25...Rd5": "The mistake: the black king on g8 has no escape square.",
+   "26.Ra8+": "White goes for the back rank.",
+   "27.Rxd8#": "Checkmate!"
+  },
+  "explanation": "After 25...Rd5 the black king was stuck on its back rank, and White mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "25...Rd5",
+    "mistake_by": "black",
+    "punishment": "26.Ra8+",
+    "material_lost": 5,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "black",
+     "king": "g8",
+     "checkers": [
+      {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "f7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "f8",
+       "covered_by": {
+        "piece": "rook",
+        "color": "white",
+        "square": "d8"
+       }
+      },
+      {
+       "square": "h8",
+       "covered_by": {
+        "piece": "rook",
+        "color": "white",
+        "square": "d8"
+       }
+      }
+     ],
+     "mating_move": "27.Rxd8#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "f7"
+      },
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g7"
+      },
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "h7"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "B2pNC",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/B2pNC",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rd5",
+     "category": "blunder",
+     "loss_cp": 10037,
+     "eval_cp": -9980,
+     "best_move": "g5",
+     "best_cp": 57,
+     "alternatives": [
+      "g5",
+      "h5",
+      "Kf8",
+      "g6"
+     ],
+     "mate_after": false,
+     "label": "25...Rd5"
+    },
+    "punishment": {
+     "move": "Ra8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "26.Ra8+"
+    },
+    "key_move": {
+     "move": "Ra8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_fm9jv_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "3r3k/p5pp/8/2p5/n1R5/P3P3/7r/KR3B2 b - - 1 31",
+  "moves": [
+   "Rdd2",
+   "Rb8+",
+   "Rd8",
+   "Rxd8#"
+  ],
+  "final_fen": "3R3k/p5pp/8/2p5/n1R5/P3P3/7r/K4B2 b - - 0 33",
+  "key_move": "32.Rb8+",
+  "mistake_move": "31...Rdd2",
+  "prompt": "Black just played 31...Rdd2. You are White: how do you punish it?",
+  "hints": [
+   "The black king on h8 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "31...Rdd2": "The mistake: the black king on h8 has no escape square.",
+   "32.Rb8+": "White goes for the back rank.",
+   "33.Rxd8#": "Checkmate!"
+  },
+  "explanation": "After 31...Rdd2 the black king was stuck on its back rank, and White mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "31...Rdd2",
+    "mistake_by": "black",
+    "punishment": "32.Rb8+",
+    "material_lost": 5,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "black",
+     "king": "h8",
+     "checkers": [
+      {
+       "piece": "rook",
+       "color": "white",
+       "square": "d8"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "g7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h7",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g8",
+       "covered_by": {
+        "piece": "rook",
+        "color": "white",
+        "square": "d8"
+       }
+      }
+     ],
+     "mating_move": "33.Rxd8#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "g7"
+      },
+      {
+       "piece": "pawn",
+       "color": "black",
+       "square": "h7"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Fm9jv",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Fm9jv",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rdd2",
+     "category": "blunder",
+     "loss_cp": 10212,
+     "eval_cp": -9980,
+     "best_move": "Nb6",
+     "best_cp": 232,
+     "alternatives": [
+      "Nb6"
+     ],
+     "mate_after": false,
+     "label": "31...Rdd2"
+    },
+    "punishment": {
+     "move": "Rb8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rb8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "32.Rb8+"
+    },
+    "key_move": {
+     "move": "Rb8+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rb8+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ftkbz_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "6k1/5Rp1/7p/p2nN3/8/2r5/r4PPP/2R3K1 w - - 0 30",
+  "moves": [
+   "Rxc3",
+   "Ra1+",
+   "Rc1",
+   "Rxc1#"
+  ],
+  "final_fen": "6k1/5Rp1/7p/p2nN3/8/8/5PPP/2r3K1 w - - 0 32",
+  "key_move": "30...Ra1+",
+  "mistake_move": "30.Rxc3",
+  "prompt": "White just played 30.Rxc3. You are Black: how do you punish it?",
+  "hints": [
+   "The white king on g1 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "30.Rxc3": "The mistake: the white king on g1 has no escape square.",
+   "30...Ra1+": "Black goes for the back rank.",
+   "31...Rxc1#": "Checkmate!"
+  },
+  "explanation": "After 30.Rxc3 the white king was stuck on its back rank, and Black mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "30.Rxc3",
+    "mistake_by": "white",
+    "punishment": "30...Ra1+",
+    "material_lost": 0,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "white",
+     "king": "g1",
+     "checkers": [
+      {
+       "piece": "rook",
+       "color": "black",
+       "square": "c1"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "f1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "c1"
+       }
+      },
+      {
+       "square": "h1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "c1"
+       }
+      },
+      {
+       "square": "f2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h2",
+       "blocked_by": "pawn"
+      }
+     ],
+     "mating_move": "31...Rxc1#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "f2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "h2"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "FTkBZ",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/FTkBZ",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxc3",
+     "category": "blunder",
+     "loss_cp": 9953,
+     "eval_cp": -9980,
+     "best_move": "Re1",
+     "best_cp": -27,
+     "alternatives": [
+      "Re1",
+      "Rd1",
+      "Rf1",
+      "Rb1"
+     ],
+     "mate_after": false,
+     "label": "30.Rxc3"
+    },
+    "punishment": {
+     "move": "Ra1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "30...Ra1+"
+    },
+    "key_move": {
+     "move": "Ra1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_h4lgj_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "3r2k1/6pp/1P1r4/8/R7/P3B3/5PPP/R5K1 w - - 0 31",
+  "moves": [
+   "b7",
+   "Rd1+",
+   "Rxd1",
+   "Rxd1#"
+  ],
+  "final_fen": "6k1/1P4pp/8/8/R7/P3B3/5PPP/3r2K1 w - - 0 33",
+  "key_move": "31...Rd1+",
+  "mistake_move": "31.b7",
+  "prompt": "White just played 31.b7. You are Black: how do you punish it?",
+  "hints": [
+   "The white king on g1 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "31.b7": "The mistake: the white king on g1 has no escape square.",
+   "31...Rd1+": "Black goes for the back rank.",
+   "32...Rxd1#": "Checkmate!"
+  },
+  "explanation": "After 31.b7 the white king was stuck on its back rank, and Black mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "31.b7",
+    "mistake_by": "white",
+    "punishment": "31...Rd1+",
+    "material_lost": 0,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "white",
+     "king": "g1",
+     "checkers": [
+      {
+       "piece": "rook",
+       "color": "black",
+       "square": "d1"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "f1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "d1"
+       }
+      },
+      {
+       "square": "h1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "d1"
+       }
+      },
+      {
+       "square": "f2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h2",
+       "blocked_by": "pawn"
+      }
+     ],
+     "mating_move": "32...Rxd1#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "f2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "h2"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "H4lGj",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/H4lGj",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "b7",
+     "category": "blunder",
+     "loss_cp": 10930,
+     "eval_cp": -9980,
+     "best_move": "h4",
+     "best_cp": 950,
+     "alternatives": [
+      "h4",
+      "Kf1",
+      "h3",
+      "g3"
+     ],
+     "mate_after": false,
+     "label": "31.b7"
+    },
+    "punishment": {
+     "move": "Rd1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rd1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "31...Rd1+"
+    },
+    "key_move": {
+     "move": "Rd1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Rd1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_hdbci_mistake",
+  "status": "verified",
+  "title": "Ignoring the back rank",
+  "concept": "back_rank_weakness",
+  "category": "mistakes",
+  "subcategory": "backRankMate",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "5Q2/r6p/2p5/2RPkp2/4p3/4P3/5PPP/6K1 w - - 3 39",
+  "moves": [
+   "Rxc6",
+   "Ra1+",
+   "Rc1",
+   "Rxc1#"
+  ],
+  "final_fen": "5Q2/7p/8/3Pkp2/4p3/4P3/5PPP/2r3K1 w - - 0 41",
+  "key_move": "39...Ra1+",
+  "mistake_move": "39.Rxc6",
+  "prompt": "White just played 39.Rxc6. You are Black: how do you punish it?",
+  "hints": [
+   "The white king on g1 has no escape square.",
+   "Which check on the back rank can't be answered?"
+  ],
+  "notes": {
+   "39.Rxc6": "The mistake: the white king on g1 has no escape square.",
+   "39...Ra1+": "Black goes for the back rank.",
+   "40...Rxc1#": "Checkmate!"
+  },
+  "explanation": "After 39.Rxc6 the white king was stuck on its back rank, and Black mated there. Before you move a piece that guards your back rank, check whether a rook or queen could give a check your king can't escape — and give it an escape square in time.",
+  "tags": [
+   "backRankMate",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "back_rank_weakness": {
+    "mistake": "39.Rxc6",
+    "mistake_by": "white",
+    "punishment": "39...Ra1+",
+    "material_lost": 4,
+    "ends_in_mate": true,
+    "mate": {
+     "mated_side": "white",
+     "king": "g1",
+     "checkers": [
+      {
+       "piece": "rook",
+       "color": "black",
+       "square": "c1"
+      }
+     ],
+     "escape_squares": [
+      {
+       "square": "f1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "c1"
+       }
+      },
+      {
+       "square": "h1",
+       "covered_by": {
+        "piece": "rook",
+        "color": "black",
+        "square": "c1"
+       }
+      },
+      {
+       "square": "f2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "g2",
+       "blocked_by": "pawn"
+      },
+      {
+       "square": "h2",
+       "blocked_by": "pawn"
+      }
+     ],
+     "mating_move": "40...Rxc1#",
+     "pattern": "back-rank mate",
+     "boxed_in_by": [
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "f2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "g2"
+      },
+      {
+       "piece": "pawn",
+       "color": "white",
+       "square": "h2"
+      }
+     ]
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "HDbCI",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/HDbCI",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "back_rank_weakness"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxc6",
+     "category": "blunder",
+     "loss_cp": 19920,
+     "eval_cp": -9980,
+     "best_move": "Qb8+",
+     "best_cp": 9940,
+     "alternatives": [
+      "Qb8+"
+     ],
+     "mate_after": false,
+     "label": "39.Rxc6"
+    },
+    "punishment": {
+     "move": "Ra1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "39...Ra1+"
+    },
+    "key_move": {
+     "move": "Ra1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Ra1+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_06orp_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "5q1k/6p1/1p4Pp/8/2Qp4/2P4K/3r4/5R2 b - - 1 40",
+  "moves": [
+   "Qc8+",
+   "Qxc8#"
+  ],
+  "final_fen": "2Q4k/6p1/1p4Pp/8/3p4/2P4K/3r4/5R2 b - - 0 41",
+  "key_move": "41.Qxc8#",
+  "mistake_move": "40...Qc8+",
+  "prompt": "Black just played 40...Qc8+. You are White: how do you punish it?",
+  "hints": [
+   "Which black piece is attacked and not defended enough?",
+   "Look at the queen on c8."
+  ],
+  "notes": {
+   "40...Qc8+": "The mistake: after this move the queen on c8 can be won.",
+   "41.Qxc8#": "White wins the queen."
+  },
+  "explanation": "After 40...Qc8+ the queen on c8 could be captured, and White took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "40...Qc8+",
+    "mistake_by": "black",
+    "punishment": "41.Qxc8#",
+    "material_lost": 9,
+    "ends_in_mate": true,
+    "hung": {
+     "piece": "queen",
+     "color": "black",
+     "square": "c8"
+    },
+    "attacked_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "c4"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "06ORP",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/06ORP",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qc8+",
+     "category": "blunder",
+     "loss_cp": 10446,
+     "eval_cp": -9990,
+     "best_move": "Qa8",
+     "best_cp": 456,
+     "alternatives": [
+      "Qa8",
+      "Qb8",
+      "Qe8"
+     ],
+     "mate_after": false,
+     "label": "40...Qc8+"
+    },
+    "punishment": {
+     "move": "Qxc8#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxc8#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "41.Qxc8#"
+    },
+    "key_move": {
+     "move": "Qxc8#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxc8#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_1otmq_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "8/3R4/p6p/2pRqk2/2K5/1P6/P6p/8 b - - 5 62",
+  "moves": [
+   "Qxd5+",
+   "Rxd5+",
+   "Kg4",
+   "Rd1"
+  ],
+  "final_fen": "8/8/p6p/2p5/2K3k1/1P6/P6p/3R4 b - - 2 64",
+  "key_move": "63.Rxd5+",
+  "mistake_move": "62...Qxd5+",
+  "prompt": "Black just played 62...Qxd5+. You are White: how do you punish it?",
+  "hints": [
+   "Which black piece is attacked and not defended enough?",
+   "Look at the queen on d5."
+  ],
+  "notes": {
+   "62...Qxd5+": "The mistake: after this move the queen on d5 can be won.",
+   "63.Rxd5+": "White wins the queen.",
+   "64.Rd1": "White comes out 4 points of material ahead."
+  },
+  "explanation": "After 62...Qxd5+ the queen on d5 could be captured, and White took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "62...Qxd5+",
+    "mistake_by": "black",
+    "punishment": "63.Rxd5+",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "black",
+     "square": "d5"
+    },
+    "attacked_by": [
+     {
+      "piece": "king",
+      "color": "white",
+      "square": "c4"
+     },
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "d7"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "1OtMq",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/1OtMq",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qxd5+",
+     "category": "blunder",
+     "loss_cp": 853,
+     "eval_cp": -257,
+     "best_move": "h1=Q",
+     "best_cp": 596,
+     "alternatives": [
+      "h1=Q"
+     ],
+     "mate_after": false,
+     "label": "62...Qxd5+"
+    },
+    "punishment": {
+     "move": "Rxd5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 379,
+     "best_move": "Rxd5+",
+     "best_cp": 379,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "63.Rxd5+"
+    },
+    "key_move": {
+     "move": "Rxd5+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 379,
+     "best_move": "Rxd5+",
+     "best_cp": 379,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_bcubq_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/8/p7/1pQp2pk/1P6/2P1K3/1P6/8 w - - 5 64",
+  "moves": [
+   "Qxb5",
+   "axb5",
+   "b3",
+   "g4"
+  ],
+  "final_fen": "8/8/8/1p1p3k/1P4p1/1PP1K3/8/8 w - - 0 66",
+  "key_move": "64...axb5",
+  "mistake_move": "64.Qxb5",
+  "prompt": "White just played 64.Qxb5. You are Black: how do you punish it?",
+  "hints": [
+   "Which white piece is attacked and not defended enough?",
+   "Look at the queen on b5."
+  ],
+  "notes": {
+   "64.Qxb5": "The mistake: after this move the queen on b5 can be won.",
+   "64...axb5": "Black wins the queen.",
+   "65...g4": "Black comes out 8 points of material ahead."
+  },
+  "explanation": "After 64.Qxb5 the queen on b5 could be captured, and Black took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "64.Qxb5",
+    "mistake_by": "white",
+    "punishment": "64...axb5",
+    "material_lost": 8,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "white",
+     "square": "b5"
+    },
+    "attacked_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "a6"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Bcubq",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Bcubq",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qxb5",
+     "category": "blunder",
+     "loss_cp": 1261,
+     "eval_cp": -285,
+     "best_move": "Qe7",
+     "best_cp": 976,
+     "alternatives": [
+      "Qe7",
+      "Qc6",
+      "Qxd5",
+      "Qf8"
+     ],
+     "mate_after": false,
+     "label": "64.Qxb5"
+    },
+    "punishment": {
+     "move": "axb5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 232,
+     "best_move": "axb5",
+     "best_cp": 232,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "64...axb5"
+    },
+    "key_move": {
+     "move": "axb5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 232,
+     "best_move": "axb5",
+     "best_cp": 232,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_cerem_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "5bk1/5p1p/6p1/8/7P/1QpqB1P1/5PK1/8 b - - 7 39",
+  "moves": [
+   "c2",
+   "Qxd3",
+   "c1=Q",
+   "Bxc1"
+  ],
+  "final_fen": "5bk1/5p1p/6p1/8/7P/3Q2P1/5PK1/2B5 b - - 0 41",
+  "key_move": "40.Qxd3",
+  "mistake_move": "39...c2",
+  "prompt": "Black just played 39...c2. You are White: how do you punish it?",
+  "hints": [
+   "Which black piece is attacked and not defended enough?",
+   "Look at the queen on d3."
+  ],
+  "notes": {
+   "39...c2": "The mistake: after this move the queen on d3 can be won.",
+   "40.Qxd3": "White wins the queen.",
+   "41.Bxc1": "White comes out 10 points of material ahead."
+  },
+  "explanation": "After 39...c2 the queen on d3 could be captured, and White took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "39...c2",
+    "mistake_by": "black",
+    "punishment": "40.Qxd3",
+    "material_lost": 10,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "black",
+     "square": "d3"
+    },
+    "attacked_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "b3"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "CerEm",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/CerEm",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "c2",
+     "category": "blunder",
+     "loss_cp": 868,
+     "eval_cp": -679,
+     "best_move": "Bd6",
+     "best_cp": 189,
+     "alternatives": [
+      "Bd6",
+      "Kg7",
+      "h6"
+     ],
+     "mate_after": false,
+     "label": "39...c2"
+    },
+    "punishment": {
+     "move": "Qxd3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 775,
+     "best_move": "Qxd3",
+     "best_cp": 775,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "40.Qxd3"
+    },
+    "key_move": {
+     "move": "Qxd3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 775,
+     "best_move": "Qxd3",
+     "best_cp": 775,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_fx8ez_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "6k1/8/3P2pp/4p3/3rPp2/5PbP/6P1/3Q3K w - - 1 50",
+  "moves": [
+   "Qxd4",
+   "exd4",
+   "d7",
+   "Bh4"
+  ],
+  "final_fen": "6k1/3P4/6pp/8/3pPp1b/5P1P/6P1/7K w - - 1 52",
+  "key_move": "50...exd4",
+  "mistake_move": "50.Qxd4",
+  "prompt": "White just played 50.Qxd4. You are Black: how do you punish it?",
+  "hints": [
+   "Which white piece is attacked and not defended enough?",
+   "Look at the queen on d4."
+  ],
+  "notes": {
+   "50.Qxd4": "The mistake: after this move the queen on d4 can be won.",
+   "50...exd4": "Black wins the queen.",
+   "51...Bh4": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "After 50.Qxd4 the queen on d4 could be captured, and Black took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "50.Qxd4",
+    "mistake_by": "white",
+    "punishment": "50...exd4",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "hung": {
+     "piece": "queen",
+     "color": "white",
+     "square": "d4"
+    },
+    "attacked_by": [
+     {
+      "piece": "pawn",
+      "color": "black",
+      "square": "e5"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "fx8ez",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/fx8ez",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qxd4",
+     "category": "blunder",
+     "loss_cp": 687,
+     "eval_cp": -582,
+     "best_move": "Qc2",
+     "best_cp": 105,
+     "alternatives": [
+      "Qc2",
+      "Qb1",
+      "Qb3+",
+      "Qc1"
+     ],
+     "mate_after": false,
+     "label": "50.Qxd4"
+    },
+    "punishment": {
+     "move": "exd4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 483,
+     "best_move": "exd4",
+     "best_cp": 483,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "50...exd4"
+    },
+    "key_move": {
+     "move": "exd4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 483,
+     "best_move": "exd4",
+     "best_cp": 483,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_mkn4p_mistake",
+  "status": "verified",
+  "title": "Hanging a piece: the loose queen",
+  "concept": "hanging_queen",
+  "category": "mistakes",
+  "subcategory": "hangingQueen",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "1Q6/R6p/6pk/5p2/4p2K/1q5P/6P1/2q5 b - - 0 46",
+  "moves": [
+   "Qf4+",
+   "Qxf4+",
+   "g5+",
+   "Qxg5#"
+  ],
+  "final_fen": "8/R6p/7k/5pQ1/4p2K/1q5P/6P1/8 b - - 0 48",
+  "key_move": "47.Qxf4+",
+  "mistake_move": "46...Qf4+",
+  "prompt": "Black just played 46...Qf4+. You are White: how do you punish it?",
+  "hints": [
+   "Which black piece is attacked and not defended enough?",
+   "Look at the queen on f4."
+  ],
+  "notes": {
+   "46...Qf4+": "The mistake: after this move the queen on f4 can be won.",
+   "47.Qxf4+": "White wins the queen.",
+   "48.Qxg5#": "Checkmate!"
+  },
+  "explanation": "After 46...Qf4+ the queen on f4 could be captured, and White took it. Before every move, ask: after I play this, which of my pieces are attacked, and are they defended enough?",
+  "tags": [
+   "hangingQueen",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "hung_piece": {
+    "mistake": "46...Qf4+",
+    "mistake_by": "black",
+    "punishment": "47.Qxf4+",
+    "material_lost": 10,
+    "ends_in_mate": true,
+    "hung": {
+     "piece": "queen",
+     "color": "black",
+     "square": "f4"
+    },
+    "attacked_by": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "b8"
+     }
+    ]
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "MKn4P",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/MKn4P",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "hung_piece"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qf4+",
+     "category": "blunder",
+     "loss_cp": 19970,
+     "eval_cp": -9980,
+     "best_move": "g5#",
+     "best_cp": 9990,
+     "alternatives": [
+      "g5#",
+      "Qg5#",
+      "Qe1+",
+      "Qxb8"
+     ],
+     "mate_after": false,
+     "label": "46...Qf4+"
+    },
+    "punishment": {
+     "move": "Qxf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qxf4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "47.Qxf4+"
+    },
+    "key_move": {
+     "move": "Qxf4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9980,
+     "best_move": "Qxf4+",
+     "best_cp": 9980,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_2sqe1_mistake",
+  "status": "verified",
+  "title": "Missing a threat: checkmate",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "r2qkbnr/ppp2ppp/3P4/4p3/2B1N3/P4Q2/1P3PPP/n1B2K1R b kq - 0 11",
+  "moves": [
+   "cxd6",
+   "Qxf7#"
+  ],
+  "final_fen": "r2qkbnr/pp3Qpp/3p4/4p3/2B1N3/P7/1P3PPP/n1B2K1R b kq - 0 12",
+  "key_move": "12.Qxf7#",
+  "mistake_move": "11...cxd6",
+  "prompt": "Black just played 11...cxd6. You are White: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "11...cxd6": "The mistake: Black plays on as if nothing were threatened.",
+   "12.Qxf7#": "White carries out the threat."
+  },
+  "explanation": "Before 11...cxd6, White was already threatening Qxf7#. Black ignored it, White carried out the threat, and it ends in checkmate. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "11...cxd6",
+    "mistake_by": "black",
+    "punishment": "12.Qxf7#",
+    "material_lost": 0,
+    "ends_in_mate": true,
+    "ignored_threat": "Qxf7#"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "2sqe1",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/2sqe1",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "cxd6",
+     "category": "blunder",
+     "loss_cp": 10164,
+     "eval_cp": -9990,
+     "best_move": "f6",
+     "best_cp": 174,
+     "alternatives": [
+      "f6"
+     ],
+     "mate_after": false,
+     "label": "11...cxd6"
+    },
+    "punishment": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "12.Qxf7#"
+    },
+    "key_move": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_4udxf_mistake",
+  "status": "verified",
+  "title": "Missing a threat: checkmate",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "r2qk2r/pp3ppp/3b3B/2p5/2BnP3/8/PPP2QPP/RN2K2R b KQkq - 0 10",
+  "moves": [
+   "gxh6",
+   "Qxf7#"
+  ],
+  "final_fen": "r2qk2r/pp3Q1p/3b3p/2p5/2BnP3/8/PPP3PP/RN2K2R b KQkq - 0 11",
+  "key_move": "11.Qxf7#",
+  "mistake_move": "10...gxh6",
+  "prompt": "Black just played 10...gxh6. You are White: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "10...gxh6": "The mistake: Black plays on as if nothing were threatened.",
+   "11.Qxf7#": "White carries out the threat."
+  },
+  "explanation": "Before 10...gxh6, White was already threatening Qxf7#. Black ignored it, White carried out the threat, and it ends in checkmate. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "10...gxh6",
+    "mistake_by": "black",
+    "punishment": "11.Qxf7#",
+    "material_lost": -2,
+    "ends_in_mate": true,
+    "ignored_threat": "Qxf7#"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4Udxf",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4Udxf",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "gxh6",
+     "category": "blunder",
+     "loss_cp": 9485,
+     "eval_cp": -9990,
+     "best_move": "O-O",
+     "best_cp": -505,
+     "alternatives": [
+      "O-O",
+      "Qe7",
+      "Qc7"
+     ],
+     "mate_after": false,
+     "label": "10...gxh6"
+    },
+    "punishment": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "11.Qxf7#"
+    },
+    "key_move": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ayhoy_mistake",
+  "status": "verified",
+  "title": "Missing a threat: checkmate",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "r1bqk2r/pp1p1p2/2n4p/4p1p1/1bB5/1N3QP1/PPP2PP1/R4K1R b kq - 0 13",
+  "moves": [
+   "d6",
+   "Qxf7#"
+  ],
+  "final_fen": "r1bqk2r/pp3Q2/2np3p/4p1p1/1bB5/1N4P1/PPP2PP1/R4K1R b kq - 0 14",
+  "key_move": "14.Qxf7#",
+  "mistake_move": "13...d6",
+  "prompt": "Black just played 13...d6. You are White: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "13...d6": "The mistake: Black plays on as if nothing were threatened.",
+   "14.Qxf7#": "White carries out the threat."
+  },
+  "explanation": "Before 13...d6, White was already threatening Qxf7#. Black ignored it, White carried out the threat, and it ends in checkmate. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "13...d6",
+    "mistake_by": "black",
+    "punishment": "14.Qxf7#",
+    "material_lost": 1,
+    "ends_in_mate": true,
+    "ignored_threat": "Qxf7#"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "Ayhoy",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/Ayhoy",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "d6",
+     "category": "blunder",
+     "loss_cp": 10467,
+     "eval_cp": -9990,
+     "best_move": "Qe7",
+     "best_cp": 477,
+     "alternatives": [
+      "Qe7",
+      "Rf8"
+     ],
+     "mate_after": false,
+     "label": "13...d6"
+    },
+    "punishment": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "14.Qxf7#"
+    },
+    "key_move": {
+     "move": "Qxf7#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf7#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_4ugix_mistake",
+  "status": "verified",
+  "title": "Missing a threat: checkmate",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "r1b1k1nr/3p1p1p/2p2qp1/ppb1p3/3nP3/P7/BPPPNPPP/R1BQK1NR w KQkq - 2 10",
+  "moves": [
+   "c3",
+   "Nc2+",
+   "Qxc2",
+   "Qxf2+",
+   "Kd1",
+   "Qf1#"
+  ],
+  "final_fen": "r1b1k1nr/3p1p1p/2p3p1/ppb1p3/4P3/P1P5/BPQPN1PP/R1BK1qNR w kq - 2 13",
+  "key_move": "10...Nc2+",
+  "mistake_move": "10.c3",
+  "prompt": "White just played 10.c3. You are Black: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "10.c3": "The mistake: White plays on as if nothing were threatened.",
+   "10...Nc2+": "Black carries out the threat.",
+   "12...Qf1#": "Checkmate!"
+  },
+  "explanation": "Before 10.c3, Black was already threatening Nc2+. White ignored it, Black carried out the threat, and it ends in checkmate. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "10.c3",
+    "mistake_by": "white",
+    "punishment": "10...Nc2+",
+    "material_lost": -2,
+    "ends_in_mate": true,
+    "ignored_threat": "Nxc2+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4UGix",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4UGix",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "c3",
+     "category": "blunder",
+     "loss_cp": 10080,
+     "eval_cp": -9970,
+     "best_move": "Nxd4",
+     "best_cp": 110,
+     "alternatives": [
+      "Nxd4"
+     ],
+     "mate_after": false,
+     "label": "10.c3"
+    },
+    "punishment": {
+     "move": "Nc2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Nc2+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "10...Nc2+"
+    },
+    "key_move": {
+     "move": "Nc2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Nc2+",
+     "best_cp": 9970,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_8inj8_mistake",
+  "status": "verified",
+  "title": "Missing a threat",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "rnbqkb1r/ppp2ppp/8/3Bp3/8/1PP5/P1P2PPP/R1BQK1NR b KQkq - 0 6",
+  "moves": [
+   "c6",
+   "Bxf7+",
+   "Kxf7",
+   "Qxd8"
+  ],
+  "final_fen": "rnbQ1b1r/pp3kpp/2p5/4p3/8/1PP5/P1P2PPP/R1B1K1NR b KQ - 0 8",
+  "key_move": "7.Bxf7+",
+  "mistake_move": "6...c6",
+  "prompt": "Black just played 6...c6. You are White: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "6...c6": "The mistake: Black plays on as if nothing were threatened.",
+   "7.Bxf7+": "White carries out the threat.",
+   "8.Qxd8": "White comes out 7 points of material ahead."
+  },
+  "explanation": "Before 6...c6, White was already threatening Bxf7+. Black ignored it, White carried out the threat, and White wins 7 points of material. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "6...c6",
+    "mistake_by": "black",
+    "punishment": "7.Bxf7+",
+    "material_lost": 7,
+    "ends_in_mate": false,
+    "ignored_threat": "Bxf7+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "8INJ8",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/8INJ8",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "c6",
+     "category": "blunder",
+     "loss_cp": 692,
+     "eval_cp": -680,
+     "best_move": "Nd7",
+     "best_cp": 12,
+     "alternatives": [
+      "Nd7",
+      "Be7",
+      "Qd6",
+      "Bc5"
+     ],
+     "mate_after": false,
+     "label": "6...c6"
+    },
+    "punishment": {
+     "move": "Bxf7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 632,
+     "best_move": "Bxf7+",
+     "best_cp": 632,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "7.Bxf7+"
+    },
+    "key_move": {
+     "move": "Bxf7+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 632,
+     "best_move": "Bxf7+",
+     "best_cp": 632,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_nbj4n_mistake",
+  "status": "verified",
+  "title": "Missing a threat",
+  "concept": "missed_threat",
+  "category": "mistakes",
+  "subcategory": "attackingF2F7",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "rnb2rk1/pp3ppp/2p4q/2bPP3/8/2P2N2/PP2QPPP/RN2KB1R w KQ - 1 11",
+  "moves": [
+   "c4",
+   "Qc1+",
+   "Qd1",
+   "Bxf2+",
+   "Kxf2",
+   "Qxd1"
+  ],
+  "final_fen": "rnb2rk1/pp3ppp/2p5/3PP3/2P5/5N2/PP3KPP/RN1q1B1R w - - 0 14",
+  "key_move": "11...Qc1+",
+  "mistake_move": "11.c4",
+  "prompt": "White just played 11.c4. You are Black: how do you punish it?",
+  "hints": [
+   "Your opponent just ignored something you were threatening. What was it?",
+   "Look for checks and captures first."
+  ],
+  "notes": {
+   "11.c4": "The mistake: White plays on as if nothing were threatened.",
+   "11...Qc1+": "Black carries out the threat.",
+   "13...Qxd1": "Black comes out 7 points of material ahead."
+  },
+  "explanation": "Before 11.c4, Black was already threatening Qc1+. White ignored it, Black carried out the threat, and Black wins 7 points of material. Before every move, ask: what does my opponent threaten right now?",
+  "tags": [
+   "attackingF2F7",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "missed_threat": {
+    "mistake": "11.c4",
+    "mistake_by": "white",
+    "punishment": "11...Qc1+",
+    "material_lost": 7,
+    "ends_in_mate": false,
+    "ignored_threat": "Qc1+"
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "nBJ4N",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/nBJ4N",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "6 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "missed_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "c4",
+     "category": "blunder",
+     "loss_cp": 839,
+     "eval_cp": -767,
+     "best_move": "Qd2",
+     "best_cp": 72,
+     "alternatives": [
+      "Qd2",
+      "Nbd2",
+      "Na3"
+     ],
+     "mate_after": false,
+     "label": "11.c4"
+    },
+    "punishment": {
+     "move": "Qc1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 684,
+     "best_move": "Qc1+",
+     "best_cp": 684,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "11...Qc1+"
+    },
+    "key_move": {
+     "move": "Qc1+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 684,
+     "best_move": "Qc1+",
+     "best_cp": 684,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_42reg_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 2,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/2p3pk/7p/4Np2/1PQPnq2/8/P5PP/5N1K w - - 2 37",
+  "moves": [
+   "Qxc7",
+   "Qxf1#"
+  ],
+  "final_fen": "8/2Q3pk/7p/4Np2/1P1Pn3/8/P5PP/5q1K w - - 0 38",
+  "key_move": "37...Qxf1#",
+  "mistake_move": "37.Qxc7",
+  "prompt": "White just played 37.Qxc7. You are Black: how do you punish it?",
+  "hints": [
+   "White just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "37.Qxc7": "The mistake: White grabs the pawn on c7.",
+   "37...Qxf1#": "Black punishes the pawn grab."
+  },
+  "explanation": "White took the pawn with 37.Qxc7, Black answered 37...Qxf1#, and it ends in checkmate. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "37.Qxc7",
+    "mistake_by": "white",
+    "punishment": "37...Qxf1#",
+    "material_lost": 2,
+    "ends_in_mate": true,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "c7"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "42reg",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/42reg",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "2 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Qxc7",
+     "category": "blunder",
+     "loss_cp": 10513,
+     "eval_cp": -9990,
+     "best_move": "Nf3",
+     "best_cp": 523,
+     "alternatives": [
+      "Nf3",
+      "Qe2",
+      "h3",
+      "a4"
+     ],
+     "mate_after": false,
+     "label": "37.Qxc7"
+    },
+    "punishment": {
+     "move": "Qxf1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true,
+     "label": "37...Qxf1#"
+    },
+    "key_move": {
+     "move": "Qxf1#",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 10000,
+     "best_move": "Qxf1#",
+     "best_cp": 9990,
+     "alternatives": [],
+     "mate_after": true
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_4upd2_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "5r2/P5k1/1K4p1/7P/8/7P/5p2/5R2 b - - 0 56",
+  "moves": [
+   "gxh5",
+   "Rxf2",
+   "Rxf2",
+   "a8=Q"
+  ],
+  "final_fen": "Q7/6k1/1K6/7p/8/7P/5r2/8 b - - 0 58",
+  "key_move": "57.Rxf2",
+  "mistake_move": "56...gxh5",
+  "prompt": "Black just played 56...gxh5. You are White: how do you punish it?",
+  "hints": [
+   "Black just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "56...gxh5": "The mistake: Black grabs the pawn on h5.",
+   "57.Rxf2": "White punishes the pawn grab.",
+   "58.a8=Q": "White comes out 3 points of material ahead."
+  },
+  "explanation": "Black took the pawn with 56...gxh5, White answered 57.Rxf2, and in the end Black is 3 points down. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "56...gxh5",
+    "mistake_by": "black",
+    "punishment": "57.Rxf2",
+    "material_lost": 3,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "h5"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "4UpD2",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/4UpD2",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "gxh5",
+     "category": "blunder",
+     "loss_cp": 449,
+     "eval_cp": -475,
+     "best_move": "Rf6+",
+     "best_cp": -26,
+     "alternatives": [
+      "Rf6+"
+     ],
+     "mate_after": false,
+     "label": "56...gxh5"
+    },
+    "punishment": {
+     "move": "Rxf2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 341,
+     "best_move": "Rxf2",
+     "best_cp": 341,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "57.Rxf2"
+    },
+    "key_move": {
+     "move": "Rxf2",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 341,
+     "best_move": "Rxf2",
+     "best_cp": 341,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ci3fs_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/p1K5/1p6/1P6/3P1pk1/5Rp1/8/8 w - - 1 52",
+  "moves": [
+   "Rxf4+",
+   "Kxf4",
+   "d5",
+   "g2"
+  ],
+  "final_fen": "8/p1K5/1p6/1P1P4/5k2/8/6p1/8 w - - 0 54",
+  "key_move": "52...Kxf4",
+  "mistake_move": "52.Rxf4+",
+  "prompt": "White just played 52.Rxf4+. You are Black: how do you punish it?",
+  "hints": [
+   "White just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "52.Rxf4+": "The mistake: White grabs the pawn on f4.",
+   "52...Kxf4": "Black punishes the pawn grab.",
+   "53...g2": "Black comes out 4 points of material ahead."
+  },
+  "explanation": "White took the pawn with 52.Rxf4+, Black answered 52...Kxf4, and in the end White is 4 points down. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "52.Rxf4+",
+    "mistake_by": "white",
+    "punishment": "52...Kxf4",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "f4"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "cI3fs",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/cI3fs",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxf4+",
+     "category": "blunder",
+     "loss_cp": 339,
+     "eval_cp": -353,
+     "best_move": "Rf1",
+     "best_cp": -14,
+     "alternatives": [
+      "Rf1"
+     ],
+     "mate_after": false,
+     "label": "52.Rxf4+"
+    },
+    "punishment": {
+     "move": "Kxf4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 632,
+     "best_move": "Kxf4",
+     "best_cp": 632,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "52...Kxf4"
+    },
+    "key_move": {
+     "move": "Kxf4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 632,
+     "best_move": "Kxf4",
+     "best_cp": 632,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_ldhgz_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "8/8/p1K5/P4p1R/1P3k2/7P/8/1r6 b - - 6 40",
+  "moves": [
+   "Rxb4",
+   "Rh4+",
+   "Kf3",
+   "Rxb4"
+  ],
+  "final_fen": "8/8/p1K5/P4p2/1R6/5k1P/8/8 b - - 0 42",
+  "key_move": "41.Rh4+",
+  "mistake_move": "40...Rxb4",
+  "prompt": "Black just played 40...Rxb4. You are White: how do you punish it?",
+  "hints": [
+   "Black just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "40...Rxb4": "The mistake: Black grabs the pawn on b4.",
+   "41.Rh4+": "White punishes the pawn grab.",
+   "42.Rxb4": "White comes out 4 points of material ahead."
+  },
+  "explanation": "Black took the pawn with 40...Rxb4, White answered 41.Rh4+, and in the end Black is 4 points down. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "40...Rxb4",
+    "mistake_by": "black",
+    "punishment": "41.Rh4+",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "b4"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "LDHgz",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/LDHgz",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxb4",
+     "category": "blunder",
+     "loss_cp": 754,
+     "eval_cp": -757,
+     "best_move": "Ke4",
+     "best_cp": -3,
+     "alternatives": [
+      "Ke4",
+      "Ke5"
+     ],
+     "mate_after": false,
+     "label": "40...Rxb4"
+    },
+    "punishment": {
+     "move": "Rh4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 664,
+     "best_move": "Rh4+",
+     "best_cp": 664,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "41.Rh4+"
+    },
+    "key_move": {
+     "move": "Rh4+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 664,
+     "best_move": "Rh4+",
+     "best_cp": 664,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_nog6a_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black is about to make a mistake.",
+  "start_fen": "4B3/6p1/1R6/5p2/4p1k1/3r2P1/5K2/8 b - - 0 46",
+  "moves": [
+   "Rxg3",
+   "Rg6+",
+   "Kf4",
+   "Rxg3"
+  ],
+  "final_fen": "4B3/6p1/8/5p2/4pk2/6R1/5K2/8 b - - 0 48",
+  "key_move": "47.Rg6+",
+  "mistake_move": "46...Rxg3",
+  "prompt": "Black just played 46...Rxg3. You are White: how do you punish it?",
+  "hints": [
+   "Black just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "46...Rxg3": "The mistake: Black grabs the pawn on g3.",
+   "47.Rg6+": "White punishes the pawn grab.",
+   "48.Rxg3": "White comes out 4 points of material ahead."
+  },
+  "explanation": "Black took the pawn with 46...Rxg3, White answered 47.Rg6+, and in the end Black is 4 points down. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "46...Rxg3",
+    "mistake_by": "black",
+    "punishment": "47.Rg6+",
+    "material_lost": 4,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "white",
+     "square": "g3"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "NOg6A",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/NOg6A",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxg3",
+     "category": "blunder",
+     "loss_cp": 663,
+     "eval_cp": -615,
+     "best_move": "Rf3+",
+     "best_cp": 48,
+     "alternatives": [
+      "Rf3+",
+      "Kh3",
+      "g5",
+      "Rd2+"
+     ],
+     "mate_after": false,
+     "label": "46...Rxg3"
+    },
+    "punishment": {
+     "move": "Rg6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 568,
+     "best_move": "Rg6+",
+     "best_cp": 568,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "47.Rg6+"
+    },
+    "key_move": {
+     "move": "Rg6+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 568,
+     "best_move": "Rg6+",
+     "best_cp": 568,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_qtoah_mistake",
+  "status": "verified",
+  "title": "Grabbing a poisoned pawn",
+  "concept": "poisoned_pawn",
+  "category": "mistakes",
+  "subcategory": "poisonedPawn",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White is about to make a mistake.",
+  "start_fen": "8/1p6/3k4/1P3R2/8/8/1P1K1p2/1r6 w - - 3 46",
+  "moves": [
+   "Rxf2",
+   "Rxb2+",
+   "Ke3",
+   "Rxf2"
+  ],
+  "final_fen": "8/1p6/3k4/1P6/8/4K3/5r2/8 w - - 0 48",
+  "key_move": "46...Rxb2+",
+  "mistake_move": "46.Rxf2",
+  "prompt": "White just played 46.Rxf2. You are Black: how do you punish it?",
+  "hints": [
+   "White just grabbed a pawn. What did that cost?",
+   "Look for checks, captures and threats."
+  ],
+  "notes": {
+   "46.Rxf2": "The mistake: White grabs the pawn on f2.",
+   "46...Rxb2+": "Black punishes the pawn grab.",
+   "47...Rxf2": "Black comes out 5 points of material ahead."
+  },
+  "explanation": "White took the pawn with 46.Rxf2, Black answered 46...Rxb2+, and in the end White is 5 points down. A pawn is not free if taking it costs time, opens lines or leaves a piece loose: before you grab, look at your opponent's best reply.",
+  "tags": [
+   "poisonedPawn",
+   "mistake",
+   "lichess",
+   "real game"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "poisoned_pawn": {
+    "mistake": "46.Rxf2",
+    "mistake_by": "white",
+    "punishment": "46...Rxb2+",
+    "material_lost": 5,
+    "ends_in_mate": false,
+    "grabbed": {
+     "piece": "pawn",
+     "color": "black",
+     "square": "f2"
+    }
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "QtOAH",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/QtOAH",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "poisoned_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "mistake"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "mistake",
+    "reasons": [],
+    "depth": 14,
+    "mistake": {
+     "move": "Rxf2",
+     "category": "blunder",
+     "loss_cp": 539,
+     "eval_cp": -607,
+     "best_move": "Ke2",
+     "best_cp": -68,
+     "alternatives": [
+      "Ke2"
+     ],
+     "mate_after": false,
+     "label": "46.Rxf2"
+    },
+    "punishment": {
+     "move": "Rxb2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 539,
+     "best_move": "Rxb2+",
+     "best_cp": 539,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "46...Rxb2+"
+    },
+    "key_move": {
+     "move": "Rxb2+",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 539,
+     "best_move": "Rxb2+",
+     "best_cp": 539,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "lichess_f2fqk",
+  "status": "verified",
+  "title": "Spotting threats",
+  "concept": "spotting_threats",
+  "category": "mistakes",
+  "subcategory": "threatDefence",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: What does your opponent threaten? Stop it.",
+  "start_fen": "3n2B1/4k3/3p1pP1/1p6/5P2/4K2P/8/8 b - - 0 48",
+  "moves": [
+   "Kf8",
+   "Bd5",
+   "f5",
+   "h4"
+  ],
+  "final_fen": "3n1k2/8/3p2P1/1p1B1p2/5P1P/4K3/8/8 b - - 0 50",
+  "key_move": "49.Bd5",
+  "prompt": "What would you play here? What does your opponent threaten? Stop it.",
+  "hints": [
+   "Before you look for your own ideas: what does your opponent threaten right now?",
+   "Look at your bishop on g8."
+  ],
+  "notes": {
+   "48...Kf8": "The opponent's last move. Something is now possible — look closely.",
+   "49.Bd5": "49.Bd5 deals with the threat: the king on f8 was after the bishop on g8."
+  },
+  "explanation": "Before you move, ask what your opponent is threatening. If a piece of yours can be taken for free, deal with that first: move it, defend it, or block the attack. 49.Bd5 deals with the threat: the king on f8 was after the bishop on g8.",
+  "tags": [
+   "threatDefence",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "parries_threat": {
+    "move": "49.Bd5",
+    "threat": {
+     "attacker": {
+      "piece": "king",
+      "color": "black",
+      "square": "f8"
+     },
+     "target": {
+      "piece": "bishop",
+      "color": "white",
+      "square": "g8"
+     }
+    },
+    "threat_count": 1
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "F2FqK",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/F2FqK",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "parries_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "defence"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "defence",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Bd5",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 337,
+     "best_move": "Bd5",
+     "best_cp": 337,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "49.Bd5"
+    },
+    "alternatives": [],
+    "eval_if_ignored": -484,
+    "threat_cp": 821
+   }
+  }
+ },
+ {
+  "id": "lichess_igrpi",
+  "status": "verified",
+  "title": "Spotting threats",
+  "concept": "spotting_threats",
+  "category": "mistakes",
+  "subcategory": "threatDefence",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. Black to move: What does your opponent threaten? Stop it.",
+  "start_fen": "8/8/8/8/R4pk1/7p/5n1K/8 w - - 0 68",
+  "moves": [
+   "Kg1",
+   "Kg3",
+   "Ra3+",
+   "f3"
+  ],
+  "final_fen": "8/8/8/8/8/R4pkp/5n2/6K1 w - - 0 70",
+  "key_move": "68...Kg3",
+  "prompt": "What would you play here? What does your opponent threaten? Stop it.",
+  "hints": [
+   "Before you look for your own ideas: what does your opponent threaten right now?",
+   "Look at your knight on f2."
+  ],
+  "notes": {
+   "68.Kg1": "The opponent's last move. Something is now possible — look closely.",
+   "68...Kg3": "68...Kg3 deals with the threat: the king on g1 was after the knight on f2."
+  },
+  "explanation": "Before you move, ask what your opponent is threatening. If a piece of yours can be taken for free, deal with that first: move it, defend it, or block the attack. 68...Kg3 deals with the threat: the king on g1 was after the knight on f2.",
+  "tags": [
+   "threatDefence",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "parries_threat": {
+    "move": "68...Kg3",
+    "threat": {
+     "attacker": {
+      "piece": "king",
+      "color": "white",
+      "square": "g1"
+     },
+     "target": {
+      "piece": "knight",
+      "color": "black",
+      "square": "f2"
+     }
+    },
+    "threat_count": 1
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "iGrpi",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/iGrpi",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "parries_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "defence"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "defence",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Kg3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 771,
+     "best_move": "Kg3",
+     "best_cp": 771,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "68...Kg3"
+    },
+    "alternatives": [],
+    "eval_if_ignored": -491,
+    "threat_cp": 1262
+   }
+  }
+ },
+ {
+  "id": "lichess_swt5c",
+  "status": "verified",
+  "title": "Spotting threats",
+  "concept": "spotting_threats",
+  "category": "mistakes",
+  "subcategory": "threatDefence",
+  "difficulty": 3,
+  "description": "A position from a real Lichess game. White to move: What does your opponent threaten? Stop it.",
+  "start_fen": "R2r4/5pk1/6p1/1P6/R7/7p/1K6/8 b - - 0 57",
+  "moves": [
+   "Rxa8",
+   "Rxa8",
+   "h2",
+   "Ra1"
+  ],
+  "final_fen": "8/5pk1/6p1/1P6/8/8/1K5p/R7 b - - 1 59",
+  "key_move": "58.Rxa8",
+  "prompt": "What would you play here? What does your opponent threaten? Stop it.",
+  "hints": [
+   "Before you look for your own ideas: what does your opponent threaten right now?",
+   "Look at your rook on a4."
+  ],
+  "notes": {
+   "57...Rxa8": "The opponent's last move. Something is now possible — look closely.",
+   "58.Rxa8": "58.Rxa8 deals with the threat: the rook on a8 was after the rook on a4.",
+   "59.Ra1": "White comes out 5 points of material ahead."
+  },
+  "explanation": "Before you move, ask what your opponent is threatening. If a piece of yours can be taken for free, deal with that first: move it, defend it, or block the attack. 58.Rxa8 deals with the threat: the rook on a8 was after the rook on a4. White comes out 5 points of material ahead.",
+  "tags": [
+   "threatDefence",
+   "lichess",
+   "real game",
+   "2-move"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "parries_threat": {
+    "move": "58.Rxa8",
+    "threat": {
+     "attacker": {
+      "piece": "rook",
+      "color": "black",
+      "square": "a8"
+     },
+     "target": {
+      "piece": "rook",
+      "color": "white",
+      "square": "a4"
+     }
+    },
+    "threat_count": 1
+   }
+  },
+  "source": {
+   "source_type": "lichess_puzzle",
+   "source_id": "swt5c",
+   "source_license": "CC0-1.0",
+   "source_url": "https://lichess.org/training/swt5c",
+   "reference": "Lichess puzzle database (database.lichess.org)",
+   "import_date": "2026-10-02"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "4 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "parries_threat"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "defence"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-10-02",
+   "engine": {
+    "outcome": "pass",
+    "profile": "defence",
+    "reasons": [],
+    "depth": 14,
+    "key_move": {
+     "move": "Rxa8",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 684,
+     "best_move": "Rxa8",
+     "best_cp": 684,
+     "alternatives": [],
+     "mate_after": false,
+     "label": "58.Rxa8"
+    },
+    "alternatives": [],
+    "eval_if_ignored": -945,
+    "threat_cp": 1629
+   }
+  }
+ }
+]

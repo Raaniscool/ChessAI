@@ -1,0 +1,928 @@
+{
+  "version": 1,
+  "note": "Curated short explanations. Beginner wording is reused by reference from the Knowledge Library or Glossary where available; the extra levels and teaching notes live here. Example IDs are resolved from verified Knowledge Library positions. Curated prose is not engine analysis.",
+  "explanations": [
+    {
+      "id": "check",
+      "name": "Check",
+      "category": "rules",
+      "knowledge_concept": "check",
+      "levels": {
+        "intermediate": "Your king is in check when an enemy piece attacks its square. You must make a legal move that removes the attack: move the king, capture the attacker, or block a line check.",
+        "advanced": "A king may not remain in check or move onto an attacked square. Against a single sliding-piece check, you may move the king, capture the checker, or interpose; a knight check must be met by moving the king or capturing the checker, while double check requires a king move."
+      },
+      "key_idea": "Answer check before doing anything else; your reply must leave your king safe.",
+      "common_misconception": "You do not always have to move the king: capturing the checker or blocking its line may also be legal.",
+      "related": ["checkmate", "legal_moves", "double_check"],
+      "example_concepts": ["check"]
+    },
+    {
+      "id": "checkmate",
+      "name": "Checkmate",
+      "category": "rules",
+      "knowledge_concept": "checkmate",
+      "levels": {
+        "intermediate": "Checkmate is check with no legal reply that removes the attack. The game ends immediately, so the king is captured only in casual descriptions, never on the board.",
+        "advanced": "To prove mate, account for every legal king move, capture of the checking piece, and block of a sliding check. Double check rules out blocking or capturing just one checker unless the king moves or one move resolves both attacks."
+      },
+      "key_idea": "The king is attacked and there is no legal escape; that ends the game.",
+      "common_misconception": "The king is never actually captured in chess; the game stops at checkmate.",
+      "related": ["check", "stalemate", "back_rank_weakness"],
+      "example_concepts": ["checkmate", "back_rank_mate"]
+    },
+    {
+      "id": "stalemate",
+      "name": "Stalemate",
+      "category": "rules",
+      "knowledge_concept": "stalemate",
+      "levels": {
+        "intermediate": "Stalemate occurs when the side to move is not in check but has no legal move. It is a draw, even if that side has only its king and the opponent has a large material advantage.",
+        "advanced": "Check status and legal-move availability are both essential: no legal moves while in check is checkmate; no legal moves while not in check is stalemate. A stalemated position is drawn immediately under standard chess rules."
+      },
+      "key_idea": "Before making a winning-looking move, check whether it leaves the opponent with any legal move.",
+      "common_misconception": "Stalemate is not a win for the side with more pieces; it is a draw.",
+      "related": ["check", "checkmate", "promotion"],
+      "example_concepts": ["stalemate", "stalemate_tricks"]
+    },
+    {
+      "id": "legal_moves",
+      "name": "Legal and illegal moves",
+      "category": "rules",
+      "knowledge_concept": "legal_moves",
+      "levels": {
+        "beginner": "A move is legal if the piece moves according to its rules and your king is not left in check. A pinned piece may still have a legal move along the pin line or one that captures the attacker.",
+        "intermediate": "A move is legal only if the piece moves according to its rules and your king is not left in check. This also means you cannot ignore check or move a pinned piece so that it exposes your king.",
+        "advanced": "Legality is evaluated after the move, including special moves such as castling and en passant. A pinned piece can still move if it stays on the pin line or otherwise resolves the attack without exposing its king."
+      },
+      "key_idea": "A move that leaves your own king attacked is illegal, even if it would win material.",
+      "common_misconception": "A pinned piece is not automatically frozen; some moves along the pin line are legal.",
+      "related": ["check", "pin", "castling", "en_passant"],
+      "example_concepts": ["legal_moves", "pin"]
+    },
+    {
+      "id": "castling",
+      "name": "Castling",
+      "category": "rules",
+      "knowledge_concept": "castling",
+      "levels": {
+        "beginner": "Castling is one move with your king and a rook: the king moves two squares toward that rook, and the rook lands on the square the king crossed. You may castle only if neither piece has moved, the squares between them are empty, and the king is not in, through, or into check.",
+        "intermediate": "Castling is a special king move that also develops a rook. The king and chosen rook must retain their castling rights; attacked squares matter only along the king's route, not along the rook's route.",
+        "advanced": "Castling is legal only while the king and the relevant rook have not moved, the intervening squares are empty, the king is not currently checked, and every square the king crosses or occupies is unattacked. The rook may pass through an attacked square."
+      },
+      "key_idea": "Castle to improve king safety and connect your rooks, but first check the route and retained rights.",
+      "common_misconception": "The rook may pass over an attacked square; it is the king's starting, crossing, and destination squares that must be safe.",
+      "related": ["king_safety", "legal_moves", "opening_principles"],
+      "example_concepts": ["castling", "cannot_castle"]
+    },
+    {
+      "id": "en_passant",
+      "name": "En passant",
+      "category": "rules",
+      "knowledge_concept": "en_passant",
+      "levels": {
+        "intermediate": "If an enemy pawn advances two squares from its starting square and lands beside your pawn, you may capture it as though it had moved only one square. The capturing pawn moves diagonally to the square the enemy pawn passed over.",
+        "advanced": "En passant is legal only on the move immediately after the two-square pawn advance, and only by a pawn on an adjacent file. It is the only ordinary capture in which the capturing pawn does not land on the captured pawn's square."
+      },
+      "key_idea": "The opportunity lasts for one reply only, so decide immediately whether to capture en passant.",
+      "common_misconception": "En passant is not available later in the game just because the pawns are still beside each other.",
+      "related": ["captures", "legal_moves", "promotion"],
+      "example_concepts": ["en_passant"]
+    },
+    {
+      "id": "promotion",
+      "name": "Promotion",
+      "category": "rules",
+      "knowledge_concept": "promotion",
+      "levels": {
+        "intermediate": "When a pawn reaches the farthest rank, it must become a queen, rook, bishop, or knight of its own colour. You choose the piece immediately; it need not be one that was captured earlier.",
+        "advanced": "Promotion is compulsory on reaching the last rank, but the choice is yours among queen, rook, bishop, and knight. A knight promotion can give a special check or fork, while a queen can sometimes stalemate the opponent, so underpromotion can be best."
+      },
+      "key_idea": "A pawn reaching the last rank changes into a chosen piece, usually a queen but not always.",
+      "common_misconception": "You may promote to a second queen even if your first queen is still on the board.",
+      "related": ["underpromotion", "passed_pawn", "stalemate"],
+      "example_concepts": ["promotion", "underpromotion", "passed_pawn"]
+    },
+    {
+      "id": "underpromotion",
+      "name": "Underpromotion",
+      "category": "rules",
+      "knowledge_concept": "underpromotion",
+      "levels": {
+        "intermediate": "Underpromotion chooses a rook, bishop, or knight instead of a queen when a pawn reaches the last rank. A knight can give a useful check or fork, and a rook or bishop can avoid stalemate or preserve a draw.",
+        "advanced": "Underpromote when the promoted piece's movement creates a concrete advantage that a queen would not, such as a checking knight move, avoiding stalemate, or holding a draw. The choice is made immediately on reaching the final rank."
+      },
+      "key_idea": "Before promoting, check whether a knight, rook, or bishop is better than a queen.",
+      "common_misconception": "Underpromotion is legal and sometimes necessary; promotion does not have to be to a queen.",
+      "related": ["promotion", "stalemate", "fork"],
+      "example_concepts": ["underpromotion"]
+    },
+    {
+      "id": "captures",
+      "name": "Captures",
+      "category": "rules",
+      "knowledge_concept": "captures",
+      "levels": {
+        "intermediate": "A non-pawn captures by moving onto an enemy-occupied square; the captured piece is removed. Pawns move straight ahead but capture one square diagonally forward, with en passant as a special case.",
+        "advanced": "A capture is legal only if the moving piece's movement is valid and the move leaves its own king safe. Captures can be answered or tactically refuted, so an attacked piece is not automatically lost."
+      },
+      "key_idea": "Before capturing, check what your opponent can recapture and what the move leaves undefended.",
+      "common_misconception": "Capturing an attacked piece is not always safe; the capture can expose a stronger reply.",
+      "related": ["en_passant", "hanging_piece", "material", "tactics"],
+      "example_concepts": ["captures"]
+    },
+    {
+      "id": "touch_move",
+      "name": "Touch-move rule",
+      "category": "rules",
+      "aliases": ["touch move", "touch-move", "touching a piece", "touching a chess piece", "j'adoube", "adjusting a piece"],
+      "levels": {
+        "beginner": "In standard over-the-board tournament play, deliberately touching one of your pieces means you must move it if it has a legal move; deliberately touching an opponent's piece means you must capture it if you can. Say “I adjust” before deliberately straightening a piece. Casual games and online play may use different rules.",
+        "intermediate": "Under the usual FIDE touch-move rule, a player who is to move must move a deliberately touched own piece if it has a legal move, or capture a deliberately touched opponent piece if possible. The rule has exceptions for accidental contact and for announcing an adjustment before touching.",
+        "advanced": "Touch-move is a competition procedure, not a restriction on legal moves in the position. In FIDE over-the-board play, the obligation applies to a deliberately touched own piece that can legally move or an opponent piece that can legally be captured; touching pieces of both colours has a specific priority rule. Accidental contact and pre-announced adjustment are treated separately, and event formats can differ."
+      },
+      "key_idea": "At the board, decide before touching a piece; announce an adjustment first.",
+      "common_misconception": "Touch-move is not a universal rule for every casual or online game; it is a standard over-the-board competition rule.",
+      "related": ["legal_moves", "captures"]
+    },
+    {
+      "id": "threefold_repetition",
+      "name": "Threefold repetition",
+      "category": "rules",
+      "aliases": ["threefold repetition", "threefold draw", "repetition draw", "repeating a position", "three times repetition"],
+      "levels": {
+        "beginner": "A player may claim a draw when the same position, with the same player to move and the same possible moves, has occurred for a third time. The repeated moves do not have to happen consecutively.",
+        "intermediate": "Under standard FIDE rules, three occurrences make a draw claim possible, not automatic. The position must have the same side to move and the same legal possibilities, including castling rights and en-passant availability.",
+        "advanced": "Threefold repetition is claim-based under the FIDE Laws; five occurrences of the same position make the draw automatic. Positions are identical only when the same side is to move and the same moves are available, so changed castling rights or a possible en-passant capture matter."
+      },
+      "key_idea": "Track the position and the rights that affect legal moves, not just a repeated move sequence.",
+      "common_misconception": "Threefold repetition is generally claimable rather than automatic; the automatic threshold is fivefold repetition under FIDE rules.",
+      "related": ["fifty_move_rule", "dead_position"]
+    },
+    {
+      "id": "fifty_move_rule",
+      "name": "Fifty-move rule",
+      "category": "rules",
+      "aliases": ["50 move rule", "fifty move draw", "fifty moves rule"],
+      "levels": {
+        "beginner": "A player may claim a draw after 50 moves by each side without a pawn move or a capture. The count starts over after either kind of move.",
+        "intermediate": "The fifty-move rule is a draw claim when each side has made 50 moves with no pawn move and no capture. Under FIDE rules, 75 such moves by each side make the draw automatic, except when the last move checkmates.",
+        "advanced": "FIDE's claim threshold is 100 plies (50 moves per player) without a pawn move or capture; the automatic-move threshold is 150 plies, unless the final move checkmates. A claim can also be made based on an intended move when the rules' procedure is followed."
+      },
+      "key_idea": "Pawn moves and captures reset the count; ordinary piece moves do not.",
+      "common_misconception": "It is not 50 total moves: the claim threshold is 50 moves by each side without a pawn move or capture.",
+      "related": ["threefold_repetition", "dead_position"]
+    },
+    {
+      "id": "dead_position",
+      "name": "Dead position (draw)",
+      "category": "rules",
+      "aliases": ["dead position", "insufficient material", "insufficient mating material", "impossible checkmate"],
+      "levels": {
+        "beginner": "A position is drawn if neither player could possibly checkmate the other by any legal series of moves. King versus king is a simple example; a bishop or knight alone against a bare king is another.",
+        "intermediate": "The rule is about what is possible by any legal continuation, not just whether the material is usually enough to force mate. A blocked or unusual arrangement can be a dead position even when several pieces remain.",
+        "advanced": "FIDE defines a dead position as one in which neither player can checkmate the opponent by any series of legal moves. This is broader than a fixed “insufficient material” piece-count list; exact dead-position detection can require reasoning about the position."
+      },
+      "key_idea": "Ask whether checkmate is possible at all, not whether it is likely or forceable.",
+      "common_misconception": "A draw for dead position does not mean the stronger side merely lacks a forced mate; no legal sequence may allow either side to mate.",
+      "related": ["stalemate", "threefold_repetition", "fifty_move_rule"]
+    },
+    {
+      "id": "tactics",
+      "name": "Tactics",
+      "category": "tactics",
+      "knowledge_concept": "tactics",
+      "levels": {
+        "intermediate": "Tactics are concrete, forcing sequences that exploit a feature of the position, such as an undefended piece or an exposed king. Checks, captures, and direct threats are useful candidate moves to examine first.",
+        "advanced": "A tactical line works because the opponent has too few adequate replies to a sequence of forcing moves. Calculate the opponent's strongest defense and the position after the sequence rather than stopping when a move looks attractive."
+      },
+      "key_idea": "Look for forcing moves and calculate the opponent's best reply before committing.",
+      "common_misconception": "A tactic is not just a clever-looking move; the full line must work against the best defense.",
+      "related": ["fork", "pin", "skewer", "calculation", "hanging_piece"],
+      "example_concepts": ["tactics"]
+    },
+    {
+      "id": "fork",
+      "name": "Fork",
+      "category": "tactics",
+      "knowledge_concept": "fork",
+      "levels": {
+        "beginner": "A fork is one move that makes the same piece attack two or more targets at once. A common example is a knight checking the king while attacking a queen.",
+        "intermediate": "A fork is a double attack by one piece. It wins material when the threats cannot all be answered, but the attacker must still check whether the opponent has a forcing counter-threat or can save both targets.",
+        "advanced": "The fork's value depends on move order, target value, defenses, and forcing replies. A checking fork is especially strong because the opponent must answer check before dealing with the second target."
+      },
+      "key_idea": "Search for one move that attacks multiple targets, especially with check.",
+      "common_misconception": "A fork does not guarantee a win: the opponent may defend both targets or create a stronger counter-threat.",
+      "related": ["double_attack", "knight_fork", "pin"],
+      "example_concepts": ["fork"]
+    },
+    {
+      "id": "knight_fork",
+      "name": "Knight fork",
+      "category": "tactics",
+      "knowledge_concept": "knight_fork",
+      "levels": {
+        "intermediate": "A knight fork uses the knight's jump to attack two or more targets at once. A check on the king plus an attack on a queen or rook is a common pattern.",
+        "advanced": "Knight forks exploit the knight's non-sliding move: its attacks cannot be blocked, though the knight can still be captured or the threats can be answered by a forcing move. Check the landing square and all counter-threats."
+      },
+      "key_idea": "Check whether a knight can land with tempo and attack valuable targets simultaneously.",
+      "common_misconception": "A knight fork is not automatically winning; the knight may be captured or the opponent may have a stronger reply.",
+      "related": ["fork", "double_attack", "promotion"],
+      "example_concepts": ["knight_fork"]
+    },
+    {
+      "id": "double_attack",
+      "name": "Double attack",
+      "category": "tactics",
+      "knowledge_concept": "double_attack",
+      "levels": {
+        "intermediate": "A double attack is one move that creates two threats at once. A fork is one kind: one piece attacks multiple targets; a move can also create threats using two different pieces.",
+        "advanced": "The key feature is simultaneous threats created by a single move, not necessarily attacks by the same piece. Evaluate whether the threats are genuine and whether a forcing reply neutralizes both."
+      },
+      "key_idea": "After every move, ask what two things it threatens and whether one reply can meet both.",
+      "common_misconception": "A double attack is broader than a fork; the two threats need not come from the same piece.",
+      "related": ["fork", "discovered_attack", "deflection"],
+      "example_concepts": ["double_attack"]
+    },
+    {
+      "id": "pin",
+      "name": "Pin",
+      "category": "tactics",
+      "knowledge_concept": "pin",
+      "levels": {
+        "beginner": "A pin is a line attack through one piece toward something valuable behind it. Moving the front piece may expose the king or let the attacker take the more valuable piece.",
+        "intermediate": "Only bishops, rooks, and queens create pins along their lines. A pinned piece can sometimes move along the line, capture the attacker, or move safely if the revealed target is adequately defended.",
+        "advanced": "A pin constrains a piece because vacating the line exposes a more valuable target, but it is not automatically tactical. Check whether the pinned unit can legally move, whether the rear target is defended, and whether the pin can be increased or exploited."
+      },
+      "key_idea": "When a piece is pinned, look at what lies behind it and whether the line can be pressured.",
+      "common_misconception": "A pinned piece is not necessarily unable to move; only exposing the king makes a move illegal, and other pins can sometimes be broken safely.",
+      "related": ["absolute_pin", "relative_pin", "skewer", "x_ray"],
+      "example_concepts": ["pin"]
+    },
+    {
+      "id": "absolute_pin",
+      "name": "Absolute pin",
+      "category": "tactics",
+      "knowledge_concept": "absolute_pin",
+      "levels": {
+        "beginner": "An absolute pin is a line attack on a piece with its own king behind it. The piece cannot move if doing so would expose that king to check, though it may have legal moves that stay on the line or capture the attacker.",
+        "intermediate": "The rear target in an absolute pin is the king, so vacating the line in a way that exposes check is illegal. A pinned piece may still move along the line or remove the checking line without making its king unsafe.",
+        "advanced": "Absolute describes the king as the rear target, not a universal ban on every move by the pinned piece. Legality is determined by the resulting position: line-preserving moves and captures that resolve the attack can remain legal."
+      },
+      "key_idea": "The king behind the piece makes some moves illegal; test the resulting king safety, not just the label.",
+      "common_misconception": "An absolutely pinned piece is not frozen on every square; legal moves that keep the king safe are still allowed.",
+      "related": ["pin", "relative_pin", "legal_moves"],
+      "example_concepts": ["absolute_pin"]
+    },
+    {
+      "id": "relative_pin",
+      "name": "Relative pin",
+      "category": "tactics",
+      "knowledge_concept": "relative_pin",
+      "levels": {
+        "beginner": "A relative pin is a line attack through a piece toward something valuable other than the king, often a queen. The front piece may legally move, but doing so can expose the valuable piece behind it.",
+        "intermediate": "Unlike an absolute pin, a relative pin does not make the pinned piece's move illegal. Whether it is safe to move depends on the value and defense of the rear target and on any tactical counterplay.",
+        "advanced": "Relative pins are positional or tactical constraints, not rules-based restrictions. A pinned piece can leave the line when the target is adequately defended, the attacker can be met, or moving creates a stronger threat."
+      },
+      "key_idea": "A relative pin is a threat against material, so calculate whether the rear piece is actually lost.",
+      "common_misconception": "A relative pin does not make moving the piece illegal; it may be a sound move if the target is protected or the tactics favor it.",
+      "related": ["pin", "absolute_pin", "skewer"],
+      "example_concepts": ["relative_pin"]
+    },
+    {
+      "id": "skewer",
+      "name": "Skewer",
+      "category": "tactics",
+      "knowledge_concept": "skewer",
+      "levels": {
+        "beginner": "A skewer is a line attack on a valuable piece with a second target behind it. When the front piece moves out of the attack, the rear target may become capturable.",
+        "intermediate": "A skewer resembles a relative pin in reverse: the more valuable target is in front and is attacked first. The rear piece is not automatically won; check whether it is defended and what happens after the front piece moves.",
+        "advanced": "Skewers exploit alignment along a rank, file, or diagonal. Their success depends on the front target's legal responses and the tactical status of the rear target after the line opens."
+      },
+      "key_idea": "Look for a valuable front piece whose move exposes another target behind it.",
+      "common_misconception": "The piece behind a skewer is not automatically lost; it may be defended or the front piece may have a safe response.",
+      "related": ["pin", "relative_pin", "x_ray"],
+      "example_concepts": ["skewer"]
+    },
+    {
+      "id": "discovered_attack",
+      "name": "Discovered attack",
+      "category": "tactics",
+      "knowledge_concept": "discovered_attack",
+      "levels": {
+        "beginner": "A discovered attack happens when one piece moves away and reveals an attack by a friendly rook, bishop, or queen behind it. The revealed attack may create a threat, but it is not automatically a second threat.",
+        "intermediate": "The moving piece can make its own threat while uncovering the line piece, so the move may create a double attack. Whether it does depends on the destination square and the targets available.",
+        "advanced": "A discovered attack is defined by a move uncovering a line attack from another piece. It can be quiet, forcing, or combined with a direct attack; a discovered check is the checking subtype."
+      },
+      "key_idea": "Check what your moving piece uncovers before and after it leaves a line.",
+      "common_misconception": "Every discovered attack is not automatically a double attack; the moving piece may create no separate threat.",
+      "related": ["discovered_check", "double_attack", "x_ray"],
+      "example_concepts": ["discovered_attack"]
+    },
+    {
+      "id": "discovered_check",
+      "name": "Discovered check",
+      "category": "tactics",
+      "knowledge_concept": "discovered_check",
+      "levels": {
+        "beginner": "A discovered check occurs when one piece moves and reveals check from a rook, bishop, or queen behind it. The opponent must answer the check, while your moved piece may also create a threat.",
+        "intermediate": "Because the king is checked by the revealed line piece, the defender must make a legal check response. Use the tempo to assess whether the moving piece can capture, attack, or improve its position safely.",
+        "advanced": "A discovered check is a forcing discovered attack against the king. It is not necessarily a double check; double check occurs only when the moving piece also checks the king."
+      },
+      "key_idea": "The revealed check forces a reply; use the tempo without assuming the moved piece is safe.",
+      "common_misconception": "A discovered check is not always a double check; the piece that moves must also give check for that.",
+      "related": ["discovered_attack", "double_check", "double_attack"],
+      "example_concepts": ["discovered_check"]
+    },
+    {
+      "id": "double_check",
+      "name": "Double check",
+      "category": "tactics",
+      "knowledge_concept": "double_check",
+      "levels": {
+        "intermediate": "In double check, two pieces attack the king at once. The king must move: capturing or blocking one checker cannot remove the other check in the same move.",
+        "advanced": "A legal double check is normally answered by a king move because a single non-king move cannot resolve two independent checking lines. Check the king's destination carefully; it must be unattacked."
+      },
+      "key_idea": "When two pieces give check, find a safe king move rather than trying to block one line.",
+      "common_misconception": "A double check cannot normally be answered by capturing just one checker or blocking just one line.",
+      "related": ["check", "discovered_check", "checkmate"],
+      "example_concepts": ["double_check"]
+    },
+    {
+      "id": "x_ray",
+      "name": "X-ray attack",
+      "category": "tactics",
+      "knowledge_concept": "x_ray",
+      "levels": {
+        "intermediate": "An x-ray is pressure along a rook, bishop, or queen line through an enemy piece toward another target. If the blocker moves or is exchanged, the line piece may attack the target behind it.",
+        "advanced": "The term can describe an indirect line attack or defense through an intervening piece. Check which side benefits if the blocker moves, is captured, or remains in place; the line alone does not guarantee a win."
+      },
+      "key_idea": "Look beyond the piece on a long line to see what may become exposed.",
+      "common_misconception": "An x-ray does not mean the rear target is already capturable; the blocking piece and defenses still matter.",
+      "related": ["pin", "skewer", "discovered_attack"],
+      "example_concepts": ["x_ray"]
+    },
+    {
+      "id": "deflection",
+      "name": "Deflection",
+      "category": "tactics",
+      "knowledge_concept": "deflection",
+      "levels": {
+        "beginner": "Deflection uses a threat or sacrifice to pull a defender away from an important job. The target becomes vulnerable if the opponent cannot replace that defense.",
+        "intermediate": "Deflection uses a threat or sacrifice to draw a defender away from an important square, piece, or defensive task. The target becomes vulnerable only if the defender's departure cannot be compensated for.",
+        "advanced": "A deflection is a forcing removal of a defender from a duty. Identify the defender's overloaded responsibilities and calculate whether the opponent can decline the bait or replace the defense."
+      },
+      "key_idea": "Find the piece doing an essential defensive job and make it leave that job.",
+      "common_misconception": "A deflection is not just any attack on a defender; the move must actually exploit the lost defensive duty.",
+      "related": ["attraction", "overloaded_piece", "removing_defender"],
+      "example_concepts": ["deflection"]
+    },
+    {
+      "id": "attraction",
+      "name": "Attraction (decoy)",
+      "category": "tactics",
+      "knowledge_concept": "attraction",
+      "aliases": ["attraction", "attracting a piece", "decoy", "decoy tactic"],
+      "levels": {
+        "beginner": "Attraction, often called a decoy, lures an enemy piece to a square where it becomes vulnerable or allows a tactic. The bait may be a capture, but the opponent is not forced to take it unless the move creates a real threat.",
+        "intermediate": "A decoy draws a piece—often the king—onto a vulnerable square or away from a useful one. Calculate the result if the opponent declines the bait as well as if they accept it.",
+        "advanced": "Attraction is a forcing relocation of an enemy unit to a tactically unfavorable square. It differs from deflection in emphasis: attraction targets a destination, while deflection emphasizes abandoning a defensive duty."
+      },
+      "key_idea": "If you offer bait, calculate both acceptance and refusal.",
+      "common_misconception": "A sacrifice is not a successful decoy if the opponent can decline it without conceding anything.",
+      "related": ["deflection", "sacrifice", "removing_defender"],
+      "example_concepts": ["attraction"]
+    },
+    {
+      "id": "overloaded_piece",
+      "name": "Overloaded piece",
+      "category": "tactics",
+      "knowledge_concept": "overloaded_piece",
+      "aliases": ["overloaded piece", "overloaded defender", "overloading"],
+      "levels": {
+        "beginner": "An overloaded piece has more than one important defensive duty. A forcing threat can make it impossible to do both jobs, leaving one target exposed.",
+        "intermediate": "An overloaded piece has more than one important defensive duty. A threat that forces it to choose between those jobs can make one target fall.",
+        "advanced": "Overloading is a tactical weakness only when the defender cannot meet all duties after the opponent's forcing move. Verify whether another piece can take over a duty or whether the threatened target can move."
+      },
+      "key_idea": "List a defender's jobs; a forcing threat may make it abandon one.",
+      "common_misconception": "A piece guarding two things is not automatically lost; the opponent must be able to force it to choose.",
+      "related": ["deflection", "removing_defender", "double_attack"],
+      "example_concepts": ["overloaded_piece"]
+    },
+    {
+      "id": "removing_defender",
+      "name": "Removing the defender",
+      "category": "tactics",
+      "knowledge_concept": "removing_defender",
+      "aliases": ["remove the defender", "removal of the defender", "removing a defender", "eliminate the defender"],
+      "levels": {
+        "beginner": "Removing the defender means taking or driving away a piece that protects a target. The target becomes vulnerable only if no other piece can take over the defense.",
+        "intermediate": "Removing the defender means capturing, exchanging, or driving away the piece that protects a target. The target becomes vulnerable if no other piece can replace that defense.",
+        "advanced": "Calculate the exchange sequence and the resulting defenders, not just the initial capture. A defender can also be removed indirectly by deflection, decoy, or a forcing trade."
+      },
+      "key_idea": "Before attacking a target, identify and remove or distract its key defender.",
+      "common_misconception": "Capturing one defender does not win the target if another defender can recapture or take over its job.",
+      "related": ["deflection", "attraction", "overloaded_piece"],
+      "example_concepts": ["removing_defender"]
+    },
+    {
+      "id": "zwischenzug",
+      "name": "Zwischenzug (in-between move)",
+      "category": "tactics",
+      "knowledge_concept": "zwischenzug",
+      "aliases": ["in-between move", "in between move", "intermezzo", "zwischenzug", "zwischenzugs"],
+      "levels": {
+        "intermediate": "A zwischenzug is a forcing in-between move played before the expected recapture or continuation. A check, capture, or direct threat may improve the result before you take back.",
+        "advanced": "The intermezzo changes the move order by inserting a forcing move before the routine reply. It works only if the opponent's response is constrained and the original recapture remains favorable afterward."
+      },
+      "key_idea": "Before automatically recapturing, look for a stronger check, capture, or threat.",
+      "common_misconception": "An in-between move is not a free extra move; calculate what happens if the opponent answers the new threat.",
+      "related": ["tactics", "calculation", "double_attack"],
+      "example_concepts": ["zwischenzug"]
+    },
+    {
+      "id": "clearance",
+      "name": "Clearance",
+      "category": "tactics",
+      "knowledge_concept": "clearance",
+      "levels": {
+        "intermediate": "A clearance move moves one of your pieces away from a square or line so another piece can use it. The move may also carry a threat or sacrifice to gain time.",
+        "advanced": "Clearance can open a line, vacate a key square, or clear a route for another piece. A strong clearance move accounts for whether the opponent can occupy the released square or block the newly opened line."
+      },
+      "key_idea": "Notice when your own piece blocks a useful line or square and consider moving it with tempo.",
+      "common_misconception": "Moving a blocker is not automatically useful; the newly opened line must create a real improvement or threat.",
+      "related": ["discovered_attack", "interference", "tactics"],
+      "example_concepts": ["clearance"]
+    },
+    {
+      "id": "interference",
+      "name": "Interference",
+      "category": "tactics",
+      "knowledge_concept": "interference",
+      "levels": {
+        "beginner": "Interference blocks a line between an enemy rook, bishop, or queen and something it protects. The target is weakened if no other piece can take over the defense.",
+        "intermediate": "Interference places a piece on a line between an enemy long-range piece and something it defends or supports. Cutting that line can make the target lose its protection.",
+        "advanced": "An interference move disrupts coordination by blocking a rook, bishop, or queen line. The tactic works when the affected defender cannot recapture the interfering piece or restore the connection in time."
+      },
+      "key_idea": "Look for a line connecting an enemy defender to its target, then consider cutting it.",
+      "common_misconception": "Blocking a line matters only if the lost connection cannot be restored or replaced.",
+      "related": ["clearance", "deflection", "removing_defender"],
+      "example_concepts": ["interference"]
+    },
+    {
+      "id": "hanging_piece",
+      "name": "Hanging piece",
+      "category": "tactics",
+      "knowledge_concept": "hanging_piece",
+      "aliases": ["hanging piece", "hanging pieces", "loose piece", "loose pieces", "undefended piece", "free piece"],
+      "levels": {
+        "beginner": "A hanging piece is a piece that can be captured without enough compensation or protection. An attacked piece may be defended, so check the whole capture sequence before calling it free.",
+        "intermediate": "A piece is tactically hanging when it is en prise or insufficiently defended after the likely exchanges. Count attackers and defenders, but also check pins, overloaded defenders, and forcing moves.",
+        "advanced": "“Hanging” is a practical description, not a formal status: whether a piece is lost depends on legal recaptures, tactical counterplay, and the resulting material balance. Evaluate the line rather than only the number of defenders."
+      },
+      "key_idea": "Before every move, scan for your own undefended pieces and the opponent's.",
+      "common_misconception": "An attacked piece is not necessarily hanging if it is adequately defended or can be tactically protected.",
+      "related": ["captures", "overloaded_piece", "tactics"],
+      "example_concepts": ["hanging_piece", "hung_piece"]
+    },
+    {
+      "id": "trapped_piece",
+      "name": "Trapped piece",
+      "category": "tactics",
+      "knowledge_concept": "trapped_piece",
+      "levels": {
+        "beginner": "A trapped piece has no safe square to retreat to from a threat, so it may be lost unless it can trade or create a stronger counter-threat.",
+        "intermediate": "A trapped piece has no safe retreat from the threats against it. Check every legal escape square and whether the piece can counterattack or trade before concluding it will be lost.",
+        "advanced": "A piece is trapped when its available retreats fail to avoid material loss, often because its mobility is restricted by pawns or enemy control. A temporary lack of safe squares may still be solved by a forcing counter-threat."
+      },
+      "key_idea": "When a piece is attacked, list its safe squares and possible counter-threats before moving it.",
+      "common_misconception": "Being attacked does not by itself mean a piece is trapped; it may have a safe square, exchange, or tactical resource.",
+      "related": ["hanging_piece", "king_safety", "tactics"],
+      "example_concepts": ["trapped_piece"]
+    },
+    {
+      "id": "sacrifice",
+      "name": "Sacrifice",
+      "category": "tactics",
+      "knowledge_concept": "sacrifice",
+      "levels": {
+        "intermediate": "A sacrifice deliberately gives up material for a concrete or positional return, such as a mating attack, a stronger piece, or lasting activity. It is sound only if the compensation justifies the material.",
+        "advanced": "A sacrifice can be temporary (material is expected back) or positional (compensation is activity, king exposure, or structure). Calculate the opponent's best defensive choice before judging it sound."
+      },
+      "key_idea": "Name the compensation you expect and calculate how the opponent can refuse or defend.",
+      "common_misconception": "A move is not sound just because it is called a sacrifice; the compensation must be sufficient.",
+      "related": ["attraction", "calculation", "initiative"],
+      "example_concepts": ["sacrifice", "greek_gift"]
+    },
+    {
+      "id": "blunder",
+      "name": "Blunder",
+      "category": "mistakes",
+      "aliases": ["blunder", "blunders", "blundered", "major blunder"],
+      "levels": {
+        "beginner": "A blunder is a serious mistake that substantially worsens a position, often by allowing mate or losing significant material. Chess sites and engines use different thresholds, so the label is not a universal rule.",
+        "intermediate": "A blunder is commonly used for a move with a large evaluation loss or a decisive tactical consequence. The exact cutoff varies by engine, time control, and platform; evaluate the position, not only the tag.",
+        "advanced": "“Blunder” is an informal annotation category rather than a FIDE-defined result. Engine labels depend on evaluation scale, search depth, and threshold settings; practical severity also depends on whether the opponent can find the best reply."
+      },
+      "key_idea": "After a costly mistake, find the missed threat or calculation step that caused it.",
+      "common_misconception": "There is no single official centipawn threshold that defines a blunder across all engines and websites.",
+      "related": ["mistake", "inaccuracy", "hanging_piece", "calculation"],
+      "example_concepts": ["beginner_mistakes", "hung_piece", "missed_threat"]
+    },
+    {
+      "id": "mistake",
+      "name": "Mistake",
+      "category": "mistakes",
+      "aliases": ["mistake", "mistakes", "bad move", "error"],
+      "levels": {
+        "beginner": "A mistake is a move that makes your position noticeably worse than a stronger alternative. The size of the error and the label used for it depend on the position and the analysis tool.",
+        "intermediate": "A mistake may lose material, miss a tactic, weaken king safety, or give up an advantage. The best way to learn from one is to identify the opponent's strongest reply and the feature you overlooked.",
+        "advanced": "Mistake is a broad annotation, not a formal chess rule. Engine classifications are threshold-dependent; practical evaluation should include the best line, the position's complexity, and the opponent's realistic chances."
+      },
+      "key_idea": "Compare the move you played with the strongest reply and identify what changed.",
+      "common_misconception": "A move labelled a mistake is not necessarily a blunder or a forced loss; labels vary and the position may remain playable.",
+      "related": ["blunder", "inaccuracy", "calculation", "king_safety"],
+      "example_concepts": ["beginner_mistakes", "missed_threat"]
+    },
+    {
+      "id": "inaccuracy",
+      "name": "Inaccuracy",
+      "category": "mistakes",
+      "aliases": ["inaccuracy", "inaccuracies", "inaccurate move"],
+      "levels": {
+        "beginner": "An inaccuracy is a move that is not as strong as the best choice but usually causes a smaller loss than a mistake or blunder. These labels are informal, and each analysis tool may set its own thresholds.",
+        "intermediate": "An inaccuracy gives up some evaluation or practical advantage without necessarily changing the result. Look for the stronger plan the move missed and whether the position still offers useful chances.",
+        "advanced": "Inaccuracy is a platform-specific annotation category, not an official chess-law term. Its threshold depends on the engine and evaluation context, and small centipawn changes can be misleading in quiet or forced positions."
+      },
+      "key_idea": "A small loss of accuracy can still be instructive; find the better plan without overreacting to the label.",
+      "common_misconception": "An inaccuracy does not automatically lose the game, and it is not defined by one universal engine threshold.",
+      "related": ["mistake", "blunder", "development"],
+      "example_concepts": ["beginner_mistakes", "early_queen", "repeated_moves"]
+    },
+    {
+      "id": "material",
+      "name": "Material",
+      "category": "strategy",
+      "aliases": ["material count", "material advantage", "up material", "down material", "material balance"],
+      "levels": {
+        "beginner": "Material is the pieces and pawns each side has. A material advantage means one side has more or more valuable pieces, but activity, king safety, and passed pawns also affect who is better.",
+        "intermediate": "A common rough scale is pawn 1, knight or bishop 3, rook 5, and queen 9; these are guides, not fixed exchange rates. Piece activity and the position can make a nominal material advantage less important.",
+        "advanced": "Material evaluation counts surviving units and their practical value, not just nominal points. Dynamic compensation—initiative, king exposure, structure, and coordination—can outweigh a small material deficit."
+      },
+      "key_idea": "Count material, then assess whether activity and king safety change its practical value.",
+      "common_misconception": "Being ahead in material does not always mean the position is winning; a mating attack or dangerous passed pawn can outweigh it.",
+      "related": ["sacrifice", "hanging_piece", "passed_pawn", "initiative"],
+      "example_concepts": ["material_endgames", "sacrifice"]
+    },
+    {
+      "id": "development",
+      "name": "Development",
+      "category": "opening",
+      "aliases": ["developing pieces", "develop your pieces", "piece development", "developed pieces"],
+      "levels": {
+        "beginner": "Development is bringing your pieces from their starting squares to useful, active squares, usually during the opening. It helps you control the board and prepare to protect your king.",
+        "intermediate": "Develop minor pieces, compete for central squares, and coordinate before spending many tempi on one piece or early queen adventures. Development is about useful activity, not merely moving a piece off its starting square.",
+        "advanced": "Development is the mobilization and coordination of pieces. A lead in development matters most when it can be converted into a forcing action before the opponent catches up; pawn moves and repeated moves should be judged by their concrete purpose."
+      },
+      "key_idea": "Bring pieces to useful squares and make each opening move contribute to coordination or a concrete need.",
+      "common_misconception": "A developed piece is not automatically well placed; activity and coordination matter more than simply leaving the back rank.",
+      "related": ["opening_principles", "tempo", "king_safety", "initiative"],
+      "example_concepts": ["openings", "ignoring_development", "repeated_moves"]
+    },
+    {
+      "id": "tempo",
+      "name": "Tempo",
+      "category": "strategy",
+      "aliases": ["a tempo", "tempi", "gain a tempo", "lose a tempo", "wasting a move"],
+      "levels": {
+        "beginner": "A tempo is one move's worth of time in the game. Gaining a tempo means making a useful move that forces the opponent to respond or saves you from spending an extra move.",
+        "intermediate": "A move gains time when it develops with a threat or makes the opponent spend a move answering it. Repeating a move without a purpose can lose tempi, but a useful repeated move may be justified.",
+        "advanced": "Tempo describes move economy and initiative, not clock time. A forcing move can gain a tempo relative to the opponent's plan, while a move-order change can make the same position favorable or unfavorable."
+      },
+      "key_idea": "Prefer moves that improve your position while asking the opponent a concrete question.",
+      "common_misconception": "A move is not automatically a wasted tempo just because the same piece moves twice; the position may require it.",
+      "related": ["development", "initiative", "zwischenzug"],
+      "example_concepts": ["early_queen", "repeated_moves", "zwischenzug"]
+    },
+    {
+      "id": "initiative",
+      "name": "Initiative",
+      "category": "strategy",
+      "aliases": ["having the initiative", "keep the initiative", "take the initiative"],
+      "levels": {
+        "beginner": "The initiative is the ability to make threats that keep the opponent responding to you. It can be temporary and does not by itself mean you have a winning position.",
+        "intermediate": "A player with the initiative often chooses the direction of play through forcing threats. To keep it, follow up accurately; otherwise the opponent may finish development or consolidate.",
+        "advanced": "Initiative is a dynamic advantage: the opponent's replies are constrained by threats, checks, or development pressure. Assess whether it can be converted before it fades and how much material or structural risk was paid for it."
+      },
+      "key_idea": "Use forcing threats to make the opponent react, then convert the activity into something lasting.",
+      "common_misconception": "Having the initiative is not the same as being objectively winning; the pressure may run out.",
+      "related": ["tempo", "development", "sacrifice", "tactics"],
+      "example_concepts": ["tactics", "sacrifice", "early_queen"]
+    },
+    {
+      "id": "space",
+      "name": "Space",
+      "category": "strategy",
+      "aliases": ["space advantage", "more space", "space advantage in chess"],
+      "levels": {
+        "beginner": "Space is the room your pieces have to move and maneuver, often influenced by how far your pawns control squares. More space can make it easier to reorganize, but it can also leave advanced pawns as targets.",
+        "intermediate": "A space advantage usually means controlling more squares in the opponent's half and restricting their pieces. Keep the position supported and avoid creating weaknesses that can be attacked.",
+        "advanced": "Space is a positional measure of territory and maneuvering options, not a simple count of occupied squares. Its value depends on piece mobility, pawn breaks, targets, and whether the opponent can challenge the pawn chain."
+      },
+      "key_idea": "Use extra room to improve your pieces, while protecting the pawns that claim it.",
+      "common_misconception": "More space is not always better if the advanced pawns become weak or the position opens against your king.",
+      "related": ["pawn_structure", "development", "outpost"],
+      "example_concepts": ["openings"]
+    },
+    {
+      "id": "center_control",
+      "name": "Center control",
+      "category": "opening",
+      "aliases": ["control the center", "control of the center", "central control", "central squares", "fight for the center"],
+      "levels": {
+        "beginner": "The center usually means the four squares e4, d4, e5, and d5. Controlling them with pawns and pieces gives your army more room and can support attacks on either side.",
+        "intermediate": "You can control central squares directly with pawns or indirectly with pieces. The best method depends on the opening; central control does not always require occupying every central square with a pawn.",
+        "advanced": "Central control concerns influence over key central squares and the breaks that can change the pawn structure. A flexible center may be more valuable than immediate occupation if it preserves options or targets the opponent's setup."
+      },
+      "key_idea": "Develop pieces and contest central squares, directly or from a distance.",
+      "common_misconception": "You do not have to occupy all four central squares with pawns to control the center.",
+      "related": ["opening_principles", "development", "pawn_structure"],
+      "example_concepts": ["openings"]
+    },
+    {
+      "id": "opening_principles",
+      "name": "Opening principles",
+      "category": "opening",
+      "aliases": ["opening principle", "principles of the opening", "opening fundamentals", "opening rules"],
+      "levels": {
+        "beginner": "In the opening, develop your pieces toward useful squares, contest the center, and get your king safe. Avoid repeated moves or early queen adventures unless there is a concrete reason.",
+        "intermediate": "Opening principles are guides, not laws: develop efficiently, coordinate, secure the king, and challenge the center. A concrete tactic or forced line can justify departing from a general principle.",
+        "advanced": "Principles summarize recurring positional goals, but move-order and concrete calculation take priority. Evaluate development, central breaks, king safety, and the opponent's threats together rather than following a checklist blindly."
+      },
+      "key_idea": "Use principles as a checklist, then let concrete tactics and the position decide.",
+      "common_misconception": "You should not castle or develop automatically if a concrete tactical reason makes another move necessary.",
+      "related": ["development", "center_control", "king_safety", "tempo"],
+      "example_concepts": ["openings", "early_queen", "repeated_moves", "ignoring_development"]
+    },
+    {
+      "id": "king_safety",
+      "name": "King safety",
+      "category": "strategy",
+      "knowledge_concept": "king_safety",
+      "levels": {
+        "beginner": "King safety is how well your king is protected from attack. Castling often helps, but pawn cover, open lines, and the nearby pieces also matter.",
+        "intermediate": "Assess the king's shelter, open files and diagonals, attacking pieces, and defensive resources. Castling is useful when it improves safety, but the king can become vulnerable if its pawn cover is damaged or the center opens.",
+        "advanced": "King safety is a dynamic evaluation of exposure, attacking force, escape squares, and the cost of defensive moves. A king's location alone does not determine safety; a castled king can be exposed and a centralized king can be safe in a simplified position."
+      },
+      "key_idea": "Before opening lines or moving the king's pawns, check what attacking routes you create.",
+      "common_misconception": "Castling does not guarantee a safe king; the pawn shield and open lines still matter.",
+      "related": ["castling", "opening_principles", "back_rank_weakness"],
+      "example_concepts": ["king_safety", "king_safety_mistake"]
+    },
+    {
+      "id": "open_file",
+      "name": "Open file",
+      "category": "strategy",
+      "glossary_term": "open_file",
+      "exclude_source_aliases": ["half open file", "semi open file"],
+      "levels": {
+        "beginner": "A fully open file has no pawns of either colour. Rooks often use it to reach a target or enter the opponent's position, when they can hold the file.",
+        "intermediate": "A fully open file contains no pawns of either colour. A half-open file has pawns of only one colour, so a rook can pressure the opposing pawn or enter along the file.",
+        "advanced": "Open and half-open files are useful routes for rooks and queens, but control must be converted into an entry square or target. A file is not automatically valuable if the opponent can contest it or there is nothing to attack."
+      },
+      "key_idea": "Use rooks on open or half-open files to reach targets and entry squares.",
+      "common_misconception": "A half-open file still has pawns on it: the opponent's pawns are present, while your own are absent.",
+      "related": ["half_open_file", "development", "back_rank_weakness"],
+      "example_concepts": ["back_rank_mate", "rook_mate"]
+    },
+    {
+      "id": "half_open_file",
+      "name": "Half-open file",
+      "category": "strategy",
+      "aliases": ["half open file", "half-open file", "semi-open file", "semi open file", "half-open files"],
+      "levels": {
+        "beginner": "A half-open file has enemy pawns but none of your own. A rook can use it to pressure those pawns or reach into the opponent's position.",
+        "intermediate": "From one side's perspective, a half-open file contains no friendly pawns but at least one enemy pawn. It gives a rook or queen a route to pressure a target; a fully open file has no pawns of either colour.",
+        "advanced": "A half-open (semi-open) file lacks the player's own pawns but retains opposing pawns. Its value depends on access, targets, and whether the opponent can contest or close the file with a pawn break."
+      },
+      "key_idea": "Use the file to pressure an enemy pawn or create an entry square, not just to occupy it.",
+      "common_misconception": "A half-open file is not empty; an open file has no pawns of either colour.",
+      "related": ["open_file", "pawn_structure", "development"]
+    },
+    {
+      "id": "outpost",
+      "name": "Outpost",
+      "category": "strategy",
+      "glossary_term": "outpost",
+      "levels": {
+        "intermediate": "An outpost is a strong square, usually in or near the opponent's half, that enemy pawns cannot challenge. A piece—often a knight—can use it as a stable base, especially when supported by a pawn.",
+        "advanced": "An outpost's value comes from durable control and useful access to targets, not merely its location. Pawn breaks, exchanges, or piece attacks may still challenge the occupant even when enemy pawns cannot."
+      },
+      "key_idea": "Place a piece on a stable square that enemy pawns cannot drive it from.",
+      "common_misconception": "An outpost is not automatically a good square; the piece must have useful targets and cannot be easily exchanged or attacked by pieces.",
+      "related": ["pawn_structure", "isolated_pawn", "passed_pawn"],
+      "example_concepts": ["passed_pawn"]
+    },
+    {
+      "id": "fianchetto",
+      "name": "Fianchetto",
+      "category": "opening",
+      "glossary_term": "fianchetto",
+      "levels": {
+        "intermediate": "A fianchetto develops a bishop to b2 or g2 for White, or b7 or g7 for Black, after moving the adjacent knight's pawn one square. The bishop then pressures a long diagonal from the flank.",
+        "advanced": "A fianchetto setup gives a bishop long-range influence but can weaken the diagonal or dark/light squares if the bishop is exchanged. Its value depends on the pawn structure and whether the center remains stable."
+      },
+      "key_idea": "The fianchetto bishop controls a long diagonal; protect its influence and the squares around it.",
+      "common_misconception": "Fianchetto does not mean moving the bishop's pawn; the adjacent knight's pawn moves first to open the bishop's diagonal.",
+      "related": ["king_safety", "development", "opening_principles"],
+      "example_concepts": ["openings", "king_safety"]
+    },
+    {
+      "id": "pawn_structure",
+      "name": "Pawn structure",
+      "category": "pawn_structure",
+      "glossary_term": "pawn_structure",
+      "levels": {
+        "intermediate": "Pawn structure is the arrangement of both sides' pawns. Because pawns cannot move backward, their placement shapes open lines, weak squares, targets, and useful plans for the pieces.",
+        "advanced": "Pawn structure is a durable positional framework, but it can change through captures and pawn breaks. Evaluate pawn chains, islands, weaknesses, open files, and the squares that become available after exchanges."
+      },
+      "key_idea": "Read the pawn map to find lasting targets, useful breaks, and squares for your pieces.",
+      "common_misconception": "A doubled or isolated pawn is not automatically weak; piece activity and the position can compensate for it.",
+      "related": ["isolated_pawn", "doubled_pawns", "backward_pawn", "passed_pawn", "open_file"],
+      "example_concepts": ["passed_pawn"]
+    },
+    {
+      "id": "isolated_pawn",
+      "name": "Isolated pawn",
+      "category": "pawn_structure",
+      "glossary_term": "isolated_pawn",
+      "levels": {
+        "intermediate": "An isolated pawn has no friendly pawn on either neighboring file. It cannot be protected by another pawn, but it may provide open lines and useful squares for its pieces.",
+        "advanced": "An isolated pawn can become a long-term target, especially when blockaded, yet it can also grant activity and space. Judge whether the side can advance it, exchange it, or use the squares around it before labeling it weak."
+      },
+      "key_idea": "An isolated pawn needs piece support because neighboring pawns cannot defend it.",
+      "common_misconception": "An isolated pawn is not always a weakness; it may create active piece play and open files.",
+      "related": ["pawn_structure", "outpost", "passed_pawn"]
+    },
+    {
+      "id": "doubled_pawns",
+      "name": "Doubled pawns",
+      "category": "pawn_structure",
+      "glossary_term": "doubled_pawns",
+      "levels": {
+        "intermediate": "Doubled pawns are two same-colour pawns on one file, usually after a recapture. They may be hard to defend or advance, but can also control useful squares and open a file for pieces.",
+        "advanced": "Doubled pawns should be evaluated by their mobility, defensibility, and the files they open, not by shape alone. The rear pawn may support the front one, while the side with them may gain active piece play."
+      },
+      "key_idea": "Assess whether doubled pawns can advance, defend one another, or open useful lines.",
+      "common_misconception": "Doubled pawns are often a structural weakness, but they are not automatically losing or unable to defend each other.",
+      "related": ["pawn_structure", "open_file", "isolated_pawn"]
+    },
+    {
+      "id": "backward_pawn",
+      "name": "Backward pawn",
+      "category": "pawn_structure",
+      "glossary_term": "backward_pawn",
+      "levels": {
+        "intermediate": "A backward pawn lags behind neighboring pawns and cannot safely advance, often because the square in front is controlled by an enemy pawn. It can become a target, especially on an open or half-open file.",
+        "advanced": "Backwardness is about a pawn's inability to advance safely and its difficulty receiving pawn support from adjacent files. Whether it is a lasting weakness depends on piece defense, pawn breaks, and the opponent's access to the front square."
+      },
+      "key_idea": "A backward pawn is most vulnerable when the opponent can occupy the square in front of it.",
+      "common_misconception": "A pawn is not backward merely because it stands behind a neighbor; it must also be difficult or unsafe to advance.",
+      "related": ["pawn_structure", "open_file", "outpost"]
+    },
+    {
+      "id": "passed_pawn",
+      "name": "Passed pawn",
+      "category": "pawn_structure",
+      "knowledge_concept": "passed_pawn",
+      "levels": {
+        "beginner": "A passed pawn has no enemy pawn ahead of it on its file or either neighboring file to stop it. Enemy pieces can still block or capture it, so it needs support on the way to promotion.",
+        "intermediate": "A passed pawn is a promotion threat because enemy pawns cannot stop it by advancing or capturing across the neighboring files. Evaluate whether pieces can blockade it, how quickly it advances, and whether it is protected.",
+        "advanced": "A passed pawn is free of opposing pawns that could stop it on its file or adjacent files. Its practical strength depends on the king's distance, piece blockades, support, and promotion tempo; connected or distant passers can be especially powerful."
+      },
+      "key_idea": "Support a passed pawn and compare its promotion race with the opponent's counterplay.",
+      "common_misconception": "A passed pawn is not guaranteed to promote; enemy pieces and the king can still stop it.",
+      "related": ["promotion", "rule_of_the_square", "opposition", "pawn_structure"],
+      "example_concepts": ["passed_pawn", "outside_passed_pawn", "pawn_breakthrough"]
+    },
+    {
+      "id": "back_rank_weakness",
+      "name": "Back-rank weakness",
+      "category": "strategy",
+      "knowledge_concept": "back_rank_weakness",
+      "aliases": ["weak back rank", "back rank weakness", "back-rank weakness", "back rank mate threat"],
+      "levels": {
+        "beginner": "A back-rank weakness occurs when your king has little or no escape from a rook or queen attack along its home rank, often because your own pawns block its flight squares.",
+        "intermediate": "A weak back rank can allow a back-rank mate or force you to spend a move making luft, an escape square. Keep track of the enemy rooks and queens before moving a defender away.",
+        "advanced": "Back-rank safety depends on king escape squares, the rank's defenders, and the opponent's access. A pawn move for luft can prevent mate but may weaken other squares, so time it according to concrete threats."
+      },
+      "key_idea": "Check for a safe king escape square before removing a back-rank defender.",
+      "common_misconception": "A king is not safe just because it is behind its pawns; those pawns can also trap it.",
+      "related": ["king_safety", "checkmate", "open_file"],
+      "example_concepts": ["back_rank_weakness", "back_rank_mate"]
+    },
+    {
+      "id": "endgame",
+      "name": "Endgame",
+      "category": "endgame",
+      "knowledge_concept": "endgames",
+      "aliases": ["endgame", "endgames", "ending", "endings", "chess endgame"],
+      "levels": {
+        "beginner": "The endgame is the later phase of a game, usually with fewer pieces. The king often becomes an active piece, and pawn promotion and precise calculation matter more.",
+        "intermediate": "There is no exact piece-count boundary for the endgame. It often begins when queens are exchanged or the kings can safely participate, and plans focus on king activity, passed pawns, and converting advantages.",
+        "advanced": "The endgame is defined by strategic and tactical features rather than a fixed number of pieces. King centralization, pawn races, opposition, zugzwang, and theoretical tablebases can be decisive."
+      },
+      "key_idea": "Activate your king when it is safe and calculate pawn races accurately.",
+      "common_misconception": "An endgame does not begin at one universal material count; the king's safety and role help define the phase.",
+      "related": ["king_activity", "opposition", "passed_pawn", "zugzwang"],
+      "example_concepts": ["endgames", "opposition", "passed_pawn"]
+    },
+    {
+      "id": "opposition",
+      "name": "Opposition",
+      "category": "endgame",
+      "knowledge_concept": "opposition",
+      "levels": {
+        "beginner": "In a direct opposition, the kings face each other with one square between them. The side not to move has the opposition and can often force the other king to give way in a king-and-pawn ending.",
+        "intermediate": "Opposition is a way to use the move to make the enemy king yield key squares. It is most useful when the pawn position gives your king a route forward; the opposition alone does not guarantee a win.",
+        "advanced": "Direct, distant, and diagonal opposition are related king-placement techniques. Their value depends on move order, key squares, and the pawn structure; calculate the resulting king access rather than treating opposition as an automatic result."
+      },
+      "key_idea": "Use the move to force the opposing king away from squares your king or pawn needs.",
+      "common_misconception": "Having the opposition is not an automatic win; the pawn position and access to key squares still decide.",
+      "related": ["key_squares", "rule_of_the_square", "zugzwang", "king_activity"],
+      "example_concepts": ["opposition", "zugzwang"]
+    },
+    {
+      "id": "rule_of_the_square",
+      "name": "Rule of the square",
+      "category": "endgame",
+      "knowledge_concept": "rule_of_the_square",
+      "levels": {
+        "beginner": "To estimate whether a lone king can catch a passed pawn, imagine a square from the pawn's current rank to its promotion square, with equal sides. If the defending king can enter that square in time, it may catch the pawn; otherwise the pawn may queen. The rule assumes no other pieces or checks change the race.",
+        "intermediate": "The square's side length is the number of moves the pawn needs to reach promotion. If the defending king can move into the square on its turn, it can usually catch the pawn; a pawn's initial two-square move or a check can change the calculation.",
+        "advanced": "The rule of the square is a shortcut for a pawn race with a lone king and no other tactical resources. Account for side to move, the pawn's initial double-step, checks, and blockers; when those matter, calculate the actual king route."
+      },
+      "key_idea": "Use the square as a quick race test, then calculate if a special move or check changes the tempo.",
+      "common_misconception": "The square rule is only a shortcut under its assumptions; it does not account for checks, blockers, or all move-order details.",
+      "related": ["passed_pawn", "promotion", "king_activity"],
+      "example_concepts": ["rule_of_the_square", "passed_pawn"]
+    },
+    {
+      "id": "key_squares",
+      "name": "Key squares",
+      "category": "endgame",
+      "knowledge_concept": "key_squares",
+      "levels": {
+        "beginner": "In a king-and-pawn versus king ending, key squares are squares your king must reach to help force promotion. Their location changes with the pawn's rank, so use a known pattern or calculate the king route.",
+        "intermediate": "In many king-and-pawn versus king endings, key squares are squares the attacking king must reach to force the pawn through. Their location depends on the pawn's rank and whether the defending king can oppose it.",
+        "advanced": "Key squares encode the king's access needed for a theoretical pawn advance. Use the pawn's rank and file to identify them, then check opposition and the defender's ability to enter the promotion square or blockade."
+      },
+      "key_idea": "Bring your king to the key squares that support the pawn's advance.",
+      "common_misconception": "The pawn does not win by itself; the attacking king often must reach the right squares first.",
+      "related": ["opposition", "passed_pawn", "rule_of_the_square"],
+      "example_concepts": ["key_squares", "opposition"]
+    },
+    {
+      "id": "king_activity",
+      "name": "King activity",
+      "category": "endgame",
+      "aliases": ["active king", "king activity in the endgame", "centralize the king"],
+      "levels": {
+        "beginner": "When the queens and many pieces are gone, the king can often help attack pawns and support its own pawns. Bring it toward the center when it cannot be checked or trapped.",
+        "intermediate": "An active king can escort a passed pawn, attack weaknesses, and support pawn breaks. Before centralizing, calculate checks and tactical threats; king activity is not safe while major attacking pieces remain.",
+        "advanced": "King activity is a major endgame asset measured by access to targets, key squares, and pawn races. Centralization must be balanced against forcing checks, opposition, and the possibility of entering a drawn or losing pawn ending."
+      },
+      "key_idea": "In a safe endgame, use the king as a fighting piece rather than leaving it passive.",
+      "common_misconception": "The king should not be centralized automatically in a middlegame where it can be attacked.",
+      "related": ["endgame", "opposition", "key_squares", "passed_pawn"],
+      "example_concepts": ["endgames", "opposition", "passed_pawn"]
+    },
+    {
+      "id": "zugzwang",
+      "name": "Zugzwang",
+      "category": "endgame",
+      "knowledge_concept": "zugzwang",
+      "levels": {
+        "intermediate": "Zugzwang is a position where having to move is a disadvantage: every legal move worsens the position compared with being able to pass. It often appears in endgames, where a tempo can decide access to key squares.",
+        "advanced": "A position is zugzwang when the side to move would prefer to keep the current position but must choose a move that worsens it. In chess, passing is not legal; the concept describes the comparison with a hypothetical pass, not an available move."
+      },
+      "key_idea": "Use waiting moves and opposition to make the opponent face the move first.",
+      "common_misconception": "A player cannot actually pass; zugzwang means every legal move is harmful compared with a hypothetical pass.",
+      "related": ["opposition", "key_squares", "endgame"],
+      "example_concepts": ["zugzwang"]
+    },
+    {
+      "id": "calculation",
+      "name": "Calculation",
+      "category": "tactics",
+      "glossary_term": "calculation",
+      "levels": {
+        "intermediate": "Calculation is working through a sequence of candidate moves and replies before choosing. Start with forcing moves—checks, captures, and threats—then compare the opponent's strongest responses.",
+        "advanced": "Good calculation tracks a concrete variation to a stable endpoint, accounting for forcing replies, intermediate moves, and the resulting material and king safety. Candidate moves should be compared against the opponent's best defense, not the most natural one."
+      },
+      "key_idea": "Calculate forcing candidates and the opponent's best reply before evaluating the final position.",
+      "common_misconception": "Calculation is not guessing a long line; it is testing concrete variations and stopping when the position is clear.",
+      "related": ["tactics", "zwischenzug", "blunder", "mistake"],
+      "example_concepts": ["tactics", "zwischenzug", "missed_threat"]
+    }
+  ]
+}

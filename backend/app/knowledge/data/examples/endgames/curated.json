@@ -1,0 +1,1010 @@
+[
+ {
+  "id": "endgame_lucena_bridge",
+  "status": "verified",
+  "title": "The Lucena position: building a bridge",
+  "concept": "lucena_position",
+  "category": "endgames",
+  "difficulty": 4,
+  "description": "The most important winning rook endgame: White's king is on the queening square, but has to get out without being checked forever.",
+  "start_fen": "1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1",
+  "moves": [
+   "Rd1+",
+   "Ke7",
+   "Rd4",
+   "Ra1",
+   "Kc7",
+   "Rc1+",
+   "Kb6",
+   "Rb1+",
+   "Kc6",
+   "Rc1+",
+   "Kb5",
+   "Rb1+",
+   "Rb4"
+  ],
+  "final_fen": "8/1P2k3/8/1K6/1R6/8/8/1r6 b - - 13 7",
+  "key_move": "2.Rd4",
+  "prompt": "White to move. Black's king has been pushed away. Now prepare a shelter for your king.",
+  "hints": [
+   "Your king will soon be checked from behind by the black rook.",
+   "Put your rook on the fourth rank so it can block the checks later."
+  ],
+  "notes": {
+   "1.Rd1+": "First the rook drives Black's king one more file away.",
+   "2.Rd4": "Building the bridge: the rook goes to the fourth rank.",
+   "3.Kc7": "The king leaves b8. Now the black rook starts checking.",
+   "7.Rb4": "The bridge is complete: the rook blocks the check and the checks are over. The pawn will promote."
+  },
+  "explanation": "In the Lucena position the attacking king stands on the queening square. The plan is to cut off the defending king, put the rook on the fourth rank, step out with the king, and block the rook checks with your own rook — 'building a bridge'. Every rook endgame player needs to know this.",
+  "tags": [
+   "endgame",
+   "rook endgame",
+   "lucena",
+   "technique"
+  ],
+  "prerequisites": [
+   "passed_pawn"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "passed_pawn": {
+    "passed_pawns": [
+     "b7"
+    ],
+    "promotes": false,
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "lucena",
+   "source_license": "CC0-1.0 (textbook position)",
+   "reference": "Lucena position (Salvio 1634); line verified with Stockfish 19",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "13 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "passed_pawn"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Re1+, Rd3, Rd5, Rc1"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 447,
+    "key_move": {
+     "move": "Rd4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 447,
+     "best_move": "Re1+",
+     "best_cp": 446,
+     "alternatives": [
+      "Re1+",
+      "Rd3",
+      "Rd5",
+      "Rc1"
+     ],
+     "mate_after": false
+    }
+   },
+   "alternatives": [
+    "Re1+",
+    "Rd3",
+    "Rd5",
+    "Rc1"
+   ]
+  }
+ },
+ {
+  "id": "endgame_opposition_e_pawn",
+  "status": "verified",
+  "title": "Opposition: the only winning move",
+  "concept": "opposition",
+  "category": "endgames",
+  "difficulty": 3,
+  "description": "King and pawn against king. One king move wins; the natural-looking alternatives only draw.",
+  "start_fen": "8/8/4k3/8/8/3KP3/8/8 w - - 0 1",
+  "moves": [
+   "Ke4",
+   "Kf6",
+   "Kd5",
+   "Ke7",
+   "Ke5"
+  ],
+  "final_fen": "8/4k3/8/4K3/8/4P3/8/8 b - - 5 3",
+  "key_move": "1.Ke4",
+  "prompt": "White to move. Which king move wins?",
+  "hints": [
+   "Put your king in front of your pawn.",
+   "Make the kings face each other with one square between them — with Black to move."
+  ],
+  "notes": {
+   "1.Ke4": "The kings face each other on e4 and e6 and Black must move: White has the opposition. The black king has to give way.",
+   "2.Kd5": "White's king walks forward past the black king.",
+   "3.Ke5": "Opposition again (e5 against e7). White's king leads the way and the pawn will follow."
+  },
+  "explanation": "When two kings stand face to face with one square between them, the side that has to move must step aside. Here 1.Ke4 takes the opposition and wins; 1.Kd4 or a pawn move would let Black take the opposition instead and draw. In king-and-pawn endings, put the king in front of the pawn and fight for the opposition.",
+  "tags": [
+   "endgame",
+   "pawn endgame",
+   "opposition",
+   "king and pawn"
+  ],
+  "related": [
+   "passed_pawn"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "opposition": {
+    "move": "1.Ke4",
+    "kind": "direct opposition",
+    "kings": [
+     "e4",
+     "e6"
+    ],
+    "side_with_opposition": "white",
+    "side_to_move": "black"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "kpk-opposition-1",
+   "source_license": "CC0-1.0 (position found by engine search)",
+   "reference": "K+P vs K theory; Stockfish 19 shows 1.Ke4 as the only win",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opposition"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 565,
+    "key_move": {
+     "move": "Ke4",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 584,
+     "best_move": "Ke4",
+     "best_cp": 584,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "endgame_opposition_pawn_behind",
+  "status": "verified",
+  "title": "Opposition with the pawn behind the king",
+  "concept": "opposition",
+  "category": "endgames",
+  "difficulty": 3,
+  "description": "White's king must get in front of its pawn — and grab the opposition to do it.",
+  "start_fen": "8/8/8/4k3/8/3K4/4P3/8 w - - 0 1",
+  "moves": [
+   "Ke3",
+   "Kd5",
+   "Kf4",
+   "Ke6",
+   "Ke4"
+  ],
+  "final_fen": "8/8/4k3/8/4K3/8/4P3/8 b - - 5 3",
+  "key_move": "1.Ke3",
+  "prompt": "White to move. Only one move wins. Which?",
+  "hints": [
+   "Pushing the pawn now lets Black's king block it.",
+   "Face the black king on the same file, one square apart."
+  ],
+  "notes": {
+   "1.Ke3": "Opposition: e3 against e5, Black to move. Black can't keep the white king back.",
+   "2.Kf4": "White's king goes around the black king.",
+   "3.Ke4": "The opposition again. The pawn on e2 has plenty of spare moves to use later."
+  },
+  "explanation": "The pawn is safest behind its king: the king clears the way and the pawn follows. 1.Ke3 takes the opposition; after a pawn move instead, Black's king would reach the square in front of the pawn and draw.",
+  "tags": [
+   "endgame",
+   "pawn endgame",
+   "opposition"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "opposition": {
+    "move": "1.Ke3",
+    "kind": "direct opposition",
+    "kings": [
+     "e3",
+     "e5"
+    ],
+    "side_with_opposition": "white",
+    "side_to_move": "black"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "kpk-opposition-2",
+   "source_license": "CC0-1.0 (position found by engine search)",
+   "reference": "K+P vs K theory; Stockfish 19 shows 1.Ke3 as the only win",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "opposition"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 580,
+    "key_move": {
+     "move": "Ke3",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 581,
+     "best_move": "Ke3",
+     "best_cp": 581,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "endgame_rule_of_the_square",
+  "status": "verified",
+  "title": "The rule of the square",
+  "concept": "passed_pawn",
+  "concepts": [
+   "promotion"
+  ],
+  "category": "endgames",
+  "difficulty": 2,
+  "description": "Can Black's king catch the passed pawn? Count it out with the 'square'.",
+  "start_fen": "8/5k2/8/1P6/8/8/8/6K1 w - - 0 1",
+  "moves": [
+   "b6",
+   "Ke6",
+   "b7",
+   "Kd6",
+   "b8=Q+"
+  ],
+  "final_fen": "1Q6/8/3k4/8/8/8/8/6K1 b - - 0 3",
+  "key_move": "1.b6",
+  "prompt": "White to move. Win the race!",
+  "hints": [
+   "Black's king is outside the pawn's square.",
+   "Don't waste time: run with the pawn."
+  ],
+  "notes": {
+   "1.b6": "Imagine a square from the pawn to its promotion square (b6-b8-d8-d6). Black's king can't step into it — the pawn can't be caught.",
+   "3.b8=Q+": "The pawn promotes with check."
+  },
+  "explanation": "The rule of the square: draw a square from the pawn to its promotion square. If the enemy king can't step into that square with its move, it will never catch the pawn. Here 1.b6 is the only winning move — a king move would give Black time to get into the square.",
+  "tags": [
+   "endgame",
+   "passed pawn",
+   "rule of the square",
+   "promotion"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "passed_pawn": {
+    "passed_pawns": [
+     "b5"
+    ],
+    "promotes": true,
+    "side": "white"
+   },
+   "promotion": {
+    "move": "3.b8=Q+",
+    "square": "b8",
+    "promoted_to": "queen",
+    "side": "white"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "rule-of-the-square",
+   "source_license": "CC0-1.0 (position composed)",
+   "reference": "rule of the square; Stockfish 19 shows 1.b6 as the only win",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "passed_pawn, promotion"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "best"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 609,
+    "key_move": {
+     "move": "b6",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 586,
+     "best_move": "b6",
+     "best_cp": 586,
+     "alternatives": [],
+     "mate_after": false
+    }
+   }
+  }
+ },
+ {
+  "id": "endgame_kq_box_mate",
+  "status": "verified",
+  "title": "King and queen: box, approach, mate",
+  "concept": "queen_mate",
+  "category": "endgames",
+  "difficulty": 2,
+  "description": "The last phase of the queen mate: the queen cages the king on the back rank, the white king comes closer, and the queen mates.",
+  "start_fen": "3k4/8/8/3K4/8/8/8/7Q w - - 0 1",
+  "moves": [
+   "Qh7",
+   "Kc8",
+   "Kc6",
+   "Kd8",
+   "Qd7#"
+  ],
+  "final_fen": "3k4/3Q4/2K5/8/8/8/8/8 b - - 5 3",
+  "key_move": "1.Qh7",
+  "prompt": "White to move. First take away the seventh rank — without giving stalemate.",
+  "hints": [
+   "The black king is already on the edge. Keep it there.",
+   "Put the queen on the seventh rank, far from the king."
+  ],
+  "notes": {
+   "1.Qh7": "The queen takes the whole seventh rank. The king can only walk along the edge.",
+   "2.Kc6": "The white king comes closer. Black still has a square to move to, so this isn't stalemate.",
+   "3.Qd7#": "Checkmate: the queen checks, and the white king protects her."
+  },
+  "explanation": "King and queen always beat a lone king. The queen draws a box around the enemy king, your own king walks up to help, and the queen gives mate on the edge — protected by the king. The one danger is stalemate: always check that the enemy king still has a move.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "queen",
+   "technique"
+  ],
+  "related": [
+   "stalemate"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "queen_mate": {
+    "mated_side": "black",
+    "king": "d8",
+    "checkers": [
+     {
+      "piece": "queen",
+      "color": "white",
+      "square": "d7"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "d7"
+      }
+     },
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "c6"
+      }
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "d7"
+      }
+     },
+     {
+      "square": "c8",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "d7"
+      }
+     },
+     {
+      "square": "e8",
+      "covered_by": {
+       "piece": "queen",
+       "color": "white",
+       "square": "d7"
+      }
+     }
+    ],
+    "mating_move": "3.Qd7#",
+    "pattern": "king and queen mate"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "kqk-box",
+   "source_license": "CC0-1.0 (position composed; line from Stockfish 19)",
+   "reference": "basic K+Q vs K technique; line verified with Stockfish 19",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "queen_mate"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Kd6, Qa1, Qg1"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 9970,
+    "key_move": {
+     "move": "Qh7",
+     "category": "best",
+     "loss_cp": 0,
+     "eval_cp": 9970,
+     "best_move": "Kd6",
+     "best_cp": 9970,
+     "alternatives": [
+      "Kd6",
+      "Qa1",
+      "Qg1"
+     ],
+     "mate_after": true
+    }
+   },
+   "alternatives": [
+    "Kd6",
+    "Qa1",
+    "Qg1"
+   ]
+  }
+ },
+ {
+  "id": "endgame_kr_opposition_mate",
+  "status": "verified",
+  "title": "King and rook: take the opposition, then mate",
+  "concept": "rook_mate",
+  "concepts": [
+   "opposition"
+  ],
+  "category": "endgames",
+  "difficulty": 2,
+  "description": "The rook can only mate when the kings face each other. White's king steps into the opposition first.",
+  "start_fen": "3k4/8/4K3/8/8/8/8/7R w - - 0 1",
+  "moves": [
+   "Kd6",
+   "Ke8",
+   "Rf1",
+   "Kd8",
+   "Rf8#"
+  ],
+  "final_fen": "3k1R2/8/3K4/8/8/8/8/8 b - - 5 3",
+  "key_move": "1.Kd6",
+  "prompt": "White to move. Get your king into the right place before using the rook.",
+  "hints": [
+   "The rook mates on the back rank only when your king guards the squares in front of the enemy king.",
+   "Put your king directly opposite Black's king."
+  ],
+  "notes": {
+   "1.Kd6": "The kings now face each other on d6 and d8, and it's Black's move: White has the opposition.",
+   "2.Rf1": "A waiting move. The rook will come to the eighth rank next.",
+   "3.Rf8#": "Checkmate: the rook checks along the eighth rank, and the white king guards c7, d7 and e7."
+  },
+  "explanation": "With king and rook you mate on the edge. The rook gives check along the edge, and your king must stand opposite the enemy king to cover the squares in front of it. That is why the kings meet in opposition first.",
+  "tags": [
+   "endgame",
+   "checkmate",
+   "rook",
+   "technique",
+   "opposition"
+  ],
+  "presentation_modes": [
+   "demonstration",
+   "interactive",
+   "hint",
+   "practice",
+   "deep_dive"
+  ],
+  "facts": {
+   "rook_mate": {
+    "mated_side": "black",
+    "king": "d8",
+    "checkers": [
+     {
+      "piece": "rook",
+      "color": "white",
+      "square": "f8"
+     }
+    ],
+    "escape_squares": [
+     {
+      "square": "c7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "d6"
+      }
+     },
+     {
+      "square": "d7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "d6"
+      }
+     },
+     {
+      "square": "e7",
+      "covered_by": {
+       "piece": "king",
+       "color": "white",
+       "square": "d6"
+      }
+     },
+     {
+      "square": "c8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "f8"
+      }
+     },
+     {
+      "square": "e8",
+      "covered_by": {
+       "piece": "rook",
+       "color": "white",
+       "square": "f8"
+      }
+     }
+    ],
+    "mating_move": "3.Rf8#",
+    "pattern": "king and rook mate"
+   },
+   "opposition": {
+    "move": "1.Kd6",
+    "kind": "direct opposition",
+    "kings": [
+     "d6",
+     "d8"
+    ],
+    "side_with_opposition": "white",
+    "side_to_move": "black"
+   }
+  },
+  "source": {
+   "source_type": "endgame_theory",
+   "source_id": "krk-opposition",
+   "source_license": "CC0-1.0 (position composed; line from Stockfish 19)",
+   "reference": "basic K+R vs K technique; line verified with Stockfish 19",
+   "import_date": "2026-09-25"
+  },
+  "verification": {
+   "status": "verified",
+   "pipeline_version": 1,
+   "method": "seed_builder",
+   "checked": [
+    "fen",
+    "position",
+    "moves",
+    "structure",
+    "concept",
+    "engine",
+    "solution",
+    "explanation",
+    "duplicate"
+   ],
+   "stages": [
+    {
+     "name": "fen",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "position",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "moves",
+     "outcome": "pass",
+     "detail": "5 legal moves"
+    },
+    {
+     "name": "structure",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "concept",
+     "outcome": "pass",
+     "detail": "rook_mate, opposition"
+    },
+    {
+     "name": "engine",
+     "outcome": "pass",
+     "detail": "endgame_win"
+    },
+    {
+     "name": "solution",
+     "outcome": "pass",
+     "detail": "also good: Rc1, Rh7"
+    },
+    {
+     "name": "explanation",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "name": "duplicate",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ],
+   "verified_at": "2026-09-25",
+   "engine": {
+    "outcome": "pass",
+    "profile": "endgame_win",
+    "reasons": [],
+    "depth": 14,
+    "start_eval": 9980,
+    "key_move": {
+     "move": "Kd6",
+     "category": "best",
+     "loss_cp": 10,
+     "eval_cp": 9970,
+     "best_move": "Rc1",
+     "best_cp": 9980,
+     "alternatives": [
+      "Rc1",
+      "Rh7"
+     ],
+     "mate_after": true
+    }
+   },
+   "alternatives": [
+    "Rc1",
+    "Rh7"
+   ]
+  }
+ }
+]
