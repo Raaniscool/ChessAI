@@ -227,7 +227,7 @@ node --test frontend\tests\*.test.mjs
 .venv\Scripts\python.exe -m compileall -q backend\app backend\tests
 ```
 
-Run focused tests first, then the relevant backend and frontend suites, then broader checks where time/environment permit. Engine/host/model-dependent tests can have different prerequisites; record what was actually run. At this handoff, no test suite was run for the documentation-only update. An earlier full pytest/frontend run in this workspace was interrupted around 19%; do not report it as passed. A prior `compileall` did pass, but it is not a current test run.
+Run focused tests first, then the relevant backend and frontend suites, then broader checks where time/environment permit. Engine/host/model-dependent tests can have different prerequisites; record what was actually run. For the current integration snapshot, `python -m compileall -q backend/app backend/tests` passed; `node --test frontend/tests/*.test.mjs` completed with 118 tests (108 passed, 10 skipped, 0 failed); all 74 tracked JSON files parsed; and `git diff --check` passed. The backend pytest suite was not run because `pytest` is not installed in the available interpreter. An earlier full pytest attempt in this workspace was interrupted around 19%; it is not counted as a pass.
 
 For a local app launch, port **8000 is explicitly rejected by the user**. Do not launch on 8000. The last chosen port was 8080; confirm the current run configuration and bind address before starting a server. Keep the app's API/UI same-origin and the preview host/origin allowed.
 
