@@ -30,6 +30,10 @@ test("resolveLine plays the moves from the first position where they are legal",
   assert.equal(resolveLine(["Nc7+", "Kf8", "Nxa8", "Qh1"], [FORK], Chess), null)
 })
 
+test("a missing line FEN never makes the line play from the standard starting board", () => {
+  assert.equal(resolveLine(["e4"], [undefined, null, ""], Chess), null)
+})
+
 test("bare squares are not moves to play", () => {
   assert.ok(isBareSquare("f7") && isBareSquare("e5"))
   assert.ok(!isBareSquare("Nc7+") && !isBareSquare("exd5") && !isBareSquare("O-O"))

@@ -2,8 +2,10 @@
 importers and data files, and the shipped seed library itself."""
 from __future__ import annotations
 
+import importlib.util
 import json
 import threading
+from pathlib import Path
 
 import chess
 import pytest
@@ -15,6 +17,13 @@ from app.knowledge.positions import replay
 from app.knowledge.schema import CATEGORIES
 from app.knowledge.sources import curated, lichess_openings, lichess_puzzles
 from tests.knowledge_helpers import KNOWLEDGE_DATA, FakeEngine, make_library
+
+# the seed builder owns the balance cap; the library test asserts against that same number
+spec = importlib.util.spec_from_file_location(
+    "build_knowledge_seed", Path(__file__).resolve().parents[2] / "scripts" / "build_knowledge_seed.py")
+seed_builder = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(seed_builder)
+MAX_PER_CONCEPT = seed_builder.MAX_PER_CONCEPT
 
 
 @pytest.fixture(scope="module")
@@ -204,9 +213,10 @@ REQUIRED = [
 def test_seed_library_loads_cleanly(seed):
     stats = seed.stats()
     assert stats["load_errors"] == 0
-    # The library was enlarged on request (a bigger Lichess pool, ~10 per tactic); the upper
-    # bound still catches a runaway build that stops filtering.
-    assert 200 <= stats["verified"] <= 600
+    # The library was enlarged twice on request (a bigger Lichess pool, ~10 per tactic; then the
+    # middlegame deepening, ~190 more positions of the same sources under MAX_PER_CONCEPT); the
+    # upper bound still catches a runaway build that stops filtering.
+    assert 200 <= stats["verified"] <= 900
     assert set(stats["by_category"]) == set(CATEGORIES)
 
 
@@ -214,10 +224,87 @@ def test_seed_library_is_balanced(seed):
     """Larger, not lopsided: no concept dominates, and the Lichess tactics have real depth."""
     from collections import Counter
     per = Counter(ex.concept for ex in seed.verified())
-    assert max(per.values()) <= 15, per.most_common(3)
+    assert max(per.values()) <= MAX_PER_CONCEPT, per.most_common(3)
     for concept in ("fork", "knight_fork", "absolute_pin", "skewer", "discovered_attack", "back_rank_mate",
                     "smothered_mate", "mate_in_one", "hanging_piece", "removing_defender"):
         assert per[concept] >= 8, (concept, per[concept])
+
+
+def test_the_pool_deepening_only_proposes_the_thin_phase(tmp_path):
+    """lichess_puzzles.deepening_candidates: the same candidates as the normal importers, filtered
+    to the requested phase and ordered thin-concept-first. No engine, no new content."""
+    from app.analysis.analyzer import phase_of
+    from app.knowledge.sources import lichess_puzzles
+
+    empty = make_library(tmp_path)
+    with pytest.raises(ValueError):
+        lichess_puzzles.deepening_candidates(empty, "blitz")
+    middlegame = lichess_puzzles.deepening_candidates(empty, "middlegame", per_concept=None, exclude=set())
+    ids = [c["source"]["source_id"] for c in middlegame]
+    assert len(middlegame) > 100                          # the local pools still hold this many
+    assert len(ids) == len(set(ids))                      # one position per source id
+    again = lichess_puzzles.deepening_candidates(empty, "middlegame", per_concept=None, exclude=set())
+    assert ids == [c["source"]["source_id"] for c in again]                  # deterministic order
+    for cand in middlegame:
+        rep = replay(cand["start_fen"], list(cand["moves"]))
+        assert phase_of(rep.boards[rep.ply(cand["key_move"])]) == "middlegame"   # the actual phase, not the label
+        assert cand["concept"] in empty.concepts and empty.validator_for(cand["concept"])
+        assert (cand.get("source") or {}).get("source_license") == "CC0-1.0"
+        assert cand["category"] in CATEGORIES
+    per_concept = lichess_puzzles.deepening_candidates(empty, "middlegame", per_concept=2, exclude=set())
+    counts = {}
+    for cand in per_concept:
+        counts[cand["concept"]] = counts.get(cand["concept"], 0) + 1
+    assert counts and max(counts.values()) <= 2
+    excluded = lichess_puzzles.deepening_candidates(empty, "middlegame", per_concept=None, exclude=set(ids[:50]))
+    assert len(excluded) == len(middlegame) - 50          # exclude = already in the library
+    opening = lichess_puzzles.deepening_candidates(empty, "opening", per_concept=None, exclude=set())
+    assert len(opening) < len(middlegame)                 # the local sources are almost out of these
+    for cand in opening:
+        rep = replay(cand["start_fen"], list(cand["moves"]))
+        assert phase_of(rep.boards[rep.ply(cand["key_move"])]) == "opening"
+
+
+def test_the_deepened_middlegame_is_verified_and_actually_a_middlegame(seed):
+    """The deepened positions came through the normal pipeline: verified entries of the seed
+    library, real Lichess games (CC0), and their key position is a middlegame — phase computed with
+    the analyzer's own rule, not from the source they came from."""
+    from app.analysis.analyzer import phase_of
+
+    deepened = [e for e in seed.verified() if "deepening" in e.tags]
+    assert len(deepened) >= 100, len(deepened)
+    for e in deepened:
+        assert e.status == "verified" and e.tier == "global" and e.key_ply is not None
+        assert e.source["source_type"] == "lichess_puzzle" and e.source["source_license"] == "CC0-1.0"
+        assert e.source["source_url"].startswith("https://lichess.org/training/")
+        assert e.path.endswith(("lichess_midgame.json", "lichess_opening.json"))
+        assert e.concept in seed.concepts and seed.validator_for(e.concept)
+        phase = phase_of(e.replay().boards[e.key_ply])
+        assert phase == ("middlegame" if "middlegame" in e.tags else "opening"), (e.id, phase)
+    middlegame = [e for e in seed.verified() if e.key_ply is not None
+                  and phase_of(e.replay().boards[e.key_ply]) == "middlegame"]
+    endgame = [e for e in seed.verified() if e.key_ply is not None
+               and phase_of(e.replay().boards[e.key_ply]) == "endgame"]
+    # The point of the deepening: the middlegame is no longer a fraction of the endgame material
+    # (before it was 142 against 305; some entries are endgame-phase library basics that never
+    # reach the Training pool, which is a little more middlegame-heavy still).
+    assert len(middlegame) >= 250 and len(middlegame) >= 0.85 * len(endgame), (len(middlegame), len(endgame))
+
+
+def test_opening_stays_theory_first_with_the_ideas_it_can_verify(seed):
+    """Opening training is mostly verified theory positions with no hidden idea (they measure play,
+    not recognition); the idea-bearing ones are verified puzzles whose key position is an opening
+    position. The Lichess pools cannot supply more of those (--deepen opening verified none)."""
+    from app.analysis.analyzer import phase_of
+
+    theory = [e for e in seed.verified() if e.category == "openings"]
+    assert len(theory) == 10 and all(e.key_ply is None for e in theory)     # named lines, no puzzle
+    ideas = [e for e in seed.verified() if e.key_ply is not None
+             and phase_of(e.replay().boards[e.key_ply]) == "opening"]
+    assert 10 <= len(ideas) <= 40
+    for e in ideas:
+        assert e.status == "verified" and seed.validator_for(e.concept)
+        assert e.accepted or (e.verification or {}).get("engine")
 
 
 def test_every_tactic_has_room_for_a_stronger_learner(seed):

@@ -6,6 +6,7 @@ import chess
 import pytest
 
 from app.teacher.library_feedback import library_feedback, sentences, strip_said
+from tests.session_helpers import confirm_advance
 
 
 @pytest.fixture()
@@ -31,7 +32,7 @@ def _to_exercise(c, sid, step):
     seen = []
     while step["type"] != "exercise":
         seen.append(step)
-        step = c.post(f"/api/sessions/{sid}/advance").json()["step"]
+        step = confirm_advance(c, sid)["step"]
     return step, seen
 
 
@@ -63,11 +64,11 @@ def test_correct_move_gets_the_stored_explanation_instantly_and_it_is_not_repeat
 
     # the closing explanation of this example doesn't repeat what the feedback just said
     said = {s.strip().lower() for s in sentences(res["explanation"])}
-    nxt = c.post(f"/api/sessions/{sid}/advance").json()
+    nxt = confirm_advance(c, sid)
     while nxt.get("step") and not (nxt["step"]["type"] == "teach" and nxt["step"].get("example", {}).get("id") == example.id):
         if nxt["step"]["type"] == "exercise":
             break
-        nxt = c.post(f"/api/sessions/{sid}/advance").json()
+        nxt = confirm_advance(c, sid)
     if nxt.get("step") and nxt["step"]["type"] == "teach":
         closing = {s.strip().lower() for s in sentences(nxt["step"]["text"])}
         assert not (closing & said) or len(closing) == 1

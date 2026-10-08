@@ -72,13 +72,13 @@ def test_glossary_matching_prefers_the_longest_alias():
 # ------------------------------------------------------------------ resolving the request
 def test_resolve_glossary_term_with_a_broader_concept():
     res = missing.resolve("teach me calculation", get_knowledge(), get_glossary(), use_qwen=False)
-    assert res.term == "Calculation" and res.text_source == "glossary" and res.broader == "tactics"
+    assert res.term == "Calculation" and res.text_source == "basic_explanations" and res.broader == "tactics"
     assert res.concept is None and res.via == "text"
 
 
 def test_resolve_concept_without_examples_finds_the_nearest_broader_one():
     res = missing.resolve("teach me relative pins", get_knowledge(), get_glossary(), use_qwen=False)
-    assert res.concept == "relative_pin" and res.broader == "pin" and res.text_source == "concept"
+    assert res.concept == "relative_pin" and res.broader == "pin" and res.text_source == "basic_explanations"
 
 
 def test_resolve_nonsense_is_none_without_qwen():

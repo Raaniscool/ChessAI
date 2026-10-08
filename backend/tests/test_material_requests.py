@@ -427,8 +427,9 @@ def test_the_api_reports_invalid_lesson_instead_of_completion(monkeypatch):
 
         def completion_summary(self, session):
             raise AssertionError("an invalid lesson is never summarised as completed")
-    monkeypatch.setattr(main, "get_manager", lambda: Manager())
-    res = TestClient(main.app).post("/api/sessions/abc/advance").json()
+    manager = Manager()
+    monkeypatch.setattr(main, "get_manager", lambda: manager)
+    res = main._advance_response(manager, manager.get("abc"), manager.advance(manager.get("abc")))
     assert res["status"] == INVALID and res["completion_text"] is None
     assert "Two rooks against a queen" in res["message"]
 

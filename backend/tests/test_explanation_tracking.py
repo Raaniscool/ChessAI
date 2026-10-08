@@ -15,6 +15,7 @@ from app.learner.help import MIN_EXPLAINED, TARGET_EASE, is_help_request, signal
 from app.learner.views import concept_view, lesson_shape
 from app.session import get_manager
 from tests.test_api import _fresh_state, client  # noqa: F401  (fixtures)
+from tests.session_helpers import confirm_advance
 
 LIB = get_knowledge()
 
@@ -251,7 +252,7 @@ def test_help_requests_in_chat():
 # ------------------------------------------------------------------ the lesson API, end to end
 def _to_exercise(client, sid, step):  # noqa: F811
     while step["type"] != "exercise":
-        r = client.post(f"/api/sessions/{sid}/advance").json()
+        r = confirm_advance(client, sid)
         assert not r["completed"]
         step = r["step"]
     return step
@@ -271,7 +272,7 @@ def _solve(client, sid):  # noqa: F811
             assert res["accepted"], res
             if any(o.example_id == key for o in session.outcomes):
                 return res, key
-        r = client.post(f"/api/sessions/{sid}/advance").json()
+        r = confirm_advance(client, sid)
         assert not r["completed"]
     raise AssertionError("the example never resolved")
 

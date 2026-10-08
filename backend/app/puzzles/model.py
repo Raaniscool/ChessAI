@@ -6,7 +6,11 @@ verified data:
 
 - `fen` / `side_to_move`: the board at the key move (replayed with python-chess)
 - `solution`: the moves from there on (learner moves and the opponent's replies)
-- `accepted_first`: moves accepted at the first step (the key move + accepted alternatives)
+- `accepted_first`: the moves the first step accepts — the key move, the entry's verified
+  alternatives **and** the moves the puzzle profile itself accepts (another mating move, a
+  move the engine rates as equally good). This is the same list the solver judges with
+  (`steps[0].accepted`), so nothing that counts as "solved" in the UI can be judged as a
+  miss elsewhere (e.g. Training's hidden-idea test)
 - `uniqueness`: "unique" when Stockfish found no equally good alternative at any learner
   move, "multiple" when it did (those moves are accepted), "unchecked" when the entry has
   no engine record
@@ -15,6 +19,8 @@ verified data:
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+
+import chess
 
 TYPES = ("tactic", "checkmate", "calculation", "defense", "endgame", "opening", "mistake_correction")
 # concepts whose puzzles ask the learner to *stop* something (find the defence)
@@ -109,6 +115,18 @@ def difficulty_of(rating: int) -> int:
     return next((label for top, label in RATING_BANDS if rating < top), 5)
 
 
+def _accepted_san(board, step) -> list[str]:
+    """The SAN of the moves a step accepts (its `accepted` list is UCI), skipping any that
+    don't replay on `board` (a stale engine record never breaks a puzzle)."""
+    out = []
+    for uci in (getattr(step, "accepted", None) or []):
+        try:
+            out.append(board.san(chess.Move.from_uci(uci)))
+        except ValueError:
+            continue
+    return out
+
+
 def accepted_by_ply(example, ply: int) -> dict[int, list[str]]:
     """{ply: [SAN]} moves verified as equally good at each learner move."""
     engine = (example.verification or {}).get("engine") or {}
@@ -151,6 +169,11 @@ def from_example(example, library=None, profiles=None) -> Puzzle | None:
         return None
     solution = tuple(prof.solution)
     learner_moves = len(prof.steps)
+    # The first step's accepted moves are the truth the solver judges with (puzzle-solver.js):
+    # the key move, the verified alternatives, and the other moves that solve the position
+    # (an equally good engine move, or any other mate). A move the UI calls "solved" must never
+    # be judged as a miss anywhere else — Training's hidden-idea test reads this same list.
+    accepted_first = tuple(dict.fromkeys([solution[0], *_accepted_san(board, prof.steps[0] if prof.steps else None)]))
     concept = example.concept
     meta = (example.source or {}).get("personal") or {}
     name = library.concepts[concept].name if library is not None and concept in library.concepts else concept
@@ -166,7 +189,7 @@ def from_example(example, library=None, profiles=None) -> Puzzle | None:
         side_to_move="white" if board.turn else "black",
         solution=solution,
         learner_moves=learner_moves,
-        accepted_first=tuple(dict.fromkeys([solution[0], *example.accepted])),
+        accepted_first=accepted_first,
         uniqueness=uniqueness_of(example.verification, list(example.accepted)),
         main_idea=example.title or name,
         required_skill=concept,

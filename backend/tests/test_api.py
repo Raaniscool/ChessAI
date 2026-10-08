@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from app.engine import Classification, MoveFeedback, Score, set_engine
 from app.lessons import get_library
 from app.session import SessionManager, set_manager
+from tests.session_helpers import confirm_advance
 
 
 class FakeEngine:
@@ -75,6 +76,35 @@ def test_unknown_lesson_404(client):
     assert client.post("/api/lessons/nope/start").status_code == 404
 
 
+def test_prepared_advance_does_not_progress_until_confirmed(client):
+    started = client.post("/api/lessons/italian_01/start").json()
+    sid = started["session_id"]
+    before = client.get(f"/api/sessions/{sid}").json()
+    preview = client.post(f"/api/sessions/{sid}/advance/prepare").json()
+    assert preview["completed"] is False
+    assert preview["step"]["index"] == before["step"]["index"] + 1
+
+    still_before = client.get(f"/api/sessions/{sid}").json()
+    assert still_before["step"]["index"] == before["step"]["index"]
+    assert still_before["board_fen"] == before["board_fen"]
+    legacy = client.post(f"/api/sessions/{sid}/advance")
+    assert legacy.status_code == 409
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["index"] == before["step"]["index"]
+
+    stale = client.post(f"/api/sessions/{sid}/advance/confirm", json={
+        "source_index": preview["source_index"] + 1, "source_fen": preview["source_fen"],
+    })
+    assert stale.status_code == 409
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["index"] == before["step"]["index"]
+
+    confirmed = client.post(f"/api/sessions/{sid}/advance/confirm", json={
+        "source_index": preview["source_index"], "source_fen": preview["source_fen"],
+    })
+    assert confirmed.status_code == 200
+    assert confirmed.json()["step"]["index"] == preview["step"]["index"]
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["index"] == preview["step"]["index"]
+
+
 def test_full_lesson_progression(client):
     # start → teach
     res = client.post("/api/lessons/italian_01/start")
@@ -87,25 +117,35 @@ def test_full_lesson_progression(client):
 
     # cannot skip an exercise
     # advance → demonstrate
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "demonstrate"
     assert step["moves"] == ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4"]
     assert len(step["comments"]) == 5
 
     # advance → exercise 1 (White to play Bc4)
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "exercise" and step["side"] == "white"
     assert step["hints_total"] >= 3
 
     # advancing before solving → 409
     assert client.post(f"/api/sessions/{sid}/advance").status_code == 409
 
+    # A legal move against a stale but otherwise valid board is rejected before grading.
+    stale_board = chess.Board(step["board"]["fen"])
+    stale_board.push_san("d4")
+    stale = client.post(f"/api/sessions/{sid}/move", json={
+        "uci": "f1c4", "expected_fen": stale_board.fen(en_passant="fen"),
+    })
+    assert stale.status_code == 409
+    current = client.get(f"/api/sessions/{sid}").json()
+    assert current["board_fen"] == step["board"]["fen"]
+
     # illegal move → 400
     res = client.post(f"/api/sessions/{sid}/move", json={"uci": "e9e5"})
     assert res.status_code == 400
 
     # legal but not the lesson's move → rejected, position resets
-    res = client.post(f"/api/sessions/{sid}/move", json={"uci": "d2d4"})
+    res = client.post(f"/api/sessions/{sid}/move", json={"uci": "d2d4", "expected_fen": step["board"]["fen"]})
     body = res.json()
     assert body["accepted"] is False
     assert body["reset_fen"]
@@ -117,21 +157,24 @@ def test_full_lesson_progression(client):
     assert "hint" in hint and hint["index"] == 1
 
     # the Italian bishop move → accepted
-    res = client.post(f"/api/sessions/{sid}/move", json={"uci": "f1c4"})
+    res = client.post(f"/api/sessions/{sid}/move", json={"uci": "f1c4", "expected_fen": step["board"]["fen"]})
     body = res.json()
     assert body["accepted"] is True and body["continue_text"]
+    expected_after = chess.Board(step["board"]["fen"])
+    expected_after.push_uci("f1c4")
+    assert chess.Board(body["fen"]).board_fen() == expected_after.board_fen()
 
     # advance → exercise 2 (Black to play Nf6/Bc5)
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "exercise" and step["side"] == "black"
 
     res = client.post(f"/api/sessions/{sid}/move", json={"uci": "g8f6"})
     assert res.json()["accepted"] is True
 
     # advance → closing teach → advance → completed
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "teach"
-    res = client.post(f"/api/sessions/{sid}/advance").json()
+    res = confirm_advance(client, sid)
     assert res["completed"] is True
     assert res["completion_text"]
 
@@ -140,14 +183,28 @@ def test_full_lesson_progression(client):
     assert "italian_01" in progress["completed_lessons"]
 
 
-def test_reveal_solution_unlocks_progression(client):
+def test_reveal_solution_unlocks_only_after_the_board_is_confirmed(client):
     sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
     for _ in range(2):  # teach → demonstrate → exercise
-        step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
-    rev = client.post(f"/api/sessions/{sid}/reveal").json()
-    assert rev["accepted"] is True and "Bc4" in rev["accepted_moves"]
+        step = confirm_advance(client, sid)["step"]
+    preview = client.post(f"/api/sessions/{sid}/reveal/prepare").json()
+    assert preview["accepted"] is False and "Bc4" in preview["accepted_moves"]
+    assert preview["uci"] == "f1c4"
+    before = client.get(f"/api/sessions/{sid}").json()
+    assert before["step"]["accepted"] is False
+    legacy_preview = client.post(f"/api/sessions/{sid}/reveal").json()
+    assert legacy_preview["accepted"] is False
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["accepted"] is False
+
+    stale = client.post(f"/api/sessions/{sid}/reveal/confirm", json={"expected_fen": chess.Board().fen()})
+    assert stale.status_code == 409
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["accepted"] is False
+
+    confirmed = client.post(f"/api/sessions/{sid}/reveal/confirm", json={"expected_fen": preview["fen"]})
+    assert confirmed.json()["accepted"] is True and "Bc4" in confirmed.json()["accepted_moves"]
+    assert client.get(f"/api/sessions/{sid}").json()["step"]["accepted"] is True
     # now advancing is allowed
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "exercise"
 
 
@@ -163,7 +220,7 @@ def test_chat_uses_fallback_teacher_offline(client):
 
 def test_session_resume(client):
     sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
-    client.post(f"/api/sessions/{sid}/advance")
+    confirm_advance(client, sid)
     data = client.get(f"/api/sessions/{sid}").json()
     assert data["step"]["type"] == "demonstrate"
     assert data["status"] == "active"
@@ -172,5 +229,5 @@ def test_session_resume(client):
 def test_step_payload_says_what_comes_next(client):
     """The UI labels Continue ("Your turn: practise it") from next_type."""
     sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
-    step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+    step = confirm_advance(client, sid)["step"]
     assert step["type"] == "demonstrate" and step["next_type"] == "exercise"

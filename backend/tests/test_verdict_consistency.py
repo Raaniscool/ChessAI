@@ -12,6 +12,7 @@ from app.teacher.base import LessonContext
 from app.teacher.prompts import build_move_feedback_messages
 
 from tests.test_api import FakeEngine
+from tests.session_helpers import confirm_advance
 
 ITALIAN_W = "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"
 
@@ -103,7 +104,7 @@ def client():
 def _to_first_exercise(client):
     sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
     for _ in range(2):  # teach → demonstrate → exercise (White to play Bc4)
-        client.post(f"/api/sessions/{sid}/advance")
+        confirm_advance(client, sid)
     return sid
 
 

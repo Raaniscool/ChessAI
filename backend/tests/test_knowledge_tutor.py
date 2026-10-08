@@ -26,6 +26,7 @@ from app.teacher import qwen as qwen_mod
 from app.teacher.prompts import build_chat_messages, build_move_feedback_messages
 
 from tests.test_api import FakeEngine
+from tests.session_helpers import confirm_advance, confirm_reveal
 from tests.test_streaming import FakeStream, qwen_on, sse  # noqa: F401  (qwen_on is a fixture)
 
 UNTRUSTED = ("candidate", "verifying", "needs_review", "rejected", "deprecated")
@@ -362,7 +363,7 @@ def _knowledge_plan(client, goal="Teach me the back rank mate", **extra):
 
 def _advance_to_exercise(client, sid, step):
     while step["type"] != "exercise":
-        step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+        step = confirm_advance(client, sid)["step"]
     return step
 
 
@@ -463,8 +464,8 @@ def _to_explanation_step(client, sid, step):
     """Solve exercises (via reveal) until a teach step that may be explained."""
     while not (step["type"] == "teach" and step.get("example", {}).get("explainable")):
         if step["type"] == "exercise":
-            client.post(f"/api/sessions/{sid}/reveal")
-        step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+            confirm_reveal(client, sid)
+        step = confirm_advance(client, sid)["step"]
     return step
 
 
@@ -529,8 +530,8 @@ def test_completing_a_knowledge_lesson_records_usage(client):
     sid, step = start["session_id"], start["step"]
     while True:
         if step["type"] == "exercise":
-            client.post(f"/api/sessions/{sid}/reveal")
-        res = client.post(f"/api/sessions/{sid}/advance").json()
+            confirm_reveal(client, sid)
+        res = confirm_advance(client, sid)
         if res["completed"]:
             break
         step = res["step"]
@@ -576,3 +577,254 @@ def test_plan_lesson_titles_are_distinct():
     other = [{"title": "Forks"}, {"title": "Forks: practice"}]
     _distinct_titles(other, existing, "Forks")
     assert [lesson["title"] for lesson in other] == ["Forks: more examples", "Forks: practice"]
+
+
+def test_first_greeting_is_conversation_not_a_lesson(client):
+    plans_before = client.get("/api/plans").json()["plans"]
+    response = client.post("/api/coach/route", json={"message": "hi"})
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] == "greeting"
+    assert "lesson" in data["reply"].lower()
+    from app.session import get_manager
+    assert get_manager()._sessions == {}
+    assert client.get("/api/plans").json()["plans"] == plans_before
+
+
+def test_coach_route_fast_greeting_skips_knowledge_lookup(client, monkeypatch):
+    def no_lookup(*args, **kwargs):
+        raise AssertionError("a greeting should not initialize or search the Knowledge Library")
+
+    monkeypatch.setattr("app.knowledge.answers.quick_answer", no_lookup)
+    response = client.post("/api/coach/route", json={"message": "hi"})
+    assert response.status_code == 200, response.text
+    assert response.json()["action"] == "greeting"
+    assert response.json()["source"] == "fast"
+
+
+def test_coach_route_uses_structured_lesson_state_for_status_questions_before_lookup(client, monkeypatch):
+    started = client.post("/api/lessons/italian_01/start").json()
+
+    def no_model(*args, **kwargs):
+        raise AssertionError("a direct lesson-state question should not make a route-model call")
+
+    def no_lookup(*args, **kwargs):
+        raise AssertionError("a lesson-state question does not need a knowledge lookup")
+
+    monkeypatch.setattr("app.planner.intent.conversation._semantic_reading", no_model)
+    monkeypatch.setattr("app.knowledge.answers.quick_answer", no_lookup)
+    response = client.post("/api/coach/route", json={
+        "message": "What is our lesson goal?", "session_id": started["session_id"],
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] == "lesson_question" and data["source"] == "fast"
+    assert data["topic"] == started["learning_state"]["topic"]
+    assert data["preserve_context"] is True
+
+
+def test_coach_route_skips_semantic_classifier_for_non_mutating_lesson_question(client, monkeypatch):
+    started = client.post("/api/lessons/italian_01/start").json()
+
+    def no_model(*args, **kwargs):
+        raise AssertionError("a non-mutating lesson question should proceed to one answer stream")
+
+    monkeypatch.setattr("app.planner.intent.conversation._semantic_reading", no_model)
+    response = client.post("/api/coach/route", json={
+        "message": "Why do bishops sometimes beat knights in open positions?",
+        "session_id": started["session_id"],
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] == "lesson_question" and data["source"] == "fast"
+    assert data["topic"] == started["learning_state"]["topic"]
+    assert data["preserve_context"] is True and data["requires_engine"] is False
+
+
+def test_coach_route_returns_and_records_verified_quick_answer_in_one_request(client):
+    started = client.post("/api/lessons/italian_01/start").json()
+    session_id = started["session_id"]
+    topic = started["learning_state"]["topic"]
+    response = client.post("/api/coach/route", json={
+        "message": "What's a pin?", "session_id": session_id,
+    })
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["action"] == "explanation" and data["source"] == "quick_answer"
+    assert data["quick_answer"]["term"]
+
+    from app.session import get_manager
+    session = get_manager().get(session_id)
+    assert session.transcript[-2] == {"role": "user", "content": "What's a pin?"}
+    assert session.transcript[-1]["role"] == "assistant"
+    assert session.learning_state.topic == topic
+
+
+def test_lesson_exposes_structured_state_with_only_an_authoritative_board_reference(client):
+    started = client.post("/api/lessons/italian_01/start", json={"history": [
+        {"role": "user", "content": "I prefer short explanations."},
+        {"role": "assistant", "content": "Got it; I’ll keep the lesson concise."},
+    ]}).json()
+    state = started["learning_state"]
+    assert state["topic"]
+    assert state["mode"] in {"lesson", "practice"}
+    assert state["stage"] in {"teaching", "demonstration", "practice"}
+    assert state["objective"] and state["difficulty"]
+    assert state["progress"]["current_step"] == 1
+    assert state["progress"]["total_steps"] >= 1
+    assert state["relevant_context"] == [
+        "user: I prefer short explanations.", "assistant: Got it; I’ll keep the lesson concise."]
+    assert state["board_state_ref"] == {
+        "kind": "session_board", "session_id": started["session_id"], "authority": "SessionManager"}
+    assert "fen" not in state and "board_fen" not in state
+
+    restored = client.get(f"/api/sessions/{started['session_id']}").json()
+    assert restored["learning_state"] == state
+    from app.session import get_manager
+    session = get_manager().get(started["session_id"])
+    assert restored["board_fen"] == session.board.fen(en_passant="fen")
+
+
+def test_temporary_definition_is_recorded_without_replacing_lesson_state(client):
+    started = client.post("/api/lessons/italian_01/start").json()
+    session_id = started["session_id"]
+    topic = started["learning_state"]["topic"]
+    answer = client.post("/api/knowledge/answer", json={
+        "message": "What's a pin?", "session_id": session_id,
+    }).json()["answer"]
+    assert answer and answer["term"]
+
+    from app.session import get_manager
+    session = get_manager().get(session_id)
+    assert session.transcript[-2] == {"role": "user", "content": "What's a pin?"}
+    assert session.learning_state.topic == topic
+    assert any("What's a pin?" in item for item in session.learning_state.relevant_context)
+
+
+def test_current_board_question_uses_session_manager_board_facts(client, monkeypatch):
+    from app.session import get_manager
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    session = get_manager().get(started["session_id"])
+    before_fen = session.board.fen(en_passant="fen")
+    seen = {}
+
+    def fake_chat(_teacher, _message, context, _history):
+        seen["context"] = context
+        return "The board facts are ready.", "fallback"
+
+    monkeypatch.setattr("app.teacher.chat_or_fallback", fake_chat)
+    response = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "Whose move is it on this board?",
+        "intent": {"action": "board_question", "requires_engine": False},
+    })
+    assert response.status_code == 200, response.text
+    context = seen["context"]
+    expected_side = "White" if session.board.turn else "Black"
+    assert context.board_facts[0].startswith(f"Current authoritative position: {expected_side} to move")
+    assert context.learning_state["board_state_ref"]["session_id"] == session.id
+    assert all("fen" not in fact.lower() for fact in context.board_facts)
+    assert session.board.fen(en_passant="fen") == before_fen
+
+
+def test_offline_discovery_and_greeting_keep_lesson_context(client, monkeypatch):
+    from app.session import get_manager
+    from app.teacher import FallbackTeacher
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    session = get_manager().get(started["session_id"])
+    topic = session.learning_state.topic
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: FallbackTeacher())
+
+    greeting = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "hi", "intent": {"action": "greeting"},
+    })
+    discovery = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "What can you teach me?", "intent": {"action": "discovery"},
+    })
+    assert greeting.status_code == discovery.status_code == 200
+    assert "Hi!" in greeting.json()["reply"] and topic in greeting.json()["reply"]
+    assert "openings" in discovery.json()["reply"] and topic in discovery.json()["reply"]
+    assert session.learning_state.topic == topic
+
+
+def test_offline_teacher_answers_current_lesson_question_from_learning_state(client, monkeypatch):
+    from app.session import get_manager
+    from app.teacher import FallbackTeacher
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    session = get_manager().get(started["session_id"])
+    topic = session.learning_state.topic
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: FallbackTeacher())
+    response = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "What step are we on?",
+        "intent": {"action": "lesson_question"},
+    })
+    assert response.status_code == 200, response.text
+    assert topic in response.json()["reply"]
+    assert "step 1 of" in response.json()["reply"]
+    assert session.learning_state.topic == topic
+
+
+def test_offline_teacher_checks_capture_question_against_python_chess_legal_moves(client, monkeypatch):
+    from app.session import get_manager
+    from app.teacher import FallbackTeacher
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    session = get_manager().get(started["session_id"])
+    session.board = chess.Board("4k3/8/8/8/4P3/8/8/4K3 b - - 0 1")
+    topic = session.learning_state.topic
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: FallbackTeacher())
+    response = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "Why can't Black take that pawn?",
+        "intent": {"action": "board_question", "requires_engine": False},
+    })
+    assert response.status_code == 200, response.text
+    assert "Black has no legal captures" in response.json()["reply"]
+    assert session.learning_state.topic == topic
+    assert session.board.fen().startswith("4k3/8/8/8/4P3")
+
+
+def test_last_move_question_uses_stockfish_feedback_without_copying_fen(client):
+    from types import SimpleNamespace
+    from app.session import get_manager
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    manager = get_manager()
+    session = manager.get(started["session_id"])
+    before = chess.Board()
+    move = chess.Move.from_uci("g1f3")
+    after = before.copy()
+    after.push(move)
+    session.board = after
+    session.last_feedback = SimpleNamespace(
+        fen_before=before.fen(), fen_after=after.fen(), user_move_san="Nf3",
+        category=SimpleNamespace(value="good"), loss_cp=0, best_move_san="Nf3",
+        best_pv_san=["Nf3", "d5"], reply_pv_san=["d5"],
+    )
+
+    context = manager._chat_context(
+        session, needs_engine=True,
+        intent={"action": "board_question", "requires_engine": True},
+        question="Why is this move good?",
+    )
+    feedback = next(fact for fact in context.board_facts if fact.startswith(
+        "Verified Stockfish feedback on the latest graded move"))
+    assert "Nf3" in feedback and "good" in feedback and "d5" in feedback
+    assert "fen" not in feedback.lower()
+
+
+def test_offline_teacher_answers_turn_question_from_verified_board_state(client, monkeypatch):
+    from app.session import get_manager
+    from app.teacher import FallbackTeacher
+
+    started = client.post("/api/lessons/italian_01/start").json()
+    session = get_manager().get(started["session_id"])
+    expected = "White" if session.board.turn else "Black"
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: FallbackTeacher())
+    response = client.post(f"/api/sessions/{session.id}/chat", json={
+        "message": "Whose move is it on this board?",
+        "intent": {"action": "board_question", "requires_engine": False},
+    })
+    assert response.status_code == 200, response.text
+    assert response.json()["reply"].startswith(f"It's {expected} to move")

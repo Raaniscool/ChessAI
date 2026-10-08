@@ -15,6 +15,7 @@
 // view locks navigation (lock/unlock), and the buttons are disabled.
 //
 // No DOM or chess.js imports here: unit tested with `node --test frontend/tests`.
+import {parsePosition} from "./position.js"
 
 const norm = uci => {
   const m = String(uci || "").toLowerCase()
@@ -89,8 +90,8 @@ export class MoveHistory {
 
   // A history from a start position and moves (uci or san), using chess.js (passed in).
   static fromMoves(fen, moves, Chess) {
-    const h = new MoveHistory(fen)
-    const chess = new Chess(fen)
+    const chess = parsePosition(Chess, fen, "Move history starting position")
+    const h = new MoveHistory(chess.fen())
     for (const m of moves) {
       let move = null
       try {
@@ -107,19 +108,21 @@ export class MoveHistory {
   // A history from consecutive positions (a line in review text): each move is found by
   // trying the legal moves of the previous position.
   static fromPositions(fens, Chess) {
+    if (!Array.isArray(fens) || !fens.length) throw new Error("Move history needs at least one position.")
+    const checked = fens.map((fen, i) => parsePosition(Chess, fen, `Move history position ${i + 1}`).fen())
     const placement = f => String(f || "").split(" ")[0]
-    const h = new MoveHistory(fens[0])
-    for (let i = 1; i < fens.length; i++) {
+    const h = new MoveHistory(checked[0])
+    for (let i = 1; i < checked.length; i++) {
       let found = null
       try {
-        const chess = new Chess(fens[i - 1])
+        const chess = parsePosition(Chess, checked[i - 1], "Move history position")
         for (const m of chess.moves({verbose: true})) {
-          const trial = new Chess(fens[i - 1])
+          const trial = parsePosition(Chess, checked[i - 1], "Move history position")
           trial.move(m)
-          if (placement(trial.fen()) === placement(fens[i])) { found = m; break }
+          if (placement(trial.fen()) === placement(checked[i])) { found = m; break }
         }
       } catch (_) { found = null }
-      h.append(fens[i], found ? found.from + found.to + (found.promotion || "") : null, found ? found.san : null)
+      h.append(checked[i], found ? found.from + found.to + (found.promotion || "") : null, found ? found.san : null)
     }
     return h
   }

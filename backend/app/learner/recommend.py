@@ -5,6 +5,8 @@ Sources, in priority order (each suggestion says why, in the learner's terms):
     game weakness   a recurring mistake from their own analysed games, not yet solid
                     in puzzles  → a lesson that trains it (with a real-game emphasis
                     when they already solve it in puzzles: the "transfer" gap)
+    recognition     solved in puzzles, but repeatedly missed in Training's hidden-idea
+                    play (unprompted) → practise the idea in real positions
     calculation     one-movers go fine, longer lines don't → multi-move practice
     weak            a concept whose recent results are poor → an easier revisit
     review          spaced repetition: not seen for a while
@@ -17,7 +19,7 @@ the weakness `key` so the planner builds a personal plan from the evidence.
 from __future__ import annotations
 
 from .profile import LearnerProfile
-from .views import concept_view
+from .views import combined, concept_view
 
 MAX_SUGGESTIONS = 4
 GOAL_START = {
@@ -91,6 +93,17 @@ def suggestions(profile: LearnerProfile, library=None, just_studied: list[str] |
             add("calculation", cid, f"Calculation: {_name(library, cid).lower()} in longer lines",
                 "You find the first move well; these positions need you to see a few moves further.",
                 f"hard {_name(library, cid).lower()}")
+    for cid, v in views.items():
+        # solved when prompted, missed when nothing announces it (assessment: the hidden idea in
+        # Training). The game-weakness loop above already covers concepts with their own evidence;
+        # this one is for concepts the learner handles in puzzles but doesn't spot in play.
+        if "transfer" not in v["gaps"] or not combined(profile, cid, library).training_missed:
+            continue
+        name = _name(library, cid)
+        add("recognition", cid, f"Spot {name.lower()} in real positions",
+            f"You solve {name.lower()} puzzles, but the idea slipped past you in Training games where "
+            "nothing told you what to look for; practise it in real positions.",
+            f"{name.lower()} in real game positions")
     for cid, v in sorted(views.items(), key=lambda kv: (kv[1]["success"] or 0, kv[0])):
         if v["status"] == "weak":
             add("revisit", cid, f"Revisit {_name(library, cid).lower()}",

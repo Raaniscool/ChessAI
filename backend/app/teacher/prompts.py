@@ -11,16 +11,11 @@ from .base import LessonContext, _fmt_eval
 
 # Kept byte-identical across requests so local servers (Ollama, llama.cpp) can reuse
 # its processed tokens from cache: only the short per-move facts are read each time.
-SYSTEM_PROMPT = """You are a friendly, precise chess teacher inside an interactive chess tutor.
-You get FACTS from a chess engine (Stockfish) and the app. They are the truth about the position; \
-your job is to explain them in clear, encouraging language that suits the student's level.
-Rules:
-- Never invent evaluations, moves, variations or tactics that are not in the facts.
-- If facts are missing, say engine analysis is needed instead of guessing.
-- Prefer plain language to engine numbers.
-- Teach the idea behind the move (development, king safety, center, tempo, tactics...).
-- Say why the move or position matters; never narrate the obvious. Keep to the length asked for.
-- Reply in the student's language."""
+SYSTEM_PROMPT = """You are a friendly, precise chess tutor. The chess engine, app and active-session facts are authoritative.
+- Never invent moves, evaluations or board facts. If analysis is missing, say it is needed.
+- Explain chess ideas in plain language at the learner's level and requested length; reply in their language.
+- Interpret the latest message using recent turns and active learning state. Temporary questions don't replace a lesson; resume its topic naturally.
+- For current-board questions, use only live authoritative board facts from the app. Never infer a position from chat history."""
 
 # Verified example facts sent per request (a few hundred tokens at most).
 MAX_FACT_LINES = 40
@@ -120,10 +115,28 @@ def build_chat_messages(
     message: str, context: LessonContext, transcript: list[dict], level: str = "beginner"
 ) -> list[dict]:
     messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
+    state = context.learning_state or {}
+    progress = state.get("progress") if isinstance(state.get("progress"), dict) else {}
+    learning_state = (
+        f"\nStructured learning state: topic={state.get('topic', context.lesson_title)}; "
+        f"subtopic={state.get('subtopic') or 'none'}; mode={state.get('mode', 'lesson')}; "
+        f"objective={state.get('objective') or 'answer the learner’s current request'}; "
+        f"stage={state.get('stage') or 'unknown'}; progress="
+        f"{progress.get('current_step', '?')}/{progress.get('total_steps', '?')}; "
+        f"difficulty={state.get('difficulty', level)}."
+    )
+    relevant = state.get("relevant_context")
+    # SessionManager derives this bounded summary from the same authoritative transcript that is
+    # appended below. Prefer the full recent turns when present; duplicating their clipped copies
+    # only increases prompt prefill without adding learner context.
+    if not transcript and isinstance(relevant, list) and relevant:
+        learning_state += " Recent relevant context: " + " | ".join(str(x)[:240] for x in relevant[-3:])
+    board_block = ("\nCurrent authoritative board facts (derived from the live Python-chess session):\n"
+                   + "\n".join(f"- {line}" for line in context.board_facts)) if context.board_facts else ""
     intro = (
         f"Lesson context — course: {context.course_title}, lesson: {context.lesson_title}, "
         f"concepts: {', '.join(context.concepts) or 'none'}. Student level: {level}."
-        + _facts_block(context)
+        + learning_state + board_block + _facts_block(context)
     )
     messages.append({"role": "user", "content": intro})
     messages.append({"role": "assistant", "content": "Understood. I will teach from these facts."})

@@ -16,7 +16,9 @@ mastered yet: it stays "practicing". Explanation requests never make a concept "
 
 Gaps (what kind of help works):
     calculation    one-move positions go well (≥0.7) but multi-move ones don't (<0.45)
-    transfer       solved in puzzles (≥0.7) but still a recurring mistake in real games
+    transfer       solved in puzzles (≥0.7) but the idea still doesn't turn up unprompted:
+                   either a recurring mistake in real games, or repeatedly missed hidden
+                   ideas in Training (the same concept, met without being announced)
     understanding  solved, but the learner keeps asking why (learner.help signal)
 Needs review: time since last seen exceeds REVIEW_AFTER[status] (spaced repetition).
 """
@@ -49,8 +51,12 @@ def combined(profile: LearnerProfile, cid: str, library=None) -> ConceptState | 
     out = ConceptState()
     for st in states:
         for name in ("attempts", "solved", "first_try", "hints", "reveals", "lessons_started",
-                     "lessons_completed", "game_misses", "game_evidence_games"):
+                     "lessons_completed", "game_misses", "game_evidence_games",
+                     "training_tested", "training_found", "training_missed"):
             setattr(out, name, getattr(out, name) + getattr(st, name))
+        out.training_recent += list(st.training_recent)
+        if st.training_last and (out.training_last or "") < st.training_last:
+            out.training_last = st.training_last
         out.recent_explained += H.aligned_flags(st.recent, st.recent_explained)
         out.recent += st.recent
         out.explain_requests += st.explain_requests
@@ -81,8 +87,11 @@ def status_of(st: ConceptState | None) -> str:
     window = st.recent[-MASTERY_WINDOW:]
     score = _mean(window)
     if st.attempts >= MIN_FOR_MASTERY and score is not None and score >= MASTERED_SCORE:
-        # solving it while repeatedly asking why isn't mastery yet (not a weakness either)
-        return "practicing" if help_of(st)["signal"] == "understanding" else "mastered"
+        # solving it while repeatedly asking why, or failing to recognise it unprompted, isn't
+        # mastery yet — but the learner does know the idea, so it is not called weak either
+        if help_of(st)["signal"] == "understanding" or recognition_gap(st):
+            return "practicing"
+        return "mastered"
     if (st.attempts >= MIN_FOR_WEAK and score is not None and score < WEAK_SCORE) or st.game_misses >= 2:
         return "weak"
     if st.attempts:
@@ -90,6 +99,24 @@ def status_of(st: ConceptState | None) -> str:
     if st.lessons_completed:
         return "learned"
     return "new"
+
+
+# Recognition-in-play: how much unprompted evidence before "solved in puzzles, missed in play"
+# means something. The same pattern the game-based transfer gap already uses: it needs a
+# repeated result, never a single bad moment.
+RECOGNITION_TESTS = 3           # hidden-idea tests on the concept before a pattern counts
+RECOGNITION_MISSES = 2          # ... and at least this many of them missed
+PUZZLE_STRONG = 0.7             # prompted results at or above this: "they can solve it"
+
+
+def recognition_gap(st: ConceptState | None) -> bool:
+    """Solved when prompted, but the idea is repeatedly missed when nothing announces it."""
+    if st is None:
+        return False
+    score = _mean(st.recent[-MASTERY_WINDOW:])
+    return (len(st.training_recent) >= RECOGNITION_TESTS and st.training_missed >= RECOGNITION_MISSES
+            and st.training_missed > st.training_found
+            and score is not None and st.attempts >= 3 and score >= PUZZLE_STRONG)
 
 
 def gaps_of(st: ConceptState | None) -> list[str]:
@@ -100,7 +127,8 @@ def gaps_of(st: ConceptState | None) -> list[str]:
     if short is not None and long_ is not None and len(st.recent_long) >= 2 and short >= 0.7 and long_ < WEAK_SCORE:
         out.append("calculation")
     score = _mean(st.recent[-MASTERY_WINDOW:])
-    if st.game_misses >= 2 and score is not None and st.attempts >= 3 and score >= 0.7:
+    if score is not None and st.attempts >= 3 and score >= PUZZLE_STRONG and \
+            (st.game_misses >= 2 or recognition_gap(st)):
         out.append("transfer")
     if help_of(st)["signal"] == "understanding":
         out.append("understanding")
@@ -119,6 +147,15 @@ def concept_view(profile: LearnerProfile, cid: str, library=None) -> dict:
         "success": round(_mean(st.recent[-MASTERY_WINDOW:]), 2) if st and st.recent else None,
         "last_seen": st.last_seen if st else None,
         "explanations": help_of(st),
+        # unprompted recognition (Training's hidden ideas), beside — never inside — the
+        # prompted puzzle results above
+        "recognition": {
+            "tested": st.training_tested if st else 0,
+            "found": st.training_found if st else 0,
+            "missed": st.training_missed if st else 0,
+            "last": st.training_last if st else None,
+            "unprompted": True,
+        },
     }
 
 

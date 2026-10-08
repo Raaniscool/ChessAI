@@ -103,7 +103,10 @@ def analyze(seg, engine, knowledge, analyzer=None) -> dict:
     concepts: list[dict] = []
     missed: list[dict] = []
     mistakes: list[dict] = []
-    tested = _tested(seg, moves, moments, knowledge)
+    # every ply the deep pass confirmed — not just the displayed MAX_MOMENTS — so the
+    # first-move recognition test can't be swallowed by the moment cap
+    confirmed = set(analysis.get("confirmed_plies") or [m["ply"] for m in moments])
+    tested = _tested(seg, moves, moments, knowledge, confirmed)
     if tested:
         concepts.append(tested)
     for m in moments:
@@ -157,7 +160,14 @@ def analyze(seg, engine, knowledge, analyzer=None) -> dict:
     }
 
 
-def _tested(seg, moves: list[dict], moments: list[dict], knowledge) -> dict | None:
+def _tested(seg, moves: list[dict], moments: list[dict], knowledge, confirmed: set[int] | None = None) -> dict | None:
+    """The hidden-idea test of the segment's first learner move (the recognition evidence).
+
+    `accepted` is the puzzle's own first-step truth (puzzles.model.Puzzle.accepted_first), so a
+    move the solver counts as solved can never be recorded as a miss here. A mating move is
+    always solved for the solver: it is credited when the position's idea is a mating one, and
+    says nothing either way otherwise. A miss needs the same full-depth confirmation every game
+    moment needs (`confirmed`, which also contains the plies beyond the displayed cap)."""
     hidden = seg.position.hidden
     if not hidden or not moves or moves[0]["ply"] != 0 or hidden.get("concept") not in knowledge.concepts:
         return None
@@ -167,9 +177,31 @@ def _tested(seg, moves: list[dict], moments: list[dict], knowledge) -> dict | No
             "key_move": hidden.get("key_move"), "phase": seg.position.phase, "motif": None, "text": None}
     if moves[0]["san"] in (hidden.get("accepted") or []):
         return {**base, "result": "found"}
-    if any(m["ply"] == 0 for m in moments):   # confirmed at full depth, like any game moment
+    first_mates = _mates(seg.position.fen, moves[0]["san"])
+    if first_mates:
+        # "any mate solves a puzzle" (frontend/puzzle-solver.js): an equivalent mate is a solve
+        # for a mating idea, and no evidence at all for anything else — never a miss
+        return {**base, "result": "found"} if _is_mate_concept(hidden["concept"], knowledge) else None
+    confirmed = {m["ply"] for m in moments} if confirmed is None else confirmed
+    if 0 in confirmed:   # confirmed at full depth, like any game moment
         return {**base, "result": "missed"}
     return None    # another move Stockfish doesn't call a mistake: no evidence either way
+
+
+def _mates(fen: str, san: str) -> bool:
+    """Is the learner's move a checkmate? (The solver treats any mate as solved.)"""
+    import chess
+    board = chess.Board(fen)
+    try:
+        board.push_san(san)
+    except ValueError:
+        return False
+    return board.is_checkmate()
+
+
+def _is_mate_concept(concept: str, knowledge) -> bool:
+    from .needs import _ancestors
+    return "checkmate" in _ancestors(concept, knowledge)
 
 
 def _mate_overshadows(fen: str, hidden: dict, knowledge) -> bool:

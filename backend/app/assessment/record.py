@@ -13,6 +13,12 @@
 Only evidence from assessment.evaluate goes in (validator-backed concepts, engine-graded moves).
 One segment is one data point; nothing here decides that something is a weakness (assessment.needs
 does, with confidence from the amount of evidence).
+
+`note_recognition` mirrors the segment's hidden-idea test onto the learner's concept state
+(ConceptState.training_*), where it sits *beside* the prompted puzzle results and never in them:
+a solved puzzle says the learner can do it when they are told what to look for; the hidden test
+says whether they noticed it themselves. learner.views and learner.difficulty read both, and both
+stay distinguishable (the puzzle evidence keeps its own `recent`/`attempts`).
 """
 from __future__ import annotations
 
@@ -84,3 +90,27 @@ def apply(training: dict, seg, result: dict, now: datetime | None = None) -> dic
         "accuracy": result.get("accuracy"), "errors": result["mistakes"] + result["blunders"],
         "bot_rating": seg.bot.get("rating")}])[-HISTORY_KEEP:]
     return training
+
+
+def note_recognition(profile, result: dict, now: datetime | None = None) -> None:
+    """Mirror a segment's hidden-idea test onto the learner's concept state (unprompted play).
+
+    A segment tests at most one hidden idea (assessment.evaluate._tested returns None when the
+    move proves nothing), so exactly one observation is written per concept per segment — the
+    same one that went into `training["tested"]`, never a second copy of a motif finding.
+    Prompted puzzle results are never touched: `attempts`/`recent` keep only what the learner
+    solved while knowing there was something to solve.
+    """
+    from ..learner.profile import RECENT_RECOGNITION     # the concept state's window (learner model)
+
+    tested = result.get("tested")
+    concept = (tested or {}).get("concept")
+    if not concept or tested.get("result") not in ("found", "missed"):
+        return
+    found = tested["result"] == "found"
+    st = profile.concept(concept)
+    st.training_tested += 1
+    st.training_found += int(found)
+    st.training_missed += int(not found)
+    st.training_recent = (st.training_recent + [1.0 if found else 0.0])[-RECENT_RECOGNITION:]
+    st.training_last = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")

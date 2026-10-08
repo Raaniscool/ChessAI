@@ -37,6 +37,7 @@ class Segment:
     finished: bool = False
     end_reason: str | None = None
     result: dict | None = None
+    consumed: bool = False                      # the position was marked seen (played to a result)
 
     @property
     def side(self) -> chess.Color:
@@ -60,7 +61,8 @@ class Segment:
         """The state the board needs. No concept, no source, no solution until it's over."""
         board = self.board()
         out = {"id": self.id, "mode": self.mode, "phase": self.position.phase, "start_fen": self.position.fen,
-               "fen": board.fen(), "side": self.position.side, "moves": list(self.moves_san),
+               "fen": board.fen(), "current_fen": board.fen(en_passant="fen"),
+               "side": self.position.side, "moves": list(self.moves_san),
                "moves_uci": list(self.moves_uci), "learner_moves": self.learner_moves(),
                "min_moves": MIN_MOVES, "max_moves": MAX_MOVES, "bot_rating": self.bot.get("rating"),
                "finished": self.finished, "end_reason": self.end_reason}
@@ -111,6 +113,11 @@ class SegmentStore:
     def clear(self) -> None:
         with self._lock:
             self._items.clear()
+
+    def open_positions(self) -> set[str]:
+        """Position ids of segments that are still in play (started, not ended, not finished)."""
+        with self._lock:
+            return {s.position.id for s in self._items.values() if not s.finished and not s.end_reason}
 
 
 _store: SegmentStore | None = None

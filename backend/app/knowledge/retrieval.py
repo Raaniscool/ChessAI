@@ -11,7 +11,9 @@ This layer only chooses, and it only ever hands out entries whose status is
 """
 from __future__ import annotations
 
+import logging
 import re
+import time
 from dataclasses import dataclass, field
 
 import chess
@@ -20,6 +22,8 @@ from ..planner.catalog import _normalize, _phrase_span
 from .facts import verified_facts
 from .library import DEFAULT_COUNT, MAX_COUNT, KnowledgeLibrary, Query
 from .schema import Example
+
+perf_log = logging.getLogger("chessai.performance")
 
 ROLES = ("demonstration", "guided", "practice")
 LEVELS = ("beginner", "intermediate", "advanced")
@@ -268,8 +272,15 @@ def _assign_roles(examples: list[Example], mode: str | None,
     return out
 
 
+def _log_retrieval(started: float, result: Retrieval) -> None:
+    perf_log.info("latency stage=knowledge_retrieval duration_ms=%.1f retrieval_calls=1 matched_concepts=%d "
+                  "examples=%d found=%s", (time.perf_counter() - started) * 1000,
+                  len(result.concepts), len(result.examples), result.found)
+
+
 def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -> Retrieval:
     """Pick a small, level-appropriate teaching sequence of verified examples."""
+    started = time.perf_counter()
     parsed = library.parse_query(request.text) if request.text else Query()
     if request.concepts:
         concepts = [c for c in request.concepts if c in library.concepts and library.count_for(c)]
@@ -277,7 +288,9 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
     else:
         concepts, confident = resolve_concepts(library, request.text)
     if not concepts or not confident:
-        return Retrieval(concepts=concepts, sequence=[], confident=confident)
+        result = Retrieval(concepts=concepts, sequence=[], confident=confident)
+        _log_retrieval(started, result)
+        return result
 
     level, source = request.level, "request"
     if level not in LEVELS:
@@ -370,8 +383,10 @@ def retrieve(library: KnowledgeLibrary, request: RetrievalRequest, usage=None) -
             if rel not in concepts and rel not in related and library.count_for(rel):
                 related.append(rel)
 
-    return Retrieval(concepts=concepts, sequence=sequence, practice=practice, prerequisites=prereqs,
-                     related=related, level=level, level_source=source, confident=True)
+    result = Retrieval(concepts=concepts, sequence=sequence, practice=practice, prerequisites=prereqs,
+                       related=related, level=level, level_source=source, confident=True)
+    _log_retrieval(started, result)
+    return result
 
 
 def _requested_count(text: str, parsed: int) -> int:

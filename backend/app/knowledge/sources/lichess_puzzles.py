@@ -22,7 +22,7 @@ from pathlib import Path
 import chess
 
 from .. import teaching, validators
-from ..positions import material, replay
+from ..positions import ReplayError, material, replay
 from . import provenance
 
 PUZZLES = Path(__file__).resolve().parents[2] / "planner" / "data" / "puzzles.json"
@@ -37,6 +37,7 @@ POOL_EXPANSION = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / 
 POOL_IDEAS = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_ideas.json"
 POOL_FINISH = Path(__file__).resolve().parent / "data" / "lichess_puzzles" / "pool_finish.json"
 EXPANSION_DATE = "2026-10-02"
+DEEPENING_DATE = "2026-10-04"
 LICENSE = "CC0-1.0"
 
 # Lichess theme -> library concept (refined from the facts where possible)
@@ -348,6 +349,78 @@ def expansion_mistake_candidates(library, per_concept: int = 6, exclude: set[str
             if cand is not None:
                 out.append(cand)
                 taken[concept] = taken.get(concept, 0) + 1
+    return out
+
+
+# ---------------------------------------------------------------------- phase deepening
+# Every importer above orders its candidates by solution length ("simplest first"), so the
+# per-concept budget was spent on short endgame positions: most of the verified Lichess material
+# the pools can supply is endgame, and the middlegame never got its share. Training's middlegame
+# pool stayed around 140 positions against nearly 300 endgame ones for that reason — not because
+# the positions don't exist.
+#
+# `deepening_candidates` collects *the same candidates, from the same importers* and keeps the
+# ones whose key position actually is in the requested phase — analysis.analyzer.phase_of, the
+# rule Training, the puzzle index and the game analysis share. It proposes nothing new and
+# verifies nothing: the candidates go through the normal pipeline like every other entry, with
+# their concepts coming from the library's own theme mapping and validators.
+PHASES = ("middlegame", "opening")
+
+
+def _phase_of_candidate(cand: dict) -> str | None:
+    """The phase of the position the learner would meet (after the setup move)."""
+    from ...analysis.analyzer import phase_of
+
+    try:
+        rep = replay(cand["start_fen"], list(cand["moves"]))
+        ply = rep.ply(cand["key_move"])       # "12.Nc7+" -> the first learner move
+    except (ReplayError, ValueError, KeyError, IndexError):
+        return None
+    if not 0 <= ply < len(rep.boards):
+        return None
+    return phase_of(rep.boards[ply])
+
+
+def deepening_candidates(library, phase: str, per_concept: int | None = 10,
+                         exclude: set[str] | None = None) -> list[dict]:
+    """Verified-able candidates of one phase, from every Lichess importer (thin concepts first).
+
+    Ordered by how little material the concept already has, so a rebuild spends its budget where
+    the library (and with it the Training pool) is thinnest, then by solution length and id so the
+    order stays deterministic. `exclude` holds source ids already in the library: a position never
+    enters twice.
+    """
+    from collections import Counter
+
+    if phase not in PHASES:
+        raise ValueError(f"phase must be one of {', '.join(PHASES)}")
+    exclude = exclude or set()
+    out: list[dict] = []
+    seen: set[str] = set()
+    sources = (candidates(library, per_concept=1000), candidates(library, per_concept=1000, path=POOL_HARDER),
+               expansion_candidates(library, per_concept=1000, exclude=exclude),
+               mistake_candidates(library, per_concept=1000, exclude=exclude),
+               expansion_mistake_candidates(library, per_concept=1000, exclude=exclude))
+    for batch in sources:
+        for cand in batch:
+            sid = (cand.get("source") or {}).get("source_id")
+            if sid in exclude or sid in seen or cand["concept"] not in library.concepts:
+                continue
+            if _phase_of_candidate(cand) != phase:
+                continue
+            seen.add(sid)
+            out.append(cand)
+    counts = Counter(e.concept for e in library.verified())
+    out.sort(key=lambda c: (counts[c["concept"]], c["concept"], len(c["moves"]), c["id"]))
+    if per_concept is not None:
+        per: dict[str, int] = {}
+        kept: list[dict] = []
+        for cand in out:
+            if per.get(cand["concept"], 0) >= per_concept:
+                continue
+            per[cand["concept"]] = per.get(cand["concept"], 0) + 1
+            kept.append(cand)
+        out = kept
     return out
 
 

@@ -6,7 +6,10 @@
        as lessons: engine/classification.py)
     4. candidate mistakes are re-checked at ENGINE_DEPTH; only confirmed mistakes and
        blunders (and missed forced mates) become "moments" — inaccuracies are counted,
-       not paraded, so a beginner isn't buried under every small evaluation change
+       not paraded, so a beginner isn't buried under every small evaluation change.
+       `moments` holds the most telling MAX_MOMENTS of them; `confirmed_plies` lists
+       every ply the deep pass confirmed, so a caller asking about one specific ply
+       (e.g. Training's hidden-idea test) never loses its verdict to the display cap
     5. each moment gets Stockfish's good alternatives (multi-PV) and its concepts
        (motifs.py); opening habits are checked across the game (habits.py)
 
@@ -192,6 +195,10 @@ class GameAnalyzer:
         phase_counts: dict[str, int] = {}
         for m in moments:
             phase_counts[m["phase"]] = phase_counts.get(m["phase"], 0) + 1
+        # Every ply the full-depth pass confirmed, including the ones beyond MAX_MOMENTS: the
+        # analysis report shows the eight most telling, but a caller that asks about one specific
+        # ply (Training's hidden-idea test at the first move) must still see its verdict.
+        confirmed_plies = sorted(m["ply"] for m in moments + extra)
         analysis = {
             "schema_version": SCHEMA_VERSION,
             "game_id": game.id,
@@ -204,6 +211,7 @@ class GameAnalyzer:
             "evals": [a.score.as_dict() if a.score else None for a in quick],
             "moments": moments,
             "more_moments": len(extra),
+            "confirmed_plies": confirmed_plies,
             "habits": habits,
             "stats": {
                 "learner_moves": sum(1 for e in plies if "category" in e),

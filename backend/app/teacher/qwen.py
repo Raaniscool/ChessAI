@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from collections.abc import Callable, Iterator
 
 import httpx
@@ -13,6 +14,7 @@ from .base import LessonContext
 from .prompts import SYSTEM_PROMPT, build_chat_messages, build_move_feedback_messages
 
 log = logging.getLogger(__name__)
+perf_log = logging.getLogger("chessai.performance")
 
 NO_THINK_SWITCH = "/no_think"
 # Yielded by QwenTeacher.stream() when text already shown turns out to have been
@@ -166,30 +168,45 @@ class QwenTeacher:
             payload["max_tokens"] = limit
         return payload
 
-    def _complete(self, messages: list[dict], max_tokens: int | None = None) -> str:
+    def _complete(self, messages: list[dict], max_tokens: int | None = None,
+                  timeout: float | None = None) -> str:
         payload = self.build_payload(messages, max_tokens=max_tokens)
+        started = time.perf_counter()
+        prompt_chars = sum(len(str(item.get("content", ""))) for item in payload["messages"])
+        status = "error"
         try:
             response = httpx.post(
                 self.url,
                 json=payload,
                 headers=self.headers,
-                timeout=self.settings.qwen_timeout,
+                timeout=self.settings.qwen_timeout if timeout is None else timeout,
             )
             response.raise_for_status()
             data = response.json()
             raw = data["choices"][0]["message"]["content"] or ""
+            reply = clean_reply(raw)
+            if not reply:
+                status = "empty"
+                log.warning("Qwen returned an empty reply (only reasoning?)")
+                raise TeacherUnavailable("Qwen returned an empty reply")
+            status = "ok"
+            return reply
         except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
             log.warning("Qwen request to %s failed: %s", self.url, exc)
             raise TeacherUnavailable(f"Qwen request failed: {exc}") from exc
-        reply = clean_reply(raw)
-        if not reply:
-            log.warning("Qwen returned an empty reply (only reasoning?)")
-            raise TeacherUnavailable("Qwen returned an empty reply")
-        return reply
+        finally:
+            perf_log.info("latency stage=qwen_completion duration_ms=%.1f model_calls=1 prompt_chars=%d "
+                          "approx_tokens=%d status=%s", (time.perf_counter() - started) * 1000,
+                          prompt_chars, prompt_chars // 4, status)
 
-    def complete(self, messages: list[dict], max_tokens: int | None = None) -> str:
-        """Send arbitrary messages (used by the planner); raises TeacherUnavailable."""
-        return self._complete(messages, max_tokens=max_tokens)
+    def complete(self, messages: list[dict], max_tokens: int | None = None,
+                 timeout: float | None = None) -> str:
+        """Send arbitrary messages (used by the planner); raises TeacherUnavailable.
+
+        ``timeout`` bounds short routing completions so a route deadline also closes the model
+        request instead of merely abandoning a worker that continues consuming inference capacity.
+        """
+        return self._complete(messages, max_tokens=max_tokens, timeout=timeout)
 
     def stream(self, messages: list[dict], max_tokens: int | None = None,
                on_reasoning: Callable[[], None] | None = None) -> Iterator[str]:
@@ -205,38 +222,66 @@ class QwenTeacher:
         think = ThinkFilter()
         # Generous read timeout per chunk; the first token can take a while on CPU.
         timeout = httpx.Timeout(self.settings.qwen_timeout, connect=10.0)
+        started = time.perf_counter()
+        prompt_chars = sum(len(str(item.get("content", ""))) for item in payload["messages"])
+        headers_ms = first_data_ms = ttfo_ms = None
+        visible_chars = reasoning_chunks = 0
+        status = "error"
         try:
-            with httpx.stream("POST", self.url, json=payload, headers=self.headers,
-                              timeout=timeout) as response:
-                response.raise_for_status()
-                for line in response.iter_lines():
-                    line = line.strip()
-                    if not line.startswith("data:"):
-                        continue
-                    data = line[5:].strip()
-                    if data == "[DONE]":
-                        break
-                    try:
-                        choice = json.loads(data)["choices"][0]
-                    except (ValueError, KeyError, IndexError, TypeError):
-                        continue
-                    # Only "content" is shown; "reasoning"/"reasoning_content" never is.
-                    fields = choice.get("delta") or {}
-                    delta = fields.get("content") or ""
-                    visible = think.feed(delta) if delta else ""
-                    if on_reasoning and (fields.get("reasoning") or fields.get("reasoning_content")
-                                         or (delta and not visible and think.in_think)):
-                        on_reasoning()
-                    if think.consume_reset():
-                        yield RESET
-                    if visible:
-                        yield visible
-        except httpx.HTTPError as exc:
-            log.warning("Qwen stream from %s failed: %s", self.url, exc)
-            raise TeacherUnavailable(f"Qwen request failed: {exc}") from exc
-        tail = think.flush()
-        if tail:
-            yield tail
+            try:
+                with httpx.stream("POST", self.url, json=payload, headers=self.headers,
+                                  timeout=timeout) as response:
+                    response.raise_for_status()
+                    headers_ms = (time.perf_counter() - started) * 1000
+                    for line in response.iter_lines():
+                        line = line.strip()
+                        if not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            break
+                        try:
+                            choice = json.loads(data)["choices"][0]
+                        except (ValueError, KeyError, IndexError, TypeError):
+                            continue
+                        if first_data_ms is None:
+                            first_data_ms = (time.perf_counter() - started) * 1000
+                        # Only "content" is shown; "reasoning"/"reasoning_content" never is.
+                        fields = choice.get("delta") or {}
+                        delta = fields.get("content") or ""
+                        visible = think.feed(delta) if delta else ""
+                        reasoning = bool(fields.get("reasoning") or fields.get("reasoning_content")
+                                         or (delta and not visible and think.in_think))
+                        if reasoning:
+                            reasoning_chunks += 1
+                            if on_reasoning:
+                                on_reasoning()
+                        if think.consume_reset():
+                            yield RESET
+                        if visible:
+                            if ttfo_ms is None:
+                                ttfo_ms = (time.perf_counter() - started) * 1000
+                            visible_chars += len(visible)
+                            yield visible
+            except httpx.HTTPError as exc:
+                log.warning("Qwen stream from %s failed: %s", self.url, exc)
+                raise TeacherUnavailable(f"Qwen request failed: {exc}") from exc
+            tail = think.flush()
+            if tail:
+                if ttfo_ms is None:
+                    ttfo_ms = (time.perf_counter() - started) * 1000
+                visible_chars += len(tail)
+                yield tail
+            status = "ok"
+        finally:
+            perf_log.info("latency stage=qwen_stream headers_ms=%s first_data_ms=%s ttfo_ms=%s "
+                          "duration_ms=%.1f model_calls=1 prompt_chars=%d approx_tokens=%d visible_chars=%d "
+                          "reasoning_chunks=%d status=%s",
+                          f"{headers_ms:.1f}" if headers_ms is not None else "n/a",
+                          f"{first_data_ms:.1f}" if first_data_ms is not None else "n/a",
+                          f"{ttfo_ms:.1f}" if ttfo_ms is not None else "n/a",
+                          (time.perf_counter() - started) * 1000, prompt_chars, prompt_chars // 4,
+                          visible_chars, reasoning_chunks, status)
 
     def warm_up(self) -> bool:
         """Ask for a single token so the server loads the model into memory.
@@ -245,13 +290,19 @@ class QwenTeacher:
         llama.cpp) then already have it processed when the first move is explained.
         """
         messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": "Say OK."}]
+        started = time.perf_counter()
+        status = "failed"
         try:
             response = httpx.post(self.url, headers=self.headers, timeout=self.settings.qwen_timeout,
                                   json=self.build_payload(messages, max_tokens=1))
             response.raise_for_status()
+            status = "done"
         except httpx.HTTPError as exc:
             log.warning("Qwen warm-up failed: %s", exc)
             return False
+        finally:
+            perf_log.info("latency stage=qwen_warmup duration_ms=%.1f status=%s",
+                          (time.perf_counter() - started) * 1000, status)
         if self.reply_shows_thinking(response):
             log.warning(
                 "Model '%s' thinks silently before every answer, which makes the tutor slow "

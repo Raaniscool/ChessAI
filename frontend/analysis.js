@@ -8,6 +8,7 @@ import {FIRST_ANALYSIS, PRESET_COUNTS, TIER_HEADINGS, evidenceLine, foundIn, his
   patternIcon, practiceLabel, puzzleStatus, resultsLine, selectionText, trainingPlan, MAX_COUNT, MIN_COUNT} from "./history-view.js"
 import {EMPTY_FILTER, filterGames, isoDate, lastGames, opponentRating, quotaLine, selectionSummary, timeClasses}
   from "./game-picker.js"
+import {parsePosition} from "./position.js"
 
 const USERNAME_KEY = "chessai.chesscomUsername"
 const COUNT_KEY = "chessai.historyCount"
@@ -21,8 +22,9 @@ const store = {
 }
 
 export function setupGameAnalysis(ctx) {
-  const {api, streamEvents, stopStream, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, escapeHtml,
-    setStatus, makeSpeakable, narrator, onTraining, nav = null, MoveHistory = null, sounds = null} = ctx
+  const {api, streamEvents, stopStream, board, showPosition, clearMarkers, addMarkers, verifiedMove,
+    isPositionVerified, Chess, COLOR, MARKER_TYPE, escapeHtml, setStatus, makeSpeakable, narrator,
+    onTraining, nav = null, MoveHistory = null, sounds = null} = ctx
 
   // ← → under the board step through what the review last put on it (board-nav.js).
   let lineRuns = 0  // the newest engine line owns the navigation lock
@@ -855,11 +857,21 @@ export function setupGameAnalysis(ctx) {
   // Every position a moment's text can talk about (before, after, Stockfish's line, the
   // reply line), so a spoken or pointed-at move lights up the right squares.
   function positionsOf(m) {
-    const fens = [m.fen_before]
-    if (m.fen_after) fens.push(m.fen_after)
-    for (const [start, line] of [[m.fen_before, m.best_line], [m.fen_after, m.reply_line]]) {
+    const fens = []
+    let before = null
+    try {
+      before = parsePosition(Chess, m.fen_before, "Game analysis position").fen()
+      fens.push(before)
+    } catch (_) { return "[]" }
+    let after = null
+    if (m.fen_after) {
+      try { after = parsePosition(Chess, m.fen_after, "Game analysis position").fen(); fens.push(after) }
+      catch (_) { /* the before-position still supports move highlighting */ }
+    }
+    for (const [start, line] of [[before, m.best_line], [after, m.reply_line]]) {
       if (!start || !line) continue
-      const chess = new Chess(start)
+      let chess
+      try { chess = parsePosition(Chess, start, "Game analysis position") } catch (_) { continue }
       for (const san of line.slice(0, 8)) {
         try { if (!chess.move(san)) break } catch (_) { break }
         fens.push(chess.fen())
@@ -868,8 +880,8 @@ export function setupGameAnalysis(ctx) {
     return JSON.stringify(fens)
   }
 
-  function renderMoment() {
-    view.token++
+  async function renderMoment() {
+    const renderToken = ++view.token
     view.readable = null
     stopStream()
     narrator.stop()
@@ -899,6 +911,21 @@ export function setupGameAnalysis(ctx) {
       return
     }
     const m = view.items[view.index]
+    let positionFen
+    try {
+      positionFen = parsePosition(Chess, m.fen_before, "Game analysis position").fen()
+      await showPosition(positionFen, {orientation: orientation()})
+      if (renderToken !== view.token) return
+      if (!isPositionVerified(positionFen)) throw new Error("The board did not match the analysis position.")
+    } catch (err) {
+      if (renderToken !== view.token) return
+      el.review.appendChild(Object.assign(document.createElement("p"), {className: "muted",
+        textContent: `This analysis explanation is withheld because the position could not be verified. ${err.message}`}))
+      setStatus("Analysis position not verified.")
+      return
+    }
+    track(positionFen)
+    setStatus(`${m.side === "black" ? "Black" : "White"} to move — this is the position before ${m.san}.`)
     el.counter.textContent = `${view.index + 1} / ${n}`
     el.prev.disabled = view.index === 0
     el.next.disabled = view.index === n - 1
@@ -985,7 +1012,6 @@ export function setupGameAnalysis(ctx) {
     if (m.category !== "habit") card.appendChild(engineDetails(m))
     el.review.appendChild(card)
     setActive(before)
-    showBefore(m)
     el.body.scrollTop = 0
     narrator.auto(text, "analysis")
   }
@@ -1037,65 +1063,117 @@ export function setupGameAnalysis(ctx) {
   }
 
   // ---------------------------------------------------------------- board views
-  function mark(squares, type) {
-    for (const sq of squares) board.addMarker(type, sq)
+  async function mark(squares, type, expectedFen) {
+    return addMarkers(squares.map(square => ({marker: type, square})), expectedFen, "Analysis highlight")
   }
 
   async function showBefore(m) {
-    view.token++
-    track(m.fen_before)
-    await showPosition(m.fen_before, {orientation: orientation()})
-    setStatus(`${m.side === "black" ? "Black" : "White"} to move — this is the position before ${m.san}.`)
+    let fen
+    try { fen = parsePosition(Chess, m.fen_before, "Game analysis position").fen() }
+    catch (err) { setStatus(err.message); return }
+    const token = ++view.token
+    try {
+      await showPosition(fen, {orientation: orientation()})
+      if (token !== view.token || !isPositionVerified(fen)) return
+      track(fen)
+      setStatus(`${m.side === "black" ? "Black" : "White"} to move — this is the position before ${m.san}.`)
+    } catch (err) { if (token === view.token) setStatus(`The analysis position was not verified. ${err.message}`) }
   }
 
   async function showMine(m) {
+    let before, after
+    try {
+      before = parsePosition(Chess, m.fen_before, "Game analysis position").fen()
+      after = parsePosition(Chess, m.fen_after, "Game analysis position after the move").fen()
+    } catch (err) { setStatus(err.message); return }
     const token = ++view.token
-    track(m.fen_before, [m.uci])
-    await showPosition(m.fen_before, {orientation: orientation()})
-    if (token !== view.token) return
-    await board.setPosition(m.fen_after, true)
-    clearMarkers()
-    mark(uciSquares(m.uci), MARKER_TYPE.circleDanger)
-    setStatus(`You played ${m.san}.`)
+    try {
+      await showPosition(before, {orientation: orientation()})
+      if (token !== view.token || !isPositionVerified(before)) return
+      const chess = parsePosition(Chess, before, "Game analysis position")
+      const piece = chess.get(m.uci.slice(0, 2))
+      if (!piece) throw new Error(`The played piece is missing from ${m.uci.slice(0, 2)}.`)
+      const transition = await verifiedMove(before, m.uci, {
+        expectedPiece: {color: piece.color, type: piece.type}, label: "Game analysis move",
+      })
+      if (token !== view.token) return
+      if (!isPositionVerified(after)) {
+        await showPosition(before, {orientation: orientation()})
+        throw new Error("The played move did not match the analysis position after the move.")
+      }
+      track(before, [m.uci])
+      await clearMarkers(after)
+      if (token !== view.token) return
+      await mark(uciSquares(m.uci), MARKER_TYPE.circleDanger, after)
+      if (token !== view.token) return
+      setStatus(`You played ${m.san}.`)
+    } catch (err) { if (token === view.token) setStatus(`I couldn't safely show that move. ${err.message}`) }
   }
 
   async function showBest(m) {
+    let fen
+    try { fen = parsePosition(Chess, m.fen_before, "Game analysis position").fen() }
+    catch (err) { setStatus(err.message); return }
     const token = ++view.token
-    await showPosition(m.fen_before, {orientation: orientation()})
-    if (token !== view.token || !m.best_move_uci) return
-    track(m.fen_before, [m.best_move_uci])
-    const chess = new Chess(m.fen_before)
-    const u = m.best_move_uci
-    const best = chess.move({from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] || "q"})
-    if (sounds) sounds.playMove(best, chess.fen())
-    await board.setPosition(chess.fen(), true)
-    clearMarkers()
-    mark(uciSquares(u), MARKER_TYPE.square)
-    setStatus(`Stockfish's move: ${m.best_move}.`)
+    try {
+      await showPosition(fen, {orientation: orientation()})
+      if (token !== view.token || !m.best_move_uci || !isPositionVerified(fen)) return
+      const chess = parsePosition(Chess, fen, "Game analysis position")
+      const u = m.best_move_uci
+      const piece = chess.get(u.slice(0, 2))
+      if (!piece) throw new Error(`Stockfish's source piece is missing from ${u.slice(0, 2)}.`)
+      const transition = await verifiedMove(fen, u, {
+        expectedPiece: {color: piece.color, type: piece.type}, label: "Stockfish best move",
+      })
+      if (token !== view.token) return
+      if (sounds) sounds.playMove(transition.move, transition.afterFen)
+      track(fen, [u])
+      await clearMarkers(transition.afterFen)
+      if (token !== view.token) return
+      await mark(uciSquares(u), MARKER_TYPE.square, transition.afterFen)
+      if (token !== view.token) return
+      setStatus(`Stockfish's move: ${m.best_move}.`)
+    } catch (err) { if (token === view.token) setStatus(`Stockfish's move could not be verified. ${err.message}`) }
   }
 
   async function playLine(m) {
+    let fen
+    try { fen = parsePosition(Chess, m.fen_before, "Game analysis position").fen() }
+    catch (err) { setStatus(err.message); return }
     const token = ++view.token
-    const h = track(m.fen_before)
+    const h = track(fen)
     const run = ++lineRuns
     if (nav) nav.lock("demo", "games")  // the line plays by itself: ← → once it's done
     try {
-      await showPosition(m.fen_before, {orientation: orientation()})
-      const chess = new Chess(m.fen_before)
+      await showPosition(fen, {orientation: orientation()})
+      if (token !== view.token) return
+      if (!isPositionVerified(fen)) throw new Error("The analysis line starting position was not confirmed.")
+      let currentFen = fen
       const line = (m.best_line || []).slice(0, 6)
       for (let i = 0; i < line.length; i++) {
-        await new Promise(r => setTimeout(r, 650))
+        await new Promise(r => setTimeout(r, 650)) // visual pacing only; each move below is awaited
         if (token !== view.token) return
-        let move
-        try { move = chess.move(line[i]) } catch (_) { move = null }
-        if (!move) break
-        if (h) { h.append(chess.fen(), move.from + move.to + (move.promotion || ""), move.san); nav.refresh() }
-        if (sounds) sounds.playMove(move, chess.fen())
-        await board.setPosition(chess.fen(), true)
-        clearMarkers()
-        mark([move.from, move.to], i === 0 ? MARKER_TYPE.square : MARKER_TYPE.frame)
+        const chess = parsePosition(Chess, currentFen, "Analysis line position")
+        const sanMove = chess.move(line[i])
+        if (!sanMove) throw new Error(`The line move ${line[i]} is not legal from the verified position.`)
+        const uci = sanMove.from + sanMove.to + (sanMove.promotion || "")
+        const piece = parsePosition(Chess, currentFen, "Analysis line position").get(sanMove.from)
+        if (!piece) throw new Error(`The line's source piece is missing from ${sanMove.from}.`)
+        const transition = await verifiedMove(currentFen, uci, {
+          expectedPiece: {color: piece.color, type: piece.type}, label: "Stockfish analysis line",
+        })
+        if (token !== view.token) return
+        currentFen = transition.afterFen
+        if (h) { h.append(currentFen, transition.uci, transition.move.san); nav.refresh() }
+        if (sounds) sounds.playMove(transition.move, currentFen)
+        await clearMarkers(currentFen)
+        if (token !== view.token) return
+        await mark([transition.from, transition.to], i === 0 ? MARKER_TYPE.square : MARKER_TYPE.frame, currentFen)
+        if (token !== view.token) return
         setStatus(`Stockfish's line: ${line.slice(0, i + 1).join(" ")}`)
       }
+    } catch (err) {
+      if (token === view.token) setStatus(`The analysis line stopped because the board could not be verified. ${err.message}`)
     } finally {
       if (nav && run === lineRuns) nav.unlock("demo", "games")
     }

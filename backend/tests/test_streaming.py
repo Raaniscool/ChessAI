@@ -1,4 +1,5 @@
 """Streaming AI text: think-tag filtering, SSE parsing, fallbacks, endpoints, planner modes."""
+from tests.session_helpers import confirm_advance
 import json
 import random
 
@@ -140,6 +141,17 @@ def test_stream_events_qwen_success(monkeypatch, qwen_on):
     assert events[-1] == {"type": "done", "teacher": "qwen", "text": "Hello there."}
 
 
+def test_closed_local_replies_can_skip_model_stream_even_when_qwen_is_configured(monkeypatch, qwen_on):
+    def should_not_stream(*args, **kwargs):
+        raise AssertionError("a closed greeting/discovery reply must stay local")
+
+    monkeypatch.setattr(qwen_mod.httpx, "stream", should_not_stream)
+    events, text = collect(stream_events(should_not_stream, lambda: "Hi!", force_fallback=True))
+    assert text == "Hi!"
+    assert events[0] == {"type": "start", "teacher": "fallback"}
+    assert events[-1] == {"type": "done", "teacher": "fallback", "text": "Hi!"}
+
+
 def test_stream_events_qwen_down_before_any_text_uses_fallback(monkeypatch, qwen_on):
     monkeypatch.setattr(qwen_mod.httpx, "stream", lambda *a, **k: FakeStream([], status=503))
     events, _ = collect(stream_events(lambda: [{"role": "user", "content": "q"}], lambda: "Fallback text."))
@@ -171,7 +183,7 @@ def client():
 def to_exercise(client):
     sid = client.post("/api/lessons/italian_01/start").json()["session_id"]
     for _ in range(2):
-        client.post(f"/api/sessions/{sid}/advance")
+        confirm_advance(client, sid)
     return sid
 
 

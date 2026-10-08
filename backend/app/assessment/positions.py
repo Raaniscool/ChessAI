@@ -16,14 +16,18 @@ Phase = analysis.analyzer.phase_of(board) (the game analyzer's own rule, from th
 material and real move number), so Training and game analysis always agree on what an endgame is.
 
 Choosing the next position (`choose`):
-  - never a position from the recent Training history (SEEN_KEEP ids), never a puzzle the learner
-    has already met in the Puzzles tab (they would know the answer: not a fair observation);
+  - never a position from the recent Training history (SEEN_KEEP ids), never a position that is
+    *in play* right now (`active`: an open segment the learner has not finished), and never a puzzle
+    the learner has already met in the Puzzles tab (they would know the answer: not a fair
+    observation);
   - the kind (theory position / verified idea position) is drawn in proportion to how many of each
     the phase has, then
   - puzzle positions are scored by rating fit to the learner's level for that phase, plus a bonus
     for ideas the profile is unsure about (measure them) or flags as a need (re-check them),
     minus a penalty for an idea tested in the last few segments; a seeded jitter keeps it varied;
-  - when everything has been seen, the positions seen longest ago come back (effectively infinite).
+  - when everything has been seen, the positions seen longest ago come back — least recently seen
+    first, never a recently seen one while older ones exist (effectively infinite, but always in
+    the same order); a position that is still in play is the last resort, even then.
 """
 from __future__ import annotations
 
@@ -169,20 +173,28 @@ def next_phase(mode: str, history: list[dict], available: list[str], rng: random
 
 
 def choose(pool: PositionPool, phase: str, *, seen: list[str], used_puzzles: set[str], recent_concepts: list[str],
-           target: int | None, needs: dict | None, rng: random.Random) -> TrainingPosition:
-    """The next position of `phase` (see the module doc for the rules)."""
+           target: int | None, needs: dict | None, rng: random.Random,
+           active: set[str] | frozenset[str] = frozenset()) -> TrainingPosition:
+    """The next position of `phase` (see the module doc for the rules).
+
+    `seen` is the persistent history (oldest first); `active` holds positions of segments that are
+    open right now. Both are avoided while anything unseen exists — `active` only in memory, so an
+    abandoned segment doesn't burn its position for good.
+    """
     candidates = pool.by_phase.get(phase) or []
     if not candidates:
         raise LookupError(f"no Training positions for {phase}")
     fair = [c for c in candidates if not (c.hidden and c.hidden["puzzle_id"] in used_puzzles)]
-    seen_set = set(seen)
+    seen_set = set(seen) | set(active)
     fresh = [c for c in fair if c.id not in seen_set]
     if not fresh:
-        # everything met already: the ones seen longest ago come back (position ids in `seen`, oldest first)
+        # Everything has been met: the ones seen longest ago come back, strictly least-recently-seen
+        # first (the pool is not scaled to the learner's history, so this keeps Mixed Games going
+        # indefinitely). A position that is still in play is only chosen when there is nothing else
+        # at all, and `fair` (never a puzzle met in the Puzzles tab) is preferred over `candidates`.
         order = {pid: i for i, pid in enumerate(seen)}
         pool_ = fair or candidates
-        oldest = min(order.get(c.id, -1) for c in pool_)
-        fresh = [c for c in pool_ if order.get(c.id, -1) < oldest + max(1, len(pool_) // 10)]  # oldest tenth
+        fresh = sorted(pool_, key=lambda c: (c.id in active, order.get(c.id, -1), c.id))[: max(1, len(pool_) // 10)]
     hidden = [c for c in fresh if c.hidden]
     plain = [c for c in fresh if not c.hidden]
     if hidden and plain:

@@ -45,7 +45,7 @@ def chat_or_fallback(teacher, message: str, context: LessonContext, transcript: 
         return fallback.chat(message, context, transcript), fallback.name
 
 
-def stream_events(make_messages, fallback_text, validate=None):
+def stream_events(make_messages, fallback_text, validate=None, *, force_fallback=False):
     """Stream a teacher reply as events for the browser (one JSON object per line).
 
     Events: {"type": "start", "teacher": ...}, {"type": "delta", "text": ...},
@@ -55,7 +55,16 @@ def stream_events(make_messages, fallback_text, validate=None):
     If Qwen dies mid-answer, the partial answer is kept and marked.
     `validate(text)` (optional) returns problems where the finished reply contradicts
     verified facts; a reply with problems is replaced by the fallback text.
+    `force_fallback` is for closed, deterministic turns (for example a greeting) that do not
+    benefit from a model call.
     """
+    if force_fallback:
+        text = fallback_text()
+        yield {"type": "start", "teacher": "fallback"}
+        yield {"type": "delta", "text": text}
+        yield {"type": "done", "teacher": "fallback", "text": text}
+        return
+
     teacher = get_teacher()
     if not isinstance(teacher, QwenTeacher):
         text = fallback_text()

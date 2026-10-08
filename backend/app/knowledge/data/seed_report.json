@@ -2,65 +2,65 @@
  "import_date": "2026-09-25",
  "depth": 14,
  "totals": {
-  "verified": 489,
+  "verified": 617,
   "rejected": 20,
   "needs_review": 35
  },
  "by_category": {
   "basics": 26,
-  "checkmates": 102,
+  "checkmates": 145,
   "endgames": 37,
-  "mistakes": 52,
+  "mistakes": 68,
   "openings": 10,
-  "tactics": 262
+  "tactics": 331
  },
  "by_concept": {
-  "absolute_pin": 15,
+  "absolute_pin": 20,
   "anastasia_mate": 10,
-  "arabian_mate": 10,
-  "attraction": 6,
-  "back_rank_mate": 15,
-  "back_rank_weakness": 6,
-  "boden_mate": 10,
+  "arabian_mate": 14,
+  "attraction": 12,
+  "back_rank_mate": 21,
+  "back_rank_weakness": 12,
+  "boden_mate": 24,
   "cannot_castle": 2,
   "captures": 1,
   "caro_kann": 5,
   "castling": 2,
   "check": 1,
-  "clearance": 4,
+  "clearance": 8,
   "deflection": 11,
-  "desperado": 6,
+  "desperado": 11,
   "discovered_attack": 11,
-  "discovered_check": 15,
-  "double_attack": 6,
+  "discovered_check": 16,
+  "double_attack": 7,
   "double_bishop_mate": 6,
-  "double_check": 15,
-  "dovetail_mate": 6,
+  "double_check": 24,
+  "dovetail_mate": 8,
   "early_queen": 2,
   "en_passant": 2,
-  "epaulette_mate": 6,
+  "epaulette_mate": 8,
   "evans_gambit": 1,
   "fools_mate": 1,
   "fork": 11,
   "fried_liver": 1,
   "greek_gift": 3,
-  "hanging_piece": 15,
-  "hanging_queen": 7,
+  "hanging_piece": 16,
+  "hanging_queen": 8,
   "hook_mate": 6,
   "hung_piece": 6,
   "ignoring_development": 2,
-  "interference": 4,
+  "interference": 9,
   "italian_game": 2,
   "key_squares": 2,
   "king_safety_mistake": 2,
-  "knight_fork": 15,
+  "knight_fork": 16,
   "ladder_mate": 2,
   "legal_moves": 1,
   "legals_mate": 1,
   "lucena_position": 2,
-  "mate_in_one": 10,
+  "mate_in_one": 13,
   "mate_in_two": 6,
-  "missed_threat": 7,
+  "missed_threat": 14,
   "opposition": 2,
   "outside_passed_pawn": 6,
   "overloaded_piece": 15,
@@ -69,19 +69,19 @@
   "pawn_fork": 9,
   "perpetual_check": 2,
   "philidor_position": 2,
-  "poisoned_pawn": 7,
+  "poisoned_pawn": 9,
   "promotion": 15,
   "queen_fork": 8,
   "queen_mate": 3,
-  "relative_pin": 8,
-  "removing_defender": 14,
+  "relative_pin": 10,
+  "removing_defender": 17,
   "repeated_moves": 2,
   "rook_mate": 3,
   "rule_of_the_square": 2,
-  "sacrifice": 15,
+  "sacrifice": 24,
   "scholars_mate": 1,
-  "skewer": 15,
-  "smothered_mate": 12,
+  "skewer": 19,
+  "smothered_mate": 24,
   "spotting_threats": 3,
   "stalemate": 2,
   "stalemate_trap": 2,
@@ -89,13 +89,13 @@
   "trapped_piece": 14,
   "triangulation": 2,
   "two_knights_defense": 1,
-  "underpromotion": 6,
+  "underpromotion": 9,
   "walked_into_fork": 6,
   "windmill": 2,
   "wrong_bishop": 1,
-  "x_ray": 5,
+  "x_ray": 11,
   "zugzwang": 5,
-  "zwischenzug": 14
+  "zwischenzug": 18
  },
  "needs_review": [
   {
@@ -6360,6 +6360,386 @@
     "status": "needs_review",
     "reasons": [
      "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   }
+  ]
+ },
+ "deepening": {
+  "import_date": "2026-10-04",
+  "phases": [
+   "middlegame",
+   "opening"
+  ],
+  "totals": {
+   "rejected": 11,
+   "needs_review": 31,
+   "verified": 128
+  },
+  "by_concept": {
+   "absolute_pin": 5,
+   "arabian_mate": 4,
+   "attraction": 6,
+   "back_rank_mate": 6,
+   "back_rank_weakness": 6,
+   "boden_mate": 14,
+   "clearance": 4,
+   "desperado": 5,
+   "discovered_check": 1,
+   "double_attack": 1,
+   "double_check": 9,
+   "dovetail_mate": 2,
+   "epaulette_mate": 2,
+   "hanging_piece": 1,
+   "hanging_queen": 1,
+   "interference": 5,
+   "knight_fork": 1,
+   "mate_in_one": 3,
+   "missed_threat": 7,
+   "poisoned_pawn": 2,
+   "relative_pin": 2,
+   "removing_defender": 3,
+   "sacrifice": 9,
+   "skewer": 4,
+   "smothered_mate": 12,
+   "underpromotion": 3,
+   "x_ray": 6,
+   "zwischenzug": 4
+  },
+  "not_verified": [
+   {
+    "id": "lichess_0v37a",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_5lzfi",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_90r1n",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_pfshr",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_pqk4x",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_mqfva",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_3krbf",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_6rncu",
+    "concept": "pin",
+    "status": "rejected",
+    "reasons": [
+     "concept: Pin: no pin is created or exploited"
+    ]
+   },
+   {
+    "id": "lichess_3ikh9",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (-10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_cvhtt",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_svvbx",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_uk3g3",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (-10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_umbcr",
+    "concept": "perpetual_check",
+    "status": "needs_review",
+    "reasons": [
+     "engine: final position is not clearly drawn (10000 cp)"
+    ]
+   },
+   {
+    "id": "lichess_qxwus",
+    "concept": "windmill",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 21.dxc6+ the learner is only 52 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_vvvuc",
+    "concept": "clearance",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 43...Bxf2+ the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_aija3",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 34.Bb2 the learner is only 35 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_k1tc6",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 36.Re5+ the learner is only 61 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_rd7c3",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 41...Ne2+ the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_tbwt9",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 50...Nf2+ the learner is only 22 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_yqb1e",
+    "concept": "interference",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 34...Rf3 the learner is only 35 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_y7q0q",
+    "concept": "x_ray",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 45...Be5+ the learner is only -4 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_v0wym_mistake",
+    "concept": "missed_threat",
+    "status": "rejected",
+    "reasons": [
+     "engine: 14...gxf6 only loses 0 cp — not a real mistake (best gxf6)"
+    ]
+   },
+   {
+    "id": "lichess_0aipv",
+    "concept": "discovered_attack",
+    "status": "rejected",
+    "reasons": [
+     "concept: Discovered attack: no discovered attack: no move uncovers a new threat by another piece"
+    ]
+   },
+   {
+    "id": "lichess_39ely",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 44...Rxc6 the learner is only -4 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_l92tl",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 31...Qxf3 the learner is only -13 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_sszth",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 37...Qxe4 the learner is only 8 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_x9yyn",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 39...Qxc3 the learner is only 92 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_024ua",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 22...dxe5 the learner is only -37 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_0s8jo",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 23.Bxg5 the learner is only 15 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_2y93s",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 25...N6xe5 the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_3odkn",
+    "concept": "removing_defender",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 19...e4 the learner is only 149 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_6sb2t",
+    "concept": "trapped_piece",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 12...b6 the learner is only 92 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_5iqmw",
+    "concept": "trapped_piece",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Nd5 the learner is only 26 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_89xcs",
+    "concept": "trapped_piece",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 21.c3 the learner is only 32 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_vx1nc",
+    "concept": "trapped_piece",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Qd8 the learner is only 111 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_3lfr6",
+    "concept": "zwischenzug",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 32.Rc8+ the learner is only 0 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_sdlht",
+    "concept": "zwischenzug",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 34.Qa1+ the learner is only 76 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_6cyr6",
+    "concept": "zwischenzug",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 27...Bxe5 the learner is only 47 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_mlg2k",
+    "concept": "zwischenzug",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 24...d3+ the learner is only 57 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_tejz0",
+    "concept": "sacrifice",
+    "status": "rejected",
+    "reasons": [
+     "concept: Sacrifice: the sacrifice is never paid back (no mate, no material regained)"
+    ]
+   },
+   {
+    "id": "lichess_0nehe",
+    "concept": "trapped_piece",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 9.Bxg7 the learner is only -34 cp better — the tactic doesn't clearly win"
+    ]
+   },
+   {
+    "id": "lichess_q9dra",
+    "concept": "zwischenzug",
+    "status": "needs_review",
+    "reasons": [
+     "engine: after 9...d5 the learner is only -6 cp better — the tactic doesn't clearly win"
     ]
    }
   ]

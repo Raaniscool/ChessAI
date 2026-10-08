@@ -35,6 +35,7 @@ from . import rating as R
 from .help import KINDS as HELP_KINDS, aligned_flags
 
 RECENT = 10                 # results remembered per concept
+RECENT_RECOGNITION = 8      # unprompted recognitions remembered per concept (one per Training segment)
 MASTERY_WINDOW = 6          # results a mastery decision looks at
 MASTERED_SCORE = 0.8
 WEAK_SCORE = 0.45
@@ -90,6 +91,15 @@ class ConceptState:
     explain_kinds: dict = field(default_factory=dict)     # kind -> count (explain / deeper / question)
     explained: int = 0                    # resolved exercises with at least one request
     recent_explained: list[int] = field(default_factory=list)  # 1/0 per entry of `recent`
+    # unprompted recognition (assessment: a Training position's hidden idea, nothing announced).
+    # Kept strictly apart from `attempts`/`recent`, which are *prompted* puzzle and lesson
+    # results: solving a fork when told there is a fork is not the same evidence as spotting it
+    # in a real position. Written by assessment.record.note_recognition, one per segment.
+    training_tested: int = 0              # recognition attempts (hidden ideas met in Training)
+    training_found: int = 0               # ... of which the idea was found straight away
+    training_missed: int = 0              # ... and missed
+    training_recent: list[float] = field(default_factory=list)  # 1/0 per attempt, newest last
+    training_last: str | None = None
 
     @classmethod
     def from_dict(cls, d: dict) -> "ConceptState":

@@ -98,6 +98,19 @@ def test_complete_strips_thinking(monkeypatch):
     assert captured["url"] == "http://localhost:11434/v1/chat/completions"
 
 
+def test_complete_honors_per_request_route_timeout(monkeypatch):
+    captured = {}
+
+    def fake_post(url, json, headers, timeout):
+        captured["timeout"] = timeout
+        return FakeResponse('{"action":"lesson_question"}')
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", fake_post)
+    teacher = QwenTeacher(make_settings())
+    assert teacher.complete([{"role": "user", "content": "route"}], 360, timeout=1.25)
+    assert captured["timeout"] == 1.25
+
+
 def test_empty_reply_raises_so_app_falls_back(monkeypatch):
     monkeypatch.setattr(qwen_mod.httpx, "post", lambda *a, **k: FakeResponse("<think>only thoughts"))
     with pytest.raises(TeacherUnavailable):

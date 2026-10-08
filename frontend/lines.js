@@ -9,6 +9,7 @@
 //
 // The legality check uses chess.js, passed in, so this file has no import side effects and
 // is unit tested with `node --test frontend/tests`.
+import {parsePosition} from "./position.js"
 
 // Text allowed between two moves of one line: spaces and commas ("Nc7+, Kd8, Nxa7").
 const LINE_GAP = /^[\s,]*$/
@@ -24,7 +25,7 @@ export function isBareSquare(san) {
 export function resolveLine(sans, fens, Chess) {
   for (const fen of fens || []) {
     let chess
-    try { chess = new Chess(fen) } catch (_) { continue }
+    try { chess = parsePosition(Chess, fen, "Move-line starting position") } catch (_) { continue }
     const positions = [chess.fen()]
     let ok = true
     for (const san of sans) {

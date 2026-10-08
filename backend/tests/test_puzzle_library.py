@@ -22,6 +22,7 @@ from app.puzzles.select import MAX_GAP, novelty, slots, targets
 from app.session import SessionManager, set_manager
 from tests.games_helpers import fork_engine, fork_game
 from tests.knowledge_helpers import FORK_FEN, fork_record as _fork_record, make_library
+from tests.session_helpers import confirm_advance, confirm_reveal
 from tests.test_api import _fresh_state, client as api_client  # noqa: F401  (fixtures)
 
 LIB = get_knowledge()
@@ -133,10 +134,10 @@ def test_a_lesson_records_the_puzzle_outcome_and_time(api_client, tmp_path):  # 
         start = api_client.post(f"/api/lessons/{body['first_lesson_id']}/start").json()
         sid, step = start["session_id"], start["step"]
         while step["type"] != "exercise":
-            step = api_client.post(f"/api/sessions/{sid}/advance").json()["step"]
+            step = confirm_advance(api_client, sid)["step"]
         while True:  # reveal every move of the first example
-            api_client.post(f"/api/sessions/{sid}/reveal")
-            nxt = api_client.post(f"/api/sessions/{sid}/advance").json()
+            confirm_reveal(api_client, sid)
+            nxt = confirm_advance(api_client, sid)
             if nxt["completed"] or nxt["step"]["type"] != "exercise" or nxt["step"].get("example") != step.get("example"):
                 break
         from app.knowledge.usage import get_usage

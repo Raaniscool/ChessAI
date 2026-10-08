@@ -3,6 +3,8 @@
 // After each segment: accuracy, important mistakes, missed chances, concepts, what went well, what to
 // work on — then Continue starts the next one at once (each mode goes on as long as you like).
 
+import {parsePosition} from "./position.js"
+
 export const MODE_TEXT = {
   opening: "Positions from real opening theory, a few moves in. Play on from there.",
   middlegame: "Positions from real games, in the middle of the fight.",
@@ -50,11 +52,12 @@ export function reportSections(result) {
   return out
 }
 
-export function createTrainer({api, board, showPosition, Chess, COLOR, legalInputHandler, escapeHtml, setStatus,
+export function createTrainer({api, board, showPosition, verifiedMove, addMarkers, isPositionVerified,
+  Chess, COLOR, legalInputHandler, escapeHtml, setStatus,
   nav = null, MoveHistory = null, showNode = null, sounds = null, el, onShow, onExit}) {
   const st = {
     mode: null, modeLabel: "", seg: null, chess: null, busy: false, active: false, token: 0, result: null,
-    home: null, history: MoveHistory ? new MoveHistory(new Chess().fen()) : null, inputOpen: false,
+    home: null, history: MoveHistory ? new MoveHistory(new Chess().fen()) : null, inputOpen: false, pending: null,
   }
   const show = (node, on) => node.classList.toggle("hidden", !on)
   const orientation = () => (st.seg && st.seg.side === "black" ? COLOR.black : COLOR.white)
@@ -159,6 +162,7 @@ export function createTrainer({api, board, showPosition, Chess, COLOR, legalInpu
   async function start(mode, label) {
     st.token++
     const token = st.token
+    setInput(false)
     st.mode = mode
     st.modeLabel = label || (st.home && (st.home.modes.find(m => m.id === mode) || {}).label) || "Training"
     st.result = null
@@ -177,78 +181,132 @@ export function createTrainer({api, board, showPosition, Chess, COLOR, legalInpu
       return
     }
     if (token !== st.token) return
-    st.seg = res.segment
-    st.chess = new Chess(st.seg.fen)
-    if (st.history) st.history.reset(st.seg.fen)
+    const segment = res.segment
+    let startFen
+    try {
+      if (!segment) throw new Error("The server did not return a Training position.")
+      startFen = parsePosition(Chess, segment.start_fen || segment.fen, "Training position").fen()
+      await showPosition(startFen, {orientation: segment.side === "black" ? COLOR.black : COLOR.white})
+      if (!isPositionVerified(startFen)) throw new Error("The Training position was not confirmed on the board.")
+    } catch (err) {
+      message(`I couldn't verify that Training position. ${err.message}`, "bad")
+      return
+    }
+    if (token !== st.token || !st.active) return
+    st.seg = segment
+    st.chess = parsePosition(Chess, startFen, "Training position")
+    if (st.history) st.history.reset(startFen)
     track()
     el.title.textContent = st.modeLabel
     info()
     message("Your move. Play it like a real game — the analysis comes after the segment.")
-    await render()
-    if (token !== st.token || !st.active) return
     setInput(true)
   }
 
-  const input = legalInputHandler(() => (st.inputOpen && learnerTurn() ? st.chess : null), (from, to) => onMove(from, to))
+  const input = legalInputHandler(() => (st.inputOpen && learnerTurn() ? st.chess : null),
+    (from, to, receipt) => {
+      const pending = onMove(from, to, receipt)
+      st.pending = pending
+      pending.finally(() => { if (st.pending === pending) st.pending = null }).catch(() => {})
+      return pending
+    })
 
   function play(chess, uci) {
     return chess.move({from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || "q"})
   }
 
-  async function onMove(from, to) {
-    if (st.busy || !st.seg || (st.history && !st.history.atLatest)) return
-    const legal = st.chess.moves({square: from, verbose: true}).filter(m => m.to === to)
-    if (!legal.length) return
-    const uci = from + to + (legal.some(m => m.promotion) ? "q" : "")
-    const token = st.token
+  async function onMove(from, to, receipt) {
+    if (!st.active || st.busy || !st.seg || (st.history && !st.history.atLatest)) return
+    const transition = receipt && receipt.transition
+    if (!transition || receipt.beforeFen !== st.chess.fen() || transition.from !== from || transition.to !== to ||
+        !isPositionVerified(transition.afterFen)) {
+      setInput(false)
+      message("I couldn't confirm that Training move. The segment has been paused before scoring it.", "bad")
+      return
+    }
+    const uci = transition.uci
+    const beforeFen = receipt.beforeFen
+    const token = ++st.token // invalidate any re-entry sync that started before this move
     st.busy = true
     setInput(false)
     if (nav) nav.lock("auto", "puzzles")
+    let canResume = true
     try {
-      const move = play(st.chess, uci)
-      sound(move, st.chess)
-      if (st.history) { st.history.append(st.chess.fen(), uci, move && move.san); if (nav) nav.refresh() }
-      await render()
-      let res
-      try {
-        res = await api(`/api/puzzles/training/${st.seg.id}/move`, "POST", {uci})
-      } catch (err) {
-        if (token !== st.token) return
-        st.chess = new Chess(st.seg.fen)   // not accepted: back to the last confirmed position
-        if (st.history) { st.history.reset(st.seg.start_fen); replay(st.seg) }
-        await render()
-        message(err.message, "bad")
-        return
-      }
+      st.chess = parsePosition(Chess, transition.afterFen, "Training learner move")
+      sound(transition.move, st.chess)
+      let res = await api(`/api/puzzles/training/${st.seg.id}/move`, "POST", {uci, expected_fen: beforeFen})
       if (token !== st.token) return
       if (res.bot_move) {
-        await sleep(350)
+        await sleep(350) // visual pacing only
         if (token !== st.token) return
-        const reply = play(st.chess, res.bot_move.uci)
-        sound(reply, st.chess)
-        if (st.history) { st.history.append(st.chess.fen(), res.bot_move.uci, reply && reply.san); if (nav) nav.refresh() }
-        await render()
+        const fromSquare = res.bot_move.uci.slice(0, 2)
+        const piece = st.chess.get(fromSquare)
+        if (!piece) throw new Error(`The bot's source piece is missing from ${fromSquare}.`)
+        const reply = await verifiedMove(st.chess.fen(), res.bot_move.uci, {
+          expectedPiece: {color: piece.color, type: piece.type}, label: "Training bot move",
+        })
+        if (token !== st.token || !st.active) return
+        st.chess = parsePosition(Chess, reply.afterFen, "Training bot result")
+        sound(reply.move, st.chess)
+        await addMarkers([
+          {marker: {class: "marker-lastmove", slice: "markerSquare"}, square: reply.from},
+          {marker: {class: "marker-lastmove", slice: "markerSquare"}, square: reply.to},
+        ], reply.afterFen, "Training bot move highlight")
+      }
+      if (token !== st.token) return
+      const serverFen = res.segment && (res.segment.current_fen || res.segment.fen)
+      if (!serverFen) throw new Error("The Training service returned no current position.")
+      const localFields = st.chess.fen().split(" ")
+      const serverFields = parsePosition(Chess, serverFen, "Training server position").fen().split(" ")
+      const sameLegalState = localFields.slice(0, 4).join(" ") === serverFields.slice(0, 4).join(" ")
+      if (!sameLegalState || !isPositionVerified(serverFen)) {
+        await showPosition(serverFen, {orientation: orientation()})
+        if (!isPositionVerified(serverFen)) throw new Error("The server position could not be synchronized to the board.")
+        message("The Training service returned a different position. I synchronized the board before continuing.", "bad")
+      } else {
+        message("")
       }
       st.seg = res.segment
+      replay(st.seg) // rebuild the mirror/history from the server-confirmed move sequence
+      if (!isPositionVerified(st.chess.fen())) throw new Error("The confirmed Training history did not match the board.")
       info()
       el.end.disabled = !st.seg.learner_moves
       if (res.ended) {
         await finish()
         return
       }
-      message("")
+    } catch (err) {
+      if (token !== st.token) return
+      try {
+        const live = await api(`/api/puzzles/training/${st.seg.id}`)
+        const serverFen = live.current_fen || live.fen
+        await showPosition(serverFen, {orientation: orientation()})
+        if (!isPositionVerified(serverFen)) throw new Error("The recovered Training board could not be verified.")
+        st.seg = live
+        replay(live)
+        info()
+        message(`The Training move was not safely confirmed. I synchronized the segment. ${err.message}`, "bad")
+      } catch (recoveryError) {
+        canResume = false
+        setInput(false)
+        message(`The Training position is uncertain. Reload this segment before continuing. ${recoveryError.message}`, "bad")
+      }
     } finally {
       st.busy = false
       if (nav) nav.unlock("auto", "puzzles")
-      if (token === st.token && st.seg && !st.seg.end_reason && !st.result && st.active) setInput(learnerTurn())
+      if (canResume && token === st.token && st.seg && !st.seg.end_reason && !st.result && st.active) {
+        setInput(learnerTurn())
+      }
     }
   }
 
   function replay(seg) {
-    const chess = new Chess(seg.start_fen)
-    for (const uci of seg.moves_uci) {
+    const chess = parsePosition(Chess, seg && (seg.start_fen || seg.fen), "Training position")
+    if (st.history) st.history.reset(chess.fen())
+    for (const uci of seg.moves_uci || []) {
       const m = play(chess, uci)
-      st.history.append(chess.fen(), uci, m && m.san)
+      if (!m) throw new Error("The Training line is not legal from its starting position.")
+      if (st.history) st.history.append(chess.fen(), uci, m.san)
     }
     st.chess = chess
     if (nav) nav.refresh()
@@ -311,15 +369,57 @@ export function createTrainer({api, board, showPosition, Chess, COLOR, legalInpu
     activate() { st.active = true },
     async enter() {
       st.active = true
+      const token = st.token
+      if (st.pending) {
+        try { await st.pending } catch (_) { /* onMove reports and recovers its own failure */ }
+        if (!st.active || token !== st.token) return
+      }
       if (!st.seg) return
+      const segmentId = st.seg.id
+      try {
+        // A move request can finish while this tab is hidden. Re-read the server's move list
+        // before restoring the board; never trust the local mirror after an interrupted request.
+        const live = await api(`/api/puzzles/training/${segmentId}`)
+        if (!st.active || token !== st.token || !st.seg || st.seg.id !== segmentId) return
+        st.seg = live
+        replay(live)
+        if (!isPositionVerified(st.chess.fen())) {
+          await showPosition(live.current_fen || live.fen, {orientation: orientation()})
+          if (!st.active || token !== st.token) return
+          if (!isPositionVerified(st.chess.fen())) throw new Error("The current Training position was not confirmed.")
+        }
+      } catch (err) {
+        if (st.active && token === st.token) {
+          setInput(false)
+          setStatus(`I couldn't synchronize Training with the saved move list. Reload this segment before continuing. ${err.message}`)
+          message("The Training position is paused until it can be confirmed.", "bad")
+        }
+        return
+      }
+      if (!st.active || token !== st.token) return
       track()
       info()
-      await render()
-      if (!st.active) return
+      try {
+        await render()
+        if (!st.active || token !== st.token) return
+        if (!isPositionVerified(st.chess.fen())) throw new Error("The restored Training board does not match its move history.")
+      } catch (err) {
+        if (st.active && token === st.token) {
+          setInput(false)
+          setStatus(`I couldn't restore the Training board safely. ${err.message}`)
+          message("The Training position is paused until it can be confirmed.", "bad")
+        }
+        return
+      }
+      if (st.seg.end_reason && !st.result && st.seg.learner_moves > 0) {
+        await finish() // a finish request may have committed while this tab was hidden
+        return
+      }
       if (!st.result && !st.seg.end_reason && !st.busy && (!st.history || st.history.atLatest)) setInput(learnerTurn())
     },
     leave() {
       st.active = false
+      st.token++
       st.inputOpen = false
       board.disableMoveInput()
     },

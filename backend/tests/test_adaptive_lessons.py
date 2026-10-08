@@ -1,4 +1,5 @@
 """Personalized plans (learner model → lesson shape) and in-lesson adaptation."""
+from tests.session_helpers import confirm_advance
 import tempfile
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from app.learner.personalize import piece_reminder, roles_for
 from app.learner.recommend import suggestions
 from app.planner.knowledge_lessons import create_knowledge_plan
 from tests.test_api import _fresh_state, client  # noqa: F401  (fixtures)
+from tests.session_helpers import confirm_reveal
 
 LIB = get_knowledge()
 # Personalized plans pick examples on the skill profile's scale (learner.training_level), so their
@@ -230,7 +232,7 @@ def test_after_mastering_a_concept_suggest_a_related_new_one():
 # ------------------------------------------------------------------ over HTTP
 def _walk_to_exercise(client, sid, step):  # noqa: F811
     while step["type"] != "exercise":
-        r = client.post(f"/api/sessions/{sid}/advance").json()
+        r = confirm_advance(client, sid)
         assert not r["completed"]
         step = r["step"]
     return step
@@ -277,7 +279,7 @@ def test_a_lesson_records_results_adapts_and_ends_with_next_steps(client):  # no
         pytest.skip("the chosen move happened to be accepted")
     second = client.post(f"/api/sessions/{sid}/move", json={"uci": wrong.uci()}).json()
     assert second["tries"] == 2 and second["help"]["offer"] == "hint"
-    revealed = client.post(f"/api/sessions/{sid}/reveal").json()
+    revealed = confirm_reveal(client, sid)
     assert revealed["uci"]  # the board can play the answer
     profile = get_profile()
     assert profile.stats["reveals"] >= 1
@@ -286,14 +288,14 @@ def test_a_lesson_records_results_adapts_and_ends_with_next_steps(client):  # no
     # finish the lesson
     notes = []
     while True:
-        r = client.post(f"/api/sessions/{sid}/advance").json()
+        r = confirm_advance(client, sid)
         if r["completed"]:
             break
         step = r["step"]
         if step.get("coach_note"):
             notes.append(step["coach_note"])
         if step["type"] == "exercise":
-            client.post(f"/api/sessions/{sid}/reveal")
+            confirm_reveal(client, sid)
     assert revealed["adapted"]["note"] in notes
     assert r["summary"]["positions"] >= 3 and r["summary"]["revealed"] == r["summary"]["positions"]
     assert r["summary"]["adapted"] >= 1 and "hard" in r["summary"]["text"]

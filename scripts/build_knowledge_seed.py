@@ -60,11 +60,17 @@ def main() -> int:
     ap.add_argument("--expand", action="store_true",
                     help="rebuild only the item-9 expansion (new tactics, mates, endgames, mistakes)")
     ap.add_argument("--expand-per-concept", type=int, default=6)
+    ap.add_argument("--deepen", choices=("middlegame", "opening", "both"),
+                    help="verify more real-game positions whose key position is in this phase")
+    ap.add_argument("--deepen-per-concept", type=int, default=10,
+                    help="candidates proposed per concept by --deepen (MAX_PER_CONCEPT still applies)")
     args = ap.parse_args()
     if args.tiers:
         return add_tiers(args)
     if args.expand:
         return add_expansion(args)
+    if args.deepen:
+        return add_deepen(args)
 
     with tempfile.TemporaryDirectory() as tmp:  # an empty library with the real concept graph
         shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
@@ -150,7 +156,11 @@ def build(library: KnowledgeLibrary, engine, args) -> list[dict]:
     return results
 
 
-MAX_PER_CONCEPT = 15  # balance: no idea dominates the library (tests/test_knowledge_engine.py)
+# Balance: no idea dominates the library (tests/test_knowledge_engine.py). Raised from 15 when the
+# middlegame was deepened: the cap is what kept every common tactic at its first ~15 (mostly short
+# endgame) positions, so the middlegame pool stayed thin. At 24 no concept is over ~4% of the
+# library and the guard still catches a runaway build.
+MAX_PER_CONCEPT = 24
 # tactics the generator can build simple positions for; a starter is added only when the easiest
 # verified example of the concept is rated above STARTER_ABOVE (i.e. too hard for a beginner)
 STARTER_CONCEPTS = ("knight_fork", "queen_fork", "pawn_fork", "skewer", "absolute_pin", "hanging_piece",
@@ -370,6 +380,104 @@ def add_expansion(args) -> int:
     report["by_concept"] = dict(sorted(Counter(e.concept for e in everything).items()))
     report["expansion"] = {
         "import_date": lichess_puzzles.EXPANSION_DATE,
+        "totals": dict(Counter(r["status"] for r in results)),
+        "by_concept": dict(sorted(Counter(r["record"]["concept"] for r in results
+                                          if r["status"] == "verified").items())),
+        "not_verified": [{"id": r["id"], "concept": r["record"].get("concept"), "status": r["status"],
+                          "reasons": r["reasons"]} for r in results if r["status"] != "verified"],
+    }
+    report_path.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    return 0
+
+
+DEEPEN_FILES = ("lichess_midgame.json", "lichess_opening.json")
+DEEPEN_IMPORTER = {"middlegame": "lichess_midgame", "opening": "lichess_opening"}
+
+
+def add_deepen(args) -> int:
+    """Verify more real-game positions whose key position is in a thin phase (--deepen).
+
+    Training's position pool *is* the puzzle library, and every importer above spends its
+    per-concept budget on the shortest solutions — which are mostly endgame positions. The
+    middlegame pool stayed around 140 positions against nearly 300 endgame ones, while ~190
+    verified-able Lichess positions out of the same local pools were never imported. This stage
+    imports them: same candidate sources, same verification pipeline, same per-concept cap
+    (MAX_PER_CONCEPT); only the order of the candidates changes, so the thin phase and the thin
+    concepts go first. Nothing is relaxed and nothing is invented.
+    """
+    phases = ("middlegame", "opening") if args.deepen == "both" else (args.deepen,)
+    examples = KNOWLEDGE / "examples"
+    old_files = [p for name in DEEPEN_FILES for p in examples.rglob(name)]
+    with tempfile.TemporaryDirectory() as tmp:  # the library without any previous deepening
+        shutil.copy(KNOWLEDGE / "concepts.json", Path(tmp) / "concepts.json")
+        for path in examples.rglob("*.json"):
+            if path not in old_files:
+                target = Path(tmp) / "examples" / path.relative_to(examples)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(path, target)
+        library = KnowledgeLibrary(data_dir=Path(tmp), load_runtime=False)
+        used = {(e.source or {}).get("source_id") for e in library.verified()}
+        total: Counter = Counter(e.concept for e in library.verified())
+        results: list[dict] = []
+        engine = get_engine()
+
+        def run(cand: dict, importer: str) -> str:
+            t = time.time()
+            rep = verify_candidate(cand, library, engine=engine, depth=args.depth, tier="global",
+                                   method="seed_builder")
+            record = rep.example.to_record() if rep.example is not None else cand
+            if rep.status == "verified":
+                record["verification"]["verified_at"] = lichess_puzzles.DEEPENING_DATE
+                library.add(rep.example)
+            results.append({"status": rep.status, "record": record, "reasons": rep.reasons, "id": cand.get("id"),
+                            "importer": importer, "phase": None})
+            print(f"{rep.status:13s} {cand.get('id', '?'):40s} {time.time() - t:5.1f}s", flush=True)
+            for reason in rep.reasons:
+                print(f"      - {reason[:200]}", flush=True)
+            return rep.status
+
+        try:
+            for phase in phases:
+                importer = DEEPEN_IMPORTER[phase]
+                kept = 0
+                for cand in lichess_puzzles.deepening_candidates(library, phase, per_concept=args.deepen_per_concept,
+                                                                 exclude=used):
+                    if total[cand["concept"]] >= MAX_PER_CONCEPT:
+                        continue
+                    cand["tags"] = list(dict.fromkeys([*cand.get("tags", []), "deepening", phase]))
+                    status = run(cand, importer)
+                    used.add(cand["source"]["source_id"])
+                    if status == "verified":
+                        total[cand["concept"]] += 1
+                        kept += 1
+                print(f"\n{phase}: {kept} verified positions added", flush=True)
+        finally:
+            engine.close()
+        everything = library.verified()
+    verified = [r["record"] for r in results if r["status"] == "verified"]
+    print(f"\n{dict(Counter(r['status'] for r in results))}  by concept: "
+          f"{dict(sorted(Counter(r['concept'] for r in verified).items()))}")
+    if args.dry_run:
+        return 0
+    by_file: dict[Path, list[dict]] = defaultdict(list)
+    for r in results:
+        if r["status"] == "verified":
+            by_file[examples / r["record"]["category"] / f"{r['importer']}.json"].append(r["record"])
+    for old in old_files:
+        old.unlink()
+    for path, records in sorted(by_file.items()):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        records.sort(key=lambda rec: (rec["concept"], rec["difficulty"], rec["id"]))
+        path.write_text(json.dumps(records, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {len(records):3d} -> {path.relative_to(ROOT)}")
+    report_path = KNOWLEDGE / "seed_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["totals"]["verified"] = len(everything)
+    report["by_category"] = dict(Counter(e.category for e in everything))
+    report["by_concept"] = dict(sorted(Counter(e.concept for e in everything).items()))
+    report["deepening"] = {
+        "import_date": lichess_puzzles.DEEPENING_DATE,
+        "phases": list(phases),
         "totals": dict(Counter(r["status"] for r in results)),
         "by_concept": dict(sorted(Counter(r["record"]["concept"] for r in results
                                           if r["status"] == "verified").items())),

@@ -5,6 +5,9 @@ against the session's `chess.Board` before any engine or teacher is involved.
 """
 from __future__ import annotations
 
+import copy
+import logging
+import re
 import time
 import uuid
 from dataclasses import dataclass, field, replace
@@ -18,6 +21,8 @@ from .lessons import Lesson, LessonLibrary, get_library
 from .lessons.schema import DemonstrateStep, ExerciseStep, TeachStep
 from .teacher.library_feedback import library_feedback, strip_said
 
+perf_log = logging.getLogger("chessai.performance")
+
 _CATEGORY_RANK = [
     Classification.EXCELLENT,
     Classification.GOOD,
@@ -30,6 +35,9 @@ _CATEGORY_RANK = [
 # Notes that contradict a lesson-verified move: the library already checked that it
 # keeps the win (a long mate beyond the live search depth is not a "missed mate").
 _LESSON_OVERRIDDEN_NOTES = ("missed_mate", "decided_position")
+_MOVE_QUALITY_QUESTION = re.compile(
+    r"\bwhy (?:is|was|does|did) (?:this|that|my|the last|the previous) move\b|"
+    r"\bwhat makes (?:this|that|my|the last|the previous) move\b", re.I)
 
 
 def agree_with_lesson(feedback):
@@ -63,6 +71,37 @@ class ExerciseConflict(SessionError):
 
 
 @dataclass
+class LearningState:
+    """Structured learning context. Board truth is referenced, never copied here."""
+
+    topic: str
+    topic_id: str | None
+    subtopic: str | None
+    mode: str
+    objective: str
+    stage: str
+    progress: dict
+    difficulty: str
+    relevant_context: list[str]
+    board_state_ref: dict
+
+    def as_dict(self) -> dict:
+        return {
+            "topic": self.topic,
+            "topic_id": self.topic_id,
+            "subtopic": self.subtopic,
+            "mode": self.mode,
+            "objective": self.objective,
+            "stage": self.stage,
+            "progress": dict(self.progress),
+            "difficulty": self.difficulty,
+            "relevant_context": list(self.relevant_context),
+            # This is an opaque reference only. The authoritative board remains Session.board.
+            "board_state_ref": dict(self.board_state_ref),
+        }
+
+
+@dataclass
 class Session:
     id: str
     lesson_id: str
@@ -73,6 +112,7 @@ class Session:
     exercise_accepted: bool = False
     status: str = "active"  # active | completed
     transcript: list[dict] = field(default_factory=list)
+    learning_state: LearningState | None = None
     last_feedback: object | None = None  # MoveFeedback of the latest graded move
     last_context: object | None = None   # LessonContext it was graded in
     # Adaptive lessons: the session's own copy of the steps (examples can be swapped or
@@ -96,12 +136,18 @@ class SessionManager:
 
     # --- lifecycle ---
 
-    def start(self, lesson_id: str) -> tuple[Session, dict]:
+    def start(self, lesson_id: str, history: list[dict] | None = None) -> tuple[Session, dict]:
         lesson = self.library.lesson(lesson_id)
+        clean_history = []
+        for entry in (history or [])[-8:]:
+            if isinstance(entry, dict) and entry.get("role") in ("user", "assistant") \
+                    and isinstance(entry.get("content"), str) and entry["content"].strip():
+                clean_history.append({"role": entry["role"], "content": entry["content"].strip()[:500]})
         session = Session(
             id=uuid.uuid4().hex[:12],
             lesson_id=lesson_id,
             steps=list(lesson.steps),
+            transcript=clean_history,
         )
         self._enter_step(session, lesson, 0)
         self._sessions[session.id] = session
@@ -115,6 +161,70 @@ class SessionManager:
 
     def lesson(self, session: Session) -> Lesson:
         return self.library.lesson(session.lesson_id)
+
+    def learning_state(self, session: Session) -> dict:
+        """Return current structured learning context, refreshed from the live lesson step."""
+        self._sync_learning_state(session)
+        assert session.learning_state is not None
+        return session.learning_state.as_dict()
+
+    def _sync_learning_state(self, session: Session) -> None:
+        lesson = self.lesson(session)
+        steps = self.steps(session)
+        course = self.library.course(lesson.course_id)
+        plan = course.meta.get("plan", {}) if course.kind == "plan" else {}
+        concept_ids = list(lesson.concepts or plan.get("knowledge", {}).get("concepts", []))
+        topic_id = concept_ids[0] if concept_ids else None
+        topic = None
+        try:
+            from .knowledge.library import get_knowledge
+            knowledge = get_knowledge()
+            if topic_id in knowledge.concepts:
+                topic = knowledge.concepts[topic_id].name
+        except Exception:
+            pass
+        topic = topic or plan.get("title") or course.title or lesson.title
+        step = steps[min(session.step_index, len(steps) - 1)]
+        step_concepts = list(getattr(step, "concepts", None) or lesson.concepts or [])
+        subtopic = None
+        if step_concepts:
+            try:
+                from .knowledge.library import get_knowledge
+                concepts = get_knowledge().concepts
+                subtopic = concepts[step_concepts[0]].name if step_concepts[0] in concepts else step_concepts[0].replace("_", " ")
+            except Exception:
+                subtopic = step_concepts[0].replace("_", " ")
+        if isinstance(step, ExerciseStep):
+            stage, mode = "practice", "practice"
+            objective = step.prompt
+        elif isinstance(step, DemonstrateStep):
+            stage, mode = "demonstration", "lesson"
+            objective = step.text
+        else:
+            stage, mode = "teaching", "lesson"
+            objective = step.text
+        total = len(steps)
+        done = total if session.status == "completed" else min(session.step_index, total)
+        progress = {
+            "current_step": min(session.step_index + 1, total),
+            "total_steps": total,
+            "completed_steps": done,
+            "percent": int((done / total) * 100) if total else 0,
+            "status": session.status,
+        }
+        recent_context = [
+            f"{entry['role']}: {entry['content'][:300]}"
+            for entry in session.transcript[-6:]
+            if isinstance(entry, dict) and entry.get("role") in ("user", "assistant")
+            and isinstance(entry.get("content"), str)
+        ]
+        session.learning_state = LearningState(
+            topic=str(topic), topic_id=topic_id, subtopic=subtopic, mode=mode,
+            objective=" ".join(str(objective or "").split())[:240], stage=stage, progress=progress,
+            difficulty=lesson.difficulty, relevant_context=recent_context,
+            board_state_ref={"kind": "session_board", "session_id": session.id,
+                             "authority": "SessionManager"},
+        )
 
     # --- board/step mechanics ---
 
@@ -133,6 +243,7 @@ class SessionManager:
             session.board = chess_system.parse_fen(step.fen)
             # puzzle timing: the clock starts at the example's first exercise step
             self._example_state(session, step).setdefault("started", time.monotonic())
+        self._sync_learning_state(session)
 
     def steps(self, session: Session) -> list:
         return session.steps or self.lesson(session).steps
@@ -253,9 +364,45 @@ class SessionManager:
             self._record_completed(session)
             self._learner(lambda p: p.record_lesson(self._lesson_concepts(session), completed=True,
                                                     lesson_id=lesson.id))
+            self._sync_learning_state(session)
             return None
         self._enter_step(session, lesson, next_index)
         return self.step_payload(session)
+
+    def prepare_advance(self, session: Session) -> dict:
+        """Preview the next position without changing lesson progression or learner state."""
+        if session.status == "completed":
+            raise ExerciseConflict("Lesson already completed")
+        steps = self.steps(session)
+        current = steps[session.step_index]
+        if isinstance(current, ExerciseStep) and not session.exercise_accepted:
+            raise ExerciseConflict("Resolve the exercise before moving on")
+        source_fen = session.board.fen(en_passant="fen")
+        target_index = session.step_index + 1
+        if target_index >= len(steps):
+            return {"completed": True, "source_index": session.step_index, "source_fen": source_fen}
+
+        # Build the target payload on an isolated snapshot. In particular, starting timers and
+        # changing board/step state happen only after the client has confirmed its rendered setup.
+        preview = copy.copy(session)
+        preview.board = session.board.copy()
+        preview.history = list(session.history)
+        preview.transcript = list(session.transcript)
+        preview.example_state = copy.deepcopy(session.example_state)
+        preview.outcomes = list(session.outcomes)
+        preview.change_kinds = list(session.change_kinds)
+        preview.notes = dict(session.notes)
+        preview.said = copy.deepcopy(session.said)
+        self._enter_step(preview, self.lesson(session), target_index)
+        return {"completed": False, "source_index": session.step_index, "source_fen": source_fen,
+                "target_index": target_index, "step": self.step_payload(preview)}
+
+    def confirm_advance(self, session: Session, source_index: int, source_fen: str) -> dict | None:
+        """Commit a prepared advance only if the source session did not change meanwhile."""
+        if session.step_index != source_index:
+            raise ExerciseConflict("The lesson step changed while the board was being prepared.")
+        self._verify_expected_position(session, source_fen)
+        return self.advance(session)
 
     def _record_completed(self, session: Session) -> None:
         ids = list(dict.fromkeys(s.example for s in self.steps(session) if getattr(s, "example", None)))
@@ -267,7 +414,19 @@ class SessionManager:
 
     # --- exercise interaction ---
 
-    def apply_move(self, session: Session, uci: str) -> dict:
+    @staticmethod
+    def _same_position(a: chess.Board, b: chess.Board) -> bool:
+        return (a.board_fen() == b.board_fen() and a.turn == b.turn and
+                a.castling_xfen() == b.castling_xfen() and a.ep_square == b.ep_square)
+
+    def _verify_expected_position(self, session: Session, expected_fen: str | None) -> None:
+        if expected_fen is None:
+            return
+        expected = chess_system.parse_fen(expected_fen)
+        if not self._same_position(expected, session.board):
+            raise ExerciseConflict("The lesson position changed. The board was not moved; reload the current step.")
+
+    def apply_move(self, session: Session, uci: str, expected_fen: str | None = None) -> dict:
         from .engine import get_engine
         from .config import get_settings
         from .teacher import FallbackTeacher, LessonContext
@@ -277,6 +436,9 @@ class SessionManager:
         step = self.current_step(session)
         if not isinstance(step, ExerciseStep):
             raise ExerciseConflict("This step does not accept moves")
+        # Compare every move-relevant position field, not move counters (which do not change
+        # legal moves). This prevents a stale browser from grading a move on another board.
+        self._verify_expected_position(session, expected_fen)
 
         before = session.board.copy()
         move = chess_system.parse_move(before, uci)  # raises ChessError if illegal
@@ -301,6 +463,7 @@ class SessionManager:
         else:
             session.wrong_tries += 1
             state["wrong"] = state.get("wrong", 0) + 1
+        self._sync_learning_state(session)
 
         lesson = self.lesson(session)
         example = self._example_for(session, at_or_before=False) if step.example else None
@@ -334,6 +497,7 @@ class SessionManager:
         session.last_context = context
         result = {
             "accepted": accepted,
+            "fen": session.board.fen(en_passant="fen"),
             "feedback": feedback.as_dict(),
             "explanation": FallbackTeacher().explain_move(feedback, context),
             "teacher": "fallback",
@@ -408,20 +572,13 @@ class SessionManager:
             "exhausted": session.hint_index >= len(step.hints),
         }
 
-    def reveal(self, session: Session) -> dict:
-        """Learner explicitly asks for the solution (never automatic)."""
+    def reveal_preview(self, session: Session) -> dict:
+        """Return the requested solution without unlocking the exercise yet."""
         step = self.current_step(session)
         if not isinstance(step, ExerciseStep):
             raise ExerciseConflict("Nothing to reveal in this step")
-        already = session.exercise_accepted
-        session.exercise_accepted = True
-        out = {"accepted_moves": step.accepted_san or [], "accepted": True}
-        if not already:
-            self._example_state(session, step)["revealed"] = True
-            adapted = self._exercise_resolved(session, step)
-            if adapted:
-                out["adapted"] = adapted
-        # the move itself, so the board can play it (UCI of the first accepted move)
+        out = {"accepted_moves": step.accepted_san or [], "accepted": False,
+               "fen": chess_system.parse_fen(step.fen).fen(en_passant="fen")}
         if step.accepted_san:
             try:
                 board = chess_system.parse_fen(step.fen)
@@ -429,6 +586,25 @@ class SessionManager:
             except ValueError:
                 pass
         return out
+
+    def reveal(self, session: Session) -> dict:
+        """Commit an explicitly requested solution after the client verified its display."""
+        step = self.current_step(session)
+        preview = self.reveal_preview(session)
+        already = session.exercise_accepted
+        session.exercise_accepted = True
+        out = {**preview, "accepted": True}
+        if not already:
+            self._example_state(session, step)["revealed"] = True
+            adapted = self._exercise_resolved(session, step)
+            if adapted:
+                out["adapted"] = adapted
+        return out
+
+    def confirm_reveal(self, session: Session, expected_fen: str | None = None) -> dict:
+        """Unlock a preview only if the server position still matches the verified client setup."""
+        self._verify_expected_position(session, expected_fen)
+        return self.reveal(session)
 
     @staticmethod
     def knowledge_concept_name(example) -> str | None:
@@ -712,32 +888,151 @@ class SessionManager:
 
     # --- chat ---
 
-    def _chat_context(self, session: Session):
+    def _board_facts(self, session: Session, *, include_legal_captures: bool = False) -> list[str]:
+        """Readable facts derived from the authoritative board for tutor context only."""
+        board = session.board
+        side = "White" if board.turn else "Black"
+        facts = [f"Current authoritative position: {side} to move; move {board.fullmove_number}."]
+        if board.is_check():
+            facts.append(f"{'White' if board.turn else 'Black'} is in check.")
+        if board.is_checkmate():
+            facts.append("The current position is checkmate.")
+        if board.is_stalemate():
+            facts.append("The current position is stalemate.")
+        for color, side in ((chess.WHITE, "White"), (chess.BLACK, "Black")):
+            pieces = []
+            for piece_type in (chess.KING, chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT, chess.PAWN):
+                squares = sorted(chess.square_name(square) for square in board.pieces(piece_type, color))
+                if squares:
+                    name = chess.piece_name(piece_type)
+                    pieces.append(f"{name}{'s' if len(squares) != 1 else ''} on {', '.join(squares)}")
+            facts.append(f"{side} pieces: " + ("; ".join(pieces) if pieces else "none"))
+        if include_legal_captures:
+            captures = [board.san(move) for move in board.legal_moves if board.is_capture(move)]
+            facts.append(f"Python-chess verified legal captures for {side} to move: " +
+                         (", ".join(captures) if captures else "none"))
+        if board.move_stack:
+            after = board.copy()
+            move = after.pop()
+            facts.append(f"Last move played: {after.san(move)}.")
+        return facts
+
+    @staticmethod
+    def _needs_engine(intent) -> bool:
+        if isinstance(intent, dict):
+            return bool(intent.get("requires_engine"))
+        return bool(getattr(intent, "requires_engine", False))
+
+    @staticmethod
+    def _format_move_feedback(feedback) -> str:
+        category = getattr(feedback.category, "value", str(feedback.category))
+        best_line = " ".join((feedback.best_pv_san or [])[:4]) or "unavailable"
+        played_line = " ".join((feedback.reply_pv_san or [])[:4]) or "unavailable"
+        return (f"Verified Stockfish feedback on the latest graded move {feedback.user_move_san}: "
+                f"lesson verdict {category}; measured loss versus the best move {feedback.loss_cp} centipawns; "
+                f"best alternative {feedback.best_move_san or 'unavailable'}; "
+                f"best line {best_line}; continuation after the played move {played_line}.")
+
+    def _last_move_feedback_fact(self, session: Session) -> str | None:
+        feedback = session.last_feedback
+        if feedback is None:
+            return None
+        try:
+            before = chess_system.parse_fen(feedback.fen_before)
+            after = chess_system.parse_fen(feedback.fen_after)
+            if not (self._same_position(session.board, before) or self._same_position(session.board, after)):
+                return None
+            return self._format_move_feedback(feedback)
+        except (AttributeError, TypeError, ValueError, ChessError):
+            return None
+
+    def _chat_context(self, session: Session, *, needs_engine: bool = False, intent=None,
+                      question: str = ""):
         from .teacher import LessonContext
 
+        started = time.perf_counter()
         lesson = self.lesson(session)
         example = self._example_for(session)
         solving = example is not None and self._solution_pending(session, example.id)
-        return LessonContext(
+        route = intent if isinstance(intent, dict) else {}
+        board_started = time.perf_counter()
+        board_facts = self._board_facts(session, include_legal_captures=route.get("action") == "board_question")
+        board_ms = (time.perf_counter() - board_started) * 1000
+        engine_started = time.perf_counter()
+        stockfish_calls = 0
+        if needs_engine:
+            try:
+                from .engine import get_engine
+                engine = get_engine()
+                move_feedback = None
+                if _MOVE_QUALITY_QUESTION.search(question or ""):
+                    move_feedback = self._last_move_feedback_fact(session)
+                    if move_feedback is None and session.board.move_stack:
+                        board_before = session.board.copy()
+                        last_move = board_before.pop()
+                        stockfish_calls += 1
+                        move_feedback = self._format_move_feedback(engine.evaluate_move(board_before, last_move))
+                if move_feedback:
+                    board_facts.append(move_feedback)
+                else:
+                    stockfish_calls += 1
+                    analysis = engine.analyse(session.board.copy())
+                    board_facts.append("Stockfish analysis of the authoritative current position: "
+                                       f"best move {analysis.best_move_san or 'unavailable'}; "
+                                       f"evaluation {analysis.score.as_dict() if analysis.score else 'unavailable'}; "
+                                       f"principal variation {' '.join(analysis.pv_san[:4]) or 'unavailable'}.")
+            except Exception as exc:  # analysis is optional; never substitute invented chess strength
+                board_facts.append(f"Stockfish analysis is unavailable ({exc}); do not guess a best move or evaluation.")
+        engine_ms = (time.perf_counter() - engine_started) * 1000 if needs_engine else 0.0
+        library_started = time.perf_counter()
+        facts = self._example_facts(session, example, session.board, reveal=not solving)
+        learning_state = self.learning_state(session)
+        library_ms = (time.perf_counter() - library_started) * 1000
+        context = LessonContext(
             course_title=self.library.course(lesson.course_id).title,
             lesson_title=lesson.title,
             concepts=lesson.concepts,
-            facts=self._example_facts(session, example, session.board, reveal=not solving),
+            facts=facts,
             example_id=example.id if example else None,
+            learning_state=learning_state,
+            board_facts=board_facts,
+            route_intent=route,
         )
+        perf_log.info("latency stage=chat_context duration_ms=%.1f board_facts_ms=%.1f library_context_ms=%.1f "
+                      "stockfish_ms=%.1f stockfish_requested=%d stockfish_calls=%d verified_example=%s "
+                      "board_fact_lines=%d",
+                      (time.perf_counter() - started) * 1000, board_ms, library_ms, engine_ms,
+                      int(needs_engine), stockfish_calls, bool(example), len(board_facts))
+        return context
 
-    def chat(self, session: Session, message: str) -> dict:
-        from .teacher import chat_or_fallback, get_teacher
+    def record_turn(self, session: Session, message: str, reply: str) -> None:
+        """Record non-streamed answers (for example a verified local definition) in lesson history."""
+        if not message or not message.strip():
+            return
+        user_text = message.strip()[:MAX_CHAT_CHARS]
+        reply_text = (reply or "").strip()[:MAX_CHAT_CHARS]
+        if not reply_text:
+            return
+        session.transcript += [{"role": "user", "content": user_text},
+                               {"role": "assistant", "content": reply_text}]
+        self._sync_learning_state(session)
+
+    def chat(self, session: Session, message: str, intent=None) -> dict:
+        from .teacher import FallbackTeacher, chat_or_fallback, get_teacher
 
         if not message or not message.strip():
             raise ChessError("Empty message")
         message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
         self._note_question(session, message)
-        context = self._chat_context(session)
+        context = self._chat_context(session, needs_engine=self._needs_engine(intent), intent=intent,
+                                     question=message)
         history = list(session.transcript)  # prompt gets the new message exactly once
-        reply, teacher_used = chat_or_fallback(get_teacher(), message, context, history)
-        session.transcript += [{"role": "user", "content": message},
-                               {"role": "assistant", "content": reply}]
+        route = intent if isinstance(intent, dict) else {}
+        if route.get("action") in {"greeting", "discovery"}:
+            reply, teacher_used = FallbackTeacher().chat(message, context, history), "fallback"
+        else:
+            reply, teacher_used = chat_or_fallback(get_teacher(), message, context, history)
+        self.record_turn(session, message, reply)
         return {"reply": reply, "teacher": teacher_used}
 
     # --- streaming (Qwen text appears as it's generated) ---
@@ -784,26 +1079,48 @@ class SessionManager:
             validate=lambda text: check_explanation(text, example),
         )
 
-    def chat_stream(self, session: Session, message: str):
-        from .teacher import FallbackTeacher, stream_events
+    def chat_stream(self, session: Session, message: str, intent=None):
+        from .teacher import FallbackTeacher, LessonContext, stream_events
         from .teacher.prompts import build_chat_messages
 
         if not message or not message.strip():
             raise ChessError("Empty message")
         message = message.strip()[:MAX_CHAT_CHARS]  # a pasted essay must not flood the model
         self._note_question(session, message)
-        context = self._chat_context(session)
+        route = intent if isinstance(intent, dict) else {}
+        local_reply = route.get("action") in {"greeting", "discovery"}
+        if local_reply:
+            # No live board, Stockfish result, or example is relevant to these closed local replies.
+            # Keep the structured lesson state so the fallback can still mention the active topic.
+            lesson = self.lesson(session)
+            context = LessonContext(course_title=self.library.course(lesson.course_id).title,
+                                    lesson_title=lesson.title, concepts=lesson.concepts,
+                                    learning_state=self.learning_state(session), route_intent=route)
+        else:
+            context = self._chat_context(session, needs_engine=self._needs_engine(intent), intent=intent,
+                                         question=message)
         history = list(session.transcript)
+
+        def make_messages():
+            prompt_started = time.perf_counter()
+            messages = build_chat_messages(message, context, history)
+            prompt_chars = sum(len(str(item.get("content", ""))) for item in messages)
+            perf_log.info("latency stage=prompt_build duration_ms=%.1f prompt_chars=%d approx_tokens=%d "
+                          "history_messages=%d board_fact_lines=%d verified_fact_lines=%d",
+                          (time.perf_counter() - prompt_started) * 1000, prompt_chars,
+                          prompt_chars // 4, len(history[-6:]), len(context.board_facts), len(context.facts))
+            return messages
+
         events = stream_events(
-            lambda: build_chat_messages(message, context, history),
+            make_messages,
             lambda: FallbackTeacher().chat(message, context, history),
+            force_fallback=local_reply,
         )
 
         def recording():
             for event in events:
                 if event["type"] == "done":
-                    session.transcript += [{"role": "user", "content": message},
-                                           {"role": "assistant", "content": event["text"]}]
+                    self.record_turn(session, message, event["text"])
                 yield event
         return recording()
 

@@ -6,7 +6,9 @@ directly, and so tests can substitute a fake engine.
 """
 from __future__ import annotations
 
+import logging
 import threading
+import time
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -16,6 +18,8 @@ import chess.engine
 from ..config import Settings, get_settings
 from .. import chess_system
 from .classification import Classification, Score, classify_move
+
+perf_log = logging.getLogger("chessai.performance")
 
 
 class EngineError(RuntimeError):
@@ -120,17 +124,30 @@ class UciEngine:
                 "to fetch the Stockfish WASM build."
             )
         self._lock = threading.Lock()
+        started = time.perf_counter()
+        status = "failed"
         try:
             self._engine = chess.engine.SimpleEngine.popen_uci(self.settings.engine_cmd)
+            status = "ready"
         except (OSError, chess.engine.EngineError) as exc:
             raise EngineUnavailable(f"Failed to start engine {self.settings.engine_cmd}: {exc}") from exc
+        finally:
+            perf_log.info("latency stage=stockfish_start duration_ms=%.1f status=%s",
+                          (time.perf_counter() - started) * 1000, status)
 
     def _analyse_score(self, board: chess.Board, depth: int) -> tuple[Score, list[chess.Move]]:
         limit = chess.engine.Limit(depth=depth)
-        info = self._engine.analyse(board, limit)
-        score = Score.from_pov_white(info["score"])
-        pv = list(info.get("pv", []))
-        return score, pv
+        started = time.perf_counter()
+        status = "error"
+        try:
+            info = self._engine.analyse(board, limit)
+            score = Score.from_pov_white(info["score"])
+            pv = list(info.get("pv", []))
+            status = "ok"
+            return score, pv
+        finally:
+            perf_log.info("latency stage=stockfish_search duration_ms=%.1f stockfish_searches=1 depth=%d status=%s",
+                          (time.perf_counter() - started) * 1000, depth, status)
 
     def analyse(self, board: chess.Board, depth: int | None = None) -> Analysis:
         depth = depth or self.settings.engine_depth
@@ -160,9 +177,17 @@ class UciEngine:
         fresh=True starts a new game first (clears the hash table), so the result depends only
         on the position and depth: library verification must be reproducible."""
         depth = depth or self.settings.engine_depth
-        with self._lock:
-            infos = self._engine.analyse(board, chess.engine.Limit(depth=depth), multipv=multipv,
-                                         game=object() if fresh else None)
+        started = time.perf_counter()
+        status = "error"
+        try:
+            with self._lock:
+                infos = self._engine.analyse(board, chess.engine.Limit(depth=depth), multipv=multipv,
+                                             game=object() if fresh else None)
+            status = "ok"
+        finally:
+            perf_log.info("latency stage=stockfish_search duration_ms=%.1f stockfish_searches=1 depth=%d "
+                          "multipv=%d status=%s", (time.perf_counter() - started) * 1000,
+                          depth, multipv, status)
         if isinstance(infos, dict):
             infos = [infos]
         lines = []

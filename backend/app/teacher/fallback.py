@@ -141,8 +141,72 @@ class FallbackTeacher:
         return text
 
     def chat(self, message: str, context: LessonContext, transcript: list[dict]) -> str:
+        """Answer simple board-state questions from verified facts even when Qwen is offline."""
+        import re
+        from ..planner.intent.conversation import LESSON_STATE_QUESTION
+
+        route = context.route_intent or {}
+        state = context.learning_state or {}
+        active_topic = state.get("topic")
+        if route.get("action") == "greeting":
+            if active_topic:
+                return f"Hi! We can continue your {active_topic} lesson, or switch to something else whenever you like."
+            return "Hi! I'm your chess coach. I can explain a concept, build a lesson, or give you a puzzle. What would you like to work on?"
+        if route.get("action") == "discovery":
+            options = "openings, tactics, strategy, endgames, checkmate patterns, and chess fundamentals"
+            if active_topic:
+                return f"I can teach {options}. Your {active_topic} lesson is still here if you'd like to return to it."
+            return f"I can teach {options}. Name a topic, ask for an explanation, or request a puzzle."
+        if route.get("action") == "lesson_question" and LESSON_STATE_QUESTION.search(message):
+            progress = state.get("progress") if isinstance(state.get("progress"), dict) else {}
+            current = progress.get("current_step", "?")
+            total = progress.get("total_steps", "?")
+            objective = state.get("objective") or "work through the current lesson"
+            return f"We're working on {state.get('topic') or context.lesson_title}. " \
+                   f"Right now the goal is: {objective} (step {current} of {total})."
+        if route.get("action") == "board_question":
+            facts = context.board_facts or []
+            current = next((line for line in facts if line.startswith("Current authoritative position:")), None)
+            if current is None:
+                return "I don't have an authoritative lesson-board position to read right now."
+            turn = re.search(r"(White|Black) to move; move (\d+)", current)
+            if re.search(r"\b(?:whose|who's) (?:move|turn)|\bwho moves\b", message, re.I) and turn:
+                return f"It's {turn.group(1)} to move, on move {turn.group(2)}."
+            capture_question = re.search(r"\b(?:can't|cannot|can not)\b", message, re.I) and \
+                re.search(r"\b(?:take|capture|captures|capturing)\b", message, re.I)
+            if capture_question:
+                named_side = re.search(r"\b(white|black)\b", message, re.I)
+                side = named_side.group(1).title() if named_side else (turn.group(1) if turn else None)
+                if turn and side and side != turn.group(1):
+                    return f"It's {turn.group(1)} to move, so {side} can't make a move in this position yet."
+                legal_line = next((line for line in facts
+                                   if line.startswith(f"Python-chess verified legal captures for {side} to move:")), None)
+                if legal_line:
+                    legal = legal_line.split(":", 1)[1].strip()
+                    if legal == "none":
+                        return f"Python-chess confirms {side} has no legal captures in the current position. " \
+                               "If you mean a particular pawn, tell me its square and I'll check that specific capture."
+                    return f"Python-chess verifies these legal captures for {side}: {legal}. " \
+                           "If you mean a different pawn, tell me its square and I can check that capture."
+            if route.get("requires_engine"):
+                move_feedback = next((line for line in facts
+                                      if line.startswith("Verified Stockfish feedback on the latest graded move")), None)
+                if move_feedback:
+                    return move_feedback
+                analysis = next((line for line in facts if line.startswith("Stockfish analysis of the authoritative")), None)
+                if analysis and "unavailable" not in analysis.lower():
+                    return analysis
+                return "I can't give a trustworthy best move or evaluation without Stockfish analysis of this verified position."
+            white = next((line for line in facts if line.startswith("White pieces:")), None)
+            black = next((line for line in facts if line.startswith("Black pieces:")), None)
+            if white and black:
+                return "The verified board is " + current.removeprefix("Current authoritative position: ").rstrip(".") + ". " + \
+                       white + " " + black
+            return current
+        active_note = (f" Your lesson on {active_topic} is still active; we can pick it up whenever you're ready."
+                       if active_topic else "")
         return (
-            "The AI teacher (Qwen) isn't available right now, so I can't answer questions in my own words. "
-            "Everything else still works: make a move and the engine will check it, use a hint if "
-            "you're stuck, or keep going with the lesson."
+            "The AI teacher (Qwen) isn't available right now, so I can't answer that in my own words. "
+            "I can still explain verified chess terms, show lesson examples, and check moves on the board."
+            + active_note
         )

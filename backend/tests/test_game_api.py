@@ -1,5 +1,6 @@
 """The /api/games endpoints, end to end, with a scripted engine (and optionally real Stockfish)."""
 from __future__ import annotations
+from tests.session_helpers import confirm_advance
 
 import json
 import os
@@ -161,7 +162,7 @@ def test_training_plan_becomes_a_playable_course(client):
     sid = step["session_id"]
     step = step["step"]
     while step["type"] != "exercise":
-        step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+        step = confirm_advance(client, sid)["step"]
     assert step["board"]["fen"] == FORK_FEN
     res = client.post(f"/api/sessions/{sid}/move", json={"uci": "b5c7"}).json()
     assert res["accepted"] is True

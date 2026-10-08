@@ -31,6 +31,7 @@ class StartRequest(BaseModel):
 
 class MoveRequest(BaseModel):
     uci: str
+    expected_fen: str | None = None
 
 
 def _error(status: int, message: str) -> JSONResponse:
@@ -104,24 +105,55 @@ def training_start(body: StartRequest):
             recent.append(h["concept"])
         if str(h.get("position", "")).startswith("opening:"):
             recent.append("opening:" + h["position"].split(":")[1])
+    segments = get_segments()
     try:
         position = choose(pool, phase, seen=training["seen"], used_puzzles=used, recent_concepts=recent,
-                          target=bot["estimate"] - ZONE_OFFSET, needs=concept_needs(profile, knowledge), rng=rng)
+                          target=bot["estimate"] - ZONE_OFFSET, needs=concept_needs(profile, knowledge), rng=rng,
+                          active=segments.open_positions())
     except LookupError:
         return _error(422, "No Training positions are available for this mode yet.")
-    seg = get_segments().new(body.mode, position, bot, seed)
-    get_store().update("local", lambda prof: setattr(prof, "training", _seen(prof.training, position.id)))
-    if position.hidden:
-        # the Puzzles tab won't serve this puzzle right away (it was just met here)
-        usage.record_used([SimpleNamespace(id=position.hidden["puzzle_id"], concept=position.hidden["concept"])])
+    seg = segments.new(body.mode, position, bot, seed)
+    # The position is not spent here: a segment that is abandoned (or never finished) must not burn
+    # it for good. It is only kept out of the next draw while this segment is open (`active` above)
+    # and marked seen once the segment has actually been played to a result (`_consume`).
     return {"segment": seg.public(), "mode_label": MODES[body.mode]}
 
 
-def _seen(training: dict, position_id: str) -> dict:
+def _consume(seg) -> None:
+    """The segment was played to a result: its position is seen (no repeat) and, for a puzzle
+    position, the Puzzles tab won't serve it right away (the learner just met its idea).
+
+    Called when the segment ends (the game finished) and when it is finished (analysed); never at
+    start, so an abandoned segment leaves the position in the pool.
+    """
     from .assessment import record
-    training = record.ensure(training)
-    record.mark_seen(training, position_id)
-    return training
+    from .knowledge.usage import get_usage
+    from .learner import get_store
+    if seg.consumed or not (seg.finished or seg.end_reason):
+        return                                   # still in play: nothing is spent yet
+
+    def apply(prof):
+        record.mark_seen(record.ensure(prof.training), seg.position.id)
+        return prof
+    seg.consumed = True
+    get_store().update("local", apply)
+    if seg.position.hidden:
+        get_usage().record_used([SimpleNamespace(id=seg.position.hidden["puzzle_id"],
+                                                 concept=seg.position.hidden["concept"])])
+
+
+@router.get("/{segment_id}")
+def training_segment(segment_id: str):
+    from .assessment.segment import get_segments
+    seg = get_segments().get(segment_id)
+    if seg is None:
+        return _error(404, "This Training segment has expired — start a new one.")
+    return seg.public()
+
+
+def _same_position(a: chess.Board, b: chess.Board) -> bool:
+    return (a.board_fen() == b.board_fen() and a.turn == b.turn and
+            a.castling_xfen() == b.castling_xfen() and a.ep_square == b.ep_square)
 
 
 @router.post("/{segment_id}/move")
@@ -134,6 +166,15 @@ def training_move(segment_id: str, body: MoveRequest):
     if seg.finished or seg.end_reason:
         return _error(409, "This segment is over.")
     board = seg.board()
+    if body.expected_fen is not None:
+        try:
+            expected = chess.Board(body.expected_fen)
+        except ValueError:
+            return _error(400, "invalid expected position")
+        if not expected.is_valid():
+            return _error(400, "invalid expected position")
+        if not _same_position(expected, board):
+            return _error(409, "The Training position changed. The board was not moved; reload the current segment.")
     if board.turn != seg.side:
         return _error(409, "It's not your move.")
     try:
@@ -159,6 +200,8 @@ def training_move(segment_id: str, body: MoveRequest):
         board.push_uci(bot_move["uci"])
         reason = end_reason(seg, board)
     seg.end_reason = reason
+    if reason is not None:
+        _consume(seg)          # the game ended: the position has been played, not just opened
     return {"segment": seg.public(), "bot_move": bot_move and {"uci": bot_move["uci"], "san": bot_move["san"]},
             "ended": reason is not None}
 
@@ -185,11 +228,15 @@ def training_finish(segment_id: str):
 
     def apply(prof):
         prof.training = record.apply(prof.training, seg, facts)
+        # the hidden idea found or missed here is unprompted recognition evidence for the learner
+        # model (kept apart from the prompted puzzle results it is now judged beside)
+        record.note_recognition(prof, facts)
         return prof
+    seg.finished = True
     profile = get_store().update("local", apply)
+    _consume(seg)              # analysed: the position is seen and the puzzle is spent
     needs = concept_needs(profile, knowledge)
     phases = phase_needs(profile)
-    seg.finished = True
     seg.result = {"segment": seg.public(), "analysis": _public_facts(facts),
                   "feedback": feedback.build(seg, facts, needs, phases, knowledge),
                   "profile": _summary(profile, knowledge)}

@@ -1,4 +1,5 @@
 """Instructional importance: explanation length, AI use and read-aloud follow what matters."""
+from tests.session_helpers import confirm_advance
 import chess
 import pytest
 
@@ -155,7 +156,7 @@ def test_move_results_carry_importance_and_skip_ai_for_minor_moves(api):
     start = api.post(f"/api/lessons/{body['first_lesson_id']}/start").json()
     sid, step = start["session_id"], start["step"]
     while step["type"] != "exercise":
-        step = api.post(f"/api/sessions/{sid}/advance").json()["step"]
+        step = confirm_advance(api, sid)["step"]
     board = chess.Board(step["board"]["fen"])
     results = []
     for move in list(board.legal_moves)[:6]:

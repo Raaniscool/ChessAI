@@ -31,6 +31,10 @@ class LessonContext:
     style: str = "balanced"            # brief | balanced | detailed
     importance: str | None = None      # critical | important | supporting | obvious
     learner_note: str = ""             # a line about the learner (learner.views.prompt_context)
+    # Derived on demand from SessionManager; no board/FEN is duplicated in learning state.
+    learning_state: dict = field(default_factory=dict)
+    board_facts: list[str] = field(default_factory=list)
+    route_intent: dict = field(default_factory=dict)
 
 
 class Teacher(Protocol):

@@ -28,7 +28,7 @@ from pathlib import Path
 
 import chess
 
-from .model import Puzzle, difficulty_of
+from .model import Puzzle, _accepted_san, difficulty_of
 from ..knowledge.positions import replay
 from .profile import CRITICAL_MARGIN, MATE_CP, MULTIPV, _close, build
 
@@ -137,7 +137,9 @@ def to_puzzle(record: dict, weakness_key: str, concept: str) -> Puzzle:
         concept=concept, concepts=tuple(dict.fromkeys([concept, *( [ev["concept"]] if ev.get("concept") else [])])),
         difficulty=difficulty_of(prof.rating), rating=prof.rating, fen=record["fen"],
         side_to_move="white" if board.turn else "black", solution=tuple(prof.solution),
-        learner_moves=len(prof.steps), accepted_first=tuple(dict.fromkeys([prof.solution[0], *accepted[0]])),
+        learner_moves=len(prof.steps),
+        # the same truth the solver judges with: the key move plus everything step 0 accepts
+        accepted_first=tuple(dict.fromkeys([prof.solution[0], *_accepted_san(board, prof.steps[0])])),
         uniqueness="multiple" if prof.steps[0].accepted else "unique",
         main_idea=f"Your game: move {ev.get('move_number')}", required_skill=concept, tags=("your_game",),
         source={"type": "user_game", "id": ev.get("game_id"), "license": None, "url": ev.get("url")},

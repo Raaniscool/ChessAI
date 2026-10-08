@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import asyncio
 import json
 import logging
 import time
@@ -17,7 +18,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import chess_system
@@ -27,10 +28,33 @@ from .engine import EngineUnavailable
 from .lessons import LessonNotFound, get_library
 from .planner import PlanError, get_catalog, plan_for_goal
 from .planner.store import delete_record, register_record, save_record
-from .session import SessionError, get_manager
+from .session import ExerciseConflict, SessionError, get_manager
 from .teacher import get_teacher
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+perf_log = logging.getLogger("chessai.performance")
+perf_log.setLevel(logging.INFO)
+if not perf_log.handlers:
+    _perf_handler = logging.StreamHandler()
+    _perf_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    perf_log.addHandler(_perf_handler)
+    perf_log.propagate = False
+
+
+def _warm_up_knowledge() -> None:
+    """Load the verified retrieval index before the first learner request arrives."""
+    started = time.perf_counter()
+    try:
+        from .knowledge.library import get_knowledge
+        library = get_knowledge()
+        perf_log.info("latency stage=knowledge_warmup duration_ms=%.1f verified_examples=%d status=done",
+                      (time.perf_counter() - started) * 1000, len(library.verified()))
+    except Exception:
+        # Keep startup usable in degraded mode; the endpoint reports the retrieval failure if used.
+        logging.getLogger("chessai").exception("Knowledge Library warm-up failed")
+        perf_log.info("latency stage=knowledge_warmup duration_ms=%.1f status=failed",
+                      (time.perf_counter() - started) * 1000)
+
 
 def _warm_up_qwen() -> None:
     """Load the model in the background so the learner's first reply isn't the slowest."""
@@ -51,6 +75,9 @@ def _warm_up_qwen() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # The verified index is used by local answers, routing and lesson context. Do its one-time
+    # validation before accepting traffic so it does not consume the learner's first TTFO.
+    await asyncio.to_thread(_warm_up_knowledge)
     _warm_up_qwen()
     yield
     from .engine.service import shutdown_engine
@@ -153,10 +180,34 @@ async def engine_unavailable_handler(request: Request, exc: EngineUnavailable):
 
 class MoveRequest(BaseModel):
     uci: str
+    expected_fen: str | None = None
+
+
+class RevealConfirmRequest(BaseModel):
+    expected_fen: str
+
+
+class AdvanceConfirmRequest(BaseModel):
+    source_index: int
+    source_fen: str
 
 
 class ChatRequest(BaseModel):
     message: str
+    intent: dict | None = None
+
+
+class StartLessonRequest(BaseModel):
+    history: list[dict] = Field(default_factory=list)
+
+
+class CoachRouteRequest(BaseModel):
+    message: str
+    session_id: str | None = None
+    # Used only before a lesson exists. Once session_id is provided, the server ignores this
+    # object and reads the authoritative learning state and transcript from SessionManager.
+    learning_state: dict | None = None
+    history: list[dict] = Field(default_factory=list)
 
 
 class Clarification(BaseModel):
@@ -179,6 +230,7 @@ class PlanRequest(BaseModel):
 
 class IntentRequest(BaseModel):
     message: str
+    session_id: str | None = None
 
 
 # --- API ------------------------------------------------------------------
@@ -281,6 +333,7 @@ def make_plan(body: PlanRequest) -> dict:
         personal = weakness_context(body.weakness, body.username, body.level)
         if personal is None:
             return JSONResponse(status_code=422, content={"error": "that weakness wasn't found in your analyzed games"})
+    plan_started = time.perf_counter()
     try:
         from .learner import get_profile
         record = plan_for_goal(body.goal, library_first=body.library, level=body.level, clarify=body.library,
@@ -289,11 +342,18 @@ def make_plan(body: PlanRequest) -> dict:
                                profile=get_profile())
     except ClarificationNeeded as need:
         # Several materially different readings: the learner chooses before anything is built.
+        perf_log.info("latency stage=plan_build duration_ms=%.1f status=clarify",
+                      (time.perf_counter() - plan_started) * 1000)
         return {"clarify": need.question.as_dict(), "goal": body.goal}
     except ClarificationError as exc:
+        perf_log.info("latency stage=plan_build duration_ms=%.1f status=invalid",
+                      (time.perf_counter() - plan_started) * 1000)
         return JSONResponse(status_code=422, content={"error": str(exc)})
     register_record(get_library(), record)
     save_record(record)
+    perf_log.info("latency stage=plan_build duration_ms=%.1f planner=%s lessons=%d status=done",
+                  (time.perf_counter() - plan_started) * 1000, record["plan"].get("planner", "unknown"),
+                  len(record.get("lessons", [])))
     return {
         "plan": record["plan"],
         "course_id": record["course"]["id"],
@@ -315,12 +375,101 @@ def knowledge_intent(body: IntentRequest) -> dict:
 
 @app.post("/api/knowledge/answer")
 def knowledge_answer(body: IntentRequest) -> dict:
-    """An instant answer to "what is a fork?" from the library (no AI call), or null."""
+    """An instant structured fact from local libraries (no AI call), or null for contextual chat."""
+    from .basic_explanations.library import get_basic_explanations
     from .knowledge.answers import quick_answer
     from .knowledge.glossary import get_glossary
     from .knowledge.library import get_knowledge
 
-    return {"answer": quick_answer(body.message[:300], get_knowledge(), get_glossary())}
+    started = time.perf_counter()
+    answer = quick_answer(body.message[:300], get_knowledge(), get_glossary(), get_basic_explanations())
+    perf_log.info("latency stage=quick_answer duration_ms=%.1f knowledge_lookup_calls=1 matched=%s source=%s",
+                  (time.perf_counter() - started) * 1000, bool(answer),
+                  (answer or {}).get("source", "none"))
+    if answer and body.session_id:
+        manager = get_manager()
+        manager.record_turn(manager.get(body.session_id), body.message,
+                            f"{answer.get('term', 'Chess concept')}: {answer.get('text', '')}")
+    return {"answer": answer}
+
+
+def _open_coach_reply(message: str, action: str, state: dict | None, history: list[dict]) -> str:
+    """Answer a no-session conversational turn without manufacturing a lesson or board."""
+    from .planner.intent.conversation import offline_reply
+
+    # These are closed, deterministic intents with useful local copy; a second model call cannot
+    # improve routing or correctness and would only delay the first visible reply.
+    if action in {"greeting", "discovery"}:
+        return offline_reply(action, message, state)
+
+    teacher = get_teacher()
+    if getattr(teacher, "name", "fallback") != "qwen":
+        return offline_reply(action, message, state)
+    from .teacher import LessonContext, chat_or_fallback
+    context = LessonContext(course_title="Chess coach", lesson_title="Open conversation", concepts=[],
+                            learning_state=state or {})
+    reply, used = chat_or_fallback(teacher, message[:2000], context, history[-8:])
+    return reply if used == "qwen" else offline_reply(action, message, state)
+
+
+@app.post("/api/coach/route")
+def coach_route(body: CoachRouteRequest) -> dict:
+    """Interpret this turn against the current lesson, without receiving a board from the browser."""
+    from .planner.intent.conversation import LESSON_STATE_QUESTION, route_message
+
+    started = time.perf_counter()
+    manager = get_manager()
+    if body.session_id:
+        session = manager.get(body.session_id)
+        learning_state = manager.learning_state(session)
+        history = list(session.transcript)
+    else:
+        session = None
+        learning_state = body.learning_state or {}
+        history = body.history
+
+    # Handle closed greetings/discovery before initializing or searching the Knowledge Library.
+    # A narrow lesson-status question can be routed from structured state here; other messages
+    # share one local intent classification between quick answers and the existing semantic router.
+    fast_state = learning_state if session is not None and LESSON_STATE_QUESTION.search(body.message) else None
+    decision = route_message(body.message, state=fast_state, history=history, fast_only=True)
+    quick_checked = False
+    if decision is None:
+        from .basic_explanations.library import get_basic_explanations
+        from .knowledge.answers import quick_answer
+        from .knowledge.glossary import get_glossary
+        from .knowledge.library import get_knowledge
+
+        quick_checked = True
+        lookup_started = time.perf_counter()
+        answer, question_intent = quick_answer(body.message[:300], get_knowledge(), get_glossary(),
+                                              get_basic_explanations(), with_intent=True)
+        lookup_ms = (time.perf_counter() - lookup_started) * 1000
+        perf_log.info("latency stage=quick_answer duration_ms=%.1f knowledge_lookup_calls=1 matched=%s source=%s",
+                      lookup_ms, bool(answer), (answer or {}).get("source", "none"))
+        if answer:
+            answer_text = f"{answer.get('term', 'Chess concept')}: {answer.get('text', '')}"
+            if session is not None:
+                manager.record_turn(session, body.message, answer_text)
+            perf_log.info("latency endpoint=coach_route duration_ms=%.1f action=explanation source=quick_answer "
+                          "model_calls=0 knowledge_lookup_calls=1", (time.perf_counter() - started) * 1000)
+            return {
+                "action": "explanation", "confidence": 1.0, "source": "quick_answer",
+                "topic": answer.get("term"), "topic_id": answer.get("concept"), "subtopic": None,
+                "mode": "explanation", "objective": "Explain the requested chess concept",
+                "preserve_context": True, "requires_engine": False, "clarification": None,
+                "quick_answer": answer,
+            }
+        decision = route_message(body.message, state=learning_state, history=history,
+                                 question_intent=question_intent)
+
+    result = decision.as_dict()
+    if session is None and decision.action not in {"start_lesson", "topic_change", "puzzle", "practice",
+                                                    "resume_lesson", "clarify", "mode_change", "continue_lesson"}:
+        result["reply"] = _open_coach_reply(body.message, decision.action, learning_state, history)
+    perf_log.info("latency endpoint=coach_route duration_ms=%.1f action=%s source=%s knowledge_lookup_calls=%d",
+                  (time.perf_counter() - started) * 1000, decision.action, decision.source, int(quick_checked))
+    return result
 
 
 @app.get("/api/plans")
@@ -328,6 +477,57 @@ def list_plans() -> dict:
     plans = [c.meta.get("plan", {}) for c in get_library().courses() if c.kind == "plan"][::-1]
     plans.sort(key=lambda p: p.get("created", ""), reverse=True)
     return {"plans": plans}
+
+
+@app.get("/api/plans/{plan_id}/progression")
+def plan_progression(plan_id: str, current_lesson_id: str | None = None, restart: bool = False) -> dict:
+    """Return the next available lesson from this stored plan, using saved progress.
+
+    Lesson order comes from the registered course; completion comes from the same
+    source used by the Your Lessons sidebar. No model is asked to infer progression.
+    """
+    library = get_library()
+    course = library.course(f"plan_{plan_id}")
+    plan = course.meta.get("plan", {})
+    if course.kind != "plan" or plan.get("id") != plan_id:
+        raise LessonNotFound(f"Unknown lesson plan: {plan_id}")
+
+    lessons = [(n, item) for n, item in enumerate(course.lessons, start=1) if item.status == "available"]
+    completed = _completed()
+    current = next((entry for entry in lessons if entry[1].id == current_lesson_id), None)
+    if restart:
+        target_position = 0 if lessons else None
+    else:
+        target_position = next((i for i, entry in enumerate(lessons) if entry[1].id not in completed), None)
+    target = lessons[target_position] if target_position is not None else None
+
+    last_completed = None
+    if current and current[1].id in completed:
+        last_completed = current
+    elif target_position is not None:
+        last_completed = next((entry for entry in reversed(lessons[:target_position])
+                               if entry[1].id in completed), None)
+    elif lessons:
+        last_completed = next((entry for entry in reversed(lessons) if entry[1].id in completed), None)
+
+    def item_payload(entry):
+        if not entry:
+            return None
+        number, item = entry
+        return {"id": item.id, "title": item.title, "number": number}
+
+    return {
+        "plan_id": plan_id,
+        "plan_title": course.title,
+        "summary": course.description,
+        "goal": plan.get("goal", ""),
+        "related": plan.get("related", []),
+        "lesson_count": len(lessons),
+        "lesson_titles": [item.title for _, item in lessons],
+        "completed_lesson": item_payload(last_completed),
+        "next_lesson": item_payload(target),
+        "complete": target is None,
+    }
 
 
 @app.delete("/api/plans/{plan_id}")
@@ -356,9 +556,14 @@ def _completed() -> set[str]:
 
 
 @app.post("/api/lessons/{lesson_id}/start")
-def start_lesson(lesson_id: str) -> dict:
-    session, step = get_manager().start(lesson_id)
-    return {"session_id": session.id, "lesson_id": lesson_id, "step": step}
+def start_lesson(lesson_id: str, body: StartLessonRequest | None = None) -> dict:
+    manager = get_manager()
+    session, step = manager.start(lesson_id, body.history if body else None)
+    lesson = manager.lesson(session)
+    course = manager.library.course(lesson.course_id)
+    plan_id = course.meta.get("plan", {}).get("id") if course.kind == "plan" else None
+    return {"session_id": session.id, "lesson_id": lesson_id, "course_id": course.id,
+            "plan_id": plan_id, "step": step, "learning_state": manager.learning_state(session)}
 
 
 @app.get("/api/sessions/{session_id}")
@@ -369,15 +574,13 @@ def get_session(session_id: str) -> dict:
         "session_id": session.id,
         "lesson_id": session.lesson_id,
         "status": session.status,
+        "board_fen": session.board.fen(en_passant="fen"),
         "step": manager.step_payload(session),
+        "learning_state": manager.learning_state(session),
     }
 
 
-@app.post("/api/sessions/{session_id}/advance")
-def advance_session(session_id: str) -> dict:
-    manager = get_manager()
-    session = manager.get(session_id)
-    step = manager.advance(session)
+def _advance_response(manager, session, step) -> dict:
     if step is None:
         lesson = manager.lesson(session)
         from .lessons.requirements import INVALID, problems as requirement_problems
@@ -393,9 +596,28 @@ def advance_session(session_id: str) -> dict:
     return {"completed": False, "step": step}
 
 
+@app.post("/api/sessions/{session_id}/advance/prepare")
+def prepare_advance_session(session_id: str) -> dict:
+    manager = get_manager()
+    return manager.prepare_advance(manager.get(session_id))
+
+
+@app.post("/api/sessions/{session_id}/advance/confirm")
+def confirm_advance_session(session_id: str, body: AdvanceConfirmRequest) -> dict:
+    manager = get_manager()
+    session = manager.get(session_id)
+    step = manager.confirm_advance(session, body.source_index, body.source_fen)
+    return _advance_response(manager, session, step)
+
+
+@app.post("/api/sessions/{session_id}/advance")
+def advance_session(session_id: str) -> dict:
+    raise ExerciseConflict("Lesson steps now require /advance/prepare and /advance/confirm after board verification.")
+
+
 @app.post("/api/sessions/{session_id}/move")
 def submit_move(session_id: str, body: MoveRequest) -> dict:
-    return get_manager().apply_move(get_manager().get(session_id), body.uci)
+    return get_manager().apply_move(get_manager().get(session_id), body.uci, expected_fen=body.expected_fen)
 
 
 @app.post("/api/sessions/{session_id}/hint")
@@ -403,9 +625,23 @@ def request_hint(session_id: str) -> dict:
     return get_manager().hint(get_manager().get(session_id))
 
 
+@app.post("/api/sessions/{session_id}/reveal/prepare")
+def prepare_reveal_solution(session_id: str) -> dict:
+    return get_manager().reveal_preview(get_manager().get(session_id))
+
+
+@app.post("/api/sessions/{session_id}/reveal/confirm")
+def confirm_reveal_solution(session_id: str, body: RevealConfirmRequest) -> dict:
+    manager = get_manager()
+    return manager.confirm_reveal(manager.get(session_id), expected_fen=body.expected_fen)
+
+
 @app.post("/api/sessions/{session_id}/reveal")
 def reveal_solution(session_id: str) -> dict:
-    return get_manager().reveal(get_manager().get(session_id))
+    # Backwards-compatible preview alias. Unlocking is intentionally only possible through the
+    # position-checked /reveal/confirm endpoint after the client has verified its board setup.
+    manager = get_manager()
+    return manager.reveal_preview(manager.get(session_id))
 
 
 def _ndjson(events) -> StreamingResponse:
@@ -434,12 +670,13 @@ def explain_example(session_id: str) -> StreamingResponse:
 @app.post("/api/sessions/{session_id}/chat/stream")
 def chat_stream(session_id: str, body: ChatRequest) -> StreamingResponse:
     manager = get_manager()
-    return _ndjson(manager.chat_stream(manager.get(session_id), body.message))
+    return _ndjson(manager.chat_stream(manager.get(session_id), body.message, body.intent))
 
 
 @app.post("/api/sessions/{session_id}/chat")
 def session_chat(session_id: str, body: ChatRequest) -> dict:
-    return get_manager().chat(get_manager().get(session_id), body.message)
+    manager = get_manager()
+    return manager.chat(manager.get(session_id), body.message, body.intent)
 
 
 # --- game analysis (Chess.com games) ----------------------------------------

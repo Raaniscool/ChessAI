@@ -1,18 +1,15 @@
 """When the verified library has nothing for a request: never a dead end, never a guess.
 
-Order (after the library and the catalog have both come up empty):
+Order (after the verified library and catalog have both come up empty):
 
-1. Work out what was asked for: a concept in the graph, a glossary term, or — with
-   Qwen connected — Qwen maps the words to one of *our* ids (a language task only; its
-   answer must be an existing id, and "sort of related" doesn't count).
-2. Generate new positions for the concept (generation.generate: python-chess + Stockfish
-   + concept checks, ~20 s budget). Only verified positions are used.
-3. Verified examples of a broader concept, clearly labelled as broader.
-4. The hand-written definition, labelled "not engine-checked", plus related verified
-   material.
+1. Resolve a curated Basic Explanation, Knowledge Library concept, Glossary term, or a name
+   Qwen maps to one of those known IDs.
+2. Generate positions for a supported concept and show only engine-checked results.
+3. Offer verified examples of a broader concept, clearly labelled as broader.
+4. Provide a short text lesson, labelled as not engine-checked.
 
-Returns None only when the request names nothing we recognise (then the caller keeps
-its "I don't have that" answer with suggestions).
+The Basic Explanation Library supplies the text for foundational lessons without changing the
+lesson schema or replacing the existing concept and Glossary paths.
 """
 from __future__ import annotations
 
@@ -38,23 +35,25 @@ class Resolution:
     term: str                 # what we understood, in words
     concept: str | None       # concept id (generation / examples)
     text: str                 # the definition shown
-    text_source: str          # "concept" | "glossary"
-    broader: str | None       # concept whose examples cover the term only in general
+    text_source: str          # "concept" | "glossary" | "basic_explanations"
+    broader: str | None       # concept whose examples cover this term only in general
     related: list[str]        # concept ids worth practising next
     via: str                  # "text" | "qwen"
     practice: dict | None = None  # glossary skill terms: which broader positions practise it
+    category: str | None = None  # Basic Explanation category, for a text-only lesson
 
 
 def _qwen_map(goal: str, library, glossary, teacher=None) -> tuple[str, str] | None:
-    """The one id Qwen maps the request to — or None, including when Qwen sees several
-    readings: choosing between them is the learner's decision, never Qwen's."""
+    """The one id Qwen maps the request to — or None, including when it sees several."""
     found = qwen_candidates(goal, library, glossary, teacher)
     return found[0] if len(found) == 1 else None
 
 
 def qwen_candidates(goal: str, library, glossary, teacher=None) -> list[tuple[str, str]]:
     """Every known term Qwen says the request could exactly mean: [(kind, id)], at most 3.
-    A language task only: ids we don't have are dropped, never invented."""
+
+    This is a language task only: ids we do not have are dropped, never invented.
+    """
     from ..config import get_settings
     from ..teacher.qwen import QwenTeacher, TeacherUnavailable
     from .planner import extract_json
@@ -101,7 +100,47 @@ def qwen_candidates(goal: str, library, glossary, teacher=None) -> list[tuple[st
 
 
 def resolve(goal: str, library, glossary, use_qwen: bool = True, teacher=None,
-            clarify: bool = False) -> Resolution | None:
+            clarify: bool = False, level: str | None = None, basic=None) -> Resolution | None:
+    """Resolve a lesson goal without asking Qwen about known terms."""
+    from ..basic_explanations.library import LEVELS, get_basic_explanations
+
+    basic = basic or get_basic_explanations()
+    explanation = basic.match(goal, knowledge=library, glossary=glossary)
+    if explanation is not None and (
+            (explanation.knowledge_concept and explanation.knowledge_concept not in library.concepts)
+            or (explanation.glossary_term and explanation.glossary_term not in glossary.terms)):
+        explanation = None
+    if explanation is not None:
+        selected_level = level if level in LEVELS else "beginner"
+        text = explanation.level_text(selected_level, library, glossary)
+        if explanation.knowledge_concept:
+            concept_id = explanation.knowledge_concept
+            concept = library.concepts[concept_id]
+            return Resolution(term=explanation.name, concept=concept_id, text=text,
+                              text_source="basic_explanations",
+                              broader=_broader_with_examples(library, concept_id),
+                              related=[c for c in concept.related if c in library.concepts], via="text",
+                              category=explanation.category)
+        if explanation.glossary_term:
+            term = glossary.terms[explanation.glossary_term]
+            return Resolution(term=explanation.name, concept=None, text=text,
+                              text_source="basic_explanations",
+                              broader=term.broader if term.broader in library.concepts else None,
+                              related=[c for c in term.related if c in library.concepts], via="text",
+                              practice=term.practice, category=explanation.category)
+        related = []
+        for related_id in explanation.related:
+            related_entry = basic.get(related_id)
+            concept_id = related_entry.knowledge_concept if related_entry else related_id
+            if concept_id in library.concepts and concept_id not in related:
+                related.append(concept_id)
+        for concept_id in explanation.example_concepts:
+            if concept_id in library.concepts and concept_id not in related:
+                related.append(concept_id)
+        return Resolution(term=explanation.name, concept=None, text=text,
+                          text_source="basic_explanations", broader=None, related=related,
+                          via="text", category=explanation.category)
+
     term = glossary.match(goal)  # glossary terms are the named ideas the graph lacks ("greek gift")
     concept = None if term else next(iter(library.match_concepts(goal)), None)
     via = "text"
@@ -151,18 +190,17 @@ def _broader_with_examples(library, concept_id: str) -> str | None:
 
 LEVEL_TARGET = {"beginner": 900, "intermediate": 1300, "advanced": 1700}  # mid-band (learner.rating.LEVEL_BANDS)
 SKILL_EXAMPLES = 4
-
-
-REACH = 250  # a skill position more than this above the learner's target is out of reach
+REACH = 250  # a skill position more than this above the target is out of reach
 
 
 def skill_examples(library, concept: str, practice: dict, target: int, usage=None,
                    count: int = SKILL_EXAMPLES) -> tuple[list, int]:
-    """Verified global positions of `concept` (and its children) that practise a skill, and the
-    number of the learner's own moves each needs. At least `min_learner_moves` — relaxed (never
-    below 2) when no such position is within reach of the target, since longer lines are
-    inherently harder. Nearest the target, unseen first, one concept at a time so the set
-    isn't four of the same trick."""
+    """Verified positions of `concept` (and its children) that practise a skill.
+
+    Keep only positions with enough learner moves, relaxing the minimum (never below two)
+    when no such position is close to the learner's target. Prefer unseen positions and vary
+    the primary concept so the set is not four examples of the same trick.
+    """
     from ..knowledge.difficulty import _learner_moves, puzzle_rating
 
     seen = set(usage.last_used()) if usage is not None and hasattr(usage, "last_used") else set()
@@ -209,7 +247,7 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
                   use_qwen: bool = True, teacher=None, usage=None, generate_budget: float = GENERATE_BUDGET,
                   on_progress=None, engine_factory=None, clarify: bool = False,
                   target_rating: int | None = None) -> dict | None:
-    """A plan for a request the verified library and the catalog couldn't serve."""
+    """A plan for a request the verified library and the catalog could not serve."""
     from ..knowledge.generation import generate, supported
     from ..knowledge.glossary import get_glossary
     from ..knowledge.library import get_knowledge
@@ -220,7 +258,8 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
     library = library or get_knowledge()
     catalog = catalog or get_catalog()
     usage = usage if usage is not None else get_usage()
-    res = resolve(goal, library, get_glossary(), use_qwen=use_qwen, teacher=teacher, clarify=clarify)
+    res = resolve(goal, library, get_glossary(), use_qwen=use_qwen, teacher=teacher,
+                  clarify=clarify, level=level)
     if res is None:
         return None
 
@@ -231,17 +270,23 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
 
     def unit(title, category, reason, new_lessons, verified_by, **extra):
         units.append({"topic_id": None, "title": title, "category": category,
-                      "reason": f"Step {len(units) + 1}: {reason}", "verified_by": verified_by,
+                      "reason": f"Step {len(units) + 1}: {reason}",
+                      "verified_by": verified_by,
                       "lesson_ids": [lesson["id"] for lesson in new_lessons], **extra})
         lessons.extend(new_lessons)
 
     concept = library.concepts.get(res.concept) if res.concept else None
-    category = CATEGORY.get(concept.category if concept else "", "tactic")
+    basic_categories = {"rules": "basics", "tactics": "tactics", "strategy": "basics",
+                        "opening": "openings", "pawn_structure": "basics", "endgame": "endgames",
+                        "mistakes": "mistakes"}
+    category = CATEGORY.get(concept.category if concept else basic_categories.get(res.category or "", ""), "tactic")
     related_names = [library.concepts[c].name for c in res.related if library.count_for(c)][:3]
 
     # 1. what it is, in words — always first, always labelled
-    unit(f"{res.term}: what it is", category, "the idea in words (a hand-written definition, not engine-checked).",
-         [_text_lesson(f"plan_{plan_id}_01", f"{res.term}: what it is", res.text, related_names)], TEXT_VERIFIED_BY)
+    unit(f"{res.term}: what it is", category,
+         "the idea in words (a hand-written definition, not engine-checked).",
+         [_text_lesson(f"plan_{plan_id}_01", f"{res.term}: what it is", res.text, related_names)],
+         TEXT_VERIFIED_BY)
 
     # 2. new positions, verified before they are shown
     generated = []
@@ -251,7 +296,7 @@ def fallback_plan(goal: str, library=None, catalog=None, engine=None, level: str
             try:
                 engine = engine_factory()
             except EngineUnavailable:
-                engine = None  # still explains; just can't build positions
+                engine = None  # still explains; just cannot build positions
         if engine is None:
             notes.append("New practice positions need the Stockfish engine, which isn't available right now.")
         else:

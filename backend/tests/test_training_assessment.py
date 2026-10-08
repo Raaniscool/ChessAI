@@ -3,7 +3,8 @@
 Covers: position generation, phase classification, bot difficulty, the Stockfish analysis of a
 segment, concept detection (validators only), skill-profile updates, confidence/sample size,
 adaptive Practice weighting, Practice and Personalized integration, Mixed Games, the hidden concept,
-and repeat prevention.
+repeat prevention, and the hidden idea as unprompted recognition evidence for the learner model
+(the found-set it uses, the moment cap it survives, and the transfer/recognition gap it can raise).
 """
 import random
 from collections import Counter
@@ -16,7 +17,8 @@ from app.analysis import GameAnalyzer
 from app.analysis.analyzer import phase_of
 from app.assessment import bot, evaluate, needs, positions, record
 from app.assessment.positions import PositionPool, TrainingPosition, choose, next_phase
-from app.assessment.segment import MAX_MOVES, MIN_MOVES, Segment, SegmentStore, end_reason, set_segments
+from app.assessment.segment import (MAX_MOVES, MIN_MOVES, Segment, SegmentStore, end_reason, get_segments,
+                                    set_segments)
 from app.engine import set_engine
 from app.engine.classification import Score
 from app.engine.service import Line
@@ -24,7 +26,9 @@ from app.knowledge.library import get_knowledge
 from app.knowledge.opening_trees import get_opening_trees
 from app.knowledge.usage import get_usage
 from app.learner import LearnerProfile, get_profile, get_store
-from app.learner.difficulty import build
+from app.learner.difficulty import build, recognition_trials
+from app.learner.recommend import suggestions
+from app.learner.views import combined, concept_view, gaps_of, status_of
 from app.puzzles import get_puzzles, select
 from app.puzzles.dashboard import candidates, personalized, theme_pool
 from app.puzzles.select import FOCUS_REASON
@@ -82,6 +86,28 @@ def test_opening_positions_come_from_verified_opening_trees():
     assert len({chess.Board(p.fen).epd() for p in ops}) == len(ops)   # no duplicate positions
 
 
+def test_opening_ideas_are_verified_rare_and_never_revealed_early(client):
+    """Opening training stays theory-first: the trees supply thousands of idea-less positions, and
+    the idea-bearing ones are verified puzzles whose key position is in the opening. The local
+    verified sources can only support a handful of those (the audit's finding) — the deepening
+    proved it: both remaining candidates failed the engine stage. Theory positions keep no idea."""
+    pool = positions.get_pool(LIB)
+    theory = [p for p in pool.by_phase["opening"] if not p.hidden]
+    ideas = [p for p in pool.by_phase["opening"] if p.hidden]
+    assert len(theory) > 4000 and all(p.source["type"] == "opening_tree" for p in theory)
+    assert 10 <= len(ideas) <= 40
+    for pos in ideas:
+        assert LIB.validator_for(pos.hidden["concept"]) and pos.hidden["concept"] in LIB.concepts
+        assert pos.hidden["accepted"] and pos.hidden["key_move"] in pos.hidden["accepted"]
+        assert pos.phase == phase_of(chess.Board(pos.fen)) == "opening"
+        assert pos.public() == {"fen": pos.fen, "side": pos.side, "phase": pos.phase}
+    for seed in range(12):                                 # whatever the draw, nothing leaks
+        seg = _seed_start(client, "opening", seed)
+        pos = get_segments().get(seg["id"]).position
+        assert pos.phase == "opening"
+        _no_spoilers(seg, {pos.hidden["concept"]} if pos.hidden else set())
+
+
 def test_puzzle_positions_are_verified_non_personal_and_phase_classified():
     pp = positions.puzzle_positions(get_puzzles(LIB).all())
     assert len(pp) > 100
@@ -89,11 +115,77 @@ def test_puzzle_positions_are_verified_non_personal_and_phase_classified():
     for pos in pp:
         p = index.get(pos.hidden["puzzle_id"])
         assert p.tier != "personal" and (p.source or {}).get("type") != "user_game"
+        assert p.verification_state == "verified"          # only verified entries are ever served
         assert pos.hidden["concept"] == p.concept in LIB.concepts
+        assert LIB.validator_for(p.concept)                # every idea has a validator behind it
         assert pos.phase == phase_of(chess.Board(pos.fen))
         assert pos.hidden["accepted"] and pos.hidden["key_move"] in pos.hidden["accepted"]
     phases = Counter(p.phase for p in pp)
     assert phases["middlegame"] and phases["endgame"]
+
+
+def test_the_pool_is_deep_in_every_phase_and_middlegame_is_no_longer_the_thin_one():
+    """The pool deepening: middlegame used to be ~140 positions against ~290 endgame ones because
+    the importers spent their budget on the shortest (mostly endgame) solutions. The local verified
+    sources supply ~190 more middlegame positions; they are now in the library, so the two are
+    comparable. If this fails low, the deepening data is missing, not the code."""
+    counts = positions.get_pool(LIB).counts()
+    assert counts["opening"] > 4000                        # verified opening theory (no hidden idea)
+    assert counts["middlegame"] >= 250
+    assert counts["endgame"] >= 250
+    # comparable: not "dramatically smaller" (before the deepening: 138 middlegame / 292 endgame)
+    assert counts["middlegame"] >= 0.85 * counts["endgame"], counts
+
+
+def test_phase_comes_from_the_position_not_from_the_source():
+    """The phase is the analyzer's rule — piece material plus the position's own move number — so a
+    position that starts late is never called an opening because of the source it came from."""
+    full = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 {}"
+    assert phase_of(chess.Board(full.format(1))) == "opening"
+    assert phase_of(chess.Board(full.format(30))) == "middlegame"      # same material, later move
+    assert phase_of(chess.Board("8/8/8/4k3/8/8/4P3/4K3 w - - 0 1")) == "endgame"   # material decides
+    index = get_puzzles(LIB)
+    middlegame = positions.get_pool(LIB).by_phase["middlegame"]
+    kinds = Counter(index.get(p.hidden["puzzle_id"]).type for p in middlegame)
+    assert len(kinds) >= 3 and kinds["tactic"] and kinds["checkmate"]   # not just one kind of idea
+    assert len({p.hidden["concept"] for p in middlegame}) >= 25         # and not just a few ideas
+    for pos in middlegame[::20]:
+        assert pos.phase == phase_of(chess.Board(pos.fen)) == "middlegame"
+
+
+def test_every_position_phase_is_the_analyzers_phase_and_the_ideas_are_sound():
+    pool = positions.get_pool(LIB)
+    for phase, spots in pool.by_phase.items():
+        for pos in spots[:: max(1, len(spots) // 120)]:      # a spread across every phase
+            board = chess.Board(pos.fen)
+            assert pos.phase == phase_of(board) and not board.is_game_over()
+            assert pos.side == ("white" if board.turn else "black")
+            assert pos.public() == {"fen": pos.fen, "side": pos.side, "phase": pos.phase}
+            if pos.hidden:
+                assert pos.hidden["concept"] in LIB.concepts
+                assert LIB.validator_for(pos.hidden["concept"])
+                assert pos.hidden["accepted"] and pos.hidden["key_move"] in pos.hidden["accepted"]
+                assert pos.rating is not None
+            else:
+                assert phase == "opening" and pos.source["type"] == "opening_tree"
+
+
+def _seed_start(client, mode: str, seed: int) -> dict:
+    res = client.post("/api/puzzles/training/start", json={"mode": mode, "seed": seed})
+    assert res.status_code == 200, res.text
+    return res.json()["segment"]
+
+
+def test_mixed_games_and_the_idea_pools_draw_widely(client):
+    """Mixed Games continues indefinitely *and* stops cycling through a handful of positions."""
+    mixed = [_seed_start(client, "mixed", seed) for seed in range(6)]
+    assert len({s["phase"] for s in mixed}) >= 2           # Mixed rotates through the phases
+    middlegame = [_seed_start(client, "middlegame", seed) for seed in range(20)]
+    assert len({s["id"] for s in middlegame}) == 20          # 20 starts, 20 distinct segments
+    assert len({s["start_fen"] for s in middlegame}) >= 15   # ... drawing from a wide pool
+    for seg in middlegame:                                   # and still nothing is revealed early
+        pos = get_segments().get(seg["id"]).position
+        _no_spoilers(seg, {pos.hidden["concept"]} if pos.hidden else set())
 
 
 def test_the_pool_has_every_phase_and_public_data_has_no_idea():
@@ -143,6 +235,46 @@ def test_no_repeat_while_unseen_positions_exist_and_oldest_come_back_after():
     assert again.id == seen[0]   # everything met: the one seen longest ago returns (effectively infinite)
 
 
+def test_unseen_positions_always_come_before_recently_seen_ones():
+    """A small phase pool must not send the learner back into a position just played."""
+    pool = _pool(n=20)
+    ids = [p.id for p in pool.by_phase["middlegame"]]
+    seen = ids[:16]                       # 16 met, 4 never
+    for seed in range(8):
+        pos = choose(pool, "middlegame", seen=seen, used_puzzles=set(), recent_concepts=[], target=1000, needs={},
+                     rng=random.Random(seed))
+        assert pos.id in ids[16:]         # only ever the unseen ones, however the seeds fall
+    # every position met: the least recently seen come back first, never the ones just played
+    seen = ids[:]
+    for seed in range(6):
+        pos = choose(pool, "middlegame", seen=seen, used_puzzles=set(), recent_concepts=[], target=1000, needs={},
+                     rng=random.Random(seed))
+        assert pos.id in ids[:2], (pos.id, ids[:2])       # the oldest tenth (20 // 10)
+
+
+def test_a_position_in_play_is_not_drawn_while_anything_else_exists():
+    """`active` (open segments) is avoided like a seen position, and is the very last resort."""
+    pool = _pool()
+    ids = [p.id for p in pool.by_phase["middlegame"]]
+    for seed in range(6):
+        pos = choose(pool, "middlegame", seen=[], used_puzzles=set(), recent_concepts=[], target=1000, needs={},
+                     rng=random.Random(seed), active={ids[0], ids[1]})
+        assert pos.id not in ids[:2]
+    # everything seen, one of them still in play: the re-serve takes a finished one, not the open one
+    pos = choose(pool, "middlegame", seen=ids[:], used_puzzles=set(), recent_concepts=[], target=1000, needs={},
+                 rng=random.Random(3), active={ids[-1]})
+    assert pos.id != ids[-1]
+
+
+def test_the_same_seed_serves_the_same_sequence_of_positions(client):
+    """Deterministic under the same seed and the same state: the deepened pool changes nothing here."""
+    def run() -> list[str]:
+        get_store().reset("local")
+        set_segments(SegmentStore())
+        return [_seed_start(client, "mixed", seed)["start_fen"] for seed in range(6)]
+    assert run() == run()
+
+
 def test_puzzles_already_met_in_the_puzzles_tab_are_not_used_as_hidden_tests():
     pool = _pool()
     used = {f"p{i}" for i in range(5)}
@@ -161,15 +293,23 @@ def test_the_same_hidden_idea_is_not_tested_again_right_away():
     assert picks["fork"] > picks["pin"]
 
 
-def test_start_twice_gives_different_positions_and_marks_the_puzzle_used(client):
+def test_start_twice_gives_different_positions_without_burning_either(client):
+    """Two open segments never share a position, but starting one spends nothing yet: only a
+    segment that produced a result marks its position seen (see the pool section below)."""
     set_engine(ScriptedEngine())
     a = client.post("/api/puzzles/training/start", json={"mode": "middlegame", "seed": 1}).json()["segment"]
     b = client.post("/api/puzzles/training/start", json={"mode": "middlegame", "seed": 1}).json()["segment"]
     assert a["start_fen"] != b["start_fen"]
-    seen = record.ensure(get_profile().training)["seen"]
-    assert len(seen) == 2
+    assert record.ensure(get_profile().training)["seen"] == []
+    assert [pid for pid, st in get_usage().all_puzzle_stats().items() if st["seen"]] == []
+    board = chess.Board(a["fen"])
+    client.post(f"/api/puzzles/training/{a['id']}/move", json={"uci": next(iter(board.legal_moves)).uci()})
+    client.post(f"/api/puzzles/training/{a['id']}/finish", json={})
+    training = record.ensure(get_profile().training)
+    assert a["start_fen"] in {p.fen for p in positions.get_pool(LIB).by_phase["middlegame"]}
+    assert len(training["seen"]) == 1 and len(training["history"]) == 1
     used = [pid for pid, st in get_usage().all_puzzle_stats().items() if st["seen"]]
-    assert len(used) == 2    # Practice won't serve these right away
+    assert len(used) == 1    # Practice won't serve the finished one right away
 
 
 # ------------------------------------------------------------------ bot difficulty
@@ -496,13 +636,44 @@ def _no_spoilers(payload: dict, pos_concepts: set[str]):
     assert not any(n in text.lower() for n in names)
 
 
+def test_training_moves_confirm_the_expected_board_and_can_be_recovered(client):
+    set_engine(ScriptedEngine(flat=True))
+    segment = _seed_start(client, "opening", 42)
+    board = chess.Board(segment["start_fen"])
+    moves = list(board.legal_moves)
+    move = moves[0]
+    stale = board.copy()
+    stale.push(moves[1])
+
+    rejected = client.post(f"/api/puzzles/training/{segment['id']}/move", json={
+        "uci": move.uci(), "expected_fen": stale.fen(en_passant="fen"),
+    })
+    assert rejected.status_code == 409
+    unchanged = client.get(f"/api/puzzles/training/{segment['id']}").json()
+    assert unchanged["moves_uci"] == []
+    assert unchanged["current_fen"] == segment["current_fen"]
+
+    accepted = client.post(f"/api/puzzles/training/{segment['id']}/move", json={
+        "uci": move.uci(), "expected_fen": segment["current_fen"],
+    })
+    assert accepted.status_code == 200
+    current_segment = accepted.json()["segment"]
+    current = current_segment["current_fen"]
+    assert current_segment["moves_uci"][0] == move.uci()
+    assert current != segment["current_fen"]
+    assert client.get(f"/api/puzzles/training/{segment['id']}").json()["current_fen"] == current
+
+
 def test_api_flow_hides_the_idea_until_the_segment_is_over(client):
     set_engine(ScriptedEngine())
     res = client.post("/api/puzzles/training/start", json={"mode": "middlegame", "seed": 4})
     assert res.status_code == 200
     seg = res.json()["segment"]
-    pool = positions.get_pool(LIB)
-    pos = next(p for p in pool.by_phase["middlegame"] if p.fen == seg["start_fen"])
+    # the position the API served itself (looking it up in the position pool assumes the pool has
+    # not changed since the request, which stops being true when another test's generated examples
+    # enter the library mid-run)
+    pos = get_segments().get(seg["id"]).position
+    assert pos.phase == "middlegame"
     concepts = {pos.hidden["concept"]} if pos.hidden else set()
     _no_spoilers(res.json(), concepts)
     for _ in range(12):
@@ -524,6 +695,36 @@ def test_api_flow_hides_the_idea_until_the_segment_is_over(client):
     assert client.post(f"/api/puzzles/training/{seg['id']}/finish").json() == done    # idempotent
     prof = client.get("/api/puzzles/training/profile").json()
     assert prof["segments"] == 1
+
+
+def test_an_abandoned_segment_does_not_burn_its_position(client):
+    """Starting (or half-playing) a segment must not spend the position for good: only a segment
+    that produced a result marks it seen. Otherwise a learner who opens and leaves would drain the
+    pool without ever seeing those positions again."""
+    set_engine(ScriptedEngine(flat=True))
+    first = _seed_start(client, "middlegame", 4)
+    for _ in range(3):                                     # play a few moves, then walk away
+        board = chess.Board(first["fen"])
+        r = client.post(f"/api/puzzles/training/{first['id']}/move", json={"uci": next(iter(board.legal_moves)).uci()})
+        assert r.status_code == 200 and not r.json()["ended"]
+        first = r.json()["segment"]
+    assert record.ensure(get_profile().training)["seen"] == []            # nothing spent yet
+    assert get_usage().all_puzzle_stats() == {}                           # not used in Practice either
+    # ... and it stays out of the next draw only while it is open
+    other = _seed_start(client, "middlegame", 4)
+    assert other["start_fen"] != first["start_fen"]
+    assert other["id"] != first["id"]
+    set_segments(SegmentStore())                            # the open segment is gone (restart/expiry)
+    again = _seed_start(client, "middlegame", 4)
+    assert again["start_fen"] == first["start_fen"]         # the pooled position is served again
+    # finishing a segment *does* spend its position: the same seed now picks something else
+    board = chess.Board(again["fen"])
+    client.post(f"/api/puzzles/training/{again['id']}/move", json={"uci": next(iter(board.legal_moves)).uci()})
+    assert client.post(f"/api/puzzles/training/{again['id']}/finish", json={}).status_code == 200
+    training = record.ensure(get_profile().training)
+    assert training["seen"] == [get_segments().get(again["id"]).position.id]
+    assert len([pid for pid, st in get_usage().all_puzzle_stats().items() if st["seen"]]) == 1
+    assert _seed_start(client, "middlegame", 4)["start_fen"] != again["start_fen"]
 
 
 def test_illegal_moves_and_wrong_turns_are_rejected(client):
@@ -566,3 +767,246 @@ def test_without_the_engine_training_says_so(client, monkeypatch):
     assert r.status_code == 503 and "Stockfish" in r.json()["error"]
     again = client.post(f"/api/puzzles/training/{seg['id']}/move", json={"uci": next(iter(board.legal_moves)).uci()})
     assert again.status_code == 503   # the move wasn't kept: the segment is unchanged
+
+
+# ------------------------------------------------------------------ recognition in play
+# The hidden idea of a Training position is evidence of a second kind: the learner met it without
+# being told anything (assessment.evaluate -> assessment.record.note_recognition). It sits beside
+# the prompted puzzle results, feeds the concept estimate, and can raise a transfer/recognition gap.
+def _tested_fact(concept, result, rating=1000):
+    """What assessment.evaluate._tested hands back (the fields record.note_recognition reads)."""
+    return {"concept": concept, "kind": "tested", "ply": 0, "rating": rating, "result": result,
+            "key_move": None, "phase": "middlegame"}
+
+
+def _with_recognition(profile, concept, results, rating=1000):
+    """Write one recognition observation per result, the way a finished segment does: the segment
+    record (assessment.record.apply, which keeps the rating) and the concept-state mirror
+    (assessment.record.note_recognition) come from the same `tested` object."""
+    for i, result in enumerate(results):
+        seg = segment(seed=i)
+        seg.id = f"s{i}"
+        facts = _facts([_ev(concept, result, rating=rating)])
+        facts["tested"] = _tested_fact(concept, result, rating)
+        profile.training = record.apply(profile.training, seg, facts)
+        record.note_recognition(profile, facts)
+    return profile
+
+
+def _strong_puzzles(profile, concept, n=4, rating=1000):
+    for _ in range(n):
+        profile.record_attempt(concept, rating, solved=True, first_try=True)
+    return profile
+
+
+def test_recognition_evidence_reaches_the_concept_estimate_and_stays_unprompted():
+    from tests.test_difficulty_calibration import FORKS, Usage, lookup, result   # real puzzle trials
+    usage = Usage({p.id: result(seconds=8) for p in FORKS[:5]})                  # five clean solves
+    found = _with_recognition(LearnerProfile(), "knight_fork", ["found"] * 4)
+    missed = _with_recognition(LearnerProfile(), "knight_fork", ["missed"] * 4)
+    for p, hits in ((found, 4), (missed, 0)):
+        st = p.concepts["knight_fork"]
+        assert (st.training_tested, st.training_found, st.training_missed) == (4, hits, 4 - hits)
+        assert st.training_recent == [1.0 if hits else 0.0] * 4 and st.training_last
+        assert st.attempts == 0 and st.recent == [] and st.rating is None    # nothing prompted happened
+    est_found, info_found = build(found, usage, lookup).concept_estimate("knight_fork", LIB)
+    est_missed, info_missed = build(missed, usage, lookup).concept_estimate("knight_fork", LIB)
+    assert info_missed["recognition"] == {"tested": 4, "found": 0, "missed": 4, "weight": 4.0,
+                                          "unprompted": True, "detail": "found 0 of 4 hidden ideas in Training"}
+    assert info_found["recognition"]["found"] == 4 and info_found["recognition"]["missed"] == 0
+    assert info_missed["puzzles"] == 5 and info_missed["solved_cleanly"] == 5   # prompted side unchanged
+    assert est_found > est_missed                # spotting the idea unprompted is stronger evidence
+    trials = recognition_trials(missed)["knight_fork"]
+    assert len(trials) == 4 and all(w == 1.0 for _r, _s, w in trials)   # its own weight, not a puzzle's
+    assert trials[0][0] == 1000.0                                       # the position's own rating
+
+
+def test_a_segment_that_proves_nothing_writes_no_recognition_evidence():
+    p = LearnerProfile()
+    record.note_recognition(p, {"tested": None})       # a different good move: no evidence either way
+    assert p.concepts == {}
+
+
+def test_one_segment_writes_exactly_one_recognition_observation():
+    seg = segment(moves=["Kd2", "Qa5+"])
+    facts = analyse(seg, fork_engine())
+    assert facts["tested"]["result"] == "missed" and facts["tested"]["concept"] == "knight_fork"
+    assert [c["concept"] for c in facts["concepts"]] == ["knight_fork"]   # the motif repeat is the same one
+    p = LearnerProfile()
+    p.training = record.apply(p.training, seg, facts)
+    record.note_recognition(p, facts)
+    st = p.concepts["knight_fork"]
+    assert (st.training_tested, st.training_missed, st.training_found) == (1, 1, 0)
+    assert len(p.training["tested"]) == 1 and p.training["tested"][0]["concept"] == "knight_fork"
+    assert st.attempts == 0 and st.recent == [] and st.rating is None     # nothing prompted happened
+
+
+def test_the_recognition_test_uses_the_same_accepted_moves_as_the_solver():
+    """Puzzle.accepted_first is what the solver judges with, over the whole served library."""
+    index = get_puzzles(LIB)
+    served = [p for p in index.all(include_personal=False) if p.clear_start and p.steps]
+    assert len(served) > 100 and any(len(p.accepted_first) > 1 for p in served)
+    for p in served:
+        solver = {p.steps[0]["uci"]} | set(p.steps[0].get("accepted") or [])
+        board = chess.Board(p.fen)
+        accepted = {board.parse_san(san).uci() for san in p.accepted_first}
+        assert solver <= accepted, f"{p.id}: the solver accepts a move Training would call a miss"
+    # and an accepted alternative really counts as found (no hard-coded puzzle ids)
+    puzzle = next(p for p in served if p.steps[0].get("accepted"))
+    board = chess.Board(puzzle.fen)
+    alternative = board.san(chess.Move.from_uci(puzzle.steps[0]["accepted"][0]))
+    assert alternative != puzzle.solution[0]
+    pos = TrainingPosition(id=f"puzzle:{puzzle.id}", fen=puzzle.fen, phase=phase_of(board),
+                           side=puzzle.side_to_move, source={}, rating=puzzle.rating,
+                           hidden={"concept": puzzle.concept, "accepted": list(puzzle.accepted_first),
+                                   "rating": puzzle.rating, "puzzle_id": puzzle.id,
+                                   "key_move": puzzle.solution[0]})
+    facts = analyse(segment(pos=pos, moves=[alternative]), ScriptedEngine(flat=True))
+    assert facts["tested"] and facts["tested"]["result"] == "found"
+    p = LearnerProfile()
+    record.note_recognition(p, facts)                    # the found branch, through the real writer
+    assert (p.concepts[puzzle.concept].training_found, p.concepts[puzzle.concept].training_missed) == (1, 0)
+
+
+def test_an_equivalent_mate_solves_a_mating_idea_and_is_never_a_miss_for_another():
+    fen = "7k/5Q2/6K1/8/8/8/8/8 w - - 0 1"       # Qg7# and Qf8# both mate
+    mates = TrainingPosition(id="m", fen=fen, phase="endgame", side="white", source={}, rating=800,
+                             hidden={"concept": "queen_mate", "accepted": ["Qg7#"], "rating": 800,
+                                     "puzzle_id": "m", "key_move": "Qg7#"})
+    facts = analyse(segment(pos=mates, moves=["Qf8#"]), ScriptedEngine(flat=True))
+    assert facts["tested"]["result"] == "found"           # any mate solves a mating puzzle
+    other = TrainingPosition(id="n", fen=fen, phase="endgame", side="white", source={}, rating=800,
+                             hidden={"concept": "hanging_piece", "accepted": ["Qf5"], "rating": 800,
+                                     "puzzle_id": "n", "key_move": "Qf5"})
+    facts = analyse(segment(pos=other, moves=["Qf8#"]), ScriptedEngine(flat=True))
+    assert facts["tested"] is None                        # and proves nothing about a non-mating idea
+
+
+def test_a_first_move_miss_survives_the_moment_cap(monkeypatch):
+    """MAX_MOMENTS caps what the report shows; the recognition test must not lose its verdict."""
+    from app.analysis.analyzer import MAX_MOMENTS
+    from app.engine.classification import Classification
+
+    board = chess.Board(FORK_FEN)
+    move = next(m for m in board.legal_moves if board.san(m) not in fork_position().hidden["accepted"])
+    sans = [board.san(move)]
+    board.push(move)
+    while len(sans) < 18:                                 # nine learner moves, none of them the idea
+        move = next(iter(board.legal_moves))
+        sans.append(board.san(move))
+        board.push(move)
+    seg = segment(moves=sans)
+    monkeypatch.setattr("app.analysis.analyzer.classify_move",
+                        lambda *a, **k: (Classification.BLUNDER, 900, []))
+    def fake_moment(self, game, boards, moves, i, side):
+        if i == 0:                                        # the mildest: pushed out of the eight shown
+            return {"ply": 0, "category": Classification.MISTAKE.value, "loss_cp": 90, "severity_weight": 2,
+                    "phase": "middlegame", "findings": [], "san": game.moves_san[0], "best_move": None,
+                    "label": "?", "motif": None}
+        return {"ply": i, "category": Classification.BLUNDER.value, "loss_cp": 900, "severity_weight": 3,
+                "phase": "middlegame", "findings": [], "san": game.moves_san[i], "best_move": None,
+                "label": "??", "motif": None}
+    monkeypatch.setattr(GameAnalyzer, "_moment", fake_moment)
+    analysis = GameAnalyzer(ScriptedEngine(), depth=4, confirm_depth=6).analyze(evaluate.game_record(seg))
+    assert len(analysis["moments"]) == MAX_MOMENTS and analysis["more_moments"] >= 1
+    assert 0 not in [m["ply"] for m in analysis["moments"]]          # not displayed ...
+    assert 0 in analysis["confirmed_plies"] and len(analysis["confirmed_plies"]) > MAX_MOMENTS
+
+    class _Frozen:                                                   # the finished analysis, as evaluate gets it
+        def analyze(self, game):
+            return analysis
+    facts = evaluate.analyze(seg, ScriptedEngine(), LIB, analyzer=_Frozen())
+    assert facts["tested"]["result"] == "missed" and facts["tested"]["ply"] == 0
+    assert facts["missed_opportunities"][0]["motif"] == "hidden_idea"
+
+
+def test_strong_puzzles_with_repeated_unprompted_misses_are_a_transfer_gap():
+    p = _with_recognition(_strong_puzzles(LearnerProfile(), "knight_fork", 4), "knight_fork", ["missed"] * 3)
+    st = p.concepts["knight_fork"]
+    assert status_of(st) == "practicing"                  # knows the idea: not weak, not mastered yet
+    assert gaps_of(st) == ["transfer"]
+    view = concept_view(p, "knight_fork", LIB)
+    assert view["gaps"] == ["transfer"] and view["status"] == "practicing"
+    assert view["recognition"] == {"tested": 3, "found": 0, "missed": 3, "last": st.training_last,
+                                   "unprompted": True}
+    clean = _strong_puzzles(LearnerProfile(), "knight_fork", 4)
+    assert status_of(clean.concepts["knight_fork"]) == "mastered"
+    assert gaps_of(clean.concepts["knight_fork"]) == []
+    once = _with_recognition(_strong_puzzles(LearnerProfile(), "knight_fork", 4), "knight_fork", ["missed"])
+    assert "transfer" not in gaps_of(once.concepts["knight_fork"])    # one miss is not a pattern
+    even = _with_recognition(_strong_puzzles(LearnerProfile(), "knight_fork", 4), "knight_fork",
+                             ["missed", "found", "found"])
+    assert status_of(even.concepts["knight_fork"]) == "mastered"
+    assert "transfer" not in gaps_of(even.concepts["knight_fork"])
+    weak = _with_recognition(LearnerProfile(), "knight_fork", ["missed"] * 3)
+    for _ in range(4):
+        weak.record_attempt("knight_fork", 1000, solved=False, first_try=False)
+    assert status_of(weak.concepts["knight_fork"]) == "weak"          # failing both ways is a weakness
+    assert "transfer" not in gaps_of(weak.concepts["knight_fork"])
+
+
+def test_recognition_of_a_sub_concept_reaches_the_family_view_and_the_suggestions():
+    p = _with_recognition(_strong_puzzles(LearnerProfile(), "knight_fork", 4), "knight_fork", ["missed"] * 3)
+    fam = combined(p, "fork", LIB)
+    assert (fam.training_tested, fam.training_missed) == (3, 3)
+    assert fam.training_last == p.concepts["knight_fork"].training_last
+    assert "transfer" in gaps_of(fam)
+    rec = next(s for s in suggestions(p, LIB) if s["kind"] == "recognition")
+    assert rec["concept"] == "knight_fork" and "spot" in rec["title"].lower()
+    assert rec["goal"] == "knight fork in real game positions" and "Training" in rec["reason"]
+
+
+def test_practice_and_personalized_are_unchanged_by_the_recognition_mirror():
+    """The existing Training -> needs -> Practice/Personalized loop keeps working, and the new
+    concept-state mirror is not a second observation in it."""
+    index = get_puzzles(LIB)
+    pool = candidates(index.all())
+    cal = {"target": 1100, "zone": [980, 1250], "floor": 850, "summary": ""}
+    clean = _with_recognition(LearnerProfile(), "knight_fork", ["missed"] * 6)
+    plain = _profile_with([("knight_fork", "missed")] * 6)             # the same segments, old writer only
+    need = needs.concept_needs(clean, LIB)["knight_fork"]
+    assert need == needs.concept_needs(plain, LIB)["knight_fork"]      # exactly once, not twice
+    assert need["sources"]["training"]["trials"] == 6 and need["status"] == "needs_work"
+    focus = needs.practice_focus(needs.concept_needs(clean, LIB), LIB)
+    assert focus is not None
+    chosen = select(theme_pool(pool, LIB, "tactics", 5), LIB, "tactics", count=5, calibration=cal, focus=focus).chosen
+    assert any(c.puzzle.concept == "knight_fork" and FOCUS_REASON in c.reasons for c in chosen)
+    assert any(c.puzzle.concept != "knight_fork" for c in chosen)      # and the set stays mixed
+    cards = personalized(clean, LIB, pool)["weaknesses"]
+    assert any(c["source"] == "training" and c["concept"] == "knight_fork" for c in cards)
+
+
+def test_finishing_a_segment_records_the_hidden_idea_as_recognition_evidence(client):
+    set_engine(ScriptedEngine())
+    seg = client.post("/api/puzzles/training/start", json={"mode": "middlegame", "seed": 4}).json()["segment"]
+    pos = get_segments().get(seg["id"]).position           # the served position, as the API chose it
+    assert pos.hidden                                     # a middlegame position always carries an idea
+    start = chess.Board(seg["fen"])
+    move = next(iter(start.legal_moves))
+    best = next(m for m in start.legal_moves if m != move)
+    after = start.copy(stack=False)
+    after.push(move)
+    sign = -1 if pos.side == "white" else 1               # the engine scores from White's point of view
+    set_engine(ScriptedEngine(analyses={
+        epd(seg["fen"]): (0, [start.san(best)]),
+        epd(after.fen()): (sign * 900, [after.san(next(iter(after.legal_moves)))]),
+    }))
+    expected = "found" if start.san(move) in pos.hidden["accepted"] else "missed"
+    r = client.post(f"/api/puzzles/training/{seg['id']}/move", json={"uci": move.uci()})
+    assert r.status_code == 200, r.text
+    seg = r.json()["segment"]
+    for _ in range(12):                                   # play the segment out
+        if r.json()["ended"]:
+            break
+        board = chess.Board(seg["fen"])
+        r = client.post(f"/api/puzzles/training/{seg['id']}/move", json={"uci": next(iter(board.legal_moves)).uci()})
+        assert r.status_code == 200, r.text
+        seg = r.json()["segment"]
+    done = client.post(f"/api/puzzles/training/{seg['id']}/finish", json={})
+    assert done.status_code == 200 and done.json()["analysis"]["learner_moves"] >= 1
+    prof = get_profile()
+    st = prof.concepts[pos.hidden["concept"]]
+    assert (st.training_tested, st.training_found, st.training_missed) == \
+        (1, int(expected == "found"), int(expected == "missed"))
+    assert len(prof.training["tested"]) == 1              # one segment, one observation
+    assert st.attempts == 0 and st.recent == [] and st.rating is None

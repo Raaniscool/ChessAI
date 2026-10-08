@@ -3,6 +3,7 @@
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
 import {createTrainer} from "./training.js"
+import {parsePosition, parsePuzzlePosition} from "./position.js"
 import {applyAdapt, autoNextDelay, cardLine, focusLine, header, itemLabel, judge, needsMore, newAttempt, nextHint,
   pendingIds, resultBody, retry, reveal, sameMove, shouldRecord} from "./puzzle-solver.js"
 
@@ -11,8 +12,9 @@ const REVERT_DELAY = 550
 const SOLUTION_STEP = 700
 const MORE_COUNT = 3      // puzzles fetched at a time in a continuous session
 
-export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COLOR, MARKER_TYPE, legalInputHandler,
-  escapeHtml, setStatus, nav = null, MoveHistory = null, showNode = null, sounds = null}) {
+export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers, addMarker, verifiedMove,
+  isPositionVerified, Chess, COLOR, MARKER_TYPE, legalInputHandler, escapeHtml, setStatus,
+  nav = null, MoveHistory = null, showNode = null, sounds = null}) {
   const $ = id => document.getElementById(id)
   const el = {
     title: $("pz-title"), counter: $("pz-counter"), dashboard: $("pz-dashboard"), solver: $("pz-solver"),
@@ -28,6 +30,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     body: null, done: [], difficulty: null, adaptNote: null,
     mixed: false,    // Mixed practice: the concept stays hidden until a puzzle is over
     session: 0,      // which training session (a new start or leaving ends the old one)
+    loadToken: 0,    // invalidates delayed puzzle-set requests when the tab/mode changes
     more: null,      // the pending request for the next puzzles
     auto: null,      // the pending "next puzzle by itself" {timer, tick}
     history: MoveHistory ? new MoveHistory(new Chess().fen()) : null,   // what's been played (← →)
@@ -39,8 +42,33 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   const show = (node, on) => node.classList.toggle("hidden", !on)
   const sound = (move, chess) => { if (sounds && move) sounds.playMove(move, chess.fen()) }
 
+  function checkedPuzzleFen(p, fen) {
+    const chess = parsePuzzlePosition(Chess, fen, `Puzzle ${p && p.id ? p.id : "position"}`)
+    return chess.fen()
+  }
+
+  async function loadPuzzleFen(p) {
+    try {
+      return checkedPuzzleFen(p, p && p.fen)
+    } catch (firstError) {
+      if (!p || !p.id) throw firstError
+      // A stale/incomplete set response can omit `fen`. Re-fetch the canonical verified puzzle
+      // before giving up; never let `new Chess(undefined)` silently substitute the starting board.
+      try {
+        const full = await api(`/api/puzzles/${encodeURIComponent(p.id)}`)
+        const fen = checkedPuzzleFen(p, full && full.fen)
+        p.fen = fen
+        return fen
+      } catch (secondError) {
+        throw new Error(`Couldn't load a playable position for this puzzle. The starting position ` +
+          `was not substituted. ${secondError.message || firstError.message}`)
+      }
+    }
+  }
+
   // ------------------------------------------------------------------ dashboard
   function setMode(mode) {
+    if (view.mode !== mode) view.loadToken++
     view.mode = mode
     for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"], [el.modeTraining, "training"]]) {
       btn.classList.toggle("active", m === mode)
@@ -53,7 +81,8 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   // ------------------------------------------------------------------ Training (training.js)
-  const trainer = createTrainer({api, board, showPosition, Chess, COLOR, legalInputHandler, escapeHtml, setStatus,
+  const trainer = createTrainer({api, board, showPosition, verifiedMove, addMarkers, isPositionVerified,
+    Chess, COLOR, legalInputHandler, escapeHtml, setStatus,
     nav, MoveHistory, showNode, sounds,
     el: {info: $("tr-info"), feedback: $("tr-feedback"), report: $("tr-report"), end: $("tr-end"),
       cont: $("tr-continue"), back: $("tr-back"), title: el.title},
@@ -167,16 +196,22 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   async function startSet(body) {
+    const token = ++view.loadToken
     el.status.textContent = body.mode === "personalized"
       ? "Finding puzzles for this weakness (new ones are checked by Stockfish first)…" : "Finding puzzles…"
     let res
     try {
       res = await api("/api/puzzles/set", "POST", body)
     } catch (err) {
-      el.status.textContent = err.message
+      if (token === view.loadToken && view.active) el.status.textContent = err.message
       return
     }
+    if (token !== view.loadToken || !view.active) return
     el.status.textContent = ""
+    if (!Array.isArray(res.puzzles) || !res.puzzles.length) {
+      el.status.textContent = "No playable positions were returned. Please try loading puzzles again."
+      return
+    }
     cancelAuto()
     view.session++
     view.more = null
@@ -277,45 +312,78 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     }
   }
 
-  async function explore(from, to) {
-    const chess = new Chess(view.history.current.fen)
-    const legal = chess.moves({square: from, verbose: true}).filter(m => m.to === to)
-    if (!legal.length) return
-    const move = chess.move({from, to, promotion: legal.some(m => m.promotion) ? "q" : undefined})
-    sound(move, chess)
-    view.history.play(chess.fen(), move.from + move.to + (move.promotion || ""), move.san)
-    view.explore = new Chess(chess.fen())
+  async function explore(from, to, receipt) {
+    const transition = receipt && receipt.transition
+    if (!transition || transition.from !== from || transition.to !== to || !isPositionVerified(transition.afterFen)) {
+      throw new Error("The exploration move was not confirmed on the board.")
+    }
+    sound(transition.move, parsePosition(Chess, transition.afterFen, "Puzzle exploration result"))
+    view.history.play(transition.afterFen, transition.uci, transition.move.san)
+    view.explore = parsePosition(Chess, transition.afterFen, "Puzzle exploration result")
     nav.refresh()
-    await showNode(view.history.current)
+    await addMarkers([
+      {marker: MARKER_TYPE.square, square: from}, {marker: MARKER_TYPE.square, square: to},
+    ], transition.afterFen, "Puzzle exploration move")
     setInput(true)
   }
 
   async function openPuzzle(i) {
+    const p = view.set[i]
+    const token = ++view.token
+    setInput(false)
+    el.status.textContent = ""
+    if (!p) {
+      el.status.textContent = "No puzzle position is available. Please reload the set."
+      return
+    }
+    let fen
+    try {
+      fen = await loadPuzzleFen(p)
+    } catch (err) {
+      if (token !== view.token || !view.active) return
+      el.status.textContent = err.message
+      feedback("This puzzle could not be loaded, so I have not substituted the starting position.", "bad")
+      if (view.attempt && !view.attempt.done && view.chess && isPositionVerified(view.chess.fen())) setInput(true)
+      return
+    }
+    if (token !== view.token || view.set[i] !== p) return
+    try {
+      await showPosition(fen, {orientation: p.side === "black" ? COLOR.black : COLOR.white})
+    } catch (err) {
+      if (token !== view.token || !view.active) return
+      el.status.textContent = `This puzzle position could not be verified. ${err.message}`
+      feedback("I stopped before showing or grading this puzzle.", "bad")
+      if (view.attempt && !view.attempt.done && view.chess && isPositionVerified(view.chess.fen())) setInput(true)
+      return
+    }
+    if (token !== view.token) return
+    // Commit the view/model only after the actual board setup has been confirmed.
     view.pos = i
-    const p = puzzle()
     view.attempt = newAttempt(p)
-    view.chess = new Chess(p.fen)
-    if (view.history) view.history.reset(p.fen)
+    view.chess = parsePosition(Chess, fen, `Puzzle ${p.id}`)
+    view.explore = null
+    if (view.history) view.history.reset(fen)
     track()
-    view.token++
     feedback("")
     show(el.explain, false)
     show(el.hint, true); show(el.solution, true); show(el.retry, false); show(el.next, false)
     renderInfo()
     renderSetList()
-    await showPosition(p.fen, {orientation: orientation()})
     setStatus("")
     setInput(true)
   }
 
   async function goTo(i) {
     if (i === view.pos && view.attempt && !view.attempt.done) return
+    const token = view.token
+    const loadToken = view.loadToken
     await recordIfNeeded()
+    if (token !== view.token || loadToken !== view.loadToken || !view.active || view.screen !== "solver") return
     await openPuzzle(i)
   }
 
   const input = legalInputHandler(() => (!view.inputOpen ? null : exploring() ? view.explore : view.chess),
-    (from, to) => (exploring() ? explore(from, to) : onMove(from, to)))
+    (from, to, receipt) => (exploring() ? explore(from, to, receipt) : onMove(from, to, receipt)))
 
   function uciOf(from, to) {
     const legal = view.chess.moves({square: from, verbose: true}).filter(m => m.to === to)
@@ -327,58 +395,89 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     return chess.move({from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] || "q"})
   }
 
-  async function onMove(from, to) {
-    if (view.history && !view.history.atLatest) return   // earlier positions are for looking
+  async function onMove(from, to, receipt) {
+    if (!view.active || view.screen !== "solver" || (view.history && !view.history.atLatest)) return
+    const chess = exploring() ? view.explore : view.chess
+    const transition = receipt && receipt.transition
+    if (!chess || !transition || receipt.beforeFen !== chess.fen() ||
+        transition.from !== from || transition.to !== to || !isPositionVerified(transition.afterFen)) {
+      setInput(false)
+      const restoreFen = chess && chess.fen()
+      if (restoreFen) await showPosition(restoreFen, {orientation: orientation()})
+      feedback("I couldn't confirm that move, so it was not counted. The board was restored to the last verified position.", "bad")
+      if (chess && view.active) setInput(true)
+      return
+    }
+    const token = view.token
     lock(true)   // the opponent's reply / the take-back is played by the program
     try {
-      await judgeMove(from, to)
+      await judgeMove(from, to, receipt, token)
+    } catch (err) {
+      feedback(`I stopped this puzzle because its board could not be verified. ${err.message}`, "bad")
+      setInput(false)
     } finally {
       lock(false)
     }
   }
 
-  async function judgeMove(from, to) {
-    const uci = uciOf(from, to)
-    if (!uci) return
+  async function judgeMove(from, to, receipt, token) {
+    if (token !== view.token || !view.active) return
+    const transition = receipt.transition
+    const uci = transition.uci
+    const expectedUci = uciOf(from, to)
+    if (!expectedUci || expectedUci.slice(0, 4) !== uci.slice(0, 4)) return
     const p = puzzle()
-    const token = view.token
     const trial = new Chess(view.chess.fen())
-    sound(play(trial, uci), trial)   // the learner's move sounds once, right away (also when it's wrong)
+    const trialMove = play(trial, uci)
+    if (!trialMove || trial.fen() !== transition.afterFen) throw new Error("The puzzle move result did not match the verified board.")
+    sound(transition.move, parsePosition(Chess, transition.afterFen, "Puzzle move result"))
     const r = judge(p, view.attempt, uci, {mate: trial.in_checkmate()})
     if (r.verdict === "wrong" || r.verdict === "good") {
       setInput(false)
       feedback(r.message, r.verdict)
-      board.addMarker(r.verdict === "wrong" ? MARKER_TYPE.circleDanger : MARKER_TYPE.circle, to)
-      await sleep(REVERT_DELAY)
+      const marker = r.verdict === "wrong" ? MARKER_TYPE.circleDanger : MARKER_TYPE.circle
+      await addMarker(marker, to, transition.afterFen)
+      if (token !== view.token || !view.active) return
+      await sleep(REVERT_DELAY) // visual feedback only; setup below is awaited and verified
       if (token !== view.token) return
       await showPosition(view.chess.fen(), {orientation: orientation()})
+      if (token !== view.token || !view.active) return
       setInput(true)
       return
     }
-    const mine = play(view.chess, uci)
-    if (view.history) view.history.append(view.chess.fen(), uci, mine && mine.san)
+    view.chess = parsePosition(Chess, transition.afterFen, "Puzzle move result")
+    if (view.history) view.history.append(transition.afterFen, uci, transition.move.san)
     if (nav) nav.refresh()
-    clearMarkers()
-    board.addMarker(MARKER_TYPE.square, from); board.addMarker(MARKER_TYPE.square, to)
+    await clearMarkers(transition.afterFen)
+    if (token !== view.token || !view.active) return
+    await addMarkers([
+      {marker: MARKER_TYPE.square, square: from}, {marker: MARKER_TYPE.square, square: to},
+    ], transition.afterFen, "Puzzle move highlight")
+    if (token !== view.token || !view.active) return
     feedback(r.message, "correct")
     renderInfo()
-    if (r.done) {
-      await showPosition(view.chess.fen(), {orientation: orientation(), highlights: [{square: from, color: "green"},
-        {square: to, color: "green"}]})
-      return finish()
-    }
+    if (r.done) return finish()
     setInput(false)
-    await sleep(REPLY_DELAY)
+    await sleep(REPLY_DELAY) // pacing only; the reply itself is serialized and verified below
     if (token !== view.token) return
     if (r.reply) {
-      const reply = play(view.chess, r.reply)
-      sound(reply, view.chess)
-      if (view.history) view.history.append(view.chess.fen(), r.reply, reply && reply.san)
+      const replyPiece = view.chess.get(r.reply.slice(0, 2))
+      if (!replyPiece) throw new Error(`The puzzle reply's source piece is missing from ${r.reply.slice(0, 2)}.`)
+      const reply = await verifiedMove(view.chess.fen(), r.reply, {
+        expectedPiece: {color: replyPiece.color, type: replyPiece.type}, label: "Puzzle reply",
+      })
+      if (token !== view.token || !view.active) return
+      view.chess = parsePosition(Chess, reply.afterFen, "Puzzle reply result")
+      sound(reply.move, view.chess)
+      if (view.history) view.history.append(reply.afterFen, r.reply, reply.move.san)
       if (nav) nav.refresh()
-      await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
-        highlights: [{square: r.reply.slice(0, 2), color: "grey"}, {square: r.reply.slice(2, 4), color: "grey"}]})
+      await addMarkers([
+        {marker: MARKER_TYPE.square, square: r.reply.slice(0, 2)},
+        {marker: MARKER_TYPE.square, square: r.reply.slice(2, 4)},
+      ], reply.afterFen, "Puzzle reply highlight")
+      if (token !== view.token || !view.active) return
     }
-    if (token !== view.token) return
+    if (token !== view.token || !view.active) return
     feedback(view.attempt.failed ? "Keep going." : "Best move! Keep going.", "correct")
     setInput(true)
   }
@@ -509,34 +608,91 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     renderSetList()
   }
 
-  function onHint() {
+  async function onHint() {
+    if (!view.active || view.screen !== "solver" || !view.attempt || view.attempt.done) return
     const h = nextHint(puzzle(), view.attempt)
     if (!h) return
     feedback(`💡 ${h.text}`, "hint")
-    if (h.square) board.addMarker(MARKER_TYPE.circlePrimary, h.square)
+    if (h.square) {
+      const fen = exploring() ? view.explore.fen() : view.chess.fen()
+      const piece = parsePosition(Chess, fen, "Puzzle hint position").get(h.square)
+      if (isPositionVerified(fen)) await addMarker(MARKER_TYPE.circlePrimary, h.square, fen,
+        piece ? {color: piece.color, type: piece.type} : null)
+    }
   }
 
   async function onSolution() {
     const a = view.attempt
+    if (!a || a.done || !view.active || view.screen !== "solver") return
     const token = view.token
     setInput(false)
-    if (view.history && !view.history.atLatest) {   // was looking back: continue from the latest position
-      view.history.toLatest()
-      await showPosition(view.chess.fen(), {orientation: orientation()})
+    try {
+      if (view.history && !view.history.atLatest) {   // was looking back: continue from the latest position
+        const oldCursor = view.history.cursor
+        view.history.toLatest()
+        try {
+          await showPosition(view.chess.fen(), {orientation: orientation()})
+        } catch (err) {
+          view.history.cursor = oldCursor
+          if (nav) nav.refresh()
+          throw err
+        }
+      }
+      if (token !== view.token || !view.active) return
+    } catch (err) {
+      if (token === view.token && view.active) {
+        feedback(`I stopped before showing the solution because the puzzle position could not be verified. ${err.message}`, "bad")
+      }
+      return
     }
-    const line = reveal(puzzle(), a)
+    // Preview on a copy. Mark the attempt as revealed only after the full solution line is verified.
+    const previewAttempt = {...a, played: [...a.played]}
+    const line = reveal(puzzle(), previewAttempt)
+    const startFen = view.chess.fen()
+    const historySnapshot = view.history && view.history.nodes.map(node => ({...node}))
+    const historyCursor = view.history && view.history.cursor
+    const restoreLocalSolutionStart = () => {
+      view.chess = parsePosition(Chess, startFen, "Puzzle solution starting position")
+      if (view.history && historySnapshot) {
+        view.history.nodes = historySnapshot
+        view.history.cursor = historyCursor
+        if (nav) nav.refresh()
+      }
+    }
     lock(true)   // the solution plays by itself
     try {
       for (const uci of line) {
-        await sleep(SOLUTION_STEP)
-        if (token !== view.token) return
-        const move = play(view.chess, uci)
-        if (view.history) view.history.append(view.chess.fen(), uci, move && move.san)
+        await sleep(SOLUTION_STEP) // visual pacing only; every move below waits for board confirmation
+        if (token !== view.token || !view.active) { restoreLocalSolutionStart(); return }
+        const piece = view.chess.get(uci.slice(0, 2))
+        if (!piece) throw new Error(`The solution's source piece is missing from ${uci.slice(0, 2)}.`)
+        const transition = await verifiedMove(view.chess.fen(), uci, {
+          expectedPiece: {color: piece.color, type: piece.type}, label: "Puzzle solution",
+        })
+        if (token !== view.token || !view.active) { restoreLocalSolutionStart(); return }
+        view.chess = parsePosition(Chess, transition.afterFen, "Puzzle solution result")
+        if (view.history) view.history.append(transition.afterFen, uci, transition.move.san)
         if (nav) nav.refresh()
-        sound(move, view.chess)
-        await showPosition(view.chess.fen(), {orientation: orientation(), animated: true,
-          highlights: [{square: uci.slice(0, 2), color: "green"}, {square: uci.slice(2, 4), color: "green"}]})
+        sound(transition.move, view.chess)
+        if (!await addMarkers([
+          {marker: MARKER_TYPE.square, square: transition.from},
+          {marker: MARKER_TYPE.square, square: transition.to},
+        ], transition.afterFen, "Puzzle solution move")) {
+          throw new Error("A solution-move highlight could not be confirmed on the board.")
+        }
+        if (token !== view.token || !view.active) { restoreLocalSolutionStart(); return }
       }
+      if (!isPositionVerified(view.chess.fen())) throw new Error("The final solution position could not be confirmed.")
+      reveal(puzzle(), a)
+    } catch (err) {
+      if (token !== view.token || !view.active) { restoreLocalSolutionStart(); return }
+      try {
+        await showPosition(startFen, {orientation: orientation()})
+        restoreLocalSolutionStart()
+        setInput(true)
+      } catch (_) { /* leave input closed if the solution start cannot be re-established */ }
+      feedback(`I stopped before showing the puzzle result because the board could not be verified. ${err.message}`, "bad")
+      return
     } finally {
       lock(false)
     }
@@ -544,19 +700,34 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   }
 
   async function onRetry() {
+    if (!view.active || view.screen !== "solver" || !view.attempt) return
     cancelAuto()
     const p = puzzle()
+    const token = ++view.token
+    setInput(false)
+    let fen
+    try {
+      fen = await loadPuzzleFen(p)
+      if (token !== view.token || !view.active) return
+      await showPosition(fen, {orientation: p.side === "black" ? COLOR.black : COLOR.white})
+    } catch (err) {
+      if (token !== view.token || !view.active) return
+      el.status.textContent = err.message
+      feedback("This puzzle could not be reloaded; the starting position was not substituted.", "bad")
+      if (view.attempt && !view.attempt.done && isPositionVerified(view.chess.fen())) setInput(true)
+      return
+    }
+    if (token !== view.token) return
     retry(p, view.attempt)
     view.attempt.revealed = false
-    view.chess = new Chess(p.fen)
-    if (view.history) view.history.reset(p.fen)
+    view.chess = parsePosition(Chess, fen, `Puzzle ${p.id}`)
+    view.explore = null
+    if (view.history) view.history.reset(fen)
     track()
-    view.token++
     feedback("Try it again.", "")
     show(el.explain, false)
     show(el.hint, true); show(el.solution, true); show(el.retry, false); show(el.next, false)
     renderInfo()
-    await showPosition(p.fen, {orientation: orientation()})
     setInput(true)
   }
 
@@ -565,6 +736,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
     cancelAuto()
     const token = ++view.token
     await recordIfNeeded()
+    if (token !== view.token || !view.active || view.screen !== "solver") return
     if (view.pos >= view.set.length - 1) {
       el.status.textContent = ""
       setStatus("Finding the next puzzle…")
@@ -581,16 +753,18 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
 
   async function backToDashboard() {
     cancelAuto()
+    const token = ++view.token
+    view.loadToken++
+    view.session++
+    view.more = null
+    setInput(false)
     await recordIfNeeded()
+    if (token !== view.token || !view.active) return
     const finished = Object.values(view.results)
     if (view.screen === "solver" && finished.length) {
       const solved = finished.filter(r => r === "solved").length
       view.summary = `Session: ${solved} of ${finished.length} solved. Your results update what's recommended.`
     }
-    view.session++
-    view.more = null
-    view.token++
-    setInput(false)
     if (nav) nav.set("puzzles", null)   // nothing to step through on the dashboard
     view.screen = "dashboard"
     show(el.solver, false)
@@ -614,9 +788,16 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
   document.addEventListener("keydown", e => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") cancelAuto() })
 
   return {
+    // Lessons chat can open a theme practice set without replacing its server-owned lesson session.
+    async startFromCoach({concept, count = 5} = {}) {
+      if (!concept) throw new Error("A verified practice theme is required.")
+      setMode("practice")
+      return startSet({mode: "practice", concept, count, generate: true})
+    },
     // Called when the Puzzles tab is shown: everything is where the learner left it.
     async enter() {
       view.active = true
+      const token = view.token
       trainer.activate()
       if (view.screen === "trainer") {
         await trainer.enter()
@@ -624,26 +805,47 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       }
       if (view.screen === "solver" && puzzle()) {
         const a = view.attempt
-        const learner = puzzle().side === "black" ? "b" : "w"
-        if (!a.done && view.chess.turn() !== learner && a.index > 0) {
-          // left while the opponent's reply was on its way: play it now
-          const reply = puzzle().steps[a.index - 1].reply_uci
-          if (reply) {
-            const move = play(view.chess, reply)
-            if (view.history) view.history.append(view.chess.fen(), reply, move && move.san)
+        try {
+          const visibleFen = view.history ? view.history.current.fen : view.chess.fen()
+          await showPosition(visibleFen, {orientation: orientation()})
+          if (!view.active || token !== view.token) return
+          const learner = puzzle().side === "black" ? "b" : "w"
+          if (!a.done && (!view.history || view.history.atLatest) && view.chess.turn() !== learner && a.index > 0) {
+            // If the tab was left while the opponent reply was pending, verify that reply before
+            // adding it to the local history or letting the learner play again.
+            const replyUci = puzzle().steps[a.index - 1].reply_uci
+            if (replyUci) {
+              const from = replyUci.slice(0, 2)
+              const piece = view.chess.get(from)
+              if (!piece) throw new Error(`The opponent's reply source piece is missing from ${from}.`)
+              const reply = await verifiedMove(view.chess.fen(), replyUci, {
+                expectedPiece: {color: piece.color, type: piece.type}, label: "Puzzle opponent reply",
+              })
+              if (!view.active || token !== view.token) return
+              view.chess = parsePosition(Chess, reply.afterFen, "Puzzle reply result")
+              if (view.history) view.history.append(reply.afterFen, replyUci, reply.move.san)
+            }
+          }
+          renderInfo()
+          track()
+          if (view.history && showNode) await showNode(view.history.current, view.history, orientation())
+          else await showPosition(view.chess.fen(), {orientation: orientation()})
+          if (!view.active || token !== view.token) return
+          if (a.done && !view.results[puzzle().id]) await finish()
+          else if (view.history && (a.done || !view.history.atLatest)) await onView(view.history)
+          else setInput(!view.attempt.done)
+          setStatus("")
+        } catch (err) {
+          if (view.active && token === view.token) {
+            setInput(false)
+            setStatus(`I couldn't restore this puzzle position safely. ${err.message}`)
+            feedback("The puzzle is paused until its board position can be verified.", "bad")
           }
         }
-        renderInfo()
-        track()
-        if (view.history && showNode) await showNode(view.history.current, view.history, orientation())
-        else await showPosition(view.chess.fen(), {orientation: orientation()})
-        if (!view.active) return
-        setStatus("")
-        if (view.history && (a.done || !view.history.atLatest)) await onView(view.history)
-        else setInput(!view.attempt.done)
       } else {
         board.disableMoveInput()
         await showPosition(new Chess().fen(), {orientation: COLOR.white})
+        if (!view.active || token !== view.token) return
         setStatus("")
         if (view.dashboard) renderDashboard()
         if (view.mode === "training") trainer.loadHome(el.training)
@@ -655,6 +857,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, Chess, COL
       cancelAuto()
       view.active = false
       view.token++  // a pending reply animation stops; the attempt stays as it was
+      view.loadToken++
       view.inputOpen = false
       board.disableMoveInput()
     },

@@ -19,6 +19,7 @@ from app.engine import EngineUnavailable, set_engine
 from app.knowledge.library import get_knowledge
 from app.session import SessionManager, set_manager
 from tests.games_helpers import BACK_RANK_FEN, FORK_FEN, ScriptedEngine, chesscom_pgn, epd, fork_engine
+from tests.session_helpers import confirm_advance
 
 FORK2_FEN = "8/q3k3/8/8/1N6/8/8/4K3 w - - 0 1"  # the same idea elsewhere: Nc6+ forks king and queen
 FIRST_GAME = 700000000
@@ -557,7 +558,7 @@ def test_training_from_the_history_builds_a_personal_plan(client):
                 boards.append((lesson_id, step["board"]["fen"]))
             if step["type"] in ("exercise", "complete", "summary"):
                 break
-            step = client.post(f"/api/sessions/{sid}/advance").json()["step"]
+            step = confirm_advance(client, sid)["step"]
     own = [fen for lid, fen in boards if lid.endswith("01b")]
     assert FORK_FEN in own or FORK2_FEN in own
     import chess

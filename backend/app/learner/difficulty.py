@@ -34,7 +34,11 @@ Each skill (overall, tactics, pattern_recognition, calculation, defense, endgame
 weighted mean of the evidence that applies to it. A concept starts from its skill's estimate
 (minus WEAKNESS_SHIFT when it is a weakness from the games — practise it slightly below your
 level, never at kindergarten level) and moves with the learner's results on puzzles of exactly
-that skill (anchor weight 2). When the learner has repeatedly asked for explanations on that
+that skill (anchor weight 2), and with the unprompted recognition of that same concept in
+Training (`recognition_trials`: a hidden idea found or missed in a real position, weight
+RECOGNITION_WEIGHT each). The two are separate sources: a concept whose puzzles go well while
+its hidden ideas are missed in play lands between them, which is exactly the "solves it when
+prompted, doesn't see it in a game" learner. When the learner has repeatedly asked for explanations on that
 concept (learner.help signal "understanding" or "difficulty": at least 3 of the last results, and
 half of them), the concept's target eases by help.TARGET_EASE (40, less than a game weakness):
 teach and consolidate before stepping up. Requests never enter the skill estimates themselves, so
@@ -65,6 +69,7 @@ MIN_PHASE_MOVES = 30
 CHANCE_BONUS = 100
 MIN_CHANCES = 3
 PUZZLE_WEIGHT, PUZZLE_MAX_WEIGHT = 0.4, 6.0
+RECOGNITION_WEIGHT = 1.0     # one hidden-idea test (unprompted) counts like a game chance, not a puzzle
 FAST_SECONDS, FAST_BONUS = 20, 100
 SLOW_SECONDS, SLOW_FACTOR = 150, 0.85
 RECENT_DAYS = 30
@@ -217,7 +222,8 @@ class DifficultyProfile:
     prior: dict
     games: int
     puzzles: int
-    trials: list = field(default_factory=list)   # [(puzzle, trial)]
+    trials: list = field(default_factory=list)   # [(puzzle, trial)] — prompted puzzle results
+    recognition: dict = field(default_factory=dict)  # concept -> [(rating, score, weight)]: unprompted
     weaknesses: set = field(default_factory=set)
     explanations: dict = field(default_factory=dict)  # concept -> (recent scores, explanation flags)
 
@@ -257,16 +263,25 @@ class DifficultyProfile:
             knowledge.concepts else {concept}
         mine = [(p, t) for p, t in self.trials if p.concept in wanted]
         n = sum(t[2] for _p, t in mine)
-        est = performance([t for _p, t in mine], anchor, CONCEPT_ANCHOR) if mine else anchor
+        # unprompted recognition (Training's hidden ideas) for the same concepts: a separate
+        # source, weighted like a real-game chance, never folded into the puzzle trials
+        recog = [t for c, ts in self.recognition.items() if c in wanted for t in ts]
+        trials = [t for _p, t in mine] + recog
+        est = performance(trials, anchor, CONCEPT_ANCHOR) if trials else anchor
         explain = self.explanation_signal(wanted | {concept})
         ease = TARGET_EASE if explain["signal"] in ("understanding", "difficulty") else 0
         est -= ease
         solved = sum(1 for _p, t in mine if t[1] >= 0.75)
+        found = sum(1 for _r, s, _w in recog if s >= 0.5)
         return _clamp(est), {
             "concept": concept, "skill": dim, "skill_estimate": base, "weakness": weak,
             "weakness_shift": -WEAKNESS_SHIFT if weak else 0, "puzzles": len(mine), "weight": round(n, 2),
             "solved_cleanly": solved, "estimate": _clamp(est),
             "explanations": explain["signal"], "explanation_shift": -ease,
+            "recognition": {"tested": len(recog), "found": found, "missed": len(recog) - found,
+                            "weight": round(sum(w for _r, _s, w in recog), 2), "unprompted": True,
+                            "detail": f"found {found} of {len(recog)} hidden ideas in Training" if recog
+                                      else "nothing met unprompted in Training yet"},
             "detail": (f"{solved} of {len(mine)} puzzles of this skill solved cleanly" if mine
                        else "no puzzles of this skill yet: starts from your " + dim.replace("_", " ") + " level")}
 
@@ -357,6 +372,24 @@ def _training_evidence(profile, items: dict[str, list[Evidence]], prior: dict) -
                                          f"found {found} of {len(tested)} hidden ideas in Training"))
 
 
+def recognition_trials(profile) -> dict[str, list[tuple[float, float, float]]]:
+    """Unprompted recognition attempts per concept, from Training (assessment.record).
+
+    Each entry is one verified position whose hidden idea the learner met without being told
+    anything (assessment.evaluate._tested): {concept, rating, found}. They are the counterpart
+    of the prompted puzzle trials and are deliberately kept in a separate bucket — solving a
+    fork when a puzzle announces "find the fork" is weaker evidence than spotting it in play,
+    so the two are never averaged into one number (`RECOGNITION_WEIGHT` vs `PUZZLE_WEIGHT`).
+    """
+    out: dict[str, list[tuple[float, float, float]]] = {}
+    for t in (getattr(profile, "training", None) or {}).get("tested") or []:
+        concept, rating = t.get("concept"), t.get("rating")
+        if concept is None or rating is None:
+            continue
+        out.setdefault(concept, []).append((float(rating), 1.0 if t.get("found") else 0.0, RECOGNITION_WEIGHT))
+    return out
+
+
 def build(profile, usage=None, lookup=None, now: datetime | None = None) -> DifficultyProfile:
     """The learner's difficulty profile from the profile (rating, game evidence) and puzzle results."""
     prior = _prior(profile)
@@ -403,7 +436,8 @@ def build(profile, usage=None, lookup=None, now: datetime | None = None) -> Diff
                     for cid, st in ((getattr(profile, "concepts", None) or {}) if profile is not None else {}).items()
                     if getattr(st, "recent", None)}
     return DifficultyProfile(skills={k: _combine(k, v) for k, v in items.items()}, prior=prior, games=games,
-                             puzzles=len(trials), trials=trials, weaknesses=weaknesses, explanations=explanations)
+                             puzzles=len(trials), trials=trials, weaknesses=weaknesses, explanations=explanations,
+                             recognition=recognition_trials(profile))
 
 
 def session_shift(results: list[dict]) -> tuple[int, str | None]:

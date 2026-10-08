@@ -80,6 +80,27 @@ def test_chat_sends_only_recent_history():
     assert contents[-1] == "latest?"
 
 
+def test_chat_does_not_duplicate_structured_recent_context_and_full_transcript():
+    context = LessonContext("Sicilian", "Opening ideas", ["development"],
+                            learning_state={"topic": "Sicilian", "relevant_context": [
+                                "user: Earlier question", "assistant: Earlier answer"]})
+    transcript = [{"role": "user", "content": "Earlier question with its full detail"},
+                  {"role": "assistant", "content": "Earlier answer with its full explanation"}]
+    msgs = build_chat_messages("What next?", context, transcript)
+    intro = msgs[1]["content"]
+    all_text = "\n".join(m["content"] for m in msgs)
+    assert "Recent relevant context:" not in intro
+    assert "Earlier question with its full detail" in all_text
+    assert "Earlier answer with its full explanation" in all_text
+
+
+def test_chat_keeps_relevant_context_when_no_transcript_is_available():
+    context = LessonContext("Chess", "Open chat", [], learning_state={
+        "topic": "pins", "relevant_context": ["user: What is a pin?"]})
+    intro = build_chat_messages("What about now?", context, [])[1]["content"]
+    assert "Recent relevant context: user: What is a pin?" in intro
+
+
 @pytest.mark.parametrize("url, thinking, expected", [
     ("http://localhost:11434/v1", "auto", "none"),   # Ollama: reliable think-off switch
     ("http://localhost:11434/v1", "off", "none"),
