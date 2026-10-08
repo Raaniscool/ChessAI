@@ -1,6 +1,6 @@
 # ChessAI Project Context
 
-Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source/test cross-check: 2026-10-07. No Git history was consulted for bug chronology.
+Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source/test cross-check: 2026-10-07. For design rationale and a commit-derived milestone history, see [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); regression entries here do not infer unrecorded root causes.
 
 ## 1. What ChessAI Is
 
