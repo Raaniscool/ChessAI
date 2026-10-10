@@ -1,6 +1,6 @@
 # ChessAI Project Context
 
-Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source/test cross-check: 2026-10-07. For design rationale and a commit-derived milestone history, see [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); regression entries here do not infer unrecorded root causes.
+Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source/test cross-check: 2026-10-08 (Section 17 records what actually ran, and its engine and model limits). For design rationale and a commit-derived milestone history, see [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); regression entries here do not infer unrecorded root causes. Keeping this file current is itself mandatory, not optional: every major change must update it in the same task and every final report must say whether that happened — see Section 22, rule 14.
 
 ## 1. What ChessAI Is
 
@@ -322,7 +322,16 @@ Status describes repository implementation, not whether the feature is configure
 11. Check model configuration, process, and keep-alive on the target host. Never assume `.env.example` is active or report mock timings as real-model performance.
 12. Reuse existing performance logging and debug instrumentation before adding timers or caches. Report cold/warm/cache state and whether timing is mock, local, or browser-observed.
 13. Add focused regression tests for behavior changes; run and report only tests that actually completed.
-14. Prefer focused documentation updates and reference deeper subsystem docs rather than duplicating them.
+14. **MANDATORY — update this file as part of every major change.** `docs/CHESSAI_PROJECT_CONTEXT.md` is updated in the *same task*, not afterwards and not in a separate cleanup pass. This is a project convention, not a suggestion: a major change shipped without its context update is an incomplete change.
+    - **What counts as major:** new features; architectural changes; intent-routing changes; lesson-state changes; board/position verification; Stockfish or Qwen integration; Knowledge Library changes; Puzzle/Training changes; Game Analysis; personalization and the learner model; major bug fixes; significant performance work; new APIs or endpoints; and any change to what is implemented versus planned.
+    - **How:** edit the relevant existing sections in place. Correct or remove outdated claims instead of appending text that contradicts them — contradictions must not accumulate. Keep updates focused and reference deeper subsystem docs rather than duplicating them.
+    - **Status discipline:** keep implemented, planned, host-dependent, and unverified behavior clearly distinguished. Planned or partially verified work must never read as shipped.
+    - **Record:** important architectural decisions, the systems affected, and the relevant files.
+    - **Validation:** record only tests and checks that actually ran, with their environment and limits (engine available or not, mock versus real model, cold versus warm). Never record a partial, interrupted, or skipped run as a pass.
+    - **Before finishing:** re-read the edited sections and compare them against the actual implementation. The code wins over any statement in this file.
+    - **Same commit/PR:** include this file's update in the same commit or pull request as the major change whenever practical.
+    - **Always report it:** every final report states explicitly whether `docs/CHESSAI_PROJECT_CONTEXT.md` was updated — and if it was not, why not.
+    - **Minor changes are exempt:** edits that do not materially affect architecture, behavior, decisions, or future handoff needs should not generate documentation churn.
 15. Use PowerShell commands for Windows workflows when relevant.
 16. Port **8000 must not be used for launches** per the user's correction. Last selected port was 8080; confirm before launching.
 17. Avoid committing generated datasets, runtime stores, model downloads, `.env` files, or other large/local artifacts unless explicitly required.
@@ -338,8 +347,8 @@ Status describes repository implementation, not whether the feature is configure
 7. Implement without removing required analysis, validation, filtering, or fallback behavior. Keep UI/API changes consistent and same-origin.
 8. Run focused tests, then relevant backend and frontend suites and compile checks where feasible. Record failures/interruption/environment gaps honestly; do not turn partial runs into “passed.”
 9. Review the resulting source and user-visible behavior; verify no stale duplicated state, unsafe board path, accidental data leak, or unintended model/engine call remains.
-10. Update focused documentation and feature-status notes when behavior changes. Distinguish implemented, planned, host-dependent, and unverified behavior.
-11. Report changed files, behavior, exact validation run/results, and unresolved uncertainties. Do not claim tests, model loading, latency, or runtime state that were not observed.
+10. Update focused documentation and feature-status notes when behavior changes — and for any major change, update `docs/CHESSAI_PROJECT_CONTEXT.md` in this same task, as Section 22 rule 14 requires. Distinguish implemented, planned, host-dependent, and unverified behavior.
+11. Report changed files, behavior, exact validation run/results, and unresolved uncertainties, and state explicitly whether `docs/CHESSAI_PROJECT_CONTEXT.md` was updated. Do not claim tests, model loading, latency, or runtime state that were not observed.
 
 ## 24. Glossary
 
