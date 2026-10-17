@@ -1,6 +1,6 @@
 # ChessAI Project Context
 
-Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source/test cross-check: 2026-10-08 (Section 17 records what actually ran, and its engine and model limits). For design rationale and a commit-derived milestone history, see [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); regression entries here do not infer unrecorded root causes. Keeping this file current is itself mandatory, not optional: every major change must update it in the same task and every final report must say whether that happened — see Section 22, rule 14.
+Persistent handoff for future AI coding chats. This guide describes the repository as it currently exists; implementation and tests are authoritative over stale counts or aspirational roadmap language. Last source, Git-state and lightweight-test cross-check: 2026-10-17 (Section 17 separates checks run in this checkout from earlier snapshots and their limits). For design rationale and selective commit-anchored milestones, see [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); regression entries do not infer unrecorded production root causes. Current branch publishing, task records and mainline-integration limits are documented in Section 24. Keeping this file current is mandatory: every major change must update it in the same task, and every final report must say whether that happened — see Section 22, rule 14.
 
 ## 1. What ChessAI Is
 
@@ -229,11 +229,13 @@ node --test frontend\tests\*.test.mjs
 
 Run focused tests first, then the relevant backend and frontend suites, then broader checks where time/environment permit. Engine/host/model-dependent tests can have different prerequisites; record what was actually run. For the current integration snapshot, `python -m compileall -q backend/app backend/tests` passed; `node --test frontend/tests/*.test.mjs` completed with 118 tests (108 passed, 10 skipped, 0 failed); all 74 tracked JSON files parsed; and `git diff --check` passed. A later Arena sandbox run **did complete the backend suite** (2026-10-08, commit `cc71992`, Python 3.11.2, pytest 9.1.1, `chess` 1.11.2, fastapi 0.142.4): `python -m pytest backend/tests/ -q` → **2 failed, 1725 passed, 104 skipped in 156 s**, with `compileall`, all 74 tracked JSON files, `git diff --check` and the 118-test frontend run re-confirmed in the same environment. **This was not a full-engine pass.** No working Stockfish was available there, so the run used `ENGINE_CMD=/nonexistent/engine` to make engine startup fail fast, and it ran against a **copy of the tree with no `.git` directory**. The skips are overwhelmingly engine-dependent tests, plus one optional `kokoro_onnx` test and four `test_repo_hygiene.py` tests that skip *only* because that copy was not a git checkout; those four would execute in a real clone, so a re-run there should expect slightly different skip and pass counts. Both failures are in `backend/tests/test_custom_plans.py` and both follow from the absent engine: `test_plan_for_goal_asks_then_builds_the_chosen_reading` receives the *intended* honest `PlanError` (exact-material positions cannot be verified without Stockfish), and `test_qwen_proposals_are_validated_and_retried_with_feedback` trips its own assertion at line 530 because `"fen" not in prompt` is a bare substring test and a candidate description contains “de**fen**der” — a latent test brittleness worth tightening to a word-boundary or FEN-shaped check. Re-run with a working engine before treating any of this as a clean pass.
 
+A separate lightweight documentation-workflow check in this Arena checkout (2026-10-17; Python 3.11.2, Node v22.22.3) ran `node --test frontend/tests/*.test.mjs` → **118 tests: 108 passed, 10 skipped, 0 failed** (the skips are optional jsdom-dependent onboarding/TTS cases); a standard-library AST parse of `backend/app` and `backend/tests` → **201 Python files parsed**; and JSON parsing → **74 tracked/worktree JSON files parsed**. `git diff --check` passed before final commit. No backend pytest run was attempted in this turn because `pytest`, `python-chess`, FastAPI and `httpx` are absent; no packages were installed. This is not a backend test result or an engine/model runtime check. Node emitted `MODULE_TYPELESS_PACKAGE_JSON` warnings from ES-module files under the package's current module configuration; tests still completed successfully.
+
 For a local app launch, port **8000 is explicitly rejected by the user**. Do not launch on 8000. The last chosen port was 8080; confirm the current run configuration and bind address before starting a server. Keep the app's API/UI same-origin and the preview host/origin allowed.
 
 ## 18. Verified Bug / Regression History
 
-The repository contains explicit audit/regression tests for some prior defects and regression guards for multi-turn behavior. The entries below distinguish those sources. Where tests establish the failure mode but not its date or exact original root cause, that uncertainty is stated; no Git chronology was inspected.
+The repository contains explicit audit/regression tests for some prior defects and regression guards for multi-turn behavior. The entries below distinguish those sources. GitHub commit/PR history was inspected on 2026-10-17, but it does not establish the production root cause or incident date for every test; where code/tests do not prove those details, the uncertainty is stated. Selective milestone history is in [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md); the current branch/publishing snapshot is in Section 24.
 
 | Problem/failure mode | What the evidence says about how it arose | Current protection / design |
 | --- | --- | --- |
@@ -267,11 +269,19 @@ Other safety guards include capped chat/plan input, stale-analysis schema checks
 - Documented custom-plan limits: generated material endgame exercises are single-move “find the decisive move” positions; multi-move technique lines are not generated yet. Text/fact checking covers move mentions and win/draw wording, not arbitrary prose. Ambiguity detection is grounded in the catalog, Knowledge Library, Glossary, and opening lexicon; unfamiliar wording uses the existing fallback and optional Qwen.
 - Qwen plan proposals/intent suggestions have fake-teacher test coverage, not real-model quality certification. Full candidate validation remains separate from the proposer.
 
+**Additional code-level risks and documentation drift recorded 2026-10-17:**
+
+- `config.py` exposes `ENGINE_TIMEOUT`, but the engine service does not apply it as a per-search timeout; the UCI startup handshake can also block if an engine never responds. The 2026-10-08 sandbox observation below is environment-specific, while the missing timeout path is a code-level issue.
+- Puzzle completion metrics (`solved`, `first_try`, `mistakes`, hints, etc.) arrive from the browser and are used to update usage/learner evidence; the result endpoint does not replay a submitted move history to independently verify those claims. Treat results as client-reported, not cryptographically or server-replay verified.
+- `SessionManager` keeps sessions in a process-local dictionary without a TTL/size bound or per-session lock. Sessions are not restart-durable, and concurrent operations on one session need further lifecycle/concurrency review.
+- Checked-in seed audit: **89 concepts, 617 verified Knowledge Library examples in 24 JSON files, and 575 global Puzzle Library entries/profile signatures**. These figures exclude runtime generated/personal data. The 10 opening examples are demonstrations/deep-dives without a key move, so they do not produce opening-concept puzzles; the checked-in Puzzle Library has no `openings`-category puzzle entries. Its few positions that happen to begin in an opening-like phase are not opening-concept coverage.
+- Several focused docs are older snapshots and should not be mistaken for current measurements: `README.md` still reports 268 examples and undated historical test totals (653/1034/1161/1327); `KNOWLEDGE_LIBRARY.md` says 489 examples; `PUZZLE_LIBRARY.md` says ~320 puzzles and 302 lines. The current checked-in counts above supersede those figures. The README, `LATENCY_AUDIT.md`, and `TTS.md` also contain launch commands using port 8000, contrary to Section 17's project rule. These stale references are flagged here; they were not rewritten as part of this workflow-only task.
+
 **Not verified for the user's current machine:**
 
 - Actual `QWEN_MODEL`, active quantization, model-server reachability/loaded status, keep-alive, CPU/GPU placement, memory use, real TTFO and tokens/second.
 - Whether Stockfish is installed/resolvable in the active environment, aside from code fallback order.
-- Exact current library/puzzle/analysis data totals, because dynamic data may be outside checked-in seed files and older docs disagree.
+- Exact runtime counts in the user's `DATA_DIR` (generated/personal knowledge and puzzles, game history and analysis), because dynamic data may be outside checked-in seed files. The checked-in seed-only census is recorded above; older focused docs disagree.
 - Whether a previously started preview/server process is still live. Preview process liveness has been unknown on later turns.
 
 A previous environment audit found no `.env`, unset `QWEN_MODEL`, unavailable Ollama/cache, and a failed model download with TLS `SSL_ERROR_SYSCALL`. This is evidence only about that audit environment, not proof about another host or the user's current local machine. Do not claim real-Qwen performance or loaded state without checking it there.
@@ -295,9 +305,29 @@ Status describes repository implementation, not whether the feature is configure
 | Game import, analysis, review and weakness evidence | **Implemented** | Confirmed import support includes PGN and Chess.com public fetch. |
 | Local learner personalization | **Implemented** | Not accounts or cloud synchronization. |
 | TTS/speech integration | **Implemented, provider-dependent** | `backend/app/tts_api.py`, `backend/app/tts/`, and `frontend/speech.js`; inspect `docs/TTS.md`. `frontend/tts.js` does not exist. |
-| **Decision Puzzles** | **PLANNED / NOT YET IMPLEMENTED** | No separate module/API/UI flow found. |
+| **Decision Puzzles** | **PLANNED / NOT YET IMPLEMENTED** | No separate module/API/UI flow found. The planned version should assess a learner's explanation against verified position/engine facts; do not mistake ordinary puzzle solving or streamed Qwen explanations for this feature. |
+| Unified navigation redesign | **PLANNED** | `frontend/index.html` currently has Lessons, Game Analysis and Puzzles tabs. `frontend/board-nav.js` is move-history navigation beneath the board, not a unified app-navigation redesign. |
+| Timed games against configurable bots | **PLANNED / NOT FOUND** | Existing `backend/app/assessment/` Training is short bot-based assessment in four phases; no clock/time-control API or user-configurable bot strength flow was found. |
+| Stronger game-analysis → learner-model → practice loop | **PARTIALLY IMPLEMENTED; further work planned** | Game-history evidence, local learner signals and personalized practice already connect. Extend those contracts rather than introducing another profile or duplicate recommendation path. |
+| Expanded verified opening-puzzle coverage | **PLANNED; current content gap confirmed** | Checked-in puzzle data has 575 global puzzles but no opening-concept puzzle entries. The 10 checked-in opening examples have no `key_move` and are demonstration/deep-dive material only. Opening trees are not themselves puzzle coverage. |
+| Engine timeout/resilience and AI response-time improvements | **PARTIAL / OPEN** | Stockfish and optional Qwen paths exist, but `ENGINE_TIMEOUT` is not applied to analysis; real Qwen latency/quality on the target host is unverified. See Sections 19 and 24. |
 | Multi-user authentication/cloud profiles | **Not implemented / not found** | Do not imply tenant isolation beyond current player-scoped game data. |
 | More authored courses / expanded curriculum | **Limited current coverage; expansion status unknown** | The checked-in authored course is Italian Game; no current commitment to a broader authored curriculum was confirmed. |
+
+### 20.1 Implemented-feature source, API and test index
+
+This is a cross-chat map of the significant shipped flows, not a second API specification. API owners and their tests are authoritative; `*` below denotes the route family actually registered by the owning module.
+
+| Feature | Backend and API | Frontend and representative tests | Dependencies / completion notes |
+|---|---|---|---|
+| Coach, lesson plans and conversation continuity | `backend/app/main.py`, `backend/app/session.py`, `backend/app/planner/intent/`, `backend/app/planner/`, `backend/app/teacher/`; `/api/coach/route`, `/api/plans*`, `/api/lessons/{lesson_id}/start`, `/api/sessions/*`, `/api/knowledge/intent`, `/api/knowledge/answer` | `frontend/app.js`, `frontend/coach.js`, `frontend/plan-view.js`, `frontend/lesson-progression.js`, `frontend/net.js`; `backend/tests/test_coach_conversation.py`, `backend/tests/test_plans_api.py`, `backend/tests/test_adaptive_lessons.py`, `backend/tests/test_api.py` | Implemented. Python-chess owns board facts; Stockfish is needed for strength claims; Qwen is optional. Authored-course coverage is limited. |
+| Board setup, move safety and view navigation | `backend/app/chess_system.py`, `backend/app/session.py`; session move/advance/reveal endpoints under `/api/sessions/*` | `frontend/board-state.js`, `frontend/position.js`, `frontend/board-nav.js`, `frontend/lines.js`; `frontend/tests/board-state.test.mjs`, `position.test.mjs`, `board-nav.test.mjs`, `lines.test.mjs`; `backend/tests/test_core.py`, `test_api.py` | Implemented board verification and move-history navigation. This is not the planned unified app-navigation redesign. Browser chess.js/rendering verifies presentation; backend Python-chess remains authoritative. |
+| Knowledge, examples, opening trees and explanations | `backend/app/knowledge/`, `backend/app/basic_explanations/`, `backend/app/planner/knowledge_lessons.py`, `backend/app/lessons/`; `/api/knowledge/intent`, `/api/knowledge/answer`, `/api/courses`, `/api/topics`, plus plan/session routes | `frontend/app.js`; `backend/tests/test_knowledge.py`, `test_knowledge_engine.py`, `test_knowledge_tutor.py`, `test_basic_explanations.py`, `test_opening_trees.py`, `test_catalog_engine.py` | Implemented; checked-in seed has 89 concepts and 617 verified examples. Generated content must pass validators/engine checks. Qwen is not a verification authority. |
+| Puzzle Library and adaptive solving | `backend/app/puzzle_api.py`, `backend/app/puzzles/`; `/api/puzzles`, `/api/puzzles/dashboard`, `/difficulty`, `/select`, `/set`, `/next`, `/adapt`, `/{puzzle_id}`, `/{puzzle_id}/result` | `frontend/puzzles.js`, `frontend/puzzle-solver.js`; `backend/tests/test_puzzles.py`, `test_puzzle_library.py`, `test_puzzle_profile.py`, `test_puzzle_sets.py`, `test_puzzle_skill.py`, `test_puzzle_tab_api.py`, `frontend/tests/puzzle-solver.test.mjs` | Implemented; 575 checked-in global entries have matching engine-profile signatures. Uses the Knowledge Library and local learner/usage data. Result metrics are currently client-reported (see Section 19); opening-concept coverage is absent. |
+| Bot Training and learner assessment | `backend/app/training_api.py`, `backend/app/assessment/`; `/api/puzzles/training`, `/api/puzzles/training/profile`, `/start`, `/{segment_id}`, `/{segment_id}/move`, `/{segment_id}/finish` | `frontend/training.js`; `backend/tests/test_training_assessment.py`, `test_training_level.py`, `frontend/tests/training.test.mjs` | Implemented as four-phase, short bot assessment with persistent local evidence. It is not a timed game mode and has no confirmed user-configurable clock/opponent settings. Requires Stockfish for play/analysis. |
+| Game import, analysis, review and history | `backend/app/game_api.py`, `backend/app/games/`, `backend/app/analysis/`; `/api/games/*` (import/fetch/list/analyze/history/explain/weaknesses/training/puzzles) | `frontend/analysis.js`, `frontend/game-picker.js`, `frontend/game-format.js`, `frontend/history-view.js`; `backend/tests/test_game_import.py`, `test_chesscom_fetch.py`, `test_game_analysis.py`, `test_game_review.py`, `test_game_history.py`, `test_game_training.py`, `test_game_api.py`; `frontend/tests/game-format.test.mjs`, `game-picker.test.mjs`, `history-view.test.mjs` | Implemented for PGN and Chess.com public fetch. Fresh evaluation needs Stockfish; external fetch depends on Chess.com availability and quotas. Game data is local and player-scoped. |
+| Learner profile and personalization | `backend/app/learner_api.py`, `backend/app/learner/`, `backend/app/assessment/`; `/api/profile`, `/api/profile/onboarding`, `/api/profile/preferences`, `/api/profile/next`, `/api/profile/reset`, plus profile-aware puzzle, Training and game recommendations | `frontend/coach.js`, `frontend/puzzles.js`, `frontend/training.js`, `frontend/analysis.js`; `backend/tests/test_learner.py`, `test_training_level.py`, game-history and puzzle tests; `frontend/tests/coach.test.mjs` | Implemented locally, no cloud account/sync. Evidence comes from distinct lesson, puzzle, Training and analyzed-game paths; preserve learner/game scope. |
+| Read-aloud / TTS | `backend/app/tts_api.py`, `backend/app/tts/`; `GET /api/tts`, `POST /api/tts/speak` | `frontend/speech.js`; `backend/tests/test_tts.py`, `frontend/tests/speech.test.mjs`, `frontend/tests/tts.test.mjs` | Implemented, provider/runtime-dependent; browser speech fallback is separate from optional server voices. |
 
 ## 21. Future Features and Roadmap
 
@@ -309,7 +339,7 @@ Status describes repository implementation, not whether the feature is configure
 
 ## 22. Rules for AI Coding Agents
 
-1. Work in the branch/session assigned by Arena; do not switch branches. Perform Git operations only when the current task authorizes them. For mainline integration, preserve history and use the assigned branch with a pull request rather than pushing directly to `main`.
+1. Work only in the branch/session assigned by Arena; do not switch branches. Before editing, record the branch, `HEAD`, `main`/`origin/main`, and working-tree status. **Never merge branches or pull requests, create merge commits, or push directly to `main` from an Arena task.** Do not force-push, reset, clean, or rebase. Preserve unrelated/uncommitted work. A separately authorized, non-merging integration path is documented in Section 24; until it is completed and verified, task-branch work is not on `main`.
 2. Read this handoff and the focused documentation, then inspect the owning code and tests before editing.
 3. Follow the existing architecture. No broad rewrite or new parallel router, board authority, session state, learner profile, or engine client without explicit approval.
 4. Keep semantic routing semantic. Narrow closed-intent fast paths are fine; do not grow a brittle keyword decision tree in place of the existing interpreter/planner.
@@ -338,7 +368,7 @@ Status describes repository implementation, not whether the feature is configure
 
 ## 23. Safe Feature Development Workflow
 
-1. Restate the request as observable user behavior; mark unknowns explicitly.
+1. Restate the request as observable user behavior; mark unknowns explicitly. Before editing, inspect `git status --short --branch`, `git branch --show-current`, `git rev-parse HEAD`, and how the assigned branch relates to local/remote `main`; preserve any existing changes.
 2. Read this file and the narrow relevant references (for example `docs/ARCHITECTURE.md`, `docs/INTENT_AND_CUSTOM_PLANS.md`, `docs/KNOWLEDGE_LIBRARY.md`, `docs/GAME_ANALYSIS.md`, `docs/PERSONALIZATION.md`, `docs/PUZZLE_LIBRARY.md`, `docs/ROADMAP_TRAINING_LOOP.md`, `docs/LATENCY_AUDIT.md`, or `docs/TTS.md`).
 3. Trace the actual frontend → API → planner/session/engine/knowledge/profile path. Search for the route and state owner; don't guess file names.
 4. Identify authority and invariants before coding: current intent, `LearningState`, backend board, source-of-truth facts, model/engine prerequisites, and personal-data scope.
@@ -349,8 +379,89 @@ Status describes repository implementation, not whether the feature is configure
 9. Review the resulting source and user-visible behavior; verify no stale duplicated state, unsafe board path, accidental data leak, or unintended model/engine call remains.
 10. Update focused documentation and feature-status notes when behavior changes — and for any major change, update `docs/CHESSAI_PROJECT_CONTEXT.md` in this same task, as Section 22 rule 14 requires. Distinguish implemented, planned, host-dependent, and unverified behavior.
 11. Report changed files, behavior, exact validation run/results, and unresolved uncertainties, and state explicitly whether `docs/CHESSAI_PROJECT_CONTEXT.md` was updated. Do not claim tests, model loading, latency, or runtime state that were not observed.
+12. For every substantial task, append/update its concise completion record in Section 24.2 in the same task. Record the actual commit(s), branch publish result, and `main` status only after verifying them; never leave a placeholder or imply integration from matching file paths.
 
-## 24. Glossary
+## 24. Cross-Chat Handoff, Task Records and Non-Merging Publishing
+
+### 24.1 Safe branch, publishing and integration workflow
+
+Treat these as different states:
+
+1. **Edited** means files are in the active working tree; they may be uncommitted and local only.
+2. **Committed** means a commit exists on the active local task branch. Record its SHA; this does not publish it.
+3. **Published** means that exact commit is verified on the matching remote task branch (for example, by comparing `git rev-parse HEAD` with `git ls-remote --heads origin <branch>`). This does not update `main`.
+4. **Integrated into `main`** means the specific changes are confirmed present in the canonical `main` history/tree. Same-path edits, a task-branch push, a PR, or a local commit do not prove this.
+5. **Documented** means this project context/task record names the files, actual checks, branch/commit and integration status. Documentation cannot substitute for a commit or publication.
+
+At the start of every Arena task, inspect rather than infer the state. Safe read-only checks include:
+
+```bash
+git status --short --branch
+git branch --show-current
+git rev-parse HEAD
+git rev-parse main origin/main
+git branch -avv
+git ls-remote --heads origin
+```
+
+If the tree is dirty or another branch contains task work, do not tidy it by resetting, cleaning, switching, rebasing or overwriting. Note the changes and identify overlap before editing. This checkout may be shallow, so use GitHub's commit/PR history when local ancestry is incomplete; do not infer that old task branches are lost or unpublished from a shallow `git log` alone.
+
+**Arena publishing policy:** work and commit only on the branch assigned to the active session. After reviewing the diff and tests, stage only intended paths, commit on that branch, then publish only to that same named remote branch (for example, `git push -u origin arena/<the-verified-active-branch>`). Verify the remote ref and SHA after the push. Do not push this work to `main`, create merge commits, merge PRs, or open a PR as a substitute for integration. Do not delete task branches after publication. If the push fails, report it as unpublished and keep the local commit intact.
+
+**Non-merging route to eventual `main` incorporation:** the active Arena session is constrained to its assigned task branch; in this environment the session is authorized to publish only to that branch. User policy also forbids branch/PR merges. Therefore this task cannot safely publish directly to `main` here. Preserve the complete task branch remotely. Only after the active Arena task/session is finished and the user separately authorizes integration, a maintainer in a separate checkout/process may apply the reviewed, non-merge task commits to current `main` with `git cherry-pick` (in chronological order), run the relevant tests, and publish through that maintainer's authorized mainline process. If a conflict or unexpected `main` change appears, stop and coordinate; do not rewrite the task branch or force the integration. Cherry-picking creates new commit IDs, so record both original task-branch SHAs and resulting `main` SHAs. Until that process is verified, say **“published on task branch; not integrated into `main`.”** If separate integration is not authorized, leaving the remote task branch intact is the safe, recoverable alternative.
+
+### 24.2 Task completion record (append one compact entry per substantial task)
+
+Use this template in this section rather than creating a second changelog for each task. Keep the record factual and update it alongside the work; enter final SHA/publishing facts only after they are verified.
+
+```text
+Task and purpose:
+Starting branch and commit; starting working-tree status:
+Final active branch and task changeset commit(s):
+Files created/modified/moved/deleted:
+API, module, interface or data-contract changes:
+Dependencies and prerequisite features:
+Tests/checks actually run (environment and exact result):
+Known issues, skipped work and remaining risks:
+Publishing: local only / remote branch + verified SHA:
+Integration: exact evidence on main, or “not integrated” + reason:
+Next-chat instructions: what to read, preserve, verify, and avoid duplicating:
+```
+
+The final response must also give the final branch tip SHA; the task record lists the substantive task changeset(s). Keep the existing [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md) as the selective commit-anchored architectural milestone history; do not copy the whole Git log into a new ledger.
+
+### 24.3 Branch audit and workflow-setup task record (2026-10-17)
+
+**Recent completed work already in `main` (history inspection only; no merge was performed in this task):**
+
+| Completed task/milestone | Source/task commit SHA(s) | Important files/areas | Publishing/integration evidence |
+|---|---|---|---|
+| Training assessment core, Training UI, and end-to-end flow | `c415c4592dc8622322aaa7388aaf0cc6039d8735` (assessment), `878c148a0470238cb7dc2716b7c5573e2ddf4282` (UI), `eb7aaa150a09fd4d4f09ff7606310f7e1fcf76e8` (e2e) | `backend/app/assessment/`, `backend/app/training_api.py`, `frontend/training.js`, `backend/tests/test_training_assessment.py` | These refs are ancestors of `main`; remote `arena/01a0d715-chessai` compares `ahead_by=0` and is behind `main`. |
+| Canonical project-state snapshot and design milestone record (PR #1) | `e7b7c571b71f661083e0b44d998418b57a9de88b` (state snapshot), `e79a31133c924ef9d2e7a47f3a6b9aa95198644c` (design context); merge commit `d0e28042f4491d37843933f17bd065922364c02b` | Project source/data/tests and `docs/CHESSAI_DESIGN_CONTEXT.md` / `docs/CHESSAI_PROJECT_CONTEXT.md` (100 PR files) | PR #1 is closed/merged; its merge is in current `main`. |
+| Record migration-validation results (PR #2) | `df86fb7947336179126d807f0f74f2314d6d349d`; merge commit `cc719926a350dc5d018cc5f122c34a7aa99449a3` | `docs/CHESSAI_PROJECT_CONTEXT.md` | PR #2 is closed/merged; current `main` contains the validation record. |
+| Record completed backend run, seed counts and Stockfish startup finding (PR #3) | `781e16e7c076601d8e1613fdfd6852979e2110c7`; merge commit `a4d80cc2ee7cb4cf7e7dfbb214672da7d0423b50` | `docs/CHESSAI_PROJECT_CONTEXT.md` | PR #3 is closed/merged; current `main` contains the findings. |
+| Require same-task project-context updates (PR #4) | `be62877aec328a1bf972f903ead44dc54c2b6597`; merge commit `056d058ec82ba6b5cdea03dd4a48df8d90a309e2` | `docs/CHESSAI_PROJECT_CONTEXT.md` | PR #4 is closed/merged and is the current `main` tip at this audit's start. |
+
+For earlier architectural milestones and design rationale, use [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md). The rows above are selected recent task anchors, not a complete commit log.
+
+- **Purpose:** establish a factual cross-chat handoff and preserve future work without merging or disturbing the active Arena branch.
+- **Start:** active branch `arena/756ebf60-chessai` at `056d058ec82ba6b5cdea03dd4a48df8d90a309e2`; clean working tree. Local `main`, `origin/main` and active `HEAD` all pointed to that SHA. The clone is shallow. The active branch had no matching remote ref and no local commits ahead of `main` before this task.
+- **Other refs:** GitHub reported remote heads `arena/01a0d715-chessai` at `eb7aaa150a09`, `arena/01a1041f-chessai` at `df86fb794733`, `arena/ff9247c3-chessai` at `781e16e7c076`, and `arena/2fbbd906-chessai` at `be62877aec32`. Each compared to `main` with `ahead_by=0`; PRs #1–#4 are closed/merged. No unpublished changes on those task heads were found by that comparison. The current `arena/756ebf60-chessai` branch was not yet on `origin` at audit start.
+- **Changes in this task:** documentation only; this project context adds the feature/API/test index, known status and documentation drift, and no-merge publishing rules. No source code, APIs, runtime stores, or chess data were changed.
+- **Final task branch:** `arena/756ebf60-chessai`; the substantive documentation changeset SHA and verified remote branch state are recorded after commit/push. The final branch tip SHA is also given in the completion report.
+- **Validation/environment:** Python 3.11.2 and Node v22.22.3. `node --test frontend/tests/*.test.mjs` → **118 tests, 108 passed, 10 skipped, 0 failed**; AST syntax parse → **201 Python files**; JSON parse → **74 files**; `git diff --check` passed. `pytest`, `python-chess`, FastAPI and `httpx` are absent, so no backend pytest run was available and no dependencies were installed. No source-code tests, Stockfish search, or Qwen call were run.
+- **Publishing/integration:** task changes are to be committed/published only on `arena/756ebf60-chessai`. `main` is not to be updated in this task. The remote branch ref/SHA is verified after push and reported below; no merge or PR merge is performed.
+- **Next chat:** first read Sections 20–24 and [CHESSAI_DESIGN_CONTEXT.md](CHESSAI_DESIGN_CONTEXT.md), inspect the active branch/working tree, then follow the separately supplied navigation prompt. Do not begin the navigation redesign from this workflow task alone. Preserve this branch's documentation changes; do not duplicate existing board-move navigation as the unified app-navigation feature.
+
+### 24.4 Project state and next-chat handoff
+
+**Current feature and dependency map:** Section 20.1 points to source modules, API families, frontend entry points and representative tests. The core boundaries remain: Python-chess = chess rules/legal moves; backend session = live board authority; Stockfish = engine evaluation; Qwen = optional interpretation/explanations over supplied facts; learner stores/assessment = local evidence and personalization. Qwen, Stockfish, external game fetching and TTS providers are host-dependent, not guaranteed by the checked-in code.
+
+**Requested future work (all planned unless verified in the branch used by the next task):** unified app navigation; timed games against configurable bots; Decision Puzzles that grade explanations against verified chess analysis; deeper game-analysis → learner-model → personalized-practice connections; more verified opening puzzles; and engine timeout/resilience plus AI response-time improvements. The existing building blocks and gaps are documented in Sections 19–21; do not rebuild functioning board, puzzle, Training, game-analysis, learner or routing systems.
+
+**Contracts to preserve:** use same-origin relative `/api/...` routes; session board and move legality remain server-owned; puzzle/result and learner data stay scoped as implemented; do not promote personal game positions to shared knowledge; tests use the existing pytest/Node conventions; read `.env.example`, `config.py` and the focused subsystem doc before changing a dependency. Do not launch on port 8000; Section 17 says to confirm the run settings (last selected port 8080) first.
+
+## 25. Glossary
 
 | Term | Meaning in this codebase |
 | --- | --- |
