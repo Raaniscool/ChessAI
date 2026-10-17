@@ -200,6 +200,39 @@ test("response timeout is distinguishable from model-not-configured and uncertai
   }
 })
 
+test("browser stops waiting at a finite deadline without marking an explanation incorrect", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    const ui = elements()
+    const api = async (path, method, body, options) => {
+      if (path.endsWith("/next")) return task()
+      return new Promise((resolve, reject) => {
+        options.signal.addEventListener("abort", () => {
+          const error = new Error("aborted")
+          error.name = "AbortError"
+          reject(error)
+        }, {once: true})
+      })
+    }
+    const {puzzles} = setup(api, ui, {assessmentRequestTimeoutMs: 10})
+    await puzzles.activate()
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "Black keeps useful central control with this move."
+    await ui.answer.emit("input")
+    await ui.submit.emit("click")
+    assert.match(ui.status.textContent, /browser's wait limit/)
+    assert.match(ui.status.textContent, /not marked incorrect/)
+    assert.equal(puzzles.state().answered, false)
+    assert.equal(puzzles.state().busy, false)
+    assert.equal(ui.submit.disabled, false)
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
 test("genuinely uncertain assessment is distinct from a missing model", async () => {
   const previousDocument = globalThis.document
   globalThis.document = fakeDocument()

@@ -1089,8 +1089,8 @@ def submit_decision_answer(task_id: str, choice: str, explanation: str,
         else:
             raw = complete(
                 _assessment_messages(text, evidence, task),
-                max_tokens=int(getattr(settings, "decision_assessment_max_tokens", 140)),
-                timeout=float(getattr(settings, "decision_assessment_timeout", 4.0)),
+                max_tokens=int(getattr(settings, "decision_assessment_max_tokens", 96)),
+                timeout=float(getattr(settings, "decision_assessment_timeout", 20.0)),
             )
             judgement = _parse_assessment(raw, evidence)
             if judgement is None:

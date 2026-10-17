@@ -31,8 +31,10 @@ const UNAVAILABLE_LABELS = {
   backend_error: "Explanation not graded: internal grading error",
 }
 const EXHAUSTED_MESSAGE = "No unseen verified Decision Puzzles remain"
+const DEFAULT_ASSESSMENT_REQUEST_TIMEOUT_MS = 30_000
 
-export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, el, onShow = () => {}, onPause = () => {}}) {
+export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, el, onShow = () => {}, onPause = () => {},
+  assessmentRequestTimeoutMs = DEFAULT_ASSESSMENT_REQUEST_TIMEOUT_MS}) {
   const state = {task: null, result: null, answer: "", choice: "", active: false,
     busy: false, positionVerified: false, token: 0, exhausted: false}
 
@@ -242,22 +244,27 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
     state.choice = choice
     state.answer = explanation
     const token = ++state.token
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), assessmentRequestTimeoutMs)
     state.busy = true
-    el.status.textContent = "Checking your verdict with Stockfish and your explanation against verified evidence…"
+    el.status.textContent = `Checking your verdict and explanation against verified evidence (up to ${Math.ceil(assessmentRequestTimeoutMs / 1000)} seconds)…`
     renderTask()
     try {
       const result = await api(`/api/puzzles/decision/${encodeURIComponent(state.task.task_id)}/answer`, "POST",
-        {choice, explanation})
+        {choice, explanation}, {signal: controller.signal})
       if (!current(token)) return
       state.result = result
       el.status.textContent = ""
       renderTask()
     } catch (err) {
       if (!current(token)) return
-      el.status.textContent = `Couldn't assess this answer: ${err.message}`
+      el.status.textContent = controller.signal.aborted
+        ? "Grading exceeded the browser's wait limit. Your explanation was not marked incorrect; wait briefly and retry the same answer."
+        : `Couldn't assess this answer: ${err.message}`
       el.answer.disabled = false
       el.submit.disabled = false
     } finally {
+      clearTimeout(timeoutId)
       if (current(token)) {
         state.busy = false
         renderTask()

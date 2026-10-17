@@ -130,7 +130,8 @@ def main() -> int:
     source = " (from .env)" if "QWEN_MODEL" in DOTENV_APPLIED else (" (from this shell)" if s.qwen_model else "")
     print(f"QWEN_MODEL    = {s.qwen_model or '(not set)'}{source}")
     print(f"QWEN_TIMEOUT  = {s.qwen_timeout:g}s   thinking disabled: {s.qwen_disable_thinking()}")
-    print(f"Decision Puzzles response deadline = {s.decision_assessment_timeout:g}s "
+    print(f"Decision Puzzles grading = {s.decision_assessment_timeout:g}s response/read, "
+          f"connect <=1s, {s.decision_assessment_max_tokens} output tokens "
           "(separate from QWEN_TIMEOUT)")
     print()
 

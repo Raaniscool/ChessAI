@@ -1,4 +1,9 @@
 """Qwen teacher: reply cleaning, thinking switch, and HTTP handling (no real model needed)."""
+import json
+import os
+import subprocess
+import sys
+
 import httpx
 import pytest
 
@@ -41,6 +46,31 @@ def test_endpoint_diagnostic_redacts_credentials_paths_and_query_tokens():
     assert safe_endpoint_for_display("https://user:secret@example.test:8443/v1?token=secret#fragment") \
         == "https://example.test:8443"
     assert safe_endpoint_for_display("not-an-http-url") == "<invalid endpoint>"
+
+
+def test_decision_timeout_defaults_and_environment_overrides_are_independent():
+    script = (
+        "import json; from backend.app.config import Settings; "
+        "s=Settings(); print(json.dumps({'qwen': s.qwen_timeout, "
+        "'decision': s.decision_assessment_timeout, 'tokens': s.decision_assessment_max_tokens}))"
+    )
+    env = os.environ.copy()
+    env["CHESSAI_DOTENV"] = "0"
+    env["QWEN_TIMEOUT"] = "120"
+    env.pop("DECISION_ASSESSMENT_TIMEOUT", None)
+    env.pop("DECISION_ASSESSMENT_MAX_TOKENS", None)
+    root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    defaults = json.loads(subprocess.run(
+        [sys.executable, "-c", script], cwd=root, env=env, text=True, capture_output=True, check=True,
+    ).stdout)
+    assert defaults == {"qwen": 120.0, "decision": 20.0, "tokens": 96}
+
+    env["DECISION_ASSESSMENT_TIMEOUT"] = "18"
+    env["DECISION_ASSESSMENT_MAX_TOKENS"] = "80"
+    configured = json.loads(subprocess.run(
+        [sys.executable, "-c", script], cwd=root, env=env, text=True, capture_output=True, check=True,
+    ).stdout)
+    assert configured == {"qwen": 120.0, "decision": 18.0, "tokens": 80}
 
 
 def test_qwen_teacher_refuses_missing_or_whitespace_model_configuration():

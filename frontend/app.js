@@ -90,8 +90,9 @@ function setActivePlanId(id) {
 
 // ---------- api ----------
 
-async function api(path, method = "GET", body = undefined) {
+async function api(path, method = "GET", body = undefined, options = {}) {
   const opts = {method, headers: {"Content-Type": "application/json"}}
+  if (options.signal) opts.signal = options.signal
   if (body !== undefined) opts.body = JSON.stringify(body)
   const res = await reach(path, opts)
   let data = null

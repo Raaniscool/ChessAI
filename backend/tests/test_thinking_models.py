@@ -67,7 +67,8 @@ def test_speed_test_passes_direct_model(monkeypatch, capsys):
 def test_connection_diagnostic_prints_decision_deadline_separately(monkeypatch, capsys):
     settings = make_settings("qwen3:1.7b")
     settings.qwen_timeout = 120.0
-    settings.decision_assessment_timeout = 4.0
+    settings.decision_assessment_timeout = 20.0
+    settings.decision_assessment_max_tokens = 96
     monkeypatch.setattr(check_qwen, "get_settings", lambda: settings)
 
     def unavailable(*args, **kwargs):
@@ -77,7 +78,8 @@ def test_connection_diagnostic_prints_decision_deadline_separately(monkeypatch, 
     assert check_qwen.main() == 1
     output = capsys.readouterr().out
     assert "QWEN_TIMEOUT  = 120s" in output
-    assert "Decision Puzzles response deadline = 4s (separate from QWEN_TIMEOUT)" in output
+    assert "Decision Puzzles grading = 20s response/read, connect <=1s, 96 output tokens" in output
+    assert "separate from QWEN_TIMEOUT" in output
     assert "Can't reach the model server" in output
     assert "private endpoint detail" not in output
 

@@ -127,7 +127,7 @@ Set-Content .env "QWEN_MODEL=qwen3:4b-instruct"
 
 The **`.env` file** in the project folder is git-ignored and read at every start (see `.env.example`), so the setting survives new windows. Variables set in the shell (`$env:QWEN_MODEL = "..."`) override it.
 
-**Decision Puzzles explanation grading needs an installed, reachable Qwen-compatible model.** The normal Stockfish Yes/No verdict still works without Qwen, but the offline fallback does not interpret free-form explanations: the result will say why the explanation was not graded, and it is not recorded as a reasoning mistake. Before setting `QWEN_MODEL`, confirm the exact installed tag with `ollama list` (or the model list in your compatible server) and verify the endpoint with `python -m backend.app.check_qwen`. For Ollama, `qwen3:1.7b` is a smaller candidate documented for local use; adequacy and response time depend on hardware and must be checked on the target machine. The Decision grader is limited to 140 output tokens and a 4-second response/read budget (connection attempts are capped at 1 second); that `DECISION_ASSESSMENT_TIMEOUT` is separate from `QWEN_TIMEOUT`, so increasing `QWEN_TIMEOUT` alone does **not** fix Decision timeouts. The response budget includes provider-side cold loading if warm-up has not completed; `QWEN_WARMUP` runs in the background. `backend.app.check_qwen` prints both deadlines and measures a real general Qwen response, but it is not a substitute for timing an actual Decision assessment. Measure cold and warm behavior on the target machine before changing `DECISION_ASSESSMENT_TIMEOUT`; no explanation grade is recorded on timeout or unusable output. This repository's audit environment has no configured model or reachable Ollama service, so it does not certify that candidate's grading quality or latency.
+**Decision Puzzles explanation grading needs an installed, reachable Qwen-compatible model.** The normal Stockfish Yes/No verdict still works without Qwen, but the offline fallback does not interpret free-form explanations: the result will say why the explanation was not graded, and it is not recorded as a reasoning mistake. Before setting `QWEN_MODEL`, confirm the exact installed tag with `ollama list` (or the model list in your compatible server) and verify the endpoint with `python -m backend.app.check_qwen`. For Ollama, `qwen3:1.7b` is a smaller candidate; grading quality and speed still need to be checked on the target PC. Decision grading is capped at 96 output tokens, with a **20-second response/read budget** and **1-second connection timeout**. Its `DECISION_ASSESSMENT_TIMEOUT` is independent of general `QWEN_TIMEOUT=120`; changing the latter does **not** extend Decision grading. The 20-second default is based on the user-reported local Qwen 1.7B diagnostic (12.3 seconds end-to-end), not an Arena real-model run. App startup warm-up remains asynchronous, so initial cold loading can overlap with an assessment. The browser has a separate 30-second abort limit, keeping the UI bounded; a server-side timeout returns an ungraded assessment and does not mark the explanation incorrect. `backend.app.check_qwen` measures a general Qwen response, but does not prove Decision grading latency or quality. Re-measure cold and warm behavior on the target machine before changing the Decision budget; this repository's Arena environment still has no reachable model.
 
 **Windows candidate for a resource-constrained PC:** the exact Ollama tag already documented for testing is `qwen3:1.7b` (Qwen3 1.7B, instruction-following model, with `/no_think` support; see the [official Qwen3 model-family repository](https://github.com/QwenLM/Qwen3)). Check the [current Ollama Qwen3 library entry](https://ollama.com/library/qwen3) for the tag's exact package metadata before pulling. The expected default Ollama download is approximately **1.4 GB**; reserve at least **2 GB free disk**. Plan on roughly **2–4 GB RAM for the quantized model at a short context**, with **8 GB total system RAM as a practical minimum** and more recommended for Windows itself. These are planning estimates, not measurements from this repository: the model registry could not be queried from the audit environment, so check the current Ollama Library page and your PC's available RAM before downloading. Do not assume the model is installed or that its grading quality is sufficient.
 
@@ -142,7 +142,18 @@ Add-Content .env 'QWEN_BASE_URL=http://localhost:11434/v1'
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
 ```
 
-Wait for the Qwen warm-up log to say `status=done`, then submit several verified Decision Puzzles and compare cold/warm end-to-end results against the Stockfish evidence. Keep `DECISION_ASSESSMENT_TIMEOUT` at its current value until those timings show what a suitable response budget is; the general `QWEN_TIMEOUT` setting does not override it.
+For a reproducible Decision-grading check on the target Windows PC, first run `ollama list` and `python -m backend.app.check_qwen` to confirm the exact tag and service. Then stop the model with `ollama stop qwen3:1.7b`; set the following in the same PowerShell window before starting ChessAI so the first puzzle tests cold inference without the asynchronous warm-up hiding it:
+
+```powershell
+$env:QWEN_MODEL = "qwen3:1.7b"
+$env:QWEN_THINKING = "off"
+$env:QWEN_WARMUP = "0"
+$env:DECISION_ASSESSMENT_TIMEOUT = "20"
+$env:DECISION_ASSESSMENT_MAX_TOKENS = "96"
+.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
+```
+
+Submit a verified Decision Puzzle once (cold), then another with the model still loaded (warm). Record browser request duration and backend `qwen_completion` timing, inspect the returned `assessment_status`, `assessment_reason`, `explanation_assessment`, `recorded`, and `reasoning_recorded`, and compare the grade to the supplied Stockfish facts. Also try an unavailable/timeout case and confirm the Yes/No result remains recorded while the explanation is not recorded as incorrect. To measure the startup warm-up race separately, set `$env:QWEN_WARMUP = "1"`, run `ollama stop qwen3:1.7b` again, and restart ChessAI. Submit once immediately (while the background warm-up may still be running), then submit again after its log says `status=done`; record both. A single `check_qwen` response is a connection/model smoke test, not proof of the actual Decision prompt's quality. Do not increase the 20-second grading budget based on a mocked test; compare the cold and warm measurements, and remember the separate 1-second connection cap and 30-second browser abort deadline. `QWEN_TIMEOUT` does not override the Decision budget.
 
 > **Use `qwen3:4b-instruct`, not `qwen3:4b`.** Ollama's `qwen3:4b` is now *Qwen3-4B-Thinking-2507*: it
 > reasons silently before every answer (tens of seconds on a CPU) and ignores `/no_think`, so the
@@ -160,7 +171,10 @@ echo "QWEN_MODEL=qwen3:4b-instruct" > .env
 | `QWEN_MODEL` | *(empty → offline fallback)* | exact model name from `ollama list` |
 | `QWEN_BASE_URL` | `http://localhost:11434/v1` | LM Studio: `http://localhost:1234/v1` |
 | `QWEN_API_KEY` | `ollama` | ignored by local servers |
-| `QWEN_TIMEOUT` | `120` | seconds; first reply is slow while the model loads |
+| `QWEN_TIMEOUT` | `120` | seconds for ordinary teacher requests and warm-up; does not override Decision grading |
+| `DECISION_ASSESSMENT_TIMEOUT` | `20` | seconds for Decision grading response/read; one-second connect cap; independent of `QWEN_TIMEOUT` |
+| `DECISION_ASSESSMENT_MAX_TOKENS` | `96` | generated tokens for compact structured Decision assessment |
+| Browser Decision deadline | `30` seconds | fixed client-side abort ceiling; separate from backend setting |
 | `QWEN_THINKING` | `auto` | `auto` = sends `/no_think` to hybrid Qwen3 builds (not to `-instruct`, which never thinks, or `-thinking`, which ignores it). `on` / `off` to force |
 | `QWEN_MAX_TOKENS` | `300` | cap on explanation length (shorter = faster on local hardware) |
 | `QWEN_PLANNER` | `auto` | `auto` = ask Qwen only when the catalog can't answer (instant plans), `always`, `never` |

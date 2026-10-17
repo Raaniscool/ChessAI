@@ -130,8 +130,8 @@ class Settings:
     qwen_max_tokens: int = int(_env("QWEN_MAX_TOKENS", "300") or "300")
     # Decision Puzzles use one compact, deadline-bounded fact-mapping call; Stockfish remains
     # authoritative for move quality and its two searches share this explicit time budget.
-    decision_assessment_timeout: float = float(_env("DECISION_ASSESSMENT_TIMEOUT", "4") or "4")
-    decision_assessment_max_tokens: int = int(_env("DECISION_ASSESSMENT_MAX_TOKENS", "140") or "140")
+    decision_assessment_timeout: float = float(_env("DECISION_ASSESSMENT_TIMEOUT", "20") or "20")
+    decision_assessment_max_tokens: int = int(_env("DECISION_ASSESSMENT_MAX_TOKENS", "96") or "96")
     decision_engine_depth: int = int(_env("DECISION_ENGINE_DEPTH", "10") or "10")
     decision_engine_timeout: float = float(_env("DECISION_ENGINE_TIMEOUT", "6") or "6")
     # Planner: "auto" = ask Qwen only when the catalog can't answer (instant plans

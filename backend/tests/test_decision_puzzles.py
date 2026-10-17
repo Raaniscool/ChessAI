@@ -277,7 +277,7 @@ def test_stockfish_scores_yes_no_independently_of_qwen_explanation(api_client, m
     message = json.dumps(teacher.calls[0]["messages"])
     assert task["fen"] not in message and task["mover"] in message
     assert "separate Yes/No choice" in message
-    assert teacher.calls[0]["max_tokens"] <= 160 and teacher.calls[0]["timeout"] <= 5
+    assert 0 < teacher.calls[0]["max_tokens"] <= 96 and 0 < teacher.calls[0]["timeout"] <= 20
     profile = get_profile()
     assert result["concept"] in profile.concepts
     event = profile.exercise_log[-1]
@@ -321,8 +321,8 @@ def test_actual_qwen_http_client_completes_the_full_grading_pipeline_with_paraph
     settings.qwen_model = "qwen3:1.7b-test-double"
     settings.qwen_base_url = "http://127.0.0.1:11434/v1"
     settings.qwen_thinking = "off"
-    settings.decision_assessment_timeout = 4.0
-    settings.decision_assessment_max_tokens = 140
+    settings.decision_assessment_timeout = 20.0
+    settings.decision_assessment_max_tokens = 96
     teacher = QwenTeacher(settings)
     capture = {}
 
@@ -350,9 +350,9 @@ def test_actual_qwen_http_client_completes_the_full_grading_pipeline_with_paraph
     assert capture["request"]["proposed_move"] == task["proposed_move"]
     assert capture["request"]["mover"] == task["mover"]
     assert "best_line" in capture["request"]["evidence_by_fact_id"]
-    assert capture["payload"]["max_tokens"] == 140
+    assert capture["payload"]["max_tokens"] == 96
     assert isinstance(capture["timeout"], httpx.Timeout)
-    assert capture["timeout"].read == pytest.approx(4.0)
+    assert capture["timeout"].read == pytest.approx(20.0)
     assert capture["timeout"].connect == pytest.approx(1.0)
 
 
@@ -570,8 +570,8 @@ def test_malformed_or_failed_model_output_uses_honest_unassessed_fallback(api_cl
     assert invalid["assessment_reason"] == "invalid_grading_response"
     assert invalid["assessment_source"] == "qwen_invalid"
     assert invalid["recorded"] is True and invalid["reasoning_recorded"] is False
-    assert malformed.calls[0]["timeout"] <= 5
-    assert malformed.calls[0]["max_tokens"] <= 160
+    assert malformed.calls[0]["timeout"] == 20
+    assert malformed.calls[0]["max_tokens"] == 96
 
     class FailingTeacher:
         name = "qwen"
