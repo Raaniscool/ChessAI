@@ -2038,7 +2038,8 @@ async function switchView(name) {
     const on = view === name
     const tab = document.getElementById(tabId)
     tab.classList.toggle("active", on)
-    tab.setAttribute("aria-selected", String(on))
+    if (on) tab.setAttribute("aria-current", "page")
+    else tab.removeAttribute("aria-current")
     document.getElementById(sideId).classList.toggle("hidden", !on)
     document.getElementById(paneId).classList.toggle("hidden", !on)
   }

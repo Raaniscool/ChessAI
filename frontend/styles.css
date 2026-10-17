@@ -288,14 +288,21 @@ header h1 { margin: 0; font-size: 20px; }
 .course-list .empty { margin: 0 0 6px; line-height: 1.5; }
 .stale-page { background: #b8860b; color: #111; padding: 10px 16px; font-size: 15px; cursor: pointer; text-align: center; }
 
-/* ---------- tabs ---------- */
+/* ---------- primary navigation ---------- */
 .tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 10px; padding: 4px; }
 .tab {
-  background: none; border: none; color: var(--muted); padding: 7px 14px; border-radius: 7px;
-  font-size: 13.5px; cursor: pointer;
+  display: flex; align-items: center; gap: 9px; min-width: 112px;
+  background: none; border: none; color: var(--muted); padding: 7px 12px; border-radius: 7px;
+  font: inherit; font-size: 13.5px; text-align: left; cursor: pointer;
 }
 .tab:hover { color: var(--text); }
-.tab.active { background: var(--panel-2); color: var(--text); font-weight: 600; }
+.tab.active { background: var(--panel-2); color: var(--text); }
+.tab:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.tab-icon { flex: none; font-size: 19px; line-height: 1; }
+.tab-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; line-height: 1.05; }
+.tab-title { font-weight: 650; }
+.tab-description { color: var(--muted); font-size: 10.5px; line-height: 1.15; }
+.tab.active .tab-description { color: var(--text); opacity: .82; }
 
 /* ---------- game analysis ---------- */
 .ga-body { gap: 12px; }
@@ -520,13 +527,22 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
     border-radius: var(--radius) var(--radius) 0 0; }
 }
 
+/* Keep the full navigation readable on narrow tablets and phones. */
+@media (max-width: 800px) {
+  header { grid-template-columns: minmax(0, 1fr) auto; }
+  .brand { grid-column: 1; grid-row: 1; }
+  .header-right { grid-column: 2; grid-row: 1; }
+  .tabs { grid-column: 1 / -1; grid-row: 2; order: 3; width: 100%; overflow-x: auto; }
+  .tab { flex: 1 0 112px; padding: 8px 10px; white-space: nowrap; }
+}
+
 /* ---------- phones ---------- */
 @media (max-width: 600px) {
   header { padding: 10px 12px; gap: 8px; }
   .logo { font-size: 26px; }
   header h1 { font-size: 17px; }
-  .tabs { order: 3; width: 100%; overflow-x: auto; }  /* its own row, never pushed off-screen */
-  .tab { flex: 1; padding: 8px 10px; white-space: nowrap; }
+  .tab { flex: 1 1 0; min-width: 0; justify-content: center; padding: 8px 6px; gap: 6px; }
+  .tab-description { display: none; }
   .speech-controls select { max-width: 120px; }
   .layout { padding-left: 8px; padding-right: 8px; gap: 10px; }
   .board-pane { padding: 8px; }

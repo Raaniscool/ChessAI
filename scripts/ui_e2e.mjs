@@ -108,13 +108,21 @@ async function reviewMidPuzzle() {
   midReviewed = true
 }
 
-// P) Puzzles tab — usable on its own, before any game analysis or lesson
-check(!!$("tab-puzzles") && /Puzzles/.test($("tab-puzzles").textContent) && $("tab-puzzles").parentElement === document.querySelector("nav.tabs"),
-  "puzzles 1: Puzzles is a top-level tab")
+// P) Practice navigation — usable on its own, before any game analysis or lesson
+const primaryNav = document.querySelector("nav.primary-nav")
+check(primaryNav && primaryNav.getAttribute("aria-label") === "Primary navigation" &&
+  $("tab-lessons").textContent.includes("Learn") && $("tab-puzzles").textContent.includes("Practice") &&
+  $("tab-games").textContent.includes("Review"), "navigation 1: Learn, Practice and Review are grouped in one primary navigation")
+check($("tab-lessons").getAttribute("aria-current") === "page" &&
+  !$("tab-puzzles").hasAttribute("aria-current") && !$("tab-games").hasAttribute("aria-current"),
+  "navigation 2: the current view is announced accessibly")
+check(!!$("tab-puzzles") && /Puzzles & Training/.test($("tab-puzzles").textContent) &&
+  $("tab-puzzles").parentElement === primaryNav, "navigation 3: Practice contains Puzzles and Training")
 $("tab-puzzles").click()
 await waitFor(() => visible("puzzles-pane") && $("pz-practice").querySelector(".pz-theme"), "puzzle dashboard")
-check(!visible("lesson-pane") && visible("pz-dashboard") && $("tab-puzzles").classList.contains("active"),
-  "puzzles 2: clicking the tab opens the puzzle dashboard")
+check(!visible("lesson-pane") && visible("pz-dashboard") && $("tab-puzzles").classList.contains("active") &&
+  $("tab-puzzles").getAttribute("aria-current") === "page" && !$("tab-lessons").hasAttribute("aria-current"),
+  "puzzles 1: standalone practice works and becomes the current view")
 check(/Nothing to personalize yet/.test($("pz-personal").textContent), "no analysis yet: Personalized says so and points to Practice")
 $("pz-mode-practice").click()
 {
@@ -272,6 +280,9 @@ $("pz-mode-practice").click()
 }
 $("tab-lessons").click()
 await waitFor(() => visible("lesson-pane") && !visible("puzzles-pane"), "lessons again")
+check($("tab-lessons").getAttribute("aria-current") === "page" &&
+  !$("tab-puzzles").hasAttribute("aria-current") && !$("tab-games").hasAttribute("aria-current"),
+  "navigation returns the current-page state to Learn")
 
 // 0b) Onboarding: a short optional card for a new learner, never a wall
 await waitFor(() => document.querySelector(".onboarding-card"), "onboarding card", 10000)
@@ -562,6 +573,9 @@ for (const id of ["chesscom-900000001", "chesscom-900000002"]) {
 const lessonMsgsBefore = document.querySelectorAll("#messages .msg").length
 $("tab-games").click()
 await waitFor(() => !$("analysis-pane").classList.contains("hidden"), "Game Analysis tab")
+check($("tab-games").getAttribute("aria-current") === "page" &&
+  !$("tab-lessons").hasAttribute("aria-current") && !$("tab-puzzles").hasAttribute("aria-current"),
+  "navigation makes Review the current view")
 check($("lessons-side").classList.contains("hidden") && !$("games-side").classList.contains("hidden"), "sidebar shows your games")
 check(document.querySelector(".lesson-pane:not(.analysis-pane)").classList.contains("hidden"), "lesson pane hidden while analyzing games")
 check(!board || !board.isMoveInputEnabled(), "board is locked in Game Analysis")

@@ -15,12 +15,22 @@
       <span class="logo">♞</span>
       <h1>AI Chess Tutor</h1>
     </div>
-    <nav class="tabs" role="tablist">
-      <button id="tab-lessons" class="tab active" role="tab" aria-selected="true">📚 Lessons</button>
-      <button id="tab-games" class="tab" role="tab" aria-selected="false"
-              title="Import your Chess.com games and review your mistakes">🔍 Game Analysis</button>
-      <button id="tab-puzzles" class="tab" role="tab" aria-selected="false"
-              title="Solve puzzles: personalized to your weaknesses, or practice any theme">🧩 Puzzles</button>
+    <nav class="tabs primary-nav" aria-label="Primary navigation">
+      <button id="tab-lessons" class="tab active" type="button" aria-current="page"
+              aria-label="Learn, lessons" title="Learn with interactive lessons">
+        <span class="tab-icon" aria-hidden="true">📚</span>
+        <span class="tab-copy"><span class="tab-title">Learn</span><span class="tab-description">Lessons</span></span>
+      </button>
+      <button id="tab-puzzles" class="tab" type="button"
+              aria-label="Practice, puzzles and training" title="Solve personalized puzzles, explore themes, and train against a bot">
+        <span class="tab-icon" aria-hidden="true">🧩</span>
+        <span class="tab-copy"><span class="tab-title">Practice</span><span class="tab-description">Puzzles &amp; Training</span></span>
+      </button>
+      <button id="tab-games" class="tab" type="button"
+              aria-label="Review, game analysis" title="Review your imported games and recurring patterns">
+        <span class="tab-icon" aria-hidden="true">🔍</span>
+        <span class="tab-copy"><span class="tab-title">Review</span><span class="tab-description">Game Analysis</span></span>
+      </button>
     </nav>
     <div class="header-right">
       <div id="speech-controls" class="speech-controls hidden">
@@ -110,7 +120,7 @@
             <button id="pz-mode-personal" class="pz-mode active" role="tab" aria-selected="true"
                     title="Puzzles chosen from your weaknesses and results">🎯 Personalized</button>
             <button id="pz-mode-practice" class="pz-mode" role="tab" aria-selected="false"
-                    title="Pick any theme — no game analysis needed">📚 Practice</button>
+                    title="Pick any theme — no game analysis needed">📚 By theme</button>
             <button id="pz-mode-training" class="pz-mode" role="tab" aria-selected="false"
                     title="Short games against a bot near your level — they show what to practise">🏁 Training</button>
           </div>
