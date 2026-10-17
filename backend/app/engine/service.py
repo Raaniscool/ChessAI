@@ -107,7 +107,8 @@ class AnalysisEngine(Protocol):
                       multipv: int = 3, fresh: bool = False) -> list[Line]: ...
 
     def evaluate_move(
-        self, board_before: chess.Board, move: chess.Move, depth: int | None = None
+        self, board_before: chess.Board, move: chess.Move, depth: int | None = None,
+        timeout: float | None = None,
     ) -> MoveFeedback: ...
 
     def close(self) -> None: ...
@@ -127,16 +128,29 @@ class UciEngine:
         started = time.perf_counter()
         status = "failed"
         try:
-            self._engine = chess.engine.SimpleEngine.popen_uci(self.settings.engine_cmd)
+            self._engine = chess.engine.SimpleEngine.popen_uci(
+                self.settings.engine_cmd, timeout=self.settings.engine_timeout)
             status = "ready"
-        except (OSError, chess.engine.EngineError) as exc:
+        except (OSError, TimeoutError, chess.engine.EngineError) as exc:
             raise EngineUnavailable(f"Failed to start engine {self.settings.engine_cmd}: {exc}") from exc
         finally:
             perf_log.info("latency stage=stockfish_start duration_ms=%.1f status=%s",
                           (time.perf_counter() - started) * 1000, status)
 
-    def _analyse_score(self, board: chess.Board, depth: int) -> tuple[Score, list[chess.Move]]:
-        limit = chess.engine.Limit(depth=depth)
+    def _analyse_score(self, board: chess.Board, depth: int,
+                       timeout: float | None = None) -> tuple[Score, list[chess.Move]]:
+        # A time bound is used by the latency-sensitive Decision Puzzle path. Other callers
+        # keep the existing depth-only search and rely on the engine's configured UCI deadline.
+        # python-chess adds its protocol timeout to Limit.time when waiting for a result. Reserve
+        # a small response grace inside the requested budget so an unresponsive UCI engine cannot
+        # turn the Decision Puzzle limit into a 20-second wait.
+        old_timeout = self._engine.timeout
+        if timeout is None:
+            limit = chess.engine.Limit(depth=depth)
+        else:
+            grace = min(0.5, max(0.05, timeout * 0.1))
+            limit = chess.engine.Limit(depth=depth, time=max(0.05, timeout - grace))
+            self._engine.timeout = grace
         started = time.perf_counter()
         status = "error"
         try:
@@ -146,6 +160,7 @@ class UciEngine:
             status = "ok"
             return score, pv
         finally:
+            self._engine.timeout = old_timeout
             perf_log.info("latency stage=stockfish_search duration_ms=%.1f stockfish_searches=1 depth=%d status=%s",
                           (time.perf_counter() - started) * 1000, depth, status)
 
@@ -206,21 +221,26 @@ class UciEngine:
         return lines
 
     def evaluate_move(
-        self, board_before: chess.Board, move: chess.Move, depth: int | None = None
+        self, board_before: chess.Board, move: chess.Move, depth: int | None = None,
+        timeout: float | None = None,
     ) -> MoveFeedback:
         depth = depth or self.settings.engine_depth
         if move not in board_before.legal_moves:
             raise chess_system.ChessError(f"Illegal move {move.uci()}")
 
         with self._lock:
-            best_score, best_pv = self._analyse_score(board_before, depth)
+            # Stockfish gets half the requested wall budget for the pre-move search and the
+            # remaining half for the post-move search. The limit is sent to UCI; objective
+            # engine evidence is never replaced with a guessed timeout fallback.
+            per_search = max(0.05, float(timeout) / 2) if timeout is not None else None
+            best_score, best_pv = self._analyse_score(board_before, depth, per_search)
             after = board_before.copy()
             after.push(move)
             if after.is_checkmate():
                 # Game over: nothing to search, and the result is certain.
                 after_score, after_pv = Score.checkmate(white_won=board_before.turn == chess.WHITE), []
             else:
-                after_score, after_pv = self._analyse_score(after, depth)
+                after_score, after_pv = self._analyse_score(after, depth, per_search)
 
         best = best_pv[0] if best_pv else None
         category, loss, notes = classify_move(board_before, move, best_score, after_score, engine_best=best)

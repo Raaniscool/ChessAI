@@ -10,8 +10,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from app.config import Settings
 from app.engine import EngineUnavailable, get_engine, set_engine
 from app.engine.classification import Classification
+from app.engine.service import UciEngine
 
 
 @pytest.fixture(scope="module")
@@ -23,6 +25,19 @@ def engine():
     yield eng
     set_engine(None)
     eng.close()
+
+
+def test_nonresponsive_uci_startup_fails_within_configured_deadline():
+    import time
+
+    settings = Settings(
+        engine_cmd=[sys.executable, "-u", "-c", "import sys; sys.stdin.buffer.read()"],
+        engine_timeout=0.1,
+    )
+    started = time.monotonic()
+    with pytest.raises(EngineUnavailable, match="Failed to start engine"):
+        UciEngine(settings)
+    assert time.monotonic() - started < 1.5
 
 
 def test_analyse_start_position(engine):

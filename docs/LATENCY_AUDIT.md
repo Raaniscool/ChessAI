@@ -86,7 +86,9 @@ Both requests previously went through a semantic route completion and then an an
 3. **Knowledge has a startup cost and a cold retrieval outlier.** Startup warm-up took about 1.6 s, outside the first learner request. A first verified fork retrieval after warm-up took about 1.05 s, while warm repeats took roughly 15 ms in the retrieval stage. If that occurs in normal learner sessions, profile the learner-personalization/profile calculation before adding caching.
 4. **Browser-paint/network latency was not measured here.** API/SSE timings run on loopback and exclude remote network conditions and actual browser scheduling; the new `?debug=1` metric is available for that final check.
 
-**Decision Puzzles v1 is now implemented** in the Practice area. Issuing a task freshly evaluates a Python-chess-validated position/move with Stockfish; submitting an explanation calls the optional teacher synchronously, constrained to those supplied facts, and returns engine evidence regardless. Functional coverage includes a real-Stockfish service test and scripted-teacher assessment tests. This audit did not measure real-Qwen latency or browser-paint TTFO for the new flow, so its latency readiness remains **conditional, not certified** on intended hardware. The model is used for reasoning assessment, not every puzzle state transition; keep board/legal-state changes on the verified rules path and reserve model work for the explanatory assessment.
+**Decision Puzzles v2** uses a required Yes/No verdict for the side to move plus a separate explanation. Python-chess verifies legality; Stockfish owns move quality, and an optional teacher only assesses the explanation against supplied engine facts. Qwen is now bounded to 4 seconds/140 tokens for this path, while the two Stockfish searches share a 6-second budget. Exact position/move/config engine feedback and the verified candidate pool are cached; no learner-specific explanation is cached.
+
+Local measurement on 2026-10-17 with the installed Stockfish engine and checked-in seed data (627 eligible candidates, no Qwen call) recorded: candidate-pool cold build **739.7 ms**, cached build **1.42 ms**, task issuance with the pool warm **28.9 ms** at Decision depth 10, and repeat exact-analysis cache lookup **0.16 ms**. The request's selected position was classified `excellent`. The baseline captured before the changes was a depth-14 cold pool build of **2,163.7 ms**, subsequent builds of **309.1–555.9 ms**, and issue time of **320.5–350.6 ms**; the depth/configuration changed, so this is not a controlled apples-to-apples engine-quality comparison. These are local sandbox measurements, not browser-paint or target-machine guarantees. The `QWEN_MODEL` variable was unset and the configured Ollama-compatible endpoint returned `ConnectError` to a 2-second `/models` probe; no lightweight compatible model was verified or substituted. Functional coverage includes real-Stockfish behavior, nonresponsive-engine deadline handling, scripted teacher outcomes, persistence/adaptation, and UI contract tests. No live browser E2E or real-Qwen quality/latency test was run; treat model latency readiness as **unverified** on intended hardware.
 
 ## Commands
 
@@ -96,7 +98,7 @@ From the repository root, Linux/macOS:
 .venv/bin/python -m compileall -q backend/app backend/tests
 .venv/bin/python -m pytest backend/tests/ -q
 node --test frontend/tests/*.test.mjs
-.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8080
 ```
 
 Windows PowerShell:
@@ -109,7 +111,7 @@ node --test $frontendTests
 
 # Optional isolated runtime data; configure QWEN_MODEL normally for a real-model run.
 $env:DATA_DIR = Join-Path $env:TEMP "chessai-latency-data"
-.\.venv\Scripts\uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+.\.venv\Scripts\uvicorn backend.app.main:app --host 0.0.0.0 --port 8080
 ```
 
-For the browser-level TTFO, open `http://localhost:8000/?debug=1`, run the target turns, and capture the `[ChessAI latency]` Console entries together with backend stage logs.
+For the browser-level TTFO, open `http://localhost:8080/?debug=1`, run the target turns, and capture the `[ChessAI latency]` Console entries together with backend stage logs.

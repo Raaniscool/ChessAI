@@ -1,18 +1,21 @@
-// Decision Puzzles: explain a proposed move, then reveal Stockfish-backed evidence.
-// The server owns task facts and assessment. This module preserves the current task/answer
-// when the learner leaves the Practice tab, and never lets a language model supply chess claims.
+// Decision Puzzles: a mutually exclusive move verdict plus a separate required explanation.
+// Stockfish owns move quality; the server assesses reasoning only against supplied evidence.
+// This module preserves both controls and the active task across Practice navigation.
 
 import {parsePosition} from "./position.js"
 
 const ASSESSMENT_LABELS = {
-  correct: "Correct reasoning",
-  partial: "Partly correct",
-  misconception: "Needs correction",
-  uncertain: "Not enough evidence to judge",
+  correct: "Explanation: correct",
+  partial: "Explanation: partly correct",
+  incorrect: "Explanation: incorrect",
+  uncertain: "Explanation: too ambiguous to assess",
+  unavailable: "Explanation: not assessed",
 }
+const EXHAUSTED_MESSAGE = "No unseen verified Decision Puzzles remain"
 
 export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, el, onShow = () => {}, onPause = () => {}}) {
-  const state = {task: null, result: null, answer: "", active: false, busy: false, positionVerified: false, token: 0}
+  const state = {task: null, result: null, answer: "", choice: "", active: false,
+    busy: false, positionVerified: false, token: 0, exhausted: false}
 
   const show = (node, on) => node.classList.toggle("hidden", !on)
   const current = token => state.active && token === state.token
@@ -31,27 +34,48 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
     el.engine.appendChild(row)
   }
 
+  function selectedChoice() {
+    if (el.choiceYes && el.choiceYes.checked) return "yes"
+    if (el.choiceNo && el.choiceNo.checked) return "no"
+    return state.choice
+  }
+
   function renderTask() {
     const task = state.task
     if (!task) {
       show(el.task, false)
       show(el.start, true)
-      el.start.textContent = "Try again"
-      el.start.disabled = state.busy
+      el.start.textContent = state.exhausted ? "Pool exhausted" : "Try again"
+      el.start.disabled = state.busy || state.exhausted
       return
     }
     const retryPosition = !state.positionVerified && !state.result
     show(el.start, retryPosition)
-    if (retryPosition) el.start.textContent = "Retry position"
-    el.start.disabled = state.busy
+    el.start.textContent = retryPosition ? "Retry position" : "Try again"
+    el.start.disabled = state.busy || state.exhausted
     show(el.task, true)
+    const mover = task.mover || (task.side_to_move === "black" ? "Black" : "White")
     el.move.textContent = task.proposed_move
-    el.side.textContent = `${task.side_to_move === "black" ? "Black" : "White"} to move`
-    el.question.textContent = task.question
-    el.answer.value = state.answer
-    el.answer.disabled = Boolean(state.result) || !state.positionVerified
-    el.submit.disabled = state.busy || Boolean(state.result) || !state.positionVerified
-    el.next.disabled = state.busy
+    el.side.textContent = `${mover} to move`
+    el.question.textContent = task.question || `Is ${task.proposed_move} a good move for ${mover}?`
+    if (el.choiceYesSide) el.choiceYesSide.textContent = mover
+    if (el.choiceNoSide) el.choiceNoSide.textContent = mover
+    if (el.choiceYes) {
+      el.choiceYes.checked = selectedChoice() === "yes"
+      el.choiceYes.disabled = Boolean(state.result) || !state.positionVerified || state.busy
+    }
+    if (el.choiceNo) {
+      el.choiceNo.checked = selectedChoice() === "no"
+      el.choiceNo.disabled = Boolean(state.result) || !state.positionVerified || state.busy
+    }
+    if (el.answer.value !== state.answer) el.answer.value = state.answer
+    el.answer.disabled = Boolean(state.result) || !state.positionVerified || state.busy
+    const enoughExplanation = state.answer.trim().length >= (task.explanation_min_length || 8)
+    el.submit.disabled = state.busy || Boolean(state.result) || !state.positionVerified ||
+      !selectedChoice() || !enoughExplanation
+    el.next.disabled = state.busy || state.exhausted
+    if (state.exhausted) el.next.textContent = "No unseen position"
+    else el.next.textContent = "Next position →"
     show(el.submit, !state.result)
     show(el.next, Boolean(state.result))
     show(el.result, Boolean(state.result))
@@ -62,17 +86,28 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
   function renderResult() {
     const result = state.result
     if (!result) return
-    el.assessment.textContent = ASSESSMENT_LABELS[result.assessment] || ASSESSMENT_LABELS.uncertain
-    el.assessment.className = `decision-assessment ${result.assessment || "uncertain"}`
-    el.feedback.textContent = result.feedback || "The engine evidence is available below."
+    const assessment = result.explanation_assessment || result.assessment || "unavailable"
+    const label = ASSESSMENT_LABELS[assessment] || ASSESSMENT_LABELS.unavailable
+    el.assessment.textContent = label
+    el.assessment.className = `decision-assessment ${assessment}`
+    const judgment = result.judgment || {}
+    el.judgment.textContent = result.judgment_feedback ||
+      `Your ${String(judgment.choice || "").toUpperCase()} was ${judgment.correct ? "correct" : "not correct"}.`
+    el.judgment.className = `decision-judgment ${judgment.correct ? "correct" : "incorrect"}`
+    el.feedback.textContent = result.explanation_feedback || result.feedback || "Stockfish evidence is shown below."
     el.recording.textContent = result.recording_note || ""
     el.engine.innerHTML = ""
     const evidence = result.engine || {}
+    addEvidenceRow("Moving side", `${evidence.mover || "Unknown"} to move`)
     addEvidenceRow("Stockfish", `${String(evidence.category || "unknown").toUpperCase()} · ${evidence.loss_cp ?? "?"} cp lost`)
     addEvidenceRow("Proposed move", evidence.proposed_move)
     addEvidenceRow("Best move", evidence.best_move)
     addEvidenceRow("Best line", evidence.best_line)
     addEvidenceRow("After the proposal", evidence.proposed_line)
+    if (evidence.eval_before_cp_for_mover != null || evidence.eval_after_cp_for_mover != null) {
+      addEvidenceRow("Evaluation for the moving side",
+        `${evidence.eval_before_cp_for_mover ?? "?"} cp before → ${evidence.eval_after_cp_for_mover ?? "?"} cp after`)
+    }
     addEvidenceRow("Verified point", evidence.verified_point)
     show(el.engine, true)
   }
@@ -97,9 +132,10 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
   }
 
   async function loadNext() {
+    if (state.busy || state.exhausted) return
     const token = ++state.token
     state.busy = true
-    el.status.textContent = "Finding a verified position and checking the move with Stockfish…"
+    el.status.textContent = "Finding an unseen verified position and checking it with Stockfish…"
     el.next.disabled = true
     el.submit.disabled = true
     el.start.disabled = true
@@ -117,31 +153,35 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
       }
       state.task = task
       state.result = null
+      state.choice = ""
+      if (el.choiceYes) el.choiceYes.checked = false
+      if (el.choiceNo) el.choiceNo.checked = false
       state.answer = ""
+      state.exhausted = false
       await restoreTaskPosition()
       if (!current(token)) return
       el.status.textContent = ""
       renderTask()
-      el.answer.focus()
+      el.choiceYes?.focus?.()
     } catch (err) {
       if (current(token)) {
-        el.status.textContent = `Couldn't load a Decision Puzzle: ${err.message}`
-        el.submit.disabled = !state.task || Boolean(state.result)
-        el.next.disabled = false
+        const exhausted = err && err.status === 409 && String(err.message || "").includes(EXHAUSTED_MESSAGE)
+        state.exhausted = Boolean(exhausted)
+        el.status.textContent = exhausted
+          ? `${err.message} Continue with the regular Puzzle library or add verified examples.`
+          : `Couldn't load a Decision Puzzle: ${err.message}`
         renderTask()
       }
     } finally {
       if (current(token)) {
         state.busy = false
-        el.submit.disabled = Boolean(state.result) || !state.positionVerified
-        el.next.disabled = false
-        el.start.disabled = false
+        renderTask()
       }
     }
   }
 
   async function retryPosition() {
-    if (!state.active || state.busy) return
+    if (!state.active || state.busy || state.exhausted) return
     if (!state.task || state.result) return loadNext()
     const token = ++state.token
     state.busy = true
@@ -166,20 +206,27 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
 
   async function submitAnswer() {
     if (!state.active || !state.task || state.busy || state.result || !state.positionVerified) return
-    const answer = el.answer.value.trim()
-    if (answer.length < 8) {
-      el.status.textContent = "Add a little more explanation (at least 8 characters) before submitting."
+    const choice = selectedChoice()
+    if (!choice) {
+      el.status.textContent = "Choose Yes or No before submitting."
+      el.choiceYes?.focus?.()
+      return
+    }
+    const explanation = el.answer.value.trim()
+    if (explanation.length < (state.task.explanation_min_length || 8)) {
+      el.status.textContent = `Add a specific explanation (at least ${state.task.explanation_min_length || 8} characters).`
       el.answer.focus()
       return
     }
-    state.answer = answer
+    state.choice = choice
+    state.answer = explanation
     const token = ++state.token
     state.busy = true
-    el.status.textContent = "Checking your explanation against the verified evidence…"
-    el.submit.disabled = true
-    el.answer.disabled = true
+    el.status.textContent = "Checking your verdict with Stockfish and your explanation against verified evidence…"
+    renderTask()
     try {
-      const result = await api(`/api/puzzles/decision/${encodeURIComponent(state.task.task_id)}/answer`, "POST", {answer})
+      const result = await api(`/api/puzzles/decision/${encodeURIComponent(state.task.task_id)}/answer`, "POST",
+        {choice, explanation})
       if (!current(token)) return
       state.result = result
       el.status.textContent = ""
@@ -192,15 +239,24 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
     } finally {
       if (current(token)) {
         state.busy = false
-        if (!state.result) {
-          el.answer.disabled = false
-          el.submit.disabled = false
-        }
+        renderTask()
       }
     }
   }
 
   el.submit.addEventListener("click", submitAnswer)
+  el.choiceYes.addEventListener("change", () => {
+    if (el.choiceYes.checked) state.choice = "yes"
+    renderTask()
+  })
+  el.choiceNo.addEventListener("change", () => {
+    if (el.choiceNo.checked) state.choice = "no"
+    renderTask()
+  })
+  el.answer.addEventListener("input", () => {
+    state.answer = el.answer.value
+    renderTask()
+  })
   el.answer.addEventListener("keydown", event => {
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") submitAnswer()
   })
@@ -224,7 +280,8 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
         }
         return
       }
-      await loadNext()
+      if (!state.exhausted) await loadNext()
+      else renderTask()
     },
     async enter() {
       return this.activate()
@@ -245,6 +302,7 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
       return state.result ? el.result : el.panel
     },
     state: () => ({taskId: state.task && state.task.task_id, answered: Boolean(state.result),
-      active: state.active, busy: state.busy, positionVerified: state.positionVerified}),
+      choice: selectedChoice(), active: state.active, busy: state.busy,
+      positionVerified: state.positionVerified, exhausted: state.exhausted}),
   }
 }

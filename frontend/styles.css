@@ -621,7 +621,14 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
 .decision-proposal span { color: var(--muted); font-size: 13px; }
 .decision-proposal strong { font: 700 20px ui-monospace, Consolas, monospace; background: var(--panel-2);
   border: 1px solid #39434d; border-radius: 7px; padding: 5px 10px; }
-.decision-question { margin: 0; line-height: 1.45; }
+.decision-question { margin: 0; line-height: 1.45; font-weight: 600; }
+.decision-choices { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 0; padding: 10px 12px; border: 1px solid #39434d;
+  border-radius: 8px; }
+.decision-choices legend { padding: 0 5px; font-weight: 650; }
+.decision-choices label { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; cursor: pointer; }
+.decision-choices input { accent-color: var(--accent); width: 17px; height: 17px; }
+.decision-choices input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.decision-choices small { flex-basis: 100%; }
 #pz-decision-answer { width: 100%; min-height: 110px; resize: vertical; box-sizing: border-box; padding: 10px 12px;
   color: var(--text); background: var(--bg); border: 1px solid #3c4550; border-radius: 8px;
   font: inherit; line-height: 1.45; }
@@ -633,8 +640,11 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
 .decision-assessment { display: inline-block; margin-bottom: 3px; font-weight: 700; }
 .decision-assessment.correct { color: var(--accent-2); }
 .decision-assessment.partial { color: var(--warn); }
-.decision-assessment.misconception { color: #f1b7b5; }
-.decision-assessment.uncertain { color: var(--muted); }
+.decision-assessment.incorrect { color: #f1b7b5; }
+.decision-assessment.uncertain, .decision-assessment.unavailable { color: var(--muted); }
+.decision-judgment { padding: 7px 9px; border-radius: 6px; background: #26343a; font-weight: 650; }
+.decision-judgment.incorrect { color: #f1b7b5; background: #3d2b2d; }
+.decision-judgment.correct { color: var(--accent-2); }
 .decision-engine { margin-top: 10px; padding-top: 8px; border-top: 1px solid #414b56; font-size: 13px; }
 .decision-engine p { margin: 5px 0; overflow-wrap: anywhere; }
 .decision-engine b { color: #d6dbe0; }

@@ -1,6 +1,7 @@
-"""Decision Puzzles: validated positions, engine truth, conservative reasoning feedback, and learner evidence."""
+"""Decision Puzzles: engine truth, separate explanation grading, durable adaptation, and de-duplication."""
 from __future__ import annotations
 
+import hashlib
 import json
 
 import chess
@@ -8,21 +9,31 @@ import pytest
 
 from app.engine import Classification, EngineUnavailable, MoveFeedback, Score, get_engine, set_engine
 from app.knowledge.library import get_knowledge
-from app.learner import get_profile
-from app.puzzles.decision import (DecisionTaskStore, decision_candidates, get_decision_store,
-                                  issue_decision_task, set_decision_store, validate_position_move)
-from tests.test_api import _fresh_state, client as api_client  # noqa: F401  (shared isolated API fixtures)
+from app.learner import LearnerProfile, LearnerStore, get_profile, get_store, set_store
+from app.learner.decision_profile import (decision_profile_summary, ensure_decision_profile,
+                                          record_decision_exposure, record_decision_result,
+                                          refresh_decision_weaknesses)
+from app.puzzles.decision import (DecisionPuzzleError, DecisionTaskStore, _classify_explanation,
+                                  _evaluate_move_cached, canonical_task_identity,
+                                  clear_decision_candidate_cache, clear_decision_engine_cache,
+                                  decision_candidates, get_decision_store, issue_decision_task,
+                                  set_decision_store, submit_decision_answer, validate_position_move)
+from tests.test_api import _fresh_state, client as api_client  # noqa: F401 (shared isolated API fixtures)
 
 
 @pytest.fixture(autouse=True)
 def fresh_decision_tasks():
+    clear_decision_candidate_cache()
+    clear_decision_engine_cache()
     set_decision_store(DecisionTaskStore())
     yield
+    clear_decision_candidate_cache()
+    clear_decision_engine_cache()
     set_decision_store(None)
 
 
 class ScriptedEngine:
-    """Engine double with explicit verdicts; API logic must use its result, never the LLM's."""
+    """Engine double with explicit verdicts; API logic must use its result, never the judge's."""
 
     def __init__(self, category=Classification.EXCELLENT, loss=0, *, complete=True):
         self.category = category
@@ -36,7 +47,6 @@ class ScriptedEngine:
         best = alternatives[0] if alternatives else move
         after = board.copy()
         after.push(move)
-        best_line = [board.san(best)]
         return MoveFeedback(
             fen_before=board.fen(), fen_after=after.fen(),
             user_move_uci=move.uci(), user_move_san=board.san(move),
@@ -45,7 +55,7 @@ class ScriptedEngine:
             best_move_san=board.san(best) if self.complete else None,
             eval_before=Score("cp", 25) if self.complete else None,
             eval_after=Score("cp", 25 - self.loss) if self.complete else None,
-            best_pv_san=best_line, reply_pv_san=[], depth=depth or 8,
+            best_pv_san=[board.san(best)], reply_pv_san=[], depth=depth or 8,
         )
 
     def close(self):
@@ -60,22 +70,25 @@ class FixedTeacher:
         self.calls = []
 
     def complete(self, messages, max_tokens=None, timeout=None):
-        self.calls.append({"messages": messages, "max_tokens": max_tokens})
+        self.calls.append({"messages": messages, "max_tokens": max_tokens, "timeout": timeout})
         return json.dumps(self.payload)
 
 
 class MalformedTeacher:
     name = "qwen"
 
+    def __init__(self):
+        self.calls = []
+
     def complete(self, messages, max_tokens=None, timeout=None):
+        self.calls.append({"messages": messages, "max_tokens": max_tokens, "timeout": timeout})
         return "not JSON"
 
 
-def judgment(assessment, quality, *, recognized=(), missing=(), misconceptions=(), confidence="high"):
+def judgment(assessment, *, recognized=(), missing=(), misconceptions=(), confidence="high"):
     return {
         "assessment": assessment,
         "confidence": confidence,
-        "claimed_quality": quality,
         "recognized_fact_ids": list(recognized),
         "missing_fact_ids": list(missing),
         "misconception_fact_ids": list(misconceptions),
@@ -88,8 +101,29 @@ def issue(client, quality="good"):
     return response.json()
 
 
-def answer(client, task, explanation="I think this move is good because the line wins material."):
-    return client.post(f"/api/puzzles/decision/{task['task_id']}/answer", json={"answer": explanation})
+def answer(client, task, choice="yes", explanation="The best move wins material in the line."):
+    return client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                       json={"choice": choice, "explanation": explanation})
+
+
+def _record(profile, index, *, concept="knight_fork", assessment="correct", judgment_correct=True,
+            difficulty=720, confidence=None, selection_reason="broad_practice"):
+    identity = hashlib.sha256(f"{concept}:{index}".encode()).hexdigest()
+    if confidence is None:
+        confidence = "low" if assessment == "uncertain" else "high"
+    return record_decision_result(
+        profile, identity=identity, source_id=f"test:{concept}:{index}", concept=concept,
+        difficulty=difficulty, metadata_rating=difficulty, engine_bonus=0,
+        judgment_correct=judgment_correct,
+        selected_choice="yes" if judgment_correct else "no",
+        explanation_assessment=assessment, explanation_confidence=confidence,
+        assessment_source="qwen" if assessment in {"correct", "partial", "incorrect"} else "qwen_unavailable",
+        engine_category="excellent" if judgment_correct else "blunder",
+        recognized_fact_ids=["best_move"] if assessment in {"correct", "partial"} else [],
+        missing_fact_ids=["verified_idea"] if assessment == "partial" else [],
+        misconception_fact_ids=["best_move"] if assessment == "incorrect" else [],
+        selection_target=difficulty, selection_reason=selection_reason,
+    )
 
 
 def test_python_chess_validates_position_and_proposed_move():
@@ -107,19 +141,69 @@ def test_candidate_library_contains_only_replayable_verified_moves():
     candidates = decision_candidates(get_knowledge())
     assert len(candidates) > 100
     assert {candidate.kind for candidate in candidates} == {"good", "bad"}
+    assert {candidate.side_to_move for candidate in candidates} == {"white", "black"}
     for candidate in candidates:
         board, move, san = validate_position_move(candidate.fen, candidate.move_uci)
-        assert board.is_valid()
-        assert move in board.legal_moves
-        assert san == candidate.move_san
+        assert board.is_valid() and move in board.legal_moves and san == candidate.move_san
         assert candidate.example.status == "verified"
         assert candidate.example.tier != "personal"
+        assert 400 <= candidate.rating <= 2400
+        assert candidate.metadata_rating > 0
 
 
-def test_decision_service_uses_real_stockfish_when_available(monkeypatch):
+def test_candidate_pool_is_cached_and_invalidated_when_library_changes(monkeypatch):
     knowledge = get_knowledge()
-    example = knowledge.get("mate_fools_mate")
-    assert example is not None
+    first = decision_candidates(knowledge)
+    second = decision_candidates(knowledge)
+    assert first == second
+    assert first is not second  # callers cannot mutate the cached list
+
+    candidate = first[0]
+    original = candidate.example.status
+    candidate.example.status = "needs_review"
+    try:
+        rebuilt = decision_candidates(knowledge)
+        assert len(rebuilt) < len(first)
+    finally:
+        candidate.example.status = original
+        clear_decision_candidate_cache()
+
+
+def test_color_swapped_and_other_rules_preserving_symmetries_share_identity():
+    start = chess.Board()
+    white_move = chess.Move.from_uci("e2e4")
+    black = start.mirror()
+    black_move = chess.Move.from_uci("e7e5")
+    common = {"concept": "center_control", "concepts": ["center_control"],
+              "category": "strategy", "kind": "good"}
+    assert canonical_task_identity(start.fen(), white_move.uci(), **common) == \
+        canonical_task_identity(black.fen(), black_move.uci(), **common)
+
+    no_castling = chess.Board("4k3/8/8/8/8/8/8/4K2R w - - 0 1")
+    rook_move = chess.Move.from_uci("h1h2")
+    file_mirror = no_castling.transform(chess.flip_horizontal)
+    mirrored_move = chess.Move.from_uci("a1a2")
+    assert canonical_task_identity(no_castling.fen(), rook_move.uci(), **common) == \
+        canonical_task_identity(file_mirror.fen(), mirrored_move.uci(), **common)
+
+
+def test_identity_preserves_state_and_task_semantics_that_are_not_symmetries():
+    board = chess.Board()
+    move = "e2e4"
+    baseline = canonical_task_identity(board.fen(), move, concept="fork", kind="good")
+    different_concept = canonical_task_identity(board.fen(), move, concept="pin", kind="good")
+    different_quality = canonical_task_identity(board.fen(), move, concept="fork", kind="bad")
+    later_clock = board.copy()
+    later_clock.halfmove_clock = 2
+    different_clock = canonical_task_identity(later_clock.fen(), move, concept="fork", kind="good")
+    assert len({baseline, different_concept, different_quality, different_clock}) == 4
+
+
+def test_real_stockfish_confirms_a_candidate_when_available(monkeypatch):
+    knowledge = get_knowledge()
+    candidates = decision_candidates(knowledge)
+    example = next(candidate.example for candidate in candidates
+                   if candidate.example.id == "mate_fools_mate")
 
     class OneExampleKnowledge:
         concepts = knowledge.concepts
@@ -131,7 +215,6 @@ def test_decision_service_uses_real_stockfish_when_available(monkeypatch):
         def evaluate_move(self, board, move):
             return real_engine.evaluate_move(board, move, depth=6)
 
-    monkeypatch.setattr("app.puzzles.decision._need_ranks", lambda *_args: {})
     set_engine(None)
     try:
         real_engine = get_engine()
@@ -149,7 +232,7 @@ def test_decision_service_uses_real_stockfish_when_available(monkeypatch):
         set_engine(None)
 
 
-def test_next_task_is_hidden_until_submitted_and_stockfish_evaluates_it(api_client):
+def test_next_task_is_hidden_until_answer_and_has_explicit_mover_context(api_client):
     engine = ScriptedEngine(Classification.EXCELLENT, 5)
     set_engine(engine)
     task = issue(api_client)
@@ -158,90 +241,135 @@ def test_next_task_is_hidden_until_submitted_and_stockfish_evaluates_it(api_clie
     assert board.is_valid()
     assert board.parse_san(task["proposed_move"]) in board.legal_moves
     assert task["side_to_move"] == ("white" if board.turn else "black")
+    assert task["mover"] == task["side_to_move"].title()
+    assert task["mover"] in task["question"] and task["proposed_move"] in task["question"]
     assert "engine" not in task and "best_move" not in task and "concept" not in task
     assert len(engine.calls) == 1
+    profile = get_profile()
+    assert profile.decision_puzzles["history"][-1]["identity"]
+    assert profile.decision_puzzles["history"][-1]["result"] is None
 
 
-def test_stockfish_verdict_is_returned_as_the_objective_truth(api_client, monkeypatch):
-    engine = ScriptedEngine(Classification.BLUNDER, 480)
-    set_engine(engine)
+def test_stockfish_scores_yes_no_independently_of_qwen_explanation(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.BLUNDER, 480))
     task = issue(api_client, "bad")
-    teacher = FixedTeacher(judgment("correct", "good", recognized=("engine_verdict", "best_move")))
+    teacher = FixedTeacher(judgment("correct", recognized=("best_move", "proposed_line")))
     monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
 
-    response = answer(api_client, task, "It is good because it keeps the pressure on.")
+    response = answer(api_client, task, "yes", "Black's best defense is the engine's line after the move.")
     assert response.status_code == 200, response.text
     result = response.json()
-    assert result["assessment"] == "misconception"  # the model cannot overrule Stockfish
+    assert result["judgment"] == {"choice": "yes", "correct": False, "expected": "no",
+                                  "side_to_move": task["side_to_move"]}
+    assert result["explanation_assessment"] == "correct"  # separate from the incorrect button
     assert result["engine"]["category"] == "blunder"
     assert result["engine"]["quality"] == "bad"
     assert result["engine"]["loss_cp"] == 480
     assert result["engine"]["best_move"]
     assert result["engine"]["proposed_line"][0] == task["proposed_move"]
-    assert result["recorded"] is True
-    assert teacher.calls and task["fen"] not in json.dumps(teacher.calls[0]["messages"])
-    assert "objective_quality" in teacher.calls[0]["messages"][1]["content"]
-    assert result["concept"] in get_profile().concepts
-    event = get_profile().exercise_log[-1]
-    assert event["source"] == "decision_puzzle" and event["exercise_id"].startswith("decision:")
-    assert event["score"] == 0.0
-
-
-def test_correct_explanation_records_full_concept_evidence(api_client, monkeypatch):
-    set_engine(ScriptedEngine(Classification.GOOD, 20))
-    task = issue(api_client)
-    teacher = FixedTeacher(judgment("correct", "good", recognized=("engine_verdict", "best_move")))
-    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
-
-    result = answer(api_client, task).json()
+    assert result["recorded"] is True and result["reasoning_recorded"] is True
+    assert len(teacher.calls) == 1
+    message = json.dumps(teacher.calls[0]["messages"])
+    assert task["fen"] not in message and task["mover"] in message
+    assert "separate Yes/No choice" in message
+    assert teacher.calls[0]["max_tokens"] <= 160 and teacher.calls[0]["timeout"] <= 5
     profile = get_profile()
-    assert result["assessment"] == "correct" and result["recorded"] is True
-    concept = result["concept"]
-    assert profile.concepts[concept].attempts == 1
-    assert profile.concepts[concept].recent[-1] == 1.0
-    assert profile.exercise_log[-1]["source"] == "decision_puzzle"
+    assert result["concept"] in profile.concepts
+    event = profile.exercise_log[-1]
+    assert event["source"] == "decision_puzzle" and event["exercise_id"].startswith("decision:")
+    assert event["decision"]["selected_choice"] == "yes"
+    assert event["decision"]["judgment_correct"] is False
+    assert event["decision"]["explanation_assessment"] == "correct"
+    assert "answer" not in event and "learner_explanation" not in event
 
 
-def test_partial_reasoning_gets_partial_credit_in_the_existing_learner_model(api_client, monkeypatch):
+def _single_example_knowledge(example, concepts):
+    class OneExampleKnowledge:
+        def __init__(self):
+            self.concepts = concepts
+
+        def examples_for(self, _concept):
+            return [example]
+
+    return OneExampleKnowledge()
+
+
+@pytest.mark.parametrize("side", ["white", "black"])
+def test_yes_no_is_relative_to_the_side_to_move_for_both_colors(side, monkeypatch):
+    knowledge = get_knowledge()
+    candidate = next(item for item in decision_candidates(knowledge)
+                     if item.side_to_move == side and item.kind == "good")
+    engine = ScriptedEngine(Classification.GOOD, 10)
+    store = DecisionTaskStore()
+    profile = get_profile()
+    task = issue_decision_task(_single_example_knowledge(candidate.example, knowledge.concepts), engine,
+                               profile=profile, store=store, concept=candidate.concept, quality="good")
+    assert task.candidate.side_to_move == side
+    teacher = FixedTeacher(judgment("correct", recognized=("best_move",)))
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    result = submit_decision_answer(task.task_id, "yes", "The best move wins the key material.", store=store)
+    assert result["judgment"]["correct"] is True
+    assert result["judgment"]["expected"] == "yes"
+    assert result["engine"]["mover"] == side.title()
+    prompt = json.loads(teacher.calls[0]["messages"][1]["content"])
+    assert prompt["side_to_move"] == side
+    assert prompt["mover"] == side.title()
+
+
+def test_partial_explanation_is_separate_and_receives_partial_profile_score(api_client, monkeypatch):
     set_engine(ScriptedEngine(Classification.GOOD, 35))
     task = issue(api_client)
-    teacher = FixedTeacher(judgment("partial", "good", recognized=("engine_verdict",), missing=("best_move",),
-                                     confidence="medium"))
+    teacher = FixedTeacher(judgment("partial", recognized=("engine_verdict",),
+                                     missing=("best_move",), confidence="medium"))
     monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
 
-    result = answer(api_client, task, "The move looks good, though I am not sure of the reason.").json()
+    result = answer(api_client, task, "yes", "I think it is good, but I am missing the exact line.").json()
     state = get_profile().concepts[result["concept"]]
-    assert result["assessment"] == "partial" and result["recorded"] is True
-    assert state.recent[-1] == 0.6
-    assert "Partly right" in result["feedback"]
+    assert result["judgment"]["correct"] is True
+    assert result["explanation_assessment"] == "partial" and result["reasoning_recorded"] is True
+    assert state.recent[-1] == pytest.approx(0.798)
+    assert "Partly correct" in result["explanation_feedback"]
 
 
-def test_reason_without_a_good_bad_judgment_cannot_receive_full_credit(api_client, monkeypatch):
-    set_engine(ScriptedEngine(Classification.GOOD, 20))
-    task = issue(api_client)
-    teacher = FixedTeacher(judgment("correct", "unclear", recognized=("best_move",)))
-    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
-
-    result = answer(api_client, task, "The engine has a stronger alternative.").json()
-    assert result["assessment"] == "partial" and result["recorded"] is True
-    assert get_profile().concepts[result["concept"]].recent[-1] == 0.6
-
-
-def test_misconception_about_a_good_move_is_recorded_as_a_miss(api_client, monkeypatch):
+def test_incorrect_explanation_requires_specific_contradictory_evidence(api_client, monkeypatch):
     set_engine(ScriptedEngine(Classification.GOOD, 0))
     task = issue(api_client)
-    teacher = FixedTeacher(judgment("misconception", "bad", recognized=("engine_verdict",),
+    teacher = FixedTeacher(judgment("incorrect", recognized=("engine_verdict",),
                                      misconceptions=("best_move",)))
     monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    result = answer(api_client, task, "yes", "It is good because the engine has no better move.").json()
+    assert result["judgment"]["correct"] is True
+    assert result["explanation_assessment"] == "incorrect"
+    assert result["reasoning_recorded"] is True
+    assert "Not supported" in result["explanation_feedback"]
 
-    result = answer(api_client, task, "This is bad because it is a blunder.").json()
-    state = get_profile().concepts[result["concept"]]
-    assert result["assessment"] == "misconception" and result["recorded"] is True
-    assert state.recent[-1] == 0.0
-    assert "Stockfish rates this move as good" in result["feedback"]
+    # An unexplained "incorrect" label cannot become a learner mistake.
+    unsupported = {"assessment": "incorrect", "confidence": "high", "recognized_fact_ids": [],
+                   "missing_fact_ids": [], "misconception_fact_ids": []}
+    evidence = {"best_move": "Stockfish's best move is Nf3.", "_objective_quality": "good"}
+    assert _classify_explanation(unsupported)["assessment"] == "uncertain"
 
 
-def test_unavailable_or_invalid_reasoning_judge_is_uncertain_and_not_recorded(api_client, monkeypatch):
+def test_ambiguous_explanation_is_not_a_reasoning_miss_but_choice_is_persisted(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.GOOD, 10))
+    task = issue(api_client)
+    teacher = FixedTeacher(judgment("uncertain", confidence="low"))
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+
+    result = answer(api_client, task, "no", "Maybe, I'm not sure what I see.").json()
+    assert result["explanation_assessment"] == "uncertain"
+    assert result["judgment"]["correct"] is False
+    assert result["recorded"] is True and result["reasoning_recorded"] is False
+    assert "too ambiguous" in result["explanation_feedback"].lower()
+    assert get_profile().decision_puzzles["history"][-1]["result"]["explanation_assessment"] == "uncertain"
+    weakness = get_profile().decision_puzzles["weaknesses"][result["concept"]]
+    assert weakness["observed_misses"] == 1  # the objective choice is wrong for this verified task
+    assert weakness["choice_misses"] == 1
+    assert weakness["reasoning_misses"] == 0
+    assert weakness["assessable_attempts"] == 0
+
+
+def test_unavailable_fallback_keeps_stockfish_truth_without_inventing_reasoning(api_client, monkeypatch):
     from app.teacher import FallbackTeacher
 
     set_engine(ScriptedEngine(Classification.GOOD, 10))
@@ -249,34 +377,86 @@ def test_unavailable_or_invalid_reasoning_judge_is_uncertain_and_not_recorded(ap
     monkeypatch.setattr("app.teacher.get_teacher", lambda: FallbackTeacher())
     before = get_profile().stats["puzzles"]["attempts"]
 
-    result = answer(api_client, task).json()
-    assert result["assessment"] == "uncertain" and result["recorded"] is False
+    result = answer(api_client, task, "yes").json()
+    assert result["explanation_assessment"] == "unavailable"
     assert result["assessment_source"] == "fallback"
+    assert result["recorded"] is True and result["reasoning_recorded"] is False
     assert result["engine"]["quality"] == "good" and result["engine"]["best_move"]
-    assert "couldn't reliably judge" in result["feedback"]
+    assert "not assessed" in result["explanation_feedback"].lower()
+    assert get_profile().stats["puzzles"]["attempts"] == before + 1
+    assert get_profile().decision_puzzles["weaknesses"][result["concept"]]["observed_misses"] == 0
 
+
+def test_malformed_or_failed_model_output_uses_honest_unassessed_fallback(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.GOOD, 10))
+    task = issue(api_client)
     malformed = MalformedTeacher()
     monkeypatch.setattr("app.teacher.get_teacher", lambda: malformed)
-    next_task = issue(api_client, "good")
-    invalid = answer(api_client, next_task).json()
-    assert invalid["assessment"] == "uncertain" and invalid["recorded"] is False
-    assert invalid["assessment_source"] == "qwen"
-    assert get_profile().stats["puzzles"]["attempts"] == before
+    invalid = answer(api_client, task, "yes").json()
+    assert invalid["explanation_assessment"] == "unavailable"
+    assert invalid["assessment_source"] == "qwen_invalid"
+    assert invalid["recorded"] is True and invalid["reasoning_recorded"] is False
+    assert malformed.calls[0]["timeout"] <= 5
+    assert malformed.calls[0]["max_tokens"] <= 160
+
+    class FailingTeacher:
+        name = "qwen"
+
+        def complete(self, messages, max_tokens=None, timeout=None):
+            raise TimeoutError("model deadline")
+
+    set_engine(ScriptedEngine(Classification.BLUNDER, 480))
+    second = issue(api_client, "bad")
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: FailingTeacher())
+    failed = answer(api_client, second, "no").json()
+    assert failed["explanation_assessment"] == "unavailable"
+    assert failed["assessment_source"] == "qwen_unavailable"
+    assert failed["engine"]["quality"] == "bad"
 
 
-def test_answer_is_idempotent_and_unknown_or_short_submissions_fail(api_client, monkeypatch):
+def test_answer_is_idempotent_and_unknown_or_invalid_submissions_fail(api_client, monkeypatch):
     set_engine(ScriptedEngine(Classification.GOOD, 0))
     task = issue(api_client)
-    teacher = FixedTeacher(judgment("correct", "good", recognized=("engine_verdict", "best_move")))
+    teacher = FixedTeacher(judgment("correct", recognized=("best_move",)))
     monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
 
-    first = answer(api_client, task).json()
-    repeated = answer(api_client, task, "A different answer must not overwrite a graded result.").json()
+    first = answer(api_client, task, "yes").json()
+    repeated = answer(api_client, task, "no", "A different answer must not overwrite the graded result.").json()
     assert repeated == first
     assert len(teacher.calls) == 1
     assert get_profile().stats["puzzles"]["attempts"] == 1
-    assert api_client.post("/api/puzzles/decision/missing/answer", json={"answer": "Long enough answer."}).status_code == 404
-    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer", json={"answer": "short"}).status_code == 422
+    assert api_client.post("/api/puzzles/decision/missing/answer",
+                           json={"choice": "yes", "explanation": "Long enough explanation."}).status_code == 404
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"choice": "maybe", "explanation": "Long enough explanation."}).status_code == 422
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"choice": "yes", "explanation": "short"}).status_code == 422
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"explanation": "Long enough explanation."}).status_code == 422
+
+
+def test_issue_persists_selection_reason_and_target_in_existing_profile(api_client):
+    set_engine(ScriptedEngine(Classification.GOOD, 10))
+    task = issue(api_client)
+    entry = get_profile().decision_puzzles["history"][-1]
+    assert entry["identity"]
+    assert entry["selection_reason"] in {"targeted_practice", "broad_practice"}
+    assert isinstance(entry["selection_target"], int)
+    assert entry["result"] is None
+    assert task["selection_note"]
+
+
+def test_decision_profile_endpoint_explains_prior_and_thresholds(api_client):
+    response = api_client.get("/api/puzzles/decision/profile")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["ability"]["rating"] == 800
+    assert data["ability"]["confidence"] == pytest.approx(0.05)
+    assert data["current_difficulty"] == 720
+    assert data["selection_policy"]["weakness_threshold"]["independent_tasks"] == 5
+    assert data["selection"]["concept_target"]["mix_current_and_concept_rating"] == [0.7, 0.3]
+    assert data["selection"]["focus_cycle"]["targeted_exposures_before_broad_practice"] == 2
+    assert data["selection"]["variety_penalties"]["same_as_last_concept"] == 55
 
 
 def test_missing_stockfish_returns_service_unavailable_without_a_fake_task(api_client, monkeypatch):
@@ -293,9 +473,294 @@ def test_incomplete_engine_evaluation_is_not_presented_as_truth(api_client):
     set_engine(ScriptedEngine(Classification.GOOD, 20, complete=False))
     response = api_client.post("/api/puzzles/decision/next", json={"quality": "good"})
     assert response.status_code == 503
-    assert "complete evaluation" in response.json()["error"]
+    assert "complete evaluation" in response.json()["error"] or "complete evaluation" in response.json()["error"].lower()
 
 
 def test_unknown_concept_is_rejected(api_client):
     response = api_client.post("/api/puzzles/decision/next", json={"concept": "not_a_chess_concept"})
     assert response.status_code == 404
+
+
+def test_exhausted_pools_report_conflict_instead_of_repeating(api_client):
+    knowledge = get_knowledge()
+    candidate = next(item for item in decision_candidates(knowledge) if item.kind == "good")
+    profile = get_profile()
+    profile.decision_puzzles["history"] = [{"identity": candidate.identity, "concept": candidate.concept,
+                                             "result": None}]
+    engine = ScriptedEngine(Classification.GOOD, 0)
+    set_engine(engine)
+    # Restricting the request to the candidate's concept yields a fully exhausted pool.
+    class OneExampleKnowledge:
+        concepts = knowledge.concepts
+
+        def examples_for(self, _concept):
+            return [candidate.example]
+
+    with pytest.raises(DecisionPuzzleError) as error:
+        issue_decision_task(OneExampleKnowledge(), engine, profile=profile,
+                            store=DecisionTaskStore(), concept=candidate.concept, quality="good")
+    assert error.value.status_code == 409
+    assert "including color-swapped equivalents" in str(error.value)
+    assert engine.calls == []
+
+
+def test_candidate_engine_analysis_cache_is_exact_and_bound_to_engine_config():
+    from types import SimpleNamespace
+    from app.engine import UciEngine
+
+    class ProbeUciEngine(UciEngine):
+        def __init__(self):
+            self.settings = SimpleNamespace(engine_cmd=["stockfish"], engine_depth=14)
+            self.calls = []
+            self.category = Classification.GOOD
+            self.loss = 5
+            self.complete = True
+
+        def evaluate_move(self, board, move, depth=None, timeout=None):
+            return ScriptedEngine.evaluate_move(self, board, move, depth)
+
+    engine = ProbeUciEngine()
+    board = chess.Board()
+    move = chess.Move.from_uci("e2e4")
+    from app.config import get_settings
+    settings = get_settings()
+    old_depth, old_timeout = settings.decision_engine_depth, settings.decision_engine_timeout
+    settings.decision_engine_depth, settings.decision_engine_timeout = 10, 6
+    try:
+        first = _evaluate_move_cached(engine, board, move)
+        second = _evaluate_move_cached(engine, board.copy(), move)
+        assert len(engine.calls) == 1
+        assert first is not second  # callers receive independent result objects
+        different_clock = board.copy()
+        different_clock.halfmove_clock = 1
+        _evaluate_move_cached(engine, different_clock, move)
+        assert len(engine.calls) == 2
+    finally:
+        settings.decision_engine_depth, settings.decision_engine_timeout = old_depth, old_timeout
+        clear_decision_engine_cache()
+
+
+def test_new_learner_has_sensible_baseline_and_rating_is_only_a_rough_prior():
+    new = LearnerProfile()
+    data = ensure_decision_profile(new)
+    assert data["ability"]["rating"] == 800
+    assert data["ability"]["prior_source"] == "baseline"
+    assert data["ability"]["confidence"] == pytest.approx(0.05)
+    assert data["current_difficulty"] == 720
+
+    rated = LearnerProfile()
+    rated.set_onboarding(rating=1650, platform="chesscom")
+    prior = ensure_decision_profile(rated)
+    assert prior["ability"]["rating"] == rated.rating == 1650
+    assert prior["ability"]["prior_source"] == "chesscom_rating"
+    assert prior["ability"]["confidence"] < 0.2
+    assert prior["current_difficulty"] == 1570
+
+
+def test_sustained_success_increases_difficulty_one_small_step_at_a_time():
+    profile = LearnerProfile()
+    data = ensure_decision_profile(profile)
+    baseline = data["current_difficulty"]
+    initial_ability = data["ability"]["rating"]
+    for index in range(4):
+        _record(profile, index, assessment="correct", judgment_correct=True)
+    data = profile.decision_puzzles
+    assert data["current_difficulty"] == baseline + 50
+    assert data["ability"]["rating"] > initial_ability
+    assert data["ability"]["confidence"] > 0.05
+    for index in range(4, 7):
+        _record(profile, index, assessment="correct", judgment_correct=True)
+    assert profile.decision_puzzles["current_difficulty"] == baseline + 100
+
+
+def test_repeated_mistakes_lower_difficulty_but_one_or_two_do_not():
+    profile = LearnerProfile()
+    baseline = ensure_decision_profile(profile)["current_difficulty"]
+    _record(profile, 0, assessment="incorrect", judgment_correct=False)
+    _record(profile, 1, assessment="incorrect", judgment_correct=False)
+    assert profile.decision_puzzles["current_difficulty"] == baseline
+    assert profile.decision_puzzles["weaknesses"]["knight_fork"]["status"] == "insufficient"
+    _record(profile, 2, assessment="incorrect", judgment_correct=False)
+    _record(profile, 3, assessment="incorrect", judgment_correct=False)
+    assert profile.decision_puzzles["current_difficulty"] == baseline - 50
+    assert profile.decision_puzzles["ability"]["rating"] < 800
+
+
+def test_mixed_results_leave_current_difficulty_stable():
+    profile = LearnerProfile()
+    baseline = ensure_decision_profile(profile)["current_difficulty"]
+    for index, (assessment, correct) in enumerate((
+        ("correct", True), ("incorrect", False), ("correct", True), ("incorrect", False),
+    )):
+        _record(profile, index, assessment=assessment, judgment_correct=correct)
+    assert profile.decision_puzzles["current_difficulty"] == baseline
+
+
+def test_one_or_two_misses_do_not_create_a_confirmed_weakness():
+    profile = LearnerProfile()
+    _record(profile, 0, assessment="incorrect", judgment_correct=False)
+    _record(profile, 1, assessment="incorrect", judgment_correct=False)
+    item = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert item["status"] == "insufficient"
+    assert item["observed_misses"] == 2
+    assert item["confidence"] < 0.5
+
+
+def test_repeated_independent_mistakes_create_weakness_with_auditable_evidence():
+    profile = LearnerProfile()
+    for index in range(5):
+        _record(profile, index, assessment="incorrect", judgment_correct=False)
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["status"] == "needs_work"
+    assert weakness["independent_tasks"] == 5
+    assert weakness["observed_misses"] == 5
+    assert weakness["sources"]["decision_puzzles"]["recent_evidence"]
+    assert len({e["task"] for e in weakness["sources"]["decision_puzzles"]["recent_evidence"]}) == 5
+    assert weakness["trend"] in ("insufficient", "stable", "slipping")
+
+
+def test_recurring_game_evidence_can_corroborate_but_not_replace_puzzle_evidence():
+    profile = LearnerProfile()
+    profile.weaknesses = [{"concept": "knight_fork", "key": "fork_missed", "tier": "recurring",
+                           "game_count": 3, "occurrences": 4, "updated": "2026-01-01T00:00:00+00:00"}]
+    _record(profile, 0, assessment="incorrect", judgment_correct=False)
+    _record(profile, 1, assessment="incorrect", judgment_correct=False)
+    assert profile.decision_puzzles["weaknesses"]["knight_fork"]["status"] == "insufficient"
+    _record(profile, 2, assessment="incorrect", judgment_correct=False)
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["status"] == "needs_work"
+    assert weakness["threshold"]["game_corroboration"] is True
+    assert weakness["sources"]["analyzed_games"]["game_count"] == 3
+
+
+def test_consistent_success_reduces_weakness_confidence_and_can_mark_skill_mastered():
+    profile = LearnerProfile()
+    for index in range(5):
+        _record(profile, index, assessment="incorrect", judgment_correct=False)
+    before = profile.decision_puzzles["weaknesses"]["knight_fork"]["confidence"]
+    for index in range(5, 10):
+        _record(profile, index, assessment="correct", judgment_correct=True)
+    after = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert after["confidence"] < before
+    assert after["trend"] == "improving"
+    assert after["status"] == "mastered"
+    assert "knight_fork" in profile.decision_puzzles["strengths"]
+
+
+def test_targeted_practice_exposures_track_per_skill_improvement():
+    profile = LearnerProfile()
+    for index in range(5):
+        _record(profile, index, assessment="incorrect", judgment_correct=False,
+                selection_reason="targeted_practice")
+    for index in range(5, 10):
+        _record(profile, index, assessment="correct", judgment_correct=True,
+                selection_reason="targeted_practice")
+
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    targeted = weakness["practice_effectiveness"]["targeted"]
+    assert weakness["status"] == "mastered"
+    assert targeted["attempts"] == 10
+    assert targeted["mean_score"] == pytest.approx(0.5)
+    assert targeted["trend"] == "improving"
+    assert profile.decision_puzzles["recent"][-1]["selection_reason"] == "targeted_practice"
+
+
+def test_uncertain_or_unavailable_explanations_never_confirm_reasoning_weakness():
+    profile = LearnerProfile()
+    for index in range(7):
+        _record(profile, index, assessment="uncertain", judgment_correct=True, confidence="low")
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["status"] == "insufficient"
+    assert weakness["assessable_attempts"] == 0
+    assert weakness["observed_misses"] == 0
+    assert weakness["reasoning_misses"] == 0
+    assert profile.concepts["knight_fork"].recent[-1] == pytest.approx(0.75)
+
+
+def test_uncertain_reasoning_is_not_a_miss_but_repeated_stockfish_choice_errors_are():
+    profile = LearnerProfile()
+    for index in range(5):
+        _record(profile, index, assessment="uncertain", judgment_correct=False, confidence="low")
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["status"] == "needs_work"
+    assert weakness["assessable_attempts"] == 0
+    assert weakness["observed_misses"] == 5
+    assert weakness["choice_misses"] == 5
+    assert weakness["reasoning_misses"] == 0
+
+
+def test_decision_profile_persists_through_learner_store_restart(tmp_path):
+    root = tmp_path / "learners"
+    store = LearnerStore(root)
+    profile = store.get("local")
+    profile.set_onboarding(rating=1420, platform="chesscom")
+    for index in range(5):
+        _record(profile, index, assessment="incorrect", judgment_correct=False)
+    summary = decision_profile_summary(profile)
+    store.save(profile)
+
+    restarted = LearnerStore(root)
+    loaded = restarted.get("local")
+    loaded_summary = decision_profile_summary(loaded)
+    assert loaded_summary["ability"] == summary["ability"]
+    assert loaded_summary["current_difficulty"] == summary["current_difficulty"]
+    assert loaded_summary["weaknesses"][0]["status"] == "needs_work"
+    assert len(loaded.decision_puzzles["history"]) == 5
+    assert loaded.decision_puzzles["weaknesses"]["knight_fork"]["sources"]["decision_puzzles"]["attempts"] == 5
+
+
+def test_future_task_selection_uses_saved_weakness_after_profile_reload(tmp_path):
+    knowledge = get_knowledge()
+    candidates = decision_candidates(knowledge)
+    pair = []
+    for item in candidates:
+        if item.kind != "good":
+            continue
+        if not pair or item.concept != pair[0].concept:
+            pair = [item] if not pair else [pair[0], item]
+        if len(pair) == 2 and pair[0].concept != pair[1].concept:
+            break
+    assert len(pair) == 2
+    weak_candidate, other_candidate = pair
+    profile_store = LearnerStore(tmp_path / "learners")
+    profile = profile_store.get("local")
+    for index in range(5):
+        _record(profile, index, concept=weak_candidate.concept, assessment="incorrect", judgment_correct=False,
+                difficulty=weak_candidate.rating)
+    data = profile.decision_puzzles
+    # Fill recent exposure slots with broad practice so the target scheduler deliberately returns to the
+    # supported weakness rather than over-serving it without variety.
+    for index in range(4):
+        record_decision_exposure(profile, identity=hashlib.sha256(f"breadth:{index}".encode()).hexdigest(),
+                                 source_id=f"breadth:{index}", concept=other_candidate.concept,
+                                 difficulty=other_candidate.rating, metadata_rating=other_candidate.metadata_rating)
+    data["current_difficulty"] = int((weak_candidate.rating + other_candidate.rating) / 2)
+    profile_store.save(profile)
+    restarted_store = LearnerStore(tmp_path / "learners")
+    loaded = restarted_store.get("local")
+
+    class SmallKnowledge:
+        concepts = knowledge.concepts
+
+        def verified(self):
+            return list({item.example.id: item.example for item in pair}.values())
+
+    # Use the reloaded profile's saved weakness and a tiny verified pool; no unrelated learner state is read.
+    task_store = DecisionTaskStore()
+    engine = ScriptedEngine(Classification.GOOD, 10)
+    task = issue_decision_task(SmallKnowledge(), engine, profile=loaded, store=task_store, quality="good")
+    assert task.candidate.concept == weak_candidate.concept
+    assert task.selection_reason == "targeted_practice"
+    assert task.candidate.identity in {item.identity for item in pair}
+
+
+def test_uncertain_choice_contradiction_is_recorded_separately_not_as_reasoning_weakness():
+    profile = LearnerProfile()
+    _record(profile, 0, assessment="correct", judgment_correct=False)
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["status"] == "insufficient"
+    assert weakness["observed_misses"] == 1
+    assert weakness["choice_misses"] == 1
+    assert weakness["reasoning_misses"] == 0
+    assert profile.decision_puzzles["history"][-1]["result"]["judgment_correct"] is False
+    assert profile.decision_puzzles["history"][-1]["result"]["explanation_assessment"] == "correct"

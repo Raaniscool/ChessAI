@@ -20,6 +20,7 @@ class FakeNode {
       contains: name => this.classes.has(name),
     }
     this.value = ""
+    this.checked = false
     this.disabled = false
   }
   set textContent(value) { this._text = String(value ?? ""); this.children = [] }
@@ -41,18 +42,25 @@ function fakeDocument() {
 }
 
 function elements() {
-  return Object.fromEntries(["panel", "task", "start", "status", "move", "side", "question", "answer",
-    "submit", "next", "result", "assessment", "feedback", "recording", "engine"].map(id => [id, new FakeNode()]))
+  return Object.fromEntries(["panel", "task", "start", "status", "move", "side", "question", "choiceYes",
+    "choiceNo", "choiceYesSide", "choiceNoSide", "answer", "submit", "next", "result", "judgment",
+    "assessment", "feedback", "recording", "engine"].map(id => [id, new FakeNode()]))
 }
 
 function task() {
   const position = new Chess()
   position.move("e4")
-  return {task_id: "task-1", fen: position.fen(), side_to_move: "black", proposed_move: "e5",
-    question: "Is this proposed move good or bad? Explain why."}
+  return {task_id: "task-1", fen: position.fen(), side_to_move: "black", mover: "Black",
+    proposed_move: "e5", question: "Is e5 a good move for Black?",
+    explanation_min_length: 8}
 }
 
-test("Decision Puzzle restores its validated board and unsent explanation after Practice navigation", async () => {
+function setup(api, ui = elements(), extra = {}) {
+  return {ui, puzzles: createDecisionPuzzles({api, board: {disableMoveInput() {}}, showPosition: async () => {},
+    Chess, COLOR: {white: "white", black: "black"}, el: ui, ...extra})}
+}
+
+test("Decision Puzzle restores its selected verdict, validated board, and explanation after Practice navigation", async () => {
   const previousDocument = globalThis.document
   globalThis.document = fakeDocument()
   try {
@@ -66,10 +74,14 @@ test("Decision Puzzle restores its validated board and unsent explanation after 
       calls.push({path, method, body})
       if (path.endsWith("/next")) return currentTask
       if (path.endsWith("/answer")) return {
-        task_id: "task-1", assessment: "partial", feedback: "Partly right; add the concrete reason.",
-        recording_note: "Added to your learner profile.", recorded: true,
-        engine: {category: "good", loss_cp: 22, proposed_move: "e5", best_move: "Nf6",
-          best_line: ["Nf6", "Bc4"], proposed_line: ["e5", "Nf3"], verified_point: "Develop and contest the centre."},
+        task_id: "task-1", assessment: "partial", explanation_assessment: "partial",
+        judgment: {choice: "yes", correct: true, expected: "yes", side_to_move: "black"},
+        judgment_feedback: "Your Yes was correct for Black.",
+        explanation_feedback: "Explanation: partly correct; add the concrete reason.",
+        recording_note: "Your verdict and explanation assessment were saved.", recorded: true,
+        engine: {category: "good", loss_cp: 22, mover: "Black", side_to_move: "black",
+          proposed_move: "e5", best_move: "Nf6", best_line: ["Nf6", "Bc4"],
+          proposed_line: ["e5", "Nf3"], verified_point: "Develop and contest the centre."},
       }
       throw new Error(`Unexpected request ${path}`)
     }
@@ -83,15 +95,26 @@ test("Decision Puzzle restores its validated board and unsent explanation after 
     assert.equal(puzzles.state().taskId, "task-1")
     assert.equal(ui.move.textContent, "e5")
     assert.equal(ui.side.textContent, "Black to move")
+    assert.match(ui.question.textContent, /Black/)
+    assert.equal(ui.choiceYesSide.textContent, "Black")
+    assert.equal(ui.choiceNoSide.textContent, "Black")
     assert.equal(ui.task.classList.contains("hidden"), false)
+    assert.equal(ui.choiceYes.checked, false)
+    assert.equal(ui.choiceNo.checked, false)
+    assert.equal(ui.submit.disabled, true) // both an explicit choice and an explanation are required
     assert.equal(shown[0].fen, currentTask.fen)
     assert.equal(shown[0].options.orientation, "black")
     assert.equal(disabled > 0, true)
 
-    ui.answer.value = "I think this is good because it controls the centre."
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "Black's move is good because it contests the centre."
+    await ui.answer.emit("input")
     puzzles.leave()
     await puzzles.enter()
-    assert.equal(ui.answer.value, "I think this is good because it controls the centre.")
+    assert.equal(ui.answer.value, "Black's move is good because it contests the centre.")
+    assert.equal(ui.choiceYes.checked, true)
+    assert.equal(puzzles.state().choice, "yes")
     assert.equal(shown.length, 2)
     assert.equal(calls.filter(call => call.path.endsWith("/next")).length, 1)
     assert.equal(shownPanel, 2)
@@ -99,10 +122,14 @@ test("Decision Puzzle restores its validated board and unsent explanation after 
 
     await ui.submit.emit("click")
     assert.equal(calls.at(-1).path, "/api/puzzles/decision/task-1/answer")
-    assert.equal(calls.at(-1).body.answer, "I think this is good because it controls the centre.")
+    assert.deepEqual(calls.at(-1).body, {
+      choice: "yes", explanation: "Black's move is good because it contests the centre.",
+    })
     assert.equal(puzzles.state().answered, true)
-    assert.equal(ui.assessment.textContent, "Partly correct")
+    assert.equal(ui.judgment.textContent, "Your Yes was correct for Black.")
+    assert.equal(ui.assessment.textContent, "Explanation: partly correct")
     assert.match(ui.engine.textContent, /Nf6/)
+    assert.equal(ui.choiceYes.disabled, true)
     assert.equal(ui.answer.disabled, true)
   } finally {
     if (previousDocument === undefined) delete globalThis.document
@@ -117,18 +144,15 @@ test("a failed board restoration blocks assessment until the same position verif
     let displays = 0
     let submissions = 0
     const ui = elements()
-    const puzzles = createDecisionPuzzles({
-      api: async path => {
-        if (path.endsWith("/next")) return task()
-        submissions++
-        throw new Error(`Unexpected request ${path}`)
-      },
-      board: {disableMoveInput() {}},
+    const {puzzles} = setup(async path => {
+      if (path.endsWith("/next")) return task()
+      submissions++
+      throw new Error(`Unexpected request ${path}`)
+    }, ui, {
       showPosition: async () => {
         displays++
         if (displays === 1) throw new Error("board verification failed")
       },
-      Chess, COLOR: {white: "white", black: "black"}, el: ui,
     })
 
     await puzzles.activate()
@@ -136,6 +160,10 @@ test("a failed board restoration blocks assessment until the same position verif
     assert.equal(ui.submit.disabled, true)
     assert.equal(ui.answer.disabled, true)
     assert.equal(ui.start.classList.contains("hidden"), false)
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "A long enough explanation."
+    await ui.answer.emit("input")
     await ui.submit.emit("click")
     assert.equal(submissions, 0)
 
@@ -161,14 +189,39 @@ test("a failed task request offers a visible retry instead of a dead end", async
       return task()
     }
     const ui = elements()
-    const puzzles = createDecisionPuzzles({api, board: {disableMoveInput() {}}, showPosition: async () => {},
-      Chess, COLOR: {white: "white", black: "black"}, el: ui})
+    const {puzzles} = setup(api, ui)
     await puzzles.activate()
     assert.equal(ui.start.classList.contains("hidden"), false)
     assert.match(ui.status.textContent, /Stockfish is unavailable/)
     await ui.start.emit("click")
     assert.equal(attempts, 2)
     assert.equal(puzzles.state().taskId, "task-1")
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
+test("pool exhaustion is explicit and does not keep retrying a repeated position", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    let attempts = 0
+    const api = async () => {
+      attempts++
+      const error = new Error("No unseen verified Decision Puzzles remain, including color-swapped equivalents.")
+      error.status = 409
+      throw error
+    }
+    const ui = elements()
+    const {puzzles} = setup(api, ui)
+    await puzzles.activate()
+    assert.equal(attempts, 1)
+    assert.equal(puzzles.state().exhausted, true)
+    assert.match(ui.status.textContent, /regular Puzzle library/)
+    assert.equal(ui.start.disabled, true)
+    await ui.start.emit("click")
+    assert.equal(attempts, 1)
   } finally {
     if (previousDocument === undefined) delete globalThis.document
     else globalThis.document = previousDocument

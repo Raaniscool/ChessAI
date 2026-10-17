@@ -19,10 +19,11 @@
                                                   review rather than the session ending
     POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds,
                                    revealed}   -> records the outcome (puzzle stats + learner model)
-    POST /api/puzzles/decision/next             -> a verified position and proposed move, freshly
-                                                   checked by Stockfish
-    POST /api/puzzles/decision/{task_id}/answer -> evidence-constrained reasoning feedback and a
-                                                   learner-model update when the judgment is supported
+    POST /api/puzzles/decision/next             -> a verified position and proposed move, checked
+                                                   by bounded/cached Stockfish
+    POST /api/puzzles/decision/{task_id}/answer -> separate Stockfish Yes/No verdict and bounded,
+                                                   evidence-constrained explanation assessment
+    GET  /api/puzzles/decision/profile          -> persistent ability, difficulty, evidence and needs
     POST /api/puzzles/adapt {mode, concept?, weakness?, done, remaining, set_ids}
                                                -> swaps the remaining puzzles of a running set that
                                                   fell out of the learner's zone (session adaptation)
@@ -117,7 +118,8 @@ class DecisionNextRequest(BaseModel):
 
 
 class DecisionAnswerRequest(BaseModel):
-    answer: str = Field(min_length=8, max_length=2000)
+    choice: Literal["yes", "no"]
+    explanation: str = Field(min_length=8, max_length=2000)
 
 
 def _error(status: int, message: str) -> JSONResponse:
@@ -152,12 +154,21 @@ def dashboard() -> dict:
             "library": {"puzzles": len(pool)}}
 
 
+@router.get("/decision/profile")
+def decision_puzzle_profile() -> dict:
+    """Return the persistent, explainable Decision Puzzle ability and skill profile."""
+    from .learner import get_store
+    from .learner.decision_profile import decision_profile_summary
+
+    return get_store().update("local", lambda profile: decision_profile_summary(profile, _knowledge()))
+
+
 @router.post("/decision/next")
 def next_decision_puzzle(body: DecisionNextRequest) -> dict:
-    """Issue a valid position/proposed move after a fresh Stockfish evaluation.
+    """Issue a valid position/proposed move after a bounded Stockfish evaluation.
 
-    The task response hides its verified concept and engine verdict until the learner submits
-    a natural-language explanation. Qwen, when configured, only maps that text to these facts.
+    The task response hides its verified concept and engine verdict until the learner submits.
+    Qwen, when configured, assesses only the separate explanation against supplied facts.
     """
     from .learner import get_profile
     from .puzzles.decision import (DecisionPuzzleError, get_decision_store, issue_decision_task,
@@ -181,11 +192,11 @@ def next_decision_puzzle(body: DecisionNextRequest) -> dict:
 
 @router.post("/decision/{task_id}/answer")
 def answer_decision_puzzle(task_id: str, body: DecisionAnswerRequest) -> dict:
-    """Assess the learner's explanation and record only a supported outcome in LearnerStore."""
+    """Score the Yes/No choice with Stockfish and assess the separate explanation in LearnerStore."""
     from .puzzles.decision import DecisionPuzzleError, submit_decision_answer
 
     try:
-        return submit_decision_answer(task_id, body.answer)
+        return submit_decision_answer(task_id, body.choice, body.explanation)
     except DecisionPuzzleError as exc:
         return _error(exc.status_code, str(exc))
 

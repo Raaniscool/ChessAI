@@ -54,6 +54,12 @@ test("puzzle modes and board move-history navigation remain distinct from app na
   }
   assert.match(html, /id="pz-decision" class="pz-section hidden"/)
   assert.match(html, /id="pz-decision-answer"[\s\S]*?maxlength="2000"/)
+  for (const id of ["pz-decision-yes", "pz-decision-no", "pz-decision-yes-side", "pz-decision-no-side"]) {
+    assert.match(html, new RegExp(`id="${id}"`), `${id} is part of the objective choice controls`)
+  }
+  assert.match(puzzles, /choiceYes: el\.decisionYes, choiceNo: el\.decisionNo/,
+    "the mutually exclusive choice controls are wired into the Decision Puzzle controller")
+  assert.match(puzzles, /choiceYesSide: el\.decisionYesSide, choiceNoSide: el\.decisionNoSide/)
   assert.match(puzzles, /if \(view\.screen === "decision" && view\.mode === "decision"\) \{\s*await decision\.enter\(\)\s*return/,
     "returning to Practice restores the in-progress Decision Puzzle instead of resetting the shared board")
   assert.match(puzzles, /decision\.leave\(\)/, "leaving Practice invalidates pending requests without deleting the attempt")

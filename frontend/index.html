@@ -131,21 +131,30 @@
           <div id="pz-training" class="pz-section hidden"></div>
           <section id="pz-decision" class="pz-section hidden" aria-labelledby="pz-decision-heading">
             <h3 id="pz-decision-heading">Decision Puzzles</h3>
-            <p class="muted">A position and a proposed legal move appear on the board. Decide whether the move is good or bad, then explain the chess reason in your own words. The engine's verdict stays hidden until you submit.</p>
+            <p class="muted">A position and a proposed legal move appear on the board. Yes or No is always relative to the side shown as moving. Stockfish checks move quality; your explanation is assessed separately.</p>
             <div id="pz-decision-status" class="pz-status muted" aria-live="polite"></div>
             <button id="pz-decision-start" class="btn primary hidden">Try again</button>
             <div id="pz-decision-task" class="decision-task hidden">
               <div class="decision-proposal"><span>Proposed move</span><strong id="pz-decision-move"></strong>
                 <span id="pz-decision-side"></span></div>
               <p id="pz-decision-question" class="decision-question"></p>
+              <fieldset class="decision-choices" aria-describedby="pz-decision-choice-help">
+                <legend>Your verdict</legend>
+                <label><input id="pz-decision-yes" type="radio" name="pz-decision-choice" value="yes" required>
+                  <span>Yes — good for <b id="pz-decision-yes-side"></b></span></label>
+                <label><input id="pz-decision-no" type="radio" name="pz-decision-choice" value="no" required>
+                  <span>No — not good for <b id="pz-decision-no-side"></b></span></label>
+                <small id="pz-decision-choice-help" class="muted">Choose one. The explanation below is required and graded separately.</small>
+              </fieldset>
               <label for="pz-decision-answer">Your explanation</label>
-              <textarea id="pz-decision-answer" rows="5" maxlength="2000"
-                        placeholder="Is it good or bad? What concrete feature of the position supports your view?"></textarea>
+              <textarea id="pz-decision-answer" rows="4" minlength="8" maxlength="2000" required
+                        placeholder="Name a concrete feature, line, or threat that supports your reasoning."></textarea>
               <div class="controls decision-controls">
                 <button id="pz-decision-submit" class="btn primary">Check my reasoning</button>
                 <button id="pz-decision-next" class="btn primary hidden">Next position →</button>
               </div>
               <div id="pz-decision-result" class="decision-result hidden" aria-live="polite">
+                <p id="pz-decision-judgment" class="decision-judgment"></p>
                 <strong id="pz-decision-assessment" class="decision-assessment"></strong>
                 <p id="pz-decision-feedback"></p>
                 <p id="pz-decision-recording" class="muted"></p>

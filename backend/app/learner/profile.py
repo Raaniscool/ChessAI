@@ -127,6 +127,9 @@ class LearnerProfile:
     preferences: dict = field(default_factory=lambda: {"explanation": "balanced"})
     exercise_log: list[dict] = field(default_factory=list)
     training: dict = field(default_factory=dict)     # assessment.record: Training segments' evidence
+    # Decision Puzzles are a feature area inside this same learner profile / LearnerStore.
+    # The nested document persists the decision-specific ability estimate, exposures, and evidence.
+    decision_puzzles: dict = field(default_factory=dict)
 
     # ------------------------------------------------------------------ io
     def as_dict(self) -> dict:
@@ -222,16 +225,29 @@ class LearnerProfile:
     # ------------------------------------------------------------------ events
     def record_attempt(self, concept: str, puzzle_rating: int, *, solved: bool, first_try: bool,
                        hints: int = 0, revealed: bool = False, learner_moves: int = 1,
-                       explanations: dict | None = None, context: dict | None = None) -> dict:
+                       explanations: dict | None = None, context: dict | None = None,
+                       score_override: float | None = None, rating_k_factor: float | None = None,
+                       update_overall_skill: bool = True) -> dict:
         """One resolved exercise. Returns what changed (for adaptation / the UI).
 
         `explanations`: explicit requests made while solving it (kind -> count, learner.help);
         they are logged with the result but never change its score or any rating.
-        `context`: source / lesson_id / session_id / exercise_id for the exercise log."""
+        `context`: source / lesson_id / session_id / exercise_id for the exercise log.
+        `score_override` and `rating_k_factor` are opt-in controls for evidence types such as
+        Decision Puzzles that have a calibrated partial score and must move skill estimates
+        more gradually. Ordinary puzzle/lesson calls retain the historical scoring unchanged."""
         st = self.concept(concept)
         before = self.concept_rating(concept)
-        score = R.score_for(solved, first_try, hints, revealed)
-        st.rating = R.updated(before, puzzle_rating, score, st.attempts)
+        if score_override is None:
+            score = R.score_for(solved, first_try, hints, revealed)
+        else:
+            score = float(score_override)
+            if not 0.0 <= score <= 1.0:
+                raise ValueError("score_override must be between 0 and 1")
+        if rating_k_factor is None:
+            st.rating = R.updated(before, puzzle_rating, score, st.attempts)
+        else:
+            st.rating = R.clamp(before + float(rating_k_factor) * (score - R.expected(before, puzzle_rating)))
         st.attempts += 1
         st.solved += int(solved and not revealed)
         st.first_try += int(solved and first_try and not revealed and hints == 0)
@@ -248,14 +264,16 @@ class LearnerProfile:
         bucket.append(score)
         del bucket[:-RECENT]
         st.last_seen = _iso()
-        st.last_result = "solved" if score > 0 else "failed"
-        # the overall estimate moves too, more slowly (one concept isn't the whole player)
-        total = self.stats["puzzles"]["attempts"]
-        self.skill = {**self.skill, "rating": R.clamp(self.rating + 0.5 * R.k_factor(total) *
-                                                     (score - R.expected(self.rating, puzzle_rating))),
-                      "evidence": self.skill.get("evidence", 0) + 1}
-        if self.skill.get("source") == "default":
-            self.skill["source"] = "results"
+        st.last_result = "solved" if solved and not revealed else "failed"
+        # The shared overall estimate normally moves too, more slowly (one concept isn't
+        # the whole player). Decision Puzzles keep a separate calibrated ability estimate.
+        if update_overall_skill:
+            total = self.stats["puzzles"]["attempts"]
+            self.skill = {**self.skill, "rating": R.clamp(self.rating + 0.5 * R.k_factor(total) *
+                                                         (score - R.expected(self.rating, puzzle_rating))),
+                          "evidence": self.skill.get("evidence", 0) + 1}
+            if self.skill.get("source") == "default":
+                self.skill["source"] = "results"
         p = self.stats["puzzles"]
         p["attempts"] += 1
         p["solved"] += int(solved and not revealed)
@@ -264,13 +282,18 @@ class LearnerProfile:
         self.stats["reveals"] += int(revealed)
         self._topic(concept)
         ctx = context or {}
-        self._log({"at": _iso(), "source": ctx.get("source", "lesson"), "lesson_id": ctx.get("lesson_id"),
-                   "session_id": ctx.get("session_id"), "exercise_id": ctx.get("exercise_id"),
-                   "concept": concept, "difficulty": int(puzzle_rating),
-                   "result": "revealed" if revealed else ("solved" if solved else "failed"),
-                   "solved": bool(solved and not revealed), "first_try": bool(first_try), "hints": max(0, hints),
-                   "revealed": bool(revealed), "score": score, "explanation_requested": bool(asked),
-                   "explanations": {k: asked.get(k, 0) for k in HELP_KINDS}, "seq": st.attempts})
+        entry = {"at": _iso(), "source": ctx.get("source", "lesson"), "lesson_id": ctx.get("lesson_id"),
+                 "session_id": ctx.get("session_id"), "exercise_id": ctx.get("exercise_id"),
+                 "concept": concept, "difficulty": int(puzzle_rating),
+                 "result": "revealed" if revealed else ("solved" if solved else "failed"),
+                 "solved": bool(solved and not revealed), "first_try": bool(first_try), "hints": max(0, hints),
+                 "revealed": bool(revealed), "score": score, "explanation_requested": bool(asked),
+                 "explanations": {k: asked.get(k, 0) for k in HELP_KINDS}, "seq": st.attempts}
+        # Keep structured Decision Puzzle evidence, never the learner's free-form answer text.
+        decision = ctx.get("decision")
+        if isinstance(decision, dict):
+            entry["decision"] = decision
+        self._log(entry)
         self.touch()
         return {"concept": concept, "score": score, "rating_before": before, "rating_after": st.rating}
 

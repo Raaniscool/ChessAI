@@ -1,4 +1,4 @@
-// Puzzles tab: a dashboard (Personalized / Practice / Training) and a board-focused solver.
+// Practice tab: the Puzzles dashboard (Personalized / By theme / Training / Decision Puzzles) and solver.
 // Training (short games against a bot, analysed afterwards) lives in training.js.
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
@@ -27,8 +27,11 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     modeDecision: $("pz-mode-decision"), decision: $("pz-decision"),
     decisionStart: $("pz-decision-start"), decisionTask: $("pz-decision-task"), decisionStatus: $("pz-decision-status"),
     decisionMove: $("pz-decision-move"), decisionQuestion: $("pz-decision-question"),
+    decisionYes: $("pz-decision-yes"), decisionNo: $("pz-decision-no"),
+    decisionYesSide: $("pz-decision-yes-side"), decisionNoSide: $("pz-decision-no-side"),
     decisionAnswer: $("pz-decision-answer"), decisionSubmit: $("pz-decision-submit"),
     decisionNext: $("pz-decision-next"), decisionResult: $("pz-decision-result"),
+    decisionJudgment: $("pz-decision-judgment"),
     decisionAssessment: $("pz-decision-assessment"), decisionFeedback: $("pz-decision-feedback"),
     decisionRecording: $("pz-decision-recording"), decisionEngine: $("pz-decision-engine"),
   }
@@ -141,8 +144,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
 
   const decision = createDecisionPuzzles({api, board, showPosition, Chess, COLOR,
     el: {panel: el.decision, task: el.decisionTask, start: el.decisionStart, status: el.decisionStatus,
-      move: el.decisionMove, side: $("pz-decision-side"), question: el.decisionQuestion, answer: el.decisionAnswer,
-      submit: el.decisionSubmit, next: el.decisionNext, result: el.decisionResult,
+      move: el.decisionMove, side: $("pz-decision-side"), question: el.decisionQuestion,
+      choiceYes: el.decisionYes, choiceNo: el.decisionNo,
+      choiceYesSide: el.decisionYesSide, choiceNoSide: el.decisionNoSide,
+      answer: el.decisionAnswer, submit: el.decisionSubmit, next: el.decisionNext, result: el.decisionResult,
       assessment: el.decisionAssessment, feedback: el.decisionFeedback,
       recording: el.decisionRecording, engine: el.decisionEngine},
     onShow() {
