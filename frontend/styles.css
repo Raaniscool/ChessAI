@@ -615,6 +615,30 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
   color: var(--text); border: 1px solid #343c45; border-radius: 9px; padding: 11px 13px; font-size: 14px; cursor: pointer; }
 .pz-theme:hover { border-color: var(--accent); }
 .pz-status { min-height: 18px; font-size: 13px; }
+.pz-modes { flex-wrap: wrap; }
+.decision-task { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.decision-proposal { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.decision-proposal span { color: var(--muted); font-size: 13px; }
+.decision-proposal strong { font: 700 20px ui-monospace, Consolas, monospace; background: var(--panel-2);
+  border: 1px solid #39434d; border-radius: 7px; padding: 5px 10px; }
+.decision-question { margin: 0; line-height: 1.45; }
+#pz-decision-answer { width: 100%; min-height: 110px; resize: vertical; box-sizing: border-box; padding: 10px 12px;
+  color: var(--text); background: var(--bg); border: 1px solid #3c4550; border-radius: 8px;
+  font: inherit; line-height: 1.45; }
+#pz-decision-answer:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+#pz-decision-answer:disabled { opacity: .8; }
+.decision-controls { flex-wrap: wrap; }
+.decision-result { background: var(--panel-2); border: 1px solid #39434d; border-radius: 9px; padding: 12px 14px; line-height: 1.5; }
+.decision-result p { margin: 7px 0; }
+.decision-assessment { display: inline-block; margin-bottom: 3px; font-weight: 700; }
+.decision-assessment.correct { color: var(--accent-2); }
+.decision-assessment.partial { color: var(--warn); }
+.decision-assessment.misconception { color: #f1b7b5; }
+.decision-assessment.uncertain { color: var(--muted); }
+.decision-engine { margin-top: 10px; padding-top: 8px; border-top: 1px solid #414b56; font-size: 13px; }
+.decision-engine p { margin: 5px 0; overflow-wrap: anywhere; }
+.decision-engine b { color: #d6dbe0; }
+.decision-result .muted { font-size: 12.5px; }
 /* Training (Puzzles tab) */
 .tr-modes { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .tr-mode { flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; }

@@ -1,0 +1,176 @@
+import test from "node:test"
+import assert from "node:assert/strict"
+import {Chess} from "../vendor/chess.mjs/Chess.js"
+import {createDecisionPuzzles} from "../decision-puzzles.js"
+
+class FakeNode {
+  constructor() {
+    this._text = ""
+    this._html = ""
+    this.children = []
+    this.events = new Map()
+    this.classes = new Set(["hidden"])
+    this.classList = {
+      toggle: (name, force) => {
+        const on = force === undefined ? !this.classes.has(name) : Boolean(force)
+        if (on) this.classes.add(name)
+        else this.classes.delete(name)
+        return on
+      },
+      contains: name => this.classes.has(name),
+    }
+    this.value = ""
+    this.disabled = false
+  }
+  set textContent(value) { this._text = String(value ?? ""); this.children = [] }
+  get textContent() { return this._text + this.children.map(child => child.textContent || "").join("") }
+  set innerHTML(value) { this._html = String(value); if (!value) { this._text = ""; this.children = [] } }
+  get innerHTML() { return this._html }
+  addEventListener(name, fn) { this.events.set(name, fn) }
+  appendChild(child) { this.children.push(child); return child }
+  append(...children) { this.children.push(...children) }
+  focus() { this.focused = true }
+  async emit(name, event = {}) { return this.events.get(name)?.(event) }
+}
+
+function fakeDocument() {
+  return {
+    createElement: () => new FakeNode(),
+    createTextNode: text => ({textContent: String(text)}),
+  }
+}
+
+function elements() {
+  return Object.fromEntries(["panel", "task", "start", "status", "move", "side", "question", "answer",
+    "submit", "next", "result", "assessment", "feedback", "recording", "engine"].map(id => [id, new FakeNode()]))
+}
+
+function task() {
+  const position = new Chess()
+  position.move("e4")
+  return {task_id: "task-1", fen: position.fen(), side_to_move: "black", proposed_move: "e5",
+    question: "Is this proposed move good or bad? Explain why."}
+}
+
+test("Decision Puzzle restores its validated board and unsent explanation after Practice navigation", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    const currentTask = task()
+    const calls = []
+    const shown = []
+    let disabled = 0
+    let shownPanel = 0
+    let paused = 0
+    const api = async (path, method, body) => {
+      calls.push({path, method, body})
+      if (path.endsWith("/next")) return currentTask
+      if (path.endsWith("/answer")) return {
+        task_id: "task-1", assessment: "partial", feedback: "Partly right; add the concrete reason.",
+        recording_note: "Added to your learner profile.", recorded: true,
+        engine: {category: "good", loss_cp: 22, proposed_move: "e5", best_move: "Nf6",
+          best_line: ["Nf6", "Bc4"], proposed_line: ["e5", "Nf3"], verified_point: "Develop and contest the centre."},
+      }
+      throw new Error(`Unexpected request ${path}`)
+    }
+    const board = {disableMoveInput() { disabled++ }}
+    const ui = elements()
+    const puzzles = createDecisionPuzzles({api, board, Chess, COLOR: {white: "white", black: "black"}, el: ui,
+      showPosition: async (fen, options) => { shown.push({fen, options}) },
+      onShow: () => { shownPanel++ }, onPause: () => { paused++ }})
+
+    await puzzles.activate()
+    assert.equal(puzzles.state().taskId, "task-1")
+    assert.equal(ui.move.textContent, "e5")
+    assert.equal(ui.side.textContent, "Black to move")
+    assert.equal(ui.task.classList.contains("hidden"), false)
+    assert.equal(shown[0].fen, currentTask.fen)
+    assert.equal(shown[0].options.orientation, "black")
+    assert.equal(disabled > 0, true)
+
+    ui.answer.value = "I think this is good because it controls the centre."
+    puzzles.leave()
+    await puzzles.enter()
+    assert.equal(ui.answer.value, "I think this is good because it controls the centre.")
+    assert.equal(shown.length, 2)
+    assert.equal(calls.filter(call => call.path.endsWith("/next")).length, 1)
+    assert.equal(shownPanel, 2)
+    assert.equal(paused, 1)
+
+    await ui.submit.emit("click")
+    assert.equal(calls.at(-1).path, "/api/puzzles/decision/task-1/answer")
+    assert.equal(calls.at(-1).body.answer, "I think this is good because it controls the centre.")
+    assert.equal(puzzles.state().answered, true)
+    assert.equal(ui.assessment.textContent, "Partly correct")
+    assert.match(ui.engine.textContent, /Nf6/)
+    assert.equal(ui.answer.disabled, true)
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
+test("a failed board restoration blocks assessment until the same position verifies", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    let displays = 0
+    let submissions = 0
+    const ui = elements()
+    const puzzles = createDecisionPuzzles({
+      api: async path => {
+        if (path.endsWith("/next")) return task()
+        submissions++
+        throw new Error(`Unexpected request ${path}`)
+      },
+      board: {disableMoveInput() {}},
+      showPosition: async () => {
+        displays++
+        if (displays === 1) throw new Error("board verification failed")
+      },
+      Chess, COLOR: {white: "white", black: "black"}, el: ui,
+    })
+
+    await puzzles.activate()
+    assert.equal(puzzles.state().positionVerified, false)
+    assert.equal(ui.submit.disabled, true)
+    assert.equal(ui.answer.disabled, true)
+    assert.equal(ui.start.classList.contains("hidden"), false)
+    await ui.submit.emit("click")
+    assert.equal(submissions, 0)
+
+    await ui.start.emit("click")
+    assert.equal(puzzles.state().positionVerified, true)
+    assert.equal(ui.submit.disabled, false)
+    assert.equal(ui.start.classList.contains("hidden"), true)
+    assert.equal(displays, 2)
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
+test("a failed task request offers a visible retry instead of a dead end", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    let attempts = 0
+    const api = async () => {
+      attempts++
+      if (attempts === 1) throw new Error("Stockfish is unavailable")
+      return task()
+    }
+    const ui = elements()
+    const puzzles = createDecisionPuzzles({api, board: {disableMoveInput() {}}, showPosition: async () => {},
+      Chess, COLOR: {white: "white", black: "black"}, el: ui})
+    await puzzles.activate()
+    assert.equal(ui.start.classList.contains("hidden"), false)
+    assert.match(ui.status.textContent, /Stockfish is unavailable/)
+    await ui.start.emit("click")
+    assert.equal(attempts, 2)
+    assert.equal(puzzles.state().taskId, "task-1")
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})

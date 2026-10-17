@@ -7,6 +7,7 @@ import {fileURLToPath} from "node:url"
 const here = new URL("../index.html", import.meta.url)
 const html = readFileSync(fileURLToPath(here), "utf8")
 const app = readFileSync(fileURLToPath(new URL("../app.js", import.meta.url)), "utf8")
+const puzzles = readFileSync(fileURLToPath(new URL("../puzzles.js", import.meta.url)), "utf8")
 
 function buttonMarkup(id) {
   const match = html.match(new RegExp(`<button\\b(?=[^>]*\\bid="${id}")[\\s\\S]*?<\\/button>`))
@@ -48,9 +49,14 @@ test("switching top-level views updates the current-page accessibility state", (
 
 test("puzzle modes and board move-history navigation remain distinct from app navigation", () => {
   assert.match(html, /<div class="pz-modes" role="tablist" aria-label="Puzzle mode">/)
-  for (const id of ["pz-mode-personal", "pz-mode-practice", "pz-mode-training"]) {
+  for (const id of ["pz-mode-personal", "pz-mode-practice", "pz-mode-training", "pz-mode-decision"]) {
     assert.match(html, new RegExp(`id="${id}"`))
   }
+  assert.match(html, /id="pz-decision" class="pz-section hidden"/)
+  assert.match(html, /id="pz-decision-answer"[\s\S]*?maxlength="2000"/)
+  assert.match(puzzles, /if \(view\.screen === "decision" && view\.mode === "decision"\) \{\s*await decision\.enter\(\)\s*return/,
+    "returning to Practice restores the in-progress Decision Puzzle instead of resetting the shared board")
+  assert.match(puzzles, /decision\.leave\(\)/, "leaving Practice invalidates pending requests without deleting the attempt")
   assert.match(html, /id="board-nav" class="board-nav" role="group" aria-label="Move navigation"/)
   assert.match(html, /id="nav-prev"/)
   assert.match(html, /id="nav-next"/)

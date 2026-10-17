@@ -19,6 +19,10 @@
                                                   review rather than the session ending
     POST /api/puzzles/{id}/result {solved, first_try, critical_first_try, mistakes, hints, seconds,
                                    revealed}   -> records the outcome (puzzle stats + learner model)
+    POST /api/puzzles/decision/next             -> a verified position and proposed move, freshly
+                                                   checked by Stockfish
+    POST /api/puzzles/decision/{task_id}/answer -> evidence-constrained reasoning feedback and a
+                                                   learner-model update when the judgment is supported
     POST /api/puzzles/adapt {mode, concept?, weakness?, done, remaining, set_ids}
                                                -> swaps the remaining puzzles of a running set that
                                                   fell out of the learner's zone (session adaptation)
@@ -106,6 +110,16 @@ class ResultRequest(BaseModel):
     revealed: bool = False
 
 
+class DecisionNextRequest(BaseModel):
+    concept: str | None = None
+    quality: Literal["any", "good", "bad"] = "any"
+    exclude: list[str] = Field(default_factory=list)
+
+
+class DecisionAnswerRequest(BaseModel):
+    answer: str = Field(min_length=8, max_length=2000)
+
+
 def _error(status: int, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content={"error": message})
 
@@ -136,6 +150,44 @@ def dashboard() -> dict:
     return {"personalized": personalized(get_profile(), knowledge, pool, usage=get_usage()),
             "practice": themes(pool, knowledge),
             "library": {"puzzles": len(pool)}}
+
+
+@router.post("/decision/next")
+def next_decision_puzzle(body: DecisionNextRequest) -> dict:
+    """Issue a valid position/proposed move after a fresh Stockfish evaluation.
+
+    The task response hides its verified concept and engine verdict until the learner submits
+    a natural-language explanation. Qwen, when configured, only maps that text to these facts.
+    """
+    from .learner import get_profile
+    from .puzzles.decision import (DecisionPuzzleError, get_decision_store, issue_decision_task,
+                                   task_payload)
+    from .engine import get_engine
+
+    try:
+        task = issue_decision_task(
+            _knowledge(),
+            get_engine(),
+            profile=get_profile(),
+            store=get_decision_store(),
+            concept=body.concept,
+            quality=body.quality,
+            exclude=body.exclude,
+        )
+    except DecisionPuzzleError as exc:
+        return _error(exc.status_code, str(exc))
+    return task_payload(task)
+
+
+@router.post("/decision/{task_id}/answer")
+def answer_decision_puzzle(task_id: str, body: DecisionAnswerRequest) -> dict:
+    """Assess the learner's explanation and record only a supported outcome in LearnerStore."""
+    from .puzzles.decision import DecisionPuzzleError, submit_decision_answer
+
+    try:
+        return submit_decision_answer(task_id, body.answer)
+    except DecisionPuzzleError as exc:
+        return _error(exc.status_code, str(exc))
 
 
 def _profile_key(key: str | None) -> bool:

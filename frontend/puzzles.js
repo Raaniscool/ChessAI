@@ -3,6 +3,7 @@
 // Rules live in puzzle-solver.js; the server decides which puzzles and checks every one of them.
 
 import {createTrainer} from "./training.js"
+import {createDecisionPuzzles} from "./decision-puzzles.js"
 import {parsePosition, parsePuzzlePosition} from "./position.js"
 import {applyAdapt, autoNextDelay, cardLine, focusLine, header, itemLabel, judge, needsMore, newAttempt, nextHint,
   pendingIds, resultBody, retry, reveal, sameMove, shouldRecord} from "./puzzle-solver.js"
@@ -23,6 +24,13 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     explain: $("pz-explain"), hint: $("pz-hint"), solution: $("pz-solution"), retry: $("pz-retry"),
     next: $("pz-next"), back: $("pz-back"), set: $("pz-set"),
     modeTraining: $("pz-mode-training"), training: $("pz-training"), trainer: $("pz-trainer"),
+    modeDecision: $("pz-mode-decision"), decision: $("pz-decision"),
+    decisionStart: $("pz-decision-start"), decisionTask: $("pz-decision-task"), decisionStatus: $("pz-decision-status"),
+    decisionMove: $("pz-decision-move"), decisionQuestion: $("pz-decision-question"),
+    decisionAnswer: $("pz-decision-answer"), decisionSubmit: $("pz-decision-submit"),
+    decisionNext: $("pz-decision-next"), decisionResult: $("pz-decision-result"),
+    decisionAssessment: $("pz-decision-assessment"), decisionFeedback: $("pz-decision-feedback"),
+    decisionRecording: $("pz-decision-recording"), decisionEngine: $("pz-decision-engine"),
   }
   const view = {
     mode: "personal", screen: "dashboard", dashboard: null, set: [], title: "", pos: 0, attempt: null,
@@ -68,16 +76,40 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
 
   // ------------------------------------------------------------------ dashboard
   function setMode(mode) {
-    if (view.mode !== mode) view.loadToken++
+    const previous = view.mode
+    if (previous !== mode) view.loadToken++
+    if (previous === "decision" && mode !== "decision") {
+      decision.pause()
+      if (view.screen === "decision") view.screen = "dashboard"
+      if (view.active) {
+        board.disableMoveInput()
+        void showPosition(new Chess().fen(), {orientation: COLOR.white, animated: false})
+      }
+    }
     view.mode = mode
-    for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"], [el.modeTraining, "training"]]) {
+    for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"],
+      [el.modeTraining, "training"], [el.modeDecision, "decision"]]) {
       btn.classList.toggle("active", m === mode)
       btn.setAttribute("aria-selected", String(m === mode))
     }
     show(el.personal, mode === "personal")
     show(el.practice, mode === "practice")
     show(el.training, mode === "training")
-    if (mode === "training") trainer.loadHome(el.training)
+    show(el.decision, mode === "decision")
+    if (mode === "decision") {
+      view.screen = "decision"
+      cancelAuto()
+      show(el.dashboard, true)
+      show(el.solver, false)
+      show(el.trainer, false)
+      el.title.textContent = "Decision Puzzles"
+      el.counter.textContent = ""
+      if (nav) nav.set("puzzles", null)
+      if (view.active) void decision.activate()
+    } else {
+      if (view.screen === "dashboard") el.title.textContent = "Puzzles"
+      if (mode === "training") trainer.loadHome(el.training)
+    }
   }
 
   // ------------------------------------------------------------------ Training (training.js)
@@ -104,6 +136,25 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       await showPosition(new Chess().fen(), {orientation: COLOR.white})
       setMode("training")
       loadDashboard()
+    },
+  })
+
+  const decision = createDecisionPuzzles({api, board, showPosition, Chess, COLOR,
+    el: {panel: el.decision, task: el.decisionTask, start: el.decisionStart, status: el.decisionStatus,
+      move: el.decisionMove, side: $("pz-decision-side"), question: el.decisionQuestion, answer: el.decisionAnswer,
+      submit: el.decisionSubmit, next: el.decisionNext, result: el.decisionResult,
+      assessment: el.decisionAssessment, feedback: el.decisionFeedback,
+      recording: el.decisionRecording, engine: el.decisionEngine},
+    onShow() {
+      cancelAuto()
+      view.screen = "decision"
+      el.title.textContent = "Decision Puzzles"
+      el.counter.textContent = ""
+      show(el.dashboard, true)
+      show(el.solver, false)
+      show(el.trainer, false)
+      show(el.decision, true)
+      if (nav) nav.set("puzzles", null)
     },
   })
 
@@ -777,6 +828,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
   el.modePersonal.addEventListener("click", () => setMode("personal"))
   el.modePractice.addEventListener("click", () => setMode("practice"))
   el.modeTraining.addEventListener("click", () => setMode("training"))
+  el.modeDecision.addEventListener("click", () => setMode("decision"))
   el.hint.addEventListener("click", onHint)
   el.solution.addEventListener("click", onSolution)
   el.retry.addEventListener("click", onRetry)
@@ -801,6 +853,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       trainer.activate()
       if (view.screen === "trainer") {
         await trainer.enter()
+        return
+      }
+      if (view.screen === "decision" && view.mode === "decision") {
+        await decision.enter()
         return
       }
       if (view.screen === "solver" && puzzle()) {
@@ -854,6 +910,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     },
     leave() {
       trainer.leave()
+      decision.leave()
       cancelAuto()
       view.active = false
       view.token++  // a pending reply animation stops; the attempt stays as it was
@@ -862,11 +919,13 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       board.disableMoveInput()
     },
     readable() {
-      return view.screen === "trainer" ? $("tr-report") : view.screen === "solver" ? el.feedback : el.personal
+      return view.screen === "trainer" ? $("tr-report") : view.screen === "solver" ? el.feedback
+        : view.screen === "decision" ? decision.readable() : el.personal
     },
     // for the e2e test / debugging
     state: () => ({screen: view.screen, mode: view.mode, pos: view.pos, total: view.set.length,
-      id: puzzle() && puzzle().id, done: Boolean(view.attempt && view.attempt.done), training: trainer.state()}),
+      id: puzzle() && puzzle().id, done: Boolean(view.attempt && view.attempt.done),
+      training: trainer.state(), decision: decision.state()}),
     sameMove,
   }
 }
