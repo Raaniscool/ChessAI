@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 import chess
+import httpx
 
 from ..engine import EngineUnavailable, UciEngine
 
@@ -56,11 +57,12 @@ Return one JSON object and nothing else, with exactly these fields:
   "missing_fact_ids": ["..."],
   "misconception_fact_ids": ["..."]
 }
-Use only supplied fact IDs. `correct` means the explanation gives a supported chess reason. `partial`
-means a relevant part is right but an important point is missing or incomplete. `incorrect` requires
-a specific claim contradicted by the supplied facts. If the explanation is too ambiguous, unsupported,
-or you cannot confidently map it to the facts, choose `uncertain`, confidence `low`, and do not guess.
-Never write feedback prose."""
+Use only supplied fact IDs. Grade the chess meaning, not sentence matching: accept clear paraphrases,
+ordinary chess vocabulary, and reasoning from either player's point of view. `correct` means the
+explanation gives a supported chess reason. `partial` means a relevant part is right but an important
+point is missing or incomplete. `incorrect` requires a specific claim contradicted by the supplied
+facts. If the explanation is irrelevant, too ambiguous, unsupported, or you cannot confidently map it
+to the facts, choose `uncertain`, confidence `low`, and do not guess. Never write feedback prose."""
 
 
 class DecisionPuzzleError(Exception):
@@ -99,6 +101,7 @@ class DecisionTask:
     created_at: float = field(default_factory=time.monotonic)
     status: Literal["pending", "grading", "complete"] = "pending"
     result: dict | None = None
+    answer_fingerprint: str | None = None
 
 
 class DecisionTaskStore:
@@ -167,17 +170,22 @@ class DecisionTaskStore:
             self._recent_concepts.append(task.candidate.concept)
             self._last_quality = task.candidate.kind
 
-    def claim(self, task_id: str) -> tuple[DecisionTask, bool]:
-        """Return (task, should_grade); completed answers replay without re-recording."""
+    def claim(self, task_id: str, answer_fingerprint: str) -> tuple[DecisionTask, bool]:
+        """Claim an answer; replay only an identical answer for the same task."""
         with self._lock:
             self._purge()
             task = self._tasks.get(task_id)
             if task is None:
                 raise DecisionPuzzleError("This Decision Puzzle is unknown or has expired. Request a new position.", 404)
             if task.status == "complete":
+                if task.answer_fingerprint != answer_fingerprint:
+                    raise DecisionPuzzleError("This position was already answered with different input. Request a new position.", 409)
                 return task, False
             if task.status == "grading":
+                if task.answer_fingerprint != answer_fingerprint:
+                    raise DecisionPuzzleError("A different answer is already being evaluated. Please wait and retry.", 409)
                 raise DecisionPuzzleError("This answer is already being evaluated. Please wait and retry.", 409)
+            task.answer_fingerprint = answer_fingerprint
             task.status = "grading"
             return task, True
 
@@ -194,6 +202,7 @@ class DecisionTaskStore:
             current = self._tasks.get(task.task_id)
             if current is task and task.status == "grading":
                 task.status = "pending"
+                task.answer_fingerprint = None
 
 
 _store: DecisionTaskStore | None = None
@@ -808,17 +817,39 @@ def _assessment_messages(explanation: str, evidence: dict[str, str], task: Decis
 
 
 def _parse_assessment(raw: str, evidence: dict[str, str]) -> dict | None:
+    if not isinstance(raw, str):
+        return None
+    candidate = raw.strip()
+    # Small local instruct models sometimes wrap an otherwise valid JSON object in Markdown.
+    # Accept only a single explicit JSON fence; do not scrape arbitrary prose for a grade.
+    if candidate.startswith("```"):
+        first_newline = candidate.find("\n")
+        if first_newline < 0 or not candidate.endswith("```"):
+            return None
+        language = candidate[3:first_newline].strip().lower()
+        if language not in ("", "json"):
+            return None
+        candidate = candidate[first_newline + 1:-3].strip()
     try:
-        parsed = json.loads(raw)
+        parsed = json.loads(candidate)
     except (TypeError, ValueError):
         return None
     if not isinstance(parsed, dict):
         return None
-    assessment = parsed.get("assessment")
+    raw_assessment = parsed.get("assessment")
     confidence = parsed.get("confidence")
-    if assessment not in {"correct", "partial", "incorrect", "uncertain"}:
+    if not isinstance(raw_assessment, str) or not isinstance(confidence, str):
         return None
-    if confidence not in {"high", "medium", "low"}:
+    normalized = " ".join(raw_assessment.casefold().replace("_", " ").replace("-", " ").split())
+    assessment = {
+        "correct": "correct",
+        "partial": "partial",
+        "partially correct": "partial",
+        "incorrect": "incorrect",
+        "uncertain": "uncertain",
+    }.get(normalized)
+    confidence = confidence.strip().casefold()
+    if assessment is None or confidence not in {"high", "medium", "low"}:
         return None
     allowed = {key for key in evidence if not key.startswith("_")}
     arrays = {}
@@ -826,11 +857,31 @@ def _parse_assessment(raw: str, evidence: dict[str, str]) -> dict | None:
         value = parsed.get(key)
         if not isinstance(value, list) or len(value) > 6 or not all(isinstance(x, str) for x in value):
             return None
-        values = list(dict.fromkeys(value))
-        if any(item not in allowed for item in values):
+        values = list(dict.fromkeys(item.strip() for item in value))
+        if any(not item or item not in allowed for item in values):
             return None
         arrays[key] = values
     return {"assessment": assessment, "confidence": confidence, **arrays}
+
+
+def _assessment_failure_reason(exc: Exception) -> str:
+    """Reduce provider exceptions to safe, user-facing diagnostic codes."""
+    reason = getattr(exc, "reason", None)
+    if isinstance(reason, str) and reason in {
+        "model_not_configured", "endpoint_unreachable", "timeout", "model_or_endpoint_not_found",
+        "provider_rejected_request", "provider_http_error", "provider_error",
+        "malformed_provider_response", "empty_response", "provider_unavailable", "unsupported_configuration",
+    }:
+        return reason
+    if isinstance(exc, (TimeoutError, httpx.TimeoutException)):
+        return "timeout"
+    if isinstance(exc, httpx.ConnectError):
+        return "endpoint_unreachable"
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code
+        return ("model_or_endpoint_not_found" if status == 404 else
+                "provider_rejected_request" if status in (400, 422) else "provider_http_error")
+    return "backend_error"
 
 
 def _classify_explanation(judgement: dict | None) -> dict:
@@ -904,7 +955,8 @@ def _fact_text(ids: list[str], evidence: dict[str, str], limit: int = 2) -> str:
                     if item in evidence and not item.startswith("_"))
 
 
-def _explanation_feedback(final: dict, evidence: dict[str, str], task: DecisionTask) -> str:
+def _explanation_feedback(final: dict, evidence: dict[str, str], task: DecisionTask,
+                          assessment_reason: str | None = None) -> str:
     status = final["assessment"]
     recognized = _fact_text(final["recognized_fact_ids"], evidence)
     missing = _fact_text(final["missing_fact_ids"], evidence)
@@ -932,14 +984,32 @@ def _explanation_feedback(final: dict, evidence: dict[str, str], task: DecisionT
             text += evidence.get("best_line", evidence["best_move"])
         return text
     if status == "unavailable":
-        return ("Explanation: Not assessed because the reasoning service was unavailable. "
-                "No reasoning grade was invented; the Stockfish lines and verified point are shown below.")
-    return ("Explanation: Too ambiguous to assess reliably. Your reasoning is not scored; "
-            "use the Stockfish lines and verified point below to make the reason more specific.")
+        messages = {
+            "model_not_configured": "QWEN_MODEL is not configured. Set it to an installed Qwen model to enable explanation grading.",
+            "endpoint_unreachable": "The configured Qwen service could not be reached. Check that it is running and that QWEN_BASE_URL is correct.",
+            "timeout": "The Qwen service exceeded the explanation-grading time limit.",
+            "model_or_endpoint_not_found": "The Qwen model or chat-completions endpoint was not found. Check the installed model name and QWEN_BASE_URL.",
+            "unsupported_configuration": "QWEN_BASE_URL is not a valid HTTP(S) endpoint. Check the compatible server URL.",
+            "provider_rejected_request": "The configured service rejected the grading request. Check its OpenAI-compatible chat-completions support and model configuration.",
+            "provider_http_error": "The configured Qwen service returned an HTTP error.",
+            "provider_error": "The configured Qwen service could not complete the grading request.",
+            "malformed_provider_response": "The Qwen service returned an invalid completion response.",
+            "empty_response": "The Qwen service returned no usable completion.",
+            "invalid_grading_response": "Qwen replied, but its grading labels or evidence references were unusable.",
+            "unsupported_teacher": "The configured teacher does not support structured explanation grading.",
+            "provider_unavailable": "The explanation-grading service is unavailable.",
+            "backend_error": "An internal grading error prevented explanation assessment.",
+        }
+        cause = messages.get(assessment_reason, "The explanation-grading service was unavailable.")
+        return (f"Explanation not graded: {cause} Your reasoning was not scored. "
+                "Stockfish's Yes/No verdict and verified lines remain authoritative and are shown below.")
+    return ("Explanation: Uncertain; the supplied evidence did not support a reliable grade. "
+            "Your reasoning is not scored; use the Stockfish lines and verified point below to clarify your reason.")
 
 
 def _record_learning_evidence(task: DecisionTask, choice: str, final: dict,
-                              assessment_source: str, evidence: dict[str, str]) -> dict:
+                              assessment_source: str, assessment_reason: str | None,
+                              evidence: dict[str, str]) -> dict:
     from ..learner import get_store
     from ..learner.decision_profile import record_decision_result
 
@@ -961,6 +1031,7 @@ def _record_learning_evidence(task: DecisionTask, choice: str, final: dict,
             explanation_assessment=final["assessment"],
             explanation_confidence=final["confidence"],
             assessment_source=assessment_source,
+            assessment_reason=assessment_reason,
             engine_category=category,
             recognized_fact_ids=final["recognized_fact_ids"],
             missing_fact_ids=final["missing_fact_ids"],
@@ -985,25 +1056,33 @@ def submit_decision_answer(task_id: str, choice: str, explanation: str,
         raise DecisionPuzzleError(f"Please keep your explanation under {MAX_ANSWER_LENGTH} characters.", 422)
 
     task_store = store or get_decision_store()
-    task, should_grade = task_store.claim(task_id)
+    answer_fingerprint = hashlib.sha256(json.dumps(
+        [task_id, choice, text], ensure_ascii=False, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+    task, should_grade = task_store.claim(task_id, answer_fingerprint)
     if not should_grade:
         return task.result or {}
 
     evidence = _evidence(task)
     judgement = None
     assessment_source = "unavailable"
-    model_failed = False
+    assessment_reason = None
     try:
+        from ..config import get_settings
         from ..teacher import get_teacher
         from ..teacher.fallback import FallbackTeacher
 
+        settings = get_settings()
         teacher = get_teacher()
         complete = getattr(teacher, "complete", None)
-        if isinstance(teacher, FallbackTeacher) or not callable(complete):
+        if isinstance(teacher, FallbackTeacher):
             assessment_source = "fallback"
+            assessment_reason = ("model_not_configured" if not settings.qwen_configured()
+                                 else "provider_unavailable")
+        elif not callable(complete):
+            assessment_source = getattr(teacher, "name", "unsupported")
+            assessment_reason = "unsupported_teacher"
         else:
-            from ..config import get_settings
-            settings = get_settings()
             raw = complete(
                 _assessment_messages(text, evidence, task),
                 max_tokens=int(getattr(settings, "decision_assessment_max_tokens", 140)),
@@ -1012,33 +1091,39 @@ def submit_decision_answer(task_id: str, choice: str, explanation: str,
             judgement = _parse_assessment(raw, evidence)
             if judgement is None:
                 assessment_source = "qwen_invalid"
-                model_failed = True
+                assessment_reason = "invalid_grading_response"
             else:
                 assessment_source = getattr(teacher, "name", "qwen")
-    except Exception as exc:  # noqa: BLE001 - deadline, provider, or parse failure never changes Stockfish truth
+    except Exception as exc:  # noqa: BLE001 - provider failures never change Stockfish truth
         assessment_source = "qwen_unavailable"
-        model_failed = True
-        log.warning("Decision Puzzle explanation assessment unavailable: %s", type(exc).__name__)
+        assessment_reason = _assessment_failure_reason(exc)
+        log.warning("Decision Puzzle explanation assessment unavailable: reason=%s", assessment_reason)
 
-    final = (_classify_explanation(judgement) if judgement is not None else {
-        "assessment": "unavailable" if model_failed or assessment_source == "fallback" else "uncertain",
-        "confidence": "low", "recognized_fact_ids": [], "missing_fact_ids": [],
-        "misconception_fact_ids": [],
-    })
+    final = _classify_explanation(judgement) if judgement is not None else {
+        "assessment": "unavailable", "confidence": "low", "recognized_fact_ids": [],
+        "missing_fact_ids": [], "misconception_fact_ids": [],
+    }
     if judgement is not None and final["assessment"] == "uncertain":
         assessment_source = "qwen"
+        assessment_reason = "insufficient_evidence"
+    elif judgement is not None:
+        assessment_reason = None
+    elif assessment_reason is None:
+        assessment_reason = "provider_unavailable"
+    assessment_status = ("graded" if final["assessment"] in {"correct", "partial", "incorrect"}
+                         else "uncertain" if final["assessment"] == "uncertain" else "unavailable")
     objective_quality = evidence["_objective_quality"]
     expected = "yes" if objective_quality == "good" else "no"
     judgment_correct = choice == expected
     judgment_feedback = _judgment_feedback(task, choice, judgment_correct, evidence)
-    explanation_feedback = _explanation_feedback(final, evidence, task)
+    explanation_feedback = _explanation_feedback(final, evidence, task, assessment_reason)
     feedback = judgment_feedback + " " + explanation_feedback
 
     recorded = False
     learning = None
     record_error = None
     try:
-        learning = _record_learning_evidence(task, choice, final, assessment_source, evidence)
+        learning = _record_learning_evidence(task, choice, final, assessment_source, assessment_reason, evidence)
         recorded = True
     except Exception:  # noqa: BLE001 - return the engine verdict even if profile persistence is unavailable
         log.exception("Decision Puzzle outcome could not be saved to the learner profile")
@@ -1048,11 +1133,11 @@ def submit_decision_answer(task_id: str, choice: str, explanation: str,
     if record_error:
         recording_note = record_error
     elif final["assessment"] == "uncertain":
-        recording_note = ("Your Yes/No result and difficulty evidence were saved. No explanation score was recorded "
-                          "because the explanation was too ambiguous to assess.")
+        recording_note = ("Your Yes/No result was saved independently. No explanation score was recorded "
+                          "because the supplied evidence did not support a reliable assessment.")
     elif final["assessment"] == "unavailable":
-        recording_note = ("Your Yes/No result and difficulty evidence were saved. The explanation was not scored "
-                          "because the reasoning service was unavailable or returned an unusable response.")
+        recording_note = ("Your Stockfish-backed Yes/No result was saved independently. No explanation score was recorded; "
+                          "the explanation-grading message gives the cause.")
     elif reasoning_recorded:
         recording_note = "Your verdict and separate explanation assessment were saved in your learner profile."
     else:
@@ -1062,6 +1147,8 @@ def submit_decision_answer(task_id: str, choice: str, explanation: str,
         "task_id": task.task_id,
         "assessment": final["assessment"],  # compatibility alias: explanation assessment only
         "explanation_assessment": final["assessment"],
+        "assessment_status": assessment_status,
+        "assessment_reason": assessment_reason,
         "confidence": final["confidence"],
         "judgment": {"choice": choice, "correct": judgment_correct, "expected": expected,
                      "side_to_move": task.candidate.side_to_move},

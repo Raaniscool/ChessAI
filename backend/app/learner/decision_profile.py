@@ -88,6 +88,15 @@ def ensure_decision_profile(profile) -> dict:
     if not isinstance(data.get("history"), list):
         data["history"] = []
     data["history"] = data["history"][-MAX_DECISION_HISTORY:]
+    if "last_adjusted_assessable" not in data:
+        data["last_adjusted_assessable"] = (
+            sum(1 for entry in data["history"] if isinstance(entry, dict)
+                and isinstance(entry.get("result"), dict)
+                and (entry["result"].get("reasoning_assessed") is True
+                     or entry["result"].get("explanation_assessment") in ASSESSABLE))
+            if data["last_adjusted_attempt"] else 0
+        )
+    data["last_adjusted_assessable"] = max(0, int(data.get("last_adjusted_assessable", 0) or 0))
     if not isinstance(data.get("weaknesses"), dict):
         data["weaknesses"] = {}
     if not isinstance(data.get("strengths"), list):
@@ -162,12 +171,16 @@ def _update_ability(data: dict, score: float, difficulty: int) -> None:
 
 
 def _update_current_difficulty(data: dict) -> None:
-    results = [entry["result"] for entry in data["history"]
-               if isinstance(entry, dict) and isinstance(entry.get("result"), dict)]
-    attempts = int(data.get("attempts_total", len(results)))
-    last_adjusted = int(data.get("last_adjusted_attempt", 0))
-    if attempts - last_adjusted < 3 or len(results) < 4:
+    all_results = [entry["result"] for entry in data["history"]
+                   if isinstance(entry, dict) and isinstance(entry.get("result"), dict)]
+    results = [item for item in all_results
+               if item.get("reasoning_assessed") is True or item.get("explanation_assessment") in ASSESSABLE]
+    evidence_count = len(results)
+    last_adjusted = int(data.get("last_adjusted_assessable", 0))
+    if evidence_count - last_adjusted < 3 or evidence_count < 4:
         return
+    # Do not let an unavailable/uncertain explanation enter a difficulty window. Its separate
+    # Stockfish-checked Yes/No judgment is still persisted and can support objective-choice evidence.
     window = results[-4:]
     scores = [float(item.get("score", 0.5)) for item in window]
     average = sum(scores) / len(scores)
@@ -178,7 +191,8 @@ def _update_current_difficulty(data: dict) -> None:
         step = -50
     if step:
         data["current_difficulty"] = _clamp_difficulty(data["current_difficulty"] + step)
-        data["last_adjusted_attempt"] = attempts
+        data["last_adjusted_assessable"] = evidence_count
+        data["last_adjusted_attempt"] = int(data.get("attempts_total", len(all_results)))
 
 
 def _game_weakness(profile, concept: str) -> dict | None:
@@ -348,7 +362,8 @@ def refresh_decision_weaknesses(profile, knowledge=None) -> dict[str, dict]:
          "score": (entry.get("result") or {}).get("score"),
          "judgment_correct": (entry.get("result") or {}).get("judgment_correct"),
          "explanation_assessment": (entry.get("result") or {}).get("explanation_assessment"),
-         "assessment_source": (entry.get("result") or {}).get("assessment_source")}
+         "assessment_source": (entry.get("result") or {}).get("assessment_source"),
+         "assessment_reason": (entry.get("result") or {}).get("assessment_reason")}
         for entry in history if isinstance(entry.get("result"), dict)
     ][-RECENT_RESULT_LIMIT:]
     return summaries
@@ -361,7 +376,8 @@ def record_decision_result(profile, *, identity: str, source_id: str, concept: s
                            assessment_source: str, engine_category: str,
                            recognized_fact_ids: list[str], missing_fact_ids: list[str],
                            misconception_fact_ids: list[str], selection_target: int | None = None,
-                           selection_reason: str = "broad_practice", knowledge=None) -> dict:
+                           selection_reason: str = "broad_practice", knowledge=None,
+                           assessment_reason: str | None = None) -> dict:
     """Persist exposure, objective choice, separate reasoning status, and calibrated evidence."""
     data = ensure_decision_profile(profile)
     entry = next((item for item in reversed(data["history"])
@@ -386,6 +402,7 @@ def record_decision_result(profile, *, identity: str, source_id: str, concept: s
         "explanation_assessment": explanation_assessment,
         "explanation_confidence": explanation_confidence,
         "assessment_source": assessment_source,
+        "assessment_reason": assessment_reason,
         "engine_category": engine_category,
         "selection_reason": selection_reason,
         "selection_target": selection_target,
@@ -405,6 +422,7 @@ def record_decision_result(profile, *, identity: str, source_id: str, concept: s
         "at": _iso(), "judgment_correct": bool(judgment_correct),
         "selected_choice": selected_choice, "explanation_assessment": explanation_assessment,
         "explanation_confidence": explanation_confidence, "assessment_source": assessment_source,
+        "assessment_reason": assessment_reason,
         "engine_category": engine_category, "score": score, "reasoning_assessed": assessable,
         "selection_reason": selection_reason, "selection_target": selection_target,
         "recognized_fact_ids": list(recognized_fact_ids)[:6],
@@ -448,7 +466,7 @@ def decision_profile_summary(profile, knowledge=None) -> dict:
         "strengths": strengths,
         "selection_policy": {
             "prior": "Use the existing normalized onboarding/Chess.com rating and analyzed-game or puzzle estimate as a low-confidence prior; otherwise start at the existing 800 baseline.",
-            "adaptation": "Decision ability updates with a 24-point Elo step; target difficulty moves by 50 points only after four-result rolling success/failure evidence and at least three results since its last adjustment.",
+            "adaptation": "Decision ability updates from the separately stored objective choice and any reliable explanation grade with a 24-point Elo step. Target difficulty moves by 50 only after four assessable results support a direction and three additional assessable results since its last adjustment; uncertain/unavailable explanation results do not enter that window.",
             "weakness_threshold": {"independent_tasks": MIN_WEAKNESS_ATTEMPTS,
                                    "observed_misses": MIN_WEAKNESS_MISSES,
                                    "miss_rate": MIN_WEAKNESS_MISS_RATE,

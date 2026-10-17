@@ -173,7 +173,7 @@ class Settings:
         If no model is configured we use the deterministic fallback teacher so
         the app never pretends an LLM is available when it isn't.
         """
-        return bool(self.qwen_model)
+        return bool(str(self.qwen_model or "").strip())
 
     def qwen_is_ollama(self) -> bool:
         url = self.qwen_base_url.lower()

@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 
 import chess
+import httpx
 import pytest
 
 from app.engine import Classification, EngineUnavailable, MoveFeedback, Score, get_engine, set_engine
@@ -14,6 +16,7 @@ from app.learner.decision_profile import (decision_profile_summary, ensure_decis
                                           record_decision_exposure, record_decision_result,
                                           refresh_decision_weaknesses)
 from app.puzzles.decision import (DecisionPuzzleError, DecisionTaskStore, _classify_explanation,
+                                  _parse_assessment,
                                   _evaluate_move_cached, canonical_task_identity,
                                   clear_decision_candidate_cache, clear_decision_engine_cache,
                                   decision_candidates, get_decision_store, issue_decision_task,
@@ -107,7 +110,7 @@ def answer(client, task, choice="yes", explanation="The best move wins material 
 
 
 def _record(profile, index, *, concept="knight_fork", assessment="correct", judgment_correct=True,
-            difficulty=720, confidence=None, selection_reason="broad_practice"):
+            difficulty=720, confidence=None, selection_reason="broad_practice", assessment_reason=None):
     identity = hashlib.sha256(f"{concept}:{index}".encode()).hexdigest()
     if confidence is None:
         confidence = "low" if assessment == "uncertain" else "high"
@@ -118,6 +121,7 @@ def _record(profile, index, *, concept="knight_fork", assessment="correct", judg
         selected_choice="yes" if judgment_correct else "no",
         explanation_assessment=assessment, explanation_confidence=confidence,
         assessment_source="qwen" if assessment in {"correct", "partial", "incorrect"} else "qwen_unavailable",
+        assessment_reason=assessment_reason,
         engine_category="excellent" if judgment_correct else "blunder",
         recognized_fact_ids=["best_move"] if assessment in {"correct", "partial"} else [],
         missing_fact_ids=["verified_idea"] if assessment == "partial" else [],
@@ -262,6 +266,7 @@ def test_stockfish_scores_yes_no_independently_of_qwen_explanation(api_client, m
     assert result["judgment"] == {"choice": "yes", "correct": False, "expected": "no",
                                   "side_to_move": task["side_to_move"]}
     assert result["explanation_assessment"] == "correct"  # separate from the incorrect button
+    assert result["assessment_status"] == "graded" and result["assessment_reason"] is None
     assert result["engine"]["category"] == "blunder"
     assert result["engine"]["quality"] == "bad"
     assert result["engine"]["loss_cp"] == 480
@@ -281,6 +286,137 @@ def test_stockfish_scores_yes_no_independently_of_qwen_explanation(api_client, m
     assert event["decision"]["judgment_correct"] is False
     assert event["decision"]["explanation_assessment"] == "correct"
     assert "answer" not in event and "learner_explanation" not in event
+
+
+def test_completed_task_replays_only_an_identical_answer_fingerprint(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.GOOD, 12))
+    task = issue(api_client)
+    teacher = FixedTeacher(judgment("correct", recognized=("best_move",)))
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    explanation = "The move preserves the position's coordination and best continuation."
+
+    first = answer(api_client, task, "yes", explanation)
+    profile = get_profile()
+    attempts = profile.decision_puzzles["attempts_total"]
+    replay = answer(api_client, task, "yes", explanation)
+
+    assert first.status_code == replay.status_code == 200
+    assert replay.json() == first.json()
+    assert len(teacher.calls) == 1
+    assert get_profile().decision_puzzles["attempts_total"] == attempts
+    assert answer(api_client, task, "no", explanation).status_code == 409
+    assert answer(api_client, task, "yes", explanation + " (a new reason)").status_code == 409
+    assert get_profile().decision_puzzles["attempts_total"] == attempts
+
+
+def test_actual_qwen_http_client_completes_the_full_grading_pipeline_with_paraphrased_reason(
+        api_client, monkeypatch):
+    from app.config import Settings
+    from app.teacher.qwen import QwenTeacher
+    import app.teacher.qwen as qwen_module
+
+    set_engine(ScriptedEngine(Classification.GOOD, 12))
+    task = issue(api_client)
+    settings = Settings()
+    settings.qwen_model = "qwen3:1.7b-test-double"
+    settings.qwen_base_url = "http://127.0.0.1:11434/v1"
+    settings.qwen_thinking = "off"
+    settings.decision_assessment_timeout = 4.0
+    settings.decision_assessment_max_tokens = 140
+    teacher = QwenTeacher(settings)
+    capture = {}
+
+    def fake_post(url, **kwargs):
+        payload = kwargs["json"]
+        request = json.loads(payload["messages"][1]["content"].split("\n\n/no_think")[0])
+        capture.update(url=url, payload=payload, request=request, timeout=kwargs["timeout"])
+        grade = judgment("correct", recognized=("best_move",))
+        return httpx.Response(200, request=httpx.Request("POST", url),
+                               json={"choices": [{"message": {"content": json.dumps(grade)}}]})
+
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    monkeypatch.setattr(qwen_module.httpx, "post", fake_post)
+    explanation = f"{task['mover']}'s move keeps the position coordinated, and the engine's continuation supports that plan."
+    started = time.perf_counter()
+    result = answer(api_client, task, "yes", explanation).json()
+    elapsed = time.perf_counter() - started
+
+    assert elapsed < 1.0  # deterministic fake endpoint; model inference is not included
+    assert result["assessment_status"] == "graded"
+    assert result["assessment_reason"] is None
+    assert result["explanation_assessment"] == "correct"
+    assert result["judgment"]["correct"] is True
+    assert capture["request"]["learner_explanation_untrusted"] == explanation
+    assert capture["request"]["proposed_move"] == task["proposed_move"]
+    assert capture["request"]["mover"] == task["mover"]
+    assert "best_line" in capture["request"]["evidence_by_fact_id"]
+    assert capture["payload"]["max_tokens"] == 140
+    assert isinstance(capture["timeout"], httpx.Timeout)
+    assert capture["timeout"].read == pytest.approx(4.0)
+    assert capture["timeout"].connect == pytest.approx(1.0)
+
+
+def test_unconfigured_model_is_the_reproduced_reason_for_not_graded_explanations(api_client, monkeypatch):
+    from app.config import Settings
+
+    settings = Settings()
+    settings.qwen_model = ""
+    monkeypatch.setattr("app.config.get_settings", lambda: settings)
+    set_engine(ScriptedEngine(Classification.GOOD, 12))
+    task = issue(api_client)
+
+    result = answer(api_client, task, "yes", "The move keeps pressure on the center.").json()
+
+    assert result["judgment"]["correct"] is True
+    assert result["assessment_status"] == "unavailable"
+    assert result["assessment_reason"] == "model_not_configured"
+    assert result["assessment_source"] == "fallback"
+    assert result["reasoning_recorded"] is False
+    assert "QWEN_MODEL is not configured" in result["explanation_feedback"]
+    saved = get_profile().decision_puzzles["history"][-1]["result"]
+    assert saved["assessment_reason"] == "model_not_configured"
+    assert saved["reasoning_assessed"] is False
+
+
+def test_qwen_connection_failure_keeps_objective_result_and_reports_cause(api_client, monkeypatch):
+    from app.config import Settings
+    from app.teacher.qwen import QwenTeacher
+    import app.teacher.qwen as qwen_module
+
+    settings = Settings()
+    settings.qwen_model = "qwen-test"
+    settings.qwen_base_url = "http://127.0.0.1:11434/v1"
+    teacher = QwenTeacher(settings)
+    set_engine(ScriptedEngine(Classification.GOOD, 12))
+    task = issue(api_client)
+
+    def refused(url, **kwargs):
+        raise httpx.ConnectError("private connection details", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    monkeypatch.setattr(qwen_module.httpx, "post", refused)
+    result = answer(api_client, task, "yes", "The move keeps the center under control.").json()
+
+    assert result["judgment"]["correct"] is True
+    assert result["assessment_status"] == "unavailable"
+    assert result["assessment_reason"] == "endpoint_unreachable"
+    assert result["reasoning_recorded"] is False
+    assert "could not be reached" in result["explanation_feedback"]
+    assert "private connection details" not in result["explanation_feedback"]
+
+
+def test_assessment_parser_accepts_a_single_json_fence_and_normalizes_only_known_labels():
+    evidence = {"best_move": "Stockfish's best move is Nf3.",
+                "verified_idea": "The move wins a tempo.", "_objective_quality": "good"}
+    payload = judgment("Partially correct", recognized=("best_move",), missing=("verified_idea",),
+                       confidence="MEDIUM")
+    parsed = _parse_assessment(f"```json\n{json.dumps(payload)}\n```", evidence)
+    assert parsed["assessment"] == "partial"
+    assert parsed["confidence"] == "medium"
+    assert parsed["recognized_fact_ids"] == ["best_move"]
+    assert _parse_assessment(json.dumps({**payload, "assessment": "maybe"}), evidence) is None
+    assert _parse_assessment("Here is the grade: " + json.dumps(payload), evidence) is None
+    assert _parse_assessment(json.dumps({**payload, "recognized_fact_ids": ["made_up_fact"]}), evidence) is None
 
 
 def _single_example_knowledge(example, concepts):
@@ -360,13 +496,46 @@ def test_ambiguous_explanation_is_not_a_reasoning_miss_but_choice_is_persisted(a
     assert result["explanation_assessment"] == "uncertain"
     assert result["judgment"]["correct"] is False
     assert result["recorded"] is True and result["reasoning_recorded"] is False
-    assert "too ambiguous" in result["explanation_feedback"].lower()
+    assert "uncertain" in result["explanation_feedback"].lower()
+    assert "not scored" in result["explanation_feedback"].lower()
     assert get_profile().decision_puzzles["history"][-1]["result"]["explanation_assessment"] == "uncertain"
     weakness = get_profile().decision_puzzles["weaknesses"][result["concept"]]
     assert weakness["observed_misses"] == 1  # the objective choice is wrong for this verified task
     assert weakness["choice_misses"] == 1
     assert weakness["reasoning_misses"] == 0
     assert weakness["assessable_attempts"] == 0
+
+
+def test_irrelevant_explanation_is_uncertain_not_an_incorrect_reasoning_grade(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.GOOD, 10))
+    task = issue(api_client)
+    teacher = FixedTeacher(judgment("uncertain", confidence="low"))
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+
+    result = answer(api_client, task, "yes", "The weather is sunny and I enjoy this color.").json()
+
+    assert result["judgment"]["correct"] is True
+    assert result["assessment_status"] == "uncertain"
+    assert result["assessment_reason"] == "insufficient_evidence"
+    assert result["explanation_assessment"] == "uncertain"
+    assert result["reasoning_recorded"] is False
+    weakness = get_profile().decision_puzzles["weaknesses"][result["concept"]]
+    assert weakness["reasoning_misses"] == 0
+    assert weakness["observed_misses"] == 0
+
+
+def test_invalid_model_label_is_not_converted_into_a_reasoning_miss(api_client, monkeypatch):
+    set_engine(ScriptedEngine(Classification.GOOD, 10))
+    task = issue(api_client)
+    teacher = FixedTeacher(judgment("good", recognized=("best_move",)))
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+
+    result = answer(api_client, task, "yes", "This keeps the pieces active and coordinated.").json()
+
+    assert result["assessment_status"] == "unavailable"
+    assert result["assessment_reason"] == "invalid_grading_response"
+    assert result["reasoning_recorded"] is False
+    assert get_profile().decision_puzzles["weaknesses"][result["concept"]]["reasoning_misses"] == 0
 
 
 def test_unavailable_fallback_keeps_stockfish_truth_without_inventing_reasoning(api_client, monkeypatch):
@@ -379,10 +548,13 @@ def test_unavailable_fallback_keeps_stockfish_truth_without_inventing_reasoning(
 
     result = answer(api_client, task, "yes").json()
     assert result["explanation_assessment"] == "unavailable"
+    assert result["assessment_status"] == "unavailable"
+    assert result["assessment_reason"] == "model_not_configured"
     assert result["assessment_source"] == "fallback"
     assert result["recorded"] is True and result["reasoning_recorded"] is False
     assert result["engine"]["quality"] == "good" and result["engine"]["best_move"]
-    assert "not assessed" in result["explanation_feedback"].lower()
+    assert "qwen_model is not configured" in result["explanation_feedback"].lower()
+    assert "not scored" in result["explanation_feedback"].lower()
     assert get_profile().stats["puzzles"]["attempts"] == before + 1
     assert get_profile().decision_puzzles["weaknesses"][result["concept"]]["observed_misses"] == 0
 
@@ -394,6 +566,8 @@ def test_malformed_or_failed_model_output_uses_honest_unassessed_fallback(api_cl
     monkeypatch.setattr("app.teacher.get_teacher", lambda: malformed)
     invalid = answer(api_client, task, "yes").json()
     assert invalid["explanation_assessment"] == "unavailable"
+    assert invalid["assessment_status"] == "unavailable"
+    assert invalid["assessment_reason"] == "invalid_grading_response"
     assert invalid["assessment_source"] == "qwen_invalid"
     assert invalid["recorded"] is True and invalid["reasoning_recorded"] is False
     assert malformed.calls[0]["timeout"] <= 5
@@ -410,6 +584,8 @@ def test_malformed_or_failed_model_output_uses_honest_unassessed_fallback(api_cl
     monkeypatch.setattr("app.teacher.get_teacher", lambda: FailingTeacher())
     failed = answer(api_client, second, "no").json()
     assert failed["explanation_assessment"] == "unavailable"
+    assert failed["assessment_status"] == "unavailable"
+    assert failed["assessment_reason"] == "timeout"
     assert failed["assessment_source"] == "qwen_unavailable"
     assert failed["engine"]["quality"] == "bad"
 
@@ -420,9 +596,11 @@ def test_answer_is_idempotent_and_unknown_or_invalid_submissions_fail(api_client
     teacher = FixedTeacher(judgment("correct", recognized=("best_move",)))
     monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
 
-    first = answer(api_client, task, "yes").json()
-    repeated = answer(api_client, task, "no", "A different answer must not overwrite the graded result.").json()
-    assert repeated == first
+    first = answer(api_client, task, "yes")
+    repeated = answer(api_client, task, "yes")
+    assert repeated.status_code == first.status_code == 200
+    assert repeated.json() == first.json()
+    assert answer(api_client, task, "no", "A different answer must not overwrite the graded result.").status_code == 409
     assert len(teacher.calls) == 1
     assert get_profile().stats["puzzles"]["attempts"] == 1
     assert api_client.post("/api/puzzles/decision/missing/answer",
@@ -431,6 +609,12 @@ def test_answer_is_idempotent_and_unknown_or_invalid_submissions_fail(api_client
                            json={"choice": "maybe", "explanation": "Long enough explanation."}).status_code == 422
     assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
                            json={"choice": "yes", "explanation": "short"}).status_code == 422
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"choice": "yes", "explanation": ""}).status_code == 422
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"choice": "yes", "explanation": "        "}).status_code == 422
+    assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
+                           json={"choice": "yes", "explanation": "x" * 2001}).status_code == 422
     assert api_client.post(f"/api/puzzles/decision/{task['task_id']}/answer",
                            json={"explanation": "Long enough explanation."}).status_code == 422
 
@@ -596,6 +780,23 @@ def test_mixed_results_leave_current_difficulty_stable():
     assert profile.decision_puzzles["current_difficulty"] == baseline
 
 
+def test_unavailable_explanations_do_not_enter_difficulty_windows_or_erase_choice_evidence():
+    profile = LearnerProfile()
+    baseline = ensure_decision_profile(profile)["current_difficulty"]
+    for index in range(4):
+        _record(profile, index, assessment="unavailable", judgment_correct=False)
+    assert profile.decision_puzzles["current_difficulty"] == baseline
+    assert profile.decision_puzzles["ability"]["evidence"] == 4
+    weakness = profile.decision_puzzles["weaknesses"]["knight_fork"]
+    assert weakness["choice_misses"] == 4
+    assert weakness["reasoning_misses"] == 0
+
+    # Only assessable explanations start/advance the four-result difficulty window.
+    for index in range(4, 8):
+        _record(profile, index, assessment="correct", judgment_correct=True)
+    assert profile.decision_puzzles["current_difficulty"] == baseline + 50
+
+
 def test_one_or_two_misses_do_not_create_a_confirmed_weakness():
     profile = LearnerProfile()
     _record(profile, 0, assessment="incorrect", judgment_correct=False)
@@ -696,6 +897,8 @@ def test_decision_profile_persists_through_learner_store_restart(tmp_path):
     profile.set_onboarding(rating=1420, platform="chesscom")
     for index in range(5):
         _record(profile, index, assessment="incorrect", judgment_correct=False)
+    _record(profile, 5, assessment="unavailable", judgment_correct=True,
+            assessment_reason="endpoint_unreachable")
     summary = decision_profile_summary(profile)
     store.save(profile)
 
@@ -705,8 +908,10 @@ def test_decision_profile_persists_through_learner_store_restart(tmp_path):
     assert loaded_summary["ability"] == summary["ability"]
     assert loaded_summary["current_difficulty"] == summary["current_difficulty"]
     assert loaded_summary["weaknesses"][0]["status"] == "needs_work"
-    assert len(loaded.decision_puzzles["history"]) == 5
-    assert loaded.decision_puzzles["weaknesses"]["knight_fork"]["sources"]["decision_puzzles"]["attempts"] == 5
+    assert len(loaded.decision_puzzles["history"]) == 6
+    assert loaded.decision_puzzles["history"][-1]["result"]["assessment_reason"] == "endpoint_unreachable"
+    assert loaded_summary["recent"][-1]["assessment_reason"] == "endpoint_unreachable"
+    assert loaded.decision_puzzles["weaknesses"]["knight_fork"]["sources"]["decision_puzzles"]["attempts"] == 6
 
 
 def test_future_task_selection_uses_saved_weakness_after_profile_reload(tmp_path):

@@ -127,6 +127,8 @@ Set-Content .env "QWEN_MODEL=qwen3:4b-instruct"
 
 The **`.env` file** in the project folder is git-ignored and read at every start (see `.env.example`), so the setting survives new windows. Variables set in the shell (`$env:QWEN_MODEL = "..."`) override it.
 
+**Decision Puzzles explanation grading needs an installed, reachable Qwen-compatible model.** The normal Stockfish Yes/No verdict still works without Qwen, but the offline fallback does not interpret free-form explanations: the result will say why the explanation was not graded, and it is not recorded as a reasoning mistake. Before setting `QWEN_MODEL`, confirm the exact installed tag with `ollama list` (or the model list in your compatible server) and verify the endpoint with `python -m backend.app.check_qwen`. For Ollama, `qwen3:1.7b` is a smaller candidate documented for local use; adequacy and response time depend on hardware and must be checked on the target machine. The Decision grader is limited to 140 output tokens and a 4-second read budget (connection attempts are capped at 1 second); it deliberately records no explanation grade on timeout or unusable output. This repository's current audit environment had no configured model or reachable Ollama service, so it does not certify that candidate's grading quality or latency.
+
 > **Use `qwen3:4b-instruct`, not `qwen3:4b`.** Ollama's `qwen3:4b` is now *Qwen3-4B-Thinking-2507*: it
 > reasons silently before every answer (tens of seconds on a CPU) and ignores `/no_think`, so the
 > tutor feels frozen. `check_qwen` and the server log both detect this and say so.

@@ -28,7 +28,11 @@ _THINK_UNCLOSED = re.compile(r"<think>.*\Z", re.DOTALL | re.IGNORECASE)
 
 
 class TeacherUnavailable(RuntimeError):
-    pass
+    """A bounded model call could not be completed, with a safe machine-readable cause."""
+
+    def __init__(self, message: str, *, reason: str = "provider_unavailable"):
+        super().__init__(message)
+        self.reason = reason
 
 
 def clean_reply(text: str) -> str:
@@ -140,8 +144,8 @@ class QwenTeacher:
 
     def __init__(self, settings: Settings | None = None):
         self.settings = settings or get_settings()
-        if not self.settings.qwen_model:
-            raise TeacherUnavailable("QWEN_MODEL is not configured")
+        if not str(self.settings.qwen_model or "").strip():
+            raise TeacherUnavailable("QWEN_MODEL is not configured", reason="model_not_configured")
 
     @property
     def url(self) -> str:
@@ -174,26 +178,75 @@ class QwenTeacher:
         started = time.perf_counter()
         prompt_chars = sum(len(str(item.get("content", ""))) for item in payload["messages"])
         status = "error"
+        request_timeout: float | httpx.Timeout
+        if timeout is None:
+            request_timeout = self.settings.qwen_timeout
+        else:
+            # A dead local endpoint should fail quickly, while the bounded read budget still
+            # gives a warm small model time to produce the compact grading response.
+            budget = max(0.1, float(timeout))
+            request_timeout = httpx.Timeout(budget, connect=min(1.0, budget))
         try:
             response = httpx.post(
                 self.url,
                 json=payload,
                 headers=self.headers,
-                timeout=self.settings.qwen_timeout if timeout is None else timeout,
+                timeout=request_timeout,
             )
-            response.raise_for_status()
-            data = response.json()
-            raw = data["choices"][0]["message"]["content"] or ""
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                code = exc.response.status_code
+                reason = ("model_or_endpoint_not_found" if code == 404 else
+                          "provider_rejected_request" if code in (400, 422) else "provider_http_error")
+                status = reason
+                log.warning("Qwen completion rejected: http_status=%d", code)
+                raise TeacherUnavailable("Qwen endpoint rejected the completion request", reason=reason) from exc
+            try:
+                data = response.json()
+                message = data["choices"][0]["message"]
+                raw = message.get("content") if isinstance(message, dict) else None
+            except (KeyError, IndexError, TypeError, ValueError) as exc:
+                status = "malformed_provider_response"
+                log.warning("Qwen completion returned an invalid OpenAI-compatible response shape")
+                raise TeacherUnavailable("Qwen returned an invalid completion response",
+                                         reason="malformed_provider_response") from exc
+            if not isinstance(raw, str):
+                status = "malformed_provider_response"
+                log.warning("Qwen completion content was not plain text")
+                raise TeacherUnavailable("Qwen returned non-text completion content",
+                                         reason="malformed_provider_response")
             reply = clean_reply(raw)
             if not reply:
-                status = "empty"
+                status = "empty_response"
                 log.warning("Qwen returned an empty reply (only reasoning?)")
-                raise TeacherUnavailable("Qwen returned an empty reply")
+                raise TeacherUnavailable("Qwen returned an empty reply", reason="empty_response")
             status = "ok"
             return reply
-        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
-            log.warning("Qwen request to %s failed: %s", self.url, exc)
-            raise TeacherUnavailable(f"Qwen request failed: {exc}") from exc
+        except TeacherUnavailable:
+            raise
+        except httpx.InvalidURL as exc:
+            status = "unsupported_configuration"
+            log.warning("Qwen completion URL is invalid")
+            raise TeacherUnavailable("QWEN_BASE_URL is not a valid HTTP(S) endpoint",
+                                     reason="unsupported_configuration") from exc
+        except httpx.TimeoutException as exc:
+            status = "timeout"
+            log.warning("Qwen completion exceeded its request deadline")
+            raise TeacherUnavailable("Qwen request timed out", reason="timeout") from exc
+        except httpx.ConnectError as exc:
+            status = "endpoint_unreachable"
+            log.warning("Qwen completion endpoint could not be reached")
+            raise TeacherUnavailable("Qwen endpoint could not be reached", reason="endpoint_unreachable") from exc
+        except httpx.UnsupportedProtocol as exc:
+            status = "unsupported_configuration"
+            log.warning("Qwen completion URL uses an unsupported protocol")
+            raise TeacherUnavailable("QWEN_BASE_URL must use a supported HTTP(S) protocol",
+                                     reason="unsupported_configuration") from exc
+        except httpx.HTTPError as exc:
+            status = "provider_error"
+            log.warning("Qwen completion failed with an HTTP transport error")
+            raise TeacherUnavailable("Qwen provider request failed", reason="provider_error") from exc
         finally:
             perf_log.info("latency stage=qwen_completion duration_ms=%.1f model_calls=1 prompt_chars=%d "
                           "approx_tokens=%d status=%s", (time.perf_counter() - started) * 1000,

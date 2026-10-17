@@ -137,6 +137,67 @@ test("Decision Puzzle restores its selected verdict, validated board, and explan
   }
 })
 
+test("unavailable grading tells the learner why while preserving the Stockfish choice verdict", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    const ui = elements()
+    const api = async path => {
+      if (path.endsWith("/next")) return task()
+      return {
+        task_id: "task-1", assessment: "unavailable", explanation_assessment: "unavailable",
+        assessment_status: "unavailable", assessment_reason: "model_not_configured",
+        judgment: {choice: "yes", correct: true, expected: "yes", side_to_move: "black"},
+        judgment_feedback: "Your Yes was correct for Black.",
+        explanation_feedback: "Explanation not graded: QWEN_MODEL is not configured. Your reasoning was not scored.",
+        recording_note: "Your objective result was saved independently.", engine: {category: "good", loss_cp: 12},
+      }
+    }
+    const {puzzles} = setup(api, ui)
+    await puzzles.activate()
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "Black keeps a useful central grip with this move."
+    await ui.answer.emit("input")
+    await ui.submit.emit("click")
+
+    assert.equal(ui.assessment.textContent, "Explanation not graded: Qwen model not configured")
+    assert.match(ui.feedback.textContent, /QWEN_MODEL is not configured/)
+    assert.equal(ui.judgment.textContent, "Your Yes was correct for Black.")
+    assert.equal(ui.judgment.className, "decision-judgment correct")
+    assert.match(ui.recording.textContent, /saved independently/)
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
+test("genuinely uncertain assessment is distinct from a missing model", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    const ui = elements()
+    const api = async path => path.endsWith("/next") ? task() : {
+      task_id: "task-1", assessment: "uncertain", explanation_assessment: "uncertain",
+      assessment_status: "uncertain", assessment_reason: "insufficient_evidence",
+      judgment: {choice: "yes", correct: true, expected: "yes", side_to_move: "black"},
+      explanation_feedback: "The explanation was too ambiguous to assess reliably.",
+    }
+    const {puzzles} = setup(api, ui)
+    await puzzles.activate()
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "Maybe this is good, but I cannot tell."
+    await ui.answer.emit("input")
+    await ui.submit.emit("click")
+    assert.equal(ui.assessment.textContent, "Explanation: uncertain — evidence was insufficient")
+    assert.equal(ui.assessment.className, "decision-assessment uncertain")
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
 test("a failed board restoration blocks assessment until the same position verifies", async () => {
   const previousDocument = globalThis.document
   globalThis.document = fakeDocument()

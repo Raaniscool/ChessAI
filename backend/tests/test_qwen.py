@@ -36,6 +36,13 @@ def test_clean_reply(raw, expected):
     assert clean_reply(raw) == expected
 
 
+def test_qwen_teacher_refuses_missing_or_whitespace_model_configuration():
+    for model in ("", "   "):
+        with pytest.raises(TeacherUnavailable) as error:
+            QwenTeacher(make_settings(model))
+        assert error.value.reason == "model_not_configured"
+
+
 def test_no_think_added_to_last_user_message_only_and_does_not_mutate():
     msgs = [
         {"role": "system", "content": "sys"},
@@ -98,7 +105,7 @@ def test_complete_strips_thinking(monkeypatch):
     assert captured["url"] == "http://localhost:11434/v1/chat/completions"
 
 
-def test_complete_honors_per_request_route_timeout(monkeypatch):
+def test_complete_honors_per_request_deadline_with_fast_connect_timeout(monkeypatch):
     captured = {}
 
     def fake_post(url, json, headers, timeout):
@@ -108,16 +115,59 @@ def test_complete_honors_per_request_route_timeout(monkeypatch):
     monkeypatch.setattr(qwen_mod.httpx, "post", fake_post)
     teacher = QwenTeacher(make_settings())
     assert teacher.complete([{"role": "user", "content": "route"}], 360, timeout=1.25)
-    assert captured["timeout"] == 1.25
+    assert isinstance(captured["timeout"], httpx.Timeout)
+    assert captured["timeout"].read == pytest.approx(1.25)
+    assert captured["timeout"].connect == pytest.approx(1.0)
 
 
-def test_empty_reply_raises_so_app_falls_back(monkeypatch):
+def test_empty_reply_has_a_distinct_unusable_response_reason(monkeypatch):
     monkeypatch.setattr(qwen_mod.httpx, "post", lambda *a, **k: FakeResponse("<think>only thoughts"))
-    with pytest.raises(TeacherUnavailable):
+    with pytest.raises(TeacherUnavailable) as error:
         QwenTeacher(make_settings())._complete([{"role": "user", "content": "q"}])
+    assert error.value.reason == "empty_response"
 
 
-def test_http_error_raises_teacher_unavailable(monkeypatch):
+def test_http_error_raises_teacher_unavailable_with_missing_model_or_route_reason(monkeypatch):
     monkeypatch.setattr(qwen_mod.httpx, "post", lambda *a, **k: FakeResponse("x", status=404))
-    with pytest.raises(TeacherUnavailable):
+    with pytest.raises(TeacherUnavailable) as error:
         QwenTeacher(make_settings())._complete([{"role": "user", "content": "q"}])
+    assert error.value.reason == "model_or_endpoint_not_found"
+
+
+def test_timeout_and_connection_errors_are_categorized_without_raw_provider_details(monkeypatch):
+    def timed_out(url, **kwargs):
+        raise httpx.ReadTimeout("private timeout details", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", timed_out)
+    with pytest.raises(TeacherUnavailable) as timeout_error:
+        QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert timeout_error.value.reason == "timeout"
+    assert "private timeout details" not in str(timeout_error.value)
+
+    def refused(url, **kwargs):
+        raise httpx.ConnectError("private endpoint details", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", refused)
+    with pytest.raises(TeacherUnavailable) as connect_error:
+        QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert connect_error.value.reason == "endpoint_unreachable"
+    assert "private endpoint details" not in str(connect_error.value)
+
+
+def test_invalid_base_url_is_reported_as_unsupported_configuration():
+    settings = make_settings()
+    settings.qwen_base_url = "not-a-valid-url"
+    with pytest.raises(TeacherUnavailable) as error:
+        QwenTeacher(settings).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert error.value.reason == "unsupported_configuration"
+
+
+def test_invalid_openai_response_shape_is_distinguished_from_empty_content(monkeypatch):
+    class BadShape(FakeResponse):
+        def json(self):
+            return {"choices": []}
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", lambda *a, **k: BadShape(""))
+    with pytest.raises(TeacherUnavailable) as error:
+        QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert error.value.reason == "malformed_provider_response"

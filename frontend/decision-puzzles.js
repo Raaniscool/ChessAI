@@ -8,8 +8,24 @@ const ASSESSMENT_LABELS = {
   correct: "Explanation: correct",
   partial: "Explanation: partly correct",
   incorrect: "Explanation: incorrect",
-  uncertain: "Explanation: too ambiguous to assess",
-  unavailable: "Explanation: not assessed",
+  uncertain: "Explanation: uncertain — evidence was insufficient",
+  unavailable: "Explanation: not graded",
+}
+const UNAVAILABLE_LABELS = {
+  model_not_configured: "Explanation not graded: Qwen model not configured",
+  endpoint_unreachable: "Explanation not graded: Qwen service unreachable",
+  timeout: "Explanation not graded: Qwen timed out",
+  model_or_endpoint_not_found: "Explanation not graded: model or endpoint not found",
+  unsupported_configuration: "Explanation not graded: QWEN_BASE_URL is invalid",
+  provider_rejected_request: "Explanation not graded: service rejected the request",
+  provider_http_error: "Explanation not graded: Qwen service error",
+  provider_error: "Explanation not graded: Qwen service error",
+  malformed_provider_response: "Explanation not graded: invalid service response",
+  empty_response: "Explanation not graded: empty service response",
+  invalid_grading_response: "Explanation not graded: unusable grading response",
+  unsupported_teacher: "Explanation not graded: configured teacher cannot grade explanations",
+  provider_unavailable: "Explanation not graded: reasoning service unavailable",
+  backend_error: "Explanation not graded: internal grading error",
 }
 const EXHAUSTED_MESSAGE = "No unseen verified Decision Puzzles remain"
 
@@ -87,7 +103,9 @@ export function createDecisionPuzzles({api, board, showPosition, Chess, COLOR, e
     const result = state.result
     if (!result) return
     const assessment = result.explanation_assessment || result.assessment || "unavailable"
-    const label = ASSESSMENT_LABELS[assessment] || ASSESSMENT_LABELS.unavailable
+    const label = assessment === "unavailable"
+      ? (UNAVAILABLE_LABELS[result.assessment_reason] || ASSESSMENT_LABELS.unavailable)
+      : (ASSESSMENT_LABELS[assessment] || ASSESSMENT_LABELS.unavailable)
     el.assessment.textContent = label
     el.assessment.className = `decision-assessment ${assessment}`
     const judgment = result.judgment || {}
