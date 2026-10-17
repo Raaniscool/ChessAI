@@ -462,6 +462,17 @@ For earlier architectural milestones and design rationale, use [CHESSAI_DESIGN_C
 
 **Contracts to preserve:** use same-origin relative `/api/...` routes; session board and move legality remain server-owned; puzzle/result and learner data stay scoped as implemented; do not promote personal game positions to shared knowledge; tests use the existing pytest/Node conventions; read `.env.example`, `config.py` and the focused subsystem doc before changing a dependency. Do not launch on port 8000; Section 17 says to confirm the run settings (last selected port 8080) first.
 
+### 24.5 Unified app-navigation redesign task record (2026-10-17)
+
+- **Purpose and behavior:** replace the three feature-name top-level tabs with one consistent learner-task navigation: Learn (Lessons), Practice (Puzzles and Training), and Review (Game Analysis). The existing view switcher and per-view state remain authoritative; the Puzzles dashboard's submodes stay nested under Practice, and board move-history navigation remains separate.
+- **Starting state:** active branch `arena/756ebf60-chessai` was clean at `069ecdcdc7269a6c267ef49ac6467c869264b5ba`; its remote ref matched. Local/remote `main` remained at `056d058ec82ba6b5cdea03dd4a48df8d90a309e2`, with the task branch ahead by 3 and behind by 0. No existing work was overwritten.
+- **Substantive task commit:** `1408fbfd8501d5baf77bc3c6976d5a32117977c2` (`Redesign primary app navigation`). The final active branch tip is reported in the completion report; this record is a follow-up documentation commit.
+- **Files:** `frontend/index.html`, `frontend/app.js`, `frontend/styles.css`, new `frontend/tests/app-navigation.test.mjs`, `scripts/ui_e2e.mjs`, and this project context. No backend, API, chess-data, or dependency changes.
+- **Interface and compatibility:** primary controls are grouped and labeled for Learn/Practice/Review; active-page semantics use `aria-current`. Existing view switching and state-preservation behavior are unchanged. The puzzle theme submode is labeled **By theme** to distinguish it from the top-level Practice destination. Existing Training and board-navigation controls remain distinct.
+- **Validation:** Node v22.22.3; `node --test frontend/tests/*.test.mjs` → **121 tests, 111 passed, 10 skipped, 0 failed**. `node --check` passed for `frontend/app.js`, `frontend/tests/app-navigation.test.mjs`, and `scripts/ui_e2e.mjs`. A standard-library ID check passed for **83 HTML IDs** across **20 frontend scripts**; `git diff --check` passed. The live `scripts/ui_e2e.mjs` flow and backend tests were not run; no server was launched and no port was used.
+- **Publishing and integration:** substantive commit `1408fbf…` was pushed to `origin/arena/756ebf60-chessai` and verified by `git ls-remote`. GitHub comparison reported the branch **ahead by 4, behind by 0**, based on `056d058ec82ba6b5cdea03dd4a48df8d90a309e2`; remote `main` remains unchanged. **Published on the task branch; not integrated into `main`**; no PR was opened and no merge was performed.
+- **Next chat:** inspect the current branch and this navigation record. Preserve Learn/Practice/Review and the unchanged view-state contracts. Keep Decision Puzzles, timed configurable-bot games, and other remaining roadmap items planned unless separately authorized and implemented; do not fold them into navigation work. Do not confuse board move-history navigation with app navigation.
+
 ## 25. Glossary
 
 | Term | Meaning in this codebase |
