@@ -88,7 +88,7 @@ npm install
 .venv/bin/python -m pytest backend/tests/ -q
 
 # 4. Run the server (API + web UI)
-.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+.venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8080
 ```
 
 <details>
@@ -106,10 +106,10 @@ npm install
 .\.venv\Scripts\python -m pytest backend/tests/ -q
 
 # 4. Run the server
-.\.venv\Scripts\uvicorn backend.app.main:app --port 8000
+.\.venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
 ```
 
-Then open http://localhost:8000
+Then open http://localhost:8080
 </details>
 
 ### Connecting your local Qwen
@@ -122,12 +122,27 @@ The teacher speaks the OpenAI protocol, so Ollama, LM Studio, vLLM, or llama.cpp
 ollama pull qwen3:4b-instruct                 # recommended: answers directly, no thinking phase
 Set-Content .env "QWEN_MODEL=qwen3:4b-instruct"
 .\.venv\Scripts\python -m backend.app.check_qwen   # diagnoses the connection + speed step by step
-.\.venv\Scripts\uvicorn backend.app.main:app --port 8000
+.\.venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
 ```
 
 The **`.env` file** in the project folder is git-ignored and read at every start (see `.env.example`), so the setting survives new windows. Variables set in the shell (`$env:QWEN_MODEL = "..."`) override it.
 
-**Decision Puzzles explanation grading needs an installed, reachable Qwen-compatible model.** The normal Stockfish Yes/No verdict still works without Qwen, but the offline fallback does not interpret free-form explanations: the result will say why the explanation was not graded, and it is not recorded as a reasoning mistake. Before setting `QWEN_MODEL`, confirm the exact installed tag with `ollama list` (or the model list in your compatible server) and verify the endpoint with `python -m backend.app.check_qwen`. For Ollama, `qwen3:1.7b` is a smaller candidate documented for local use; adequacy and response time depend on hardware and must be checked on the target machine. The Decision grader is limited to 140 output tokens and a 4-second read budget (connection attempts are capped at 1 second); it deliberately records no explanation grade on timeout or unusable output. This repository's current audit environment had no configured model or reachable Ollama service, so it does not certify that candidate's grading quality or latency.
+**Decision Puzzles explanation grading needs an installed, reachable Qwen-compatible model.** The normal Stockfish Yes/No verdict still works without Qwen, but the offline fallback does not interpret free-form explanations: the result will say why the explanation was not graded, and it is not recorded as a reasoning mistake. Before setting `QWEN_MODEL`, confirm the exact installed tag with `ollama list` (or the model list in your compatible server) and verify the endpoint with `python -m backend.app.check_qwen`. For Ollama, `qwen3:1.7b` is a smaller candidate documented for local use; adequacy and response time depend on hardware and must be checked on the target machine. The Decision grader is limited to 140 output tokens and a 4-second response/read budget (connection attempts are capped at 1 second); that `DECISION_ASSESSMENT_TIMEOUT` is separate from `QWEN_TIMEOUT`, so increasing `QWEN_TIMEOUT` alone does **not** fix Decision timeouts. The response budget includes provider-side cold loading if warm-up has not completed; `QWEN_WARMUP` runs in the background. `backend.app.check_qwen` prints both deadlines and measures a real general Qwen response, but it is not a substitute for timing an actual Decision assessment. Measure cold and warm behavior on the target machine before changing `DECISION_ASSESSMENT_TIMEOUT`; no explanation grade is recorded on timeout or unusable output. This repository's audit environment has no configured model or reachable Ollama service, so it does not certify that candidate's grading quality or latency.
+
+**Windows candidate for a resource-constrained PC:** the exact Ollama tag already documented for testing is `qwen3:1.7b` (Qwen3 1.7B, instruction-following model, with `/no_think` support; see the [official Qwen3 model-family repository](https://github.com/QwenLM/Qwen3)). Check the [current Ollama Qwen3 library entry](https://ollama.com/library/qwen3) for the tag's exact package metadata before pulling. The expected default Ollama download is approximately **1.4 GB**; reserve at least **2 GB free disk**. Plan on roughly **2–4 GB RAM for the quantized model at a short context**, with **8 GB total system RAM as a practical minimum** and more recommended for Windows itself. These are planning estimates, not measurements from this repository: the model registry could not be queried from the audit environment, so check the current Ollama Library page and your PC's available RAM before downloading. Do not assume the model is installed or that its grading quality is sufficient.
+
+After installing Ollama for Windows and checking the tag/size, run these from the ChessAI project folder in PowerShell:
+
+```powershell
+ollama pull qwen3:1.7b
+ollama list
+Set-Content .env 'QWEN_MODEL=qwen3:1.7b'
+Add-Content .env 'QWEN_BASE_URL=http://localhost:11434/v1'
+.\.venv\Scripts\python.exe -m backend.app.check_qwen
+.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
+```
+
+Wait for the Qwen warm-up log to say `status=done`, then submit several verified Decision Puzzles and compare cold/warm end-to-end results against the Stockfish evidence. Keep `DECISION_ASSESSMENT_TIMEOUT` at its current value until those timings show what a suitable response budget is; the general `QWEN_TIMEOUT` setting does not override it.
 
 > **Use `qwen3:4b-instruct`, not `qwen3:4b`.** Ollama's `qwen3:4b` is now *Qwen3-4B-Thinking-2507*: it
 > reasons silently before every answer (tens of seconds on a CPU) and ignores `/no_think`, so the

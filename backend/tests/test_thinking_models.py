@@ -1,6 +1,7 @@
 """Detecting models that think silently (Ollama's qwen3:4b is now Qwen3-4B-Thinking-2507)."""
 import json
 
+import httpx
 import pytest
 
 from app import check_qwen
@@ -61,6 +62,24 @@ def test_speed_test_passes_direct_model(monkeypatch, capsys):
     monkeypatch.setattr(qwen_mod.httpx, "stream", lambda *a, **k: FakeStream(DIRECT))
     assert check_qwen.speed_test(QwenTeacher(make_settings("qwen3:4b-instruct"))) == 0
     assert "thinks silently" not in capsys.readouterr().out
+
+
+def test_connection_diagnostic_prints_decision_deadline_separately(monkeypatch, capsys):
+    settings = make_settings("qwen3:1.7b")
+    settings.qwen_timeout = 120.0
+    settings.decision_assessment_timeout = 4.0
+    monkeypatch.setattr(check_qwen, "get_settings", lambda: settings)
+
+    def unavailable(*args, **kwargs):
+        raise httpx.ConnectError("private endpoint detail")
+
+    monkeypatch.setattr(check_qwen, "_list_models", unavailable)
+    assert check_qwen.main() == 1
+    output = capsys.readouterr().out
+    assert "QWEN_TIMEOUT  = 120s" in output
+    assert "Decision Puzzles response deadline = 4s (separate from QWEN_TIMEOUT)" in output
+    assert "Can't reach the model server" in output
+    assert "private endpoint detail" not in output
 
 
 @pytest.mark.parametrize("model, alt", [

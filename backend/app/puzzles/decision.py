@@ -871,6 +871,7 @@ def _assessment_failure_reason(exc: Exception) -> str:
         "model_not_configured", "endpoint_unreachable", "timeout", "model_or_endpoint_not_found",
         "provider_rejected_request", "provider_http_error", "provider_error",
         "malformed_provider_response", "empty_response", "provider_unavailable", "unsupported_configuration",
+        "connection_timeout", "response_timeout", "request_timeout",
     }:
         return reason
     if isinstance(exc, (TimeoutError, httpx.TimeoutException)):
@@ -988,6 +989,9 @@ def _explanation_feedback(final: dict, evidence: dict[str, str], task: DecisionT
             "model_not_configured": "QWEN_MODEL is not configured. Set it to an installed Qwen model to enable explanation grading.",
             "endpoint_unreachable": "The configured Qwen service could not be reached. Check that it is running and that QWEN_BASE_URL is correct.",
             "timeout": "The Qwen service exceeded the explanation-grading time limit.",
+            "connection_timeout": "Connecting to the Qwen service exceeded the one-second connection limit. Check that it is running and reachable.",
+            "response_timeout": "Qwen did not return a complete assessment within DECISION_ASSESSMENT_TIMEOUT; cold loading or slow inference may be responsible.",
+            "request_timeout": "Sending the grading request to Qwen exceeded the request time limit.",
             "model_or_endpoint_not_found": "The Qwen model or chat-completions endpoint was not found. Check the installed model name and QWEN_BASE_URL.",
             "unsupported_configuration": "QWEN_BASE_URL is not a valid HTTP(S) endpoint. Check the compatible server URL.",
             "provider_rejected_request": "The configured service rejected the grading request. Check its OpenAI-compatible chat-completions support and model configuration.",

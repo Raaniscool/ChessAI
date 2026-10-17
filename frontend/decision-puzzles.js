@@ -14,7 +14,10 @@ const ASSESSMENT_LABELS = {
 const UNAVAILABLE_LABELS = {
   model_not_configured: "Explanation not graded: Qwen model not configured",
   endpoint_unreachable: "Explanation not graded: Qwen service unreachable",
-  timeout: "Explanation not graded: Qwen timed out",
+  timeout: "Explanation not graded: Qwen request timed out",
+  connection_timeout: "Explanation not graded: Qwen connection timed out",
+  response_timeout: "Explanation not graded: Qwen response timed out",
+  request_timeout: "Explanation not graded: request upload timed out",
   model_or_endpoint_not_found: "Explanation not graded: model or endpoint not found",
   unsupported_configuration: "Explanation not graded: QWEN_BASE_URL is invalid",
   provider_rejected_request: "Explanation not graded: service rejected the request",

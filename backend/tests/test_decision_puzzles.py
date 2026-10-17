@@ -590,6 +590,33 @@ def test_malformed_or_failed_model_output_uses_honest_unassessed_fallback(api_cl
     assert failed["engine"]["quality"] == "bad"
 
 
+def test_model_response_timeout_is_distinct_from_a_connection_failure(api_client, monkeypatch):
+    from app.config import Settings
+    from app.teacher.qwen import QwenTeacher
+    import app.teacher.qwen as qwen_module
+
+    settings = Settings()
+    settings.qwen_model = "qwen-test"
+    settings.qwen_base_url = "http://127.0.0.1:11434/v1"
+    teacher = QwenTeacher(settings)
+    set_engine(ScriptedEngine(Classification.GOOD, 12))
+    task = issue(api_client)
+
+    def slow_response(url, **kwargs):
+        raise httpx.ReadTimeout("private model timing", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr("app.teacher.get_teacher", lambda: teacher)
+    monkeypatch.setattr(qwen_module.httpx, "post", slow_response)
+    result = answer(api_client, task, "yes", "The move keeps the center under control.").json()
+
+    assert result["assessment_status"] == "unavailable"
+    assert result["assessment_reason"] == "response_timeout"
+    assert result["judgment"]["correct"] is True
+    assert result["reasoning_recorded"] is False
+    assert "DECISION_ASSESSMENT_TIMEOUT" in result["explanation_feedback"]
+    assert "private model timing" not in result["explanation_feedback"]
+
+
 def test_answer_is_idempotent_and_unknown_or_invalid_submissions_fail(api_client, monkeypatch):
     set_engine(ScriptedEngine(Classification.GOOD, 0))
     task = issue(api_client)

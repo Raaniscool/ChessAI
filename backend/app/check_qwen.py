@@ -17,7 +17,7 @@ from .engine import MoveFeedback
 from .engine.classification import Classification, Score
 from .teacher.base import LessonContext
 from .teacher.prompts import SYSTEM_PROMPT, build_move_feedback_messages
-from .teacher.qwen import RESET, QwenTeacher, TeacherUnavailable
+from .teacher.qwen import RESET, QwenTeacher, TeacherUnavailable, safe_endpoint_for_display
 
 
 def _list_models(base_url: str, api_key: str) -> list[str]:
@@ -126,16 +126,19 @@ def speed_test(teacher) -> int:
 
 def main() -> int:
     s = get_settings()
-    print(f"QWEN_BASE_URL = {s.qwen_base_url}")
+    print(f"QWEN_BASE_URL = {safe_endpoint_for_display(s.qwen_base_url)}")
     source = " (from .env)" if "QWEN_MODEL" in DOTENV_APPLIED else (" (from this shell)" if s.qwen_model else "")
     print(f"QWEN_MODEL    = {s.qwen_model or '(not set)'}{source}")
     print(f"QWEN_TIMEOUT  = {s.qwen_timeout:g}s   thinking disabled: {s.qwen_disable_thinking()}")
+    print(f"Decision Puzzles response deadline = {s.decision_assessment_timeout:g}s "
+          "(separate from QWEN_TIMEOUT)")
     print()
 
     try:
         models = _list_models(s.qwen_base_url, s.qwen_api_key)
     except httpx.HTTPError as exc:
-        print(f"[FAIL] Can't reach the model server at {s.qwen_base_url}: {exc}")
+        print(f"[FAIL] Can't reach the model server at {safe_endpoint_for_display(s.qwen_base_url)} "
+              f"(error type: {type(exc).__name__}).")
         print("       Is Ollama running? Start it from the Start menu or run `ollama serve`.")
         print("       LM Studio users: start its server and set QWEN_BASE_URL=http://localhost:1234/v1")
         return 1
@@ -171,7 +174,9 @@ def main() -> int:
         )
     except TeacherUnavailable as exc:
         print(f"[FAIL] {exc}")
-        print('       If it timed out, raise the limit: add a line  QWEN_TIMEOUT=300  to .env')
+        print('       This check uses QWEN_TIMEOUT; add QWEN_TIMEOUT=300 only if this general call needs more time.')
+        print(f"       Decision Puzzles use DECISION_ASSESSMENT_TIMEOUT={s.decision_assessment_timeout:g}s instead; "
+              "measure a real grading request before changing that separate deadline.")
         return 1
     print(f"[ OK ] Reply in {time.monotonic() - started:.1f}s: {reply}")
     print()

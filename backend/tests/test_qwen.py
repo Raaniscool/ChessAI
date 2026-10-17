@@ -10,6 +10,7 @@ from backend.app.teacher.qwen import (
     TeacherUnavailable,
     apply_no_think,
     clean_reply,
+    safe_endpoint_for_display,
 )
 
 
@@ -34,6 +35,12 @@ def make_settings(model="qwen3:4b", thinking="auto"):
 )
 def test_clean_reply(raw, expected):
     assert clean_reply(raw) == expected
+
+
+def test_endpoint_diagnostic_redacts_credentials_paths_and_query_tokens():
+    assert safe_endpoint_for_display("https://user:secret@example.test:8443/v1?token=secret#fragment") \
+        == "https://example.test:8443"
+    assert safe_endpoint_for_display("not-an-http-url") == "<invalid endpoint>"
 
 
 def test_qwen_teacher_refuses_missing_or_whitespace_model_configuration():
@@ -141,8 +148,26 @@ def test_timeout_and_connection_errors_are_categorized_without_raw_provider_deta
     monkeypatch.setattr(qwen_mod.httpx, "post", timed_out)
     with pytest.raises(TeacherUnavailable) as timeout_error:
         QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
-    assert timeout_error.value.reason == "timeout"
+    assert timeout_error.value.reason == "response_timeout"
     assert "private timeout details" not in str(timeout_error.value)
+
+    def connect_timed_out(url, **kwargs):
+        raise httpx.ConnectTimeout("private connect deadline", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", connect_timed_out)
+    with pytest.raises(TeacherUnavailable) as connect_timeout_error:
+        QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert connect_timeout_error.value.reason == "connection_timeout"
+    assert "private connect deadline" not in str(connect_timeout_error.value)
+
+    def write_timed_out(url, **kwargs):
+        raise httpx.WriteTimeout("private write deadline", request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(qwen_mod.httpx, "post", write_timed_out)
+    with pytest.raises(TeacherUnavailable) as write_timeout_error:
+        QwenTeacher(make_settings()).complete([{"role": "user", "content": "q"}], timeout=4)
+    assert write_timeout_error.value.reason == "request_timeout"
+    assert "private write deadline" not in str(write_timeout_error.value)
 
     def refused(url, **kwargs):
         raise httpx.ConnectError("private endpoint details", request=httpx.Request("POST", url))

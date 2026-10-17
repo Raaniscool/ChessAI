@@ -6,6 +6,7 @@ import logging
 import re
 import time
 from collections.abc import Callable, Iterator
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -15,6 +16,23 @@ from .prompts import SYSTEM_PROMPT, build_chat_messages, build_move_feedback_mes
 
 log = logging.getLogger(__name__)
 perf_log = logging.getLogger("chessai.performance")
+
+
+def safe_endpoint_for_display(url: str) -> str:
+    """Return scheme/host/port only; never print endpoint credentials, paths or query tokens."""
+    try:
+        parts = urlsplit(str(url))
+        host = parts.hostname
+        if not parts.scheme or not host:
+            return "<invalid endpoint>"
+        if ":" in host and not host.startswith("["):
+            host = f"[{host}]"
+        if parts.port is not None:
+            host = f"{host}:{parts.port}"
+        return f"{parts.scheme}://{host}"
+    except (TypeError, ValueError):
+        return "<invalid endpoint>"
+
 
 NO_THINK_SWITCH = "/no_think"
 # Yielded by QwenTeacher.stream() when text already shown turns out to have been
@@ -230,6 +248,20 @@ class QwenTeacher:
             log.warning("Qwen completion URL is invalid")
             raise TeacherUnavailable("QWEN_BASE_URL is not a valid HTTP(S) endpoint",
                                      reason="unsupported_configuration") from exc
+        except httpx.ConnectTimeout as exc:
+            status = "connection_timeout"
+            log.warning("Qwen connection attempt exceeded its deadline")
+            raise TeacherUnavailable("Qwen connection attempt timed out", reason="connection_timeout") from exc
+        except httpx.ReadTimeout as exc:
+            status = "response_timeout"
+            log.warning("Qwen response exceeded its read deadline")
+            raise TeacherUnavailable("Qwen did not return a complete response before its read deadline",
+                                     reason="response_timeout") from exc
+        except httpx.WriteTimeout as exc:
+            status = "request_timeout"
+            log.warning("Qwen request upload exceeded its write deadline")
+            raise TeacherUnavailable("Qwen request could not be sent before its write deadline",
+                                     reason="request_timeout") from exc
         except httpx.TimeoutException as exc:
             status = "timeout"
             log.warning("Qwen completion exceeded its request deadline")
@@ -317,8 +349,9 @@ class QwenTeacher:
                             visible_chars += len(visible)
                             yield visible
             except httpx.HTTPError as exc:
-                log.warning("Qwen stream from %s failed: %s", self.url, exc)
-                raise TeacherUnavailable(f"Qwen request failed: {exc}") from exc
+                log.warning("Qwen stream failed: endpoint=%s error_type=%s",
+                            safe_endpoint_for_display(self.url), type(exc).__name__)
+                raise TeacherUnavailable("Qwen stream request failed", reason="provider_error") from exc
             tail = think.flush()
             if tail:
                 if ttfo_ms is None:
@@ -351,7 +384,8 @@ class QwenTeacher:
             response.raise_for_status()
             status = "done"
         except httpx.HTTPError as exc:
-            log.warning("Qwen warm-up failed: %s", exc)
+            log.warning("Qwen warm-up failed: endpoint=%s error_type=%s",
+                        safe_endpoint_for_display(self.url), type(exc).__name__)
             return False
         finally:
             perf_log.info("latency stage=qwen_warmup duration_ms=%.1f status=%s",

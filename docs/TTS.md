@@ -82,7 +82,7 @@ Restart the app. The ⚙ panel then shows the Kokoro voices.
 ```powershell
 docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest
 $env:TTS_OPENAI_BASE_URL="http://localhost:8880/v1"
-.\.venv\Scripts\uvicorn backend.app.main:app --port 8000
+.\.venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
 ```
 
 **OpenAI (paid):** set `TTS_OPENAI_BASE_URL=https://api.openai.com/v1`,

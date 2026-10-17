@@ -172,6 +172,34 @@ test("unavailable grading tells the learner why while preserving the Stockfish c
   }
 })
 
+test("response timeout is distinguishable from model-not-configured and uncertainty", async () => {
+  const previousDocument = globalThis.document
+  globalThis.document = fakeDocument()
+  try {
+    const ui = elements()
+    const api = async path => path.endsWith("/next") ? task() : {
+      task_id: "task-1", assessment: "unavailable", explanation_assessment: "unavailable",
+      assessment_status: "unavailable", assessment_reason: "response_timeout",
+      judgment: {choice: "yes", correct: true, expected: "yes", side_to_move: "black"},
+      explanation_feedback: "Qwen did not return a complete assessment within DECISION_ASSESSMENT_TIMEOUT.",
+    }
+    const {puzzles} = setup(api, ui)
+    await puzzles.activate()
+    ui.choiceYes.checked = true
+    await ui.choiceYes.emit("change")
+    ui.answer.value = "Black keeps useful central control with this move."
+    await ui.answer.emit("input")
+    await ui.submit.emit("click")
+    assert.equal(ui.assessment.textContent, "Explanation not graded: Qwen response timed out")
+    assert.equal(ui.assessment.className, "decision-assessment unavailable")
+    assert.match(ui.feedback.textContent, /DECISION_ASSESSMENT_TIMEOUT/)
+    assert.equal(ui.judgment.className, "decision-judgment correct")
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document
+    else globalThis.document = previousDocument
+  }
+})
+
 test("genuinely uncertain assessment is distinct from a missing model", async () => {
   const previousDocument = globalThis.document
   globalThis.document = fakeDocument()
