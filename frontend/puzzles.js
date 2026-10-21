@@ -4,6 +4,7 @@
 
 import {createTrainer} from "./training.js"
 import {createDecisionPuzzles} from "./decision-puzzles.js"
+import {createBrilliantFinder} from "./brilliant-finder.js"
 import {parsePosition, parsePuzzlePosition} from "./position.js"
 import {applyAdapt, autoNextDelay, cardLine, focusLine, header, itemLabel, judge, needsMore, newAttempt, nextHint,
   pendingIds, resultBody, retry, reveal, sameMove, shouldRecord} from "./puzzle-solver.js"
@@ -25,6 +26,20 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     next: $("pz-next"), back: $("pz-back"), set: $("pz-set"),
     modeTraining: $("pz-mode-training"), training: $("pz-training"), trainer: $("pz-trainer"),
     modeDecision: $("pz-mode-decision"), decision: $("pz-decision"),
+    modeBrilliant: $("pz-mode-brilliant"), brilliant: $("pz-brilliant"),
+    brilliantDifficulty: $("pz-brilliant-difficulty"), brilliantDifficultyNote: $("pz-brilliant-difficulty-note"),
+    brilliantProfile: $("pz-brilliant-profile"), brilliantStatus: $("pz-brilliant-status"),
+    brilliantTask: $("pz-brilliant-task"), brilliantComplexity: $("pz-brilliant-complexity"),
+    brilliantSelected: $("pz-brilliant-selected"), brilliantStart: $("pz-brilliant-start"),
+    brilliantReveal: $("pz-brilliant-reveal"), brilliantSkip: $("pz-brilliant-skip"),
+    brilliantRetry: $("pz-brilliant-retry"), brilliantNext: $("pz-brilliant-next"), brilliantNewRound: $("pz-brilliant-new-round"),
+    brilliantResult: $("pz-brilliant-result"), brilliantVerdict: $("pz-brilliant-verdict"),
+    brilliantExplanation: $("pz-brilliant-explanation"), brilliantSetup: $("pz-brilliant-setup"),
+    brilliantSacrifice: $("pz-brilliant-sacrifice"), brilliantDefense: $("pz-brilliant-defense"),
+    brilliantScore: $("pz-brilliant-score"), brilliantAlternative: $("pz-brilliant-alternative"),
+    brilliantSelectedLine: $("pz-brilliant-selected-line"), brilliantBestLine: $("pz-brilliant-best-line"),
+    brilliantRecording: $("pz-brilliant-recording"), brilliantShowSelected: $("pz-brilliant-show-selected"),
+    brilliantShowBest: $("pz-brilliant-show-best"),
     decisionStart: $("pz-decision-start"), decisionTask: $("pz-decision-task"), decisionStatus: $("pz-decision-status"),
     decisionMove: $("pz-decision-move"), decisionQuestion: $("pz-decision-question"),
     decisionYes: $("pz-decision-yes"), decisionNo: $("pz-decision-no"),
@@ -47,6 +62,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     history: MoveHistory ? new MoveHistory(new Chess().fen()) : null,   // what's been played (← →)
     explore: null,   // after the puzzle: a board to try other moves on (never graded or recorded)
   }
+  let brilliant = null
 
   const puzzle = () => view.set[view.pos]
   const orientation = () => (puzzle() && puzzle().side === "black" ? COLOR.black : COLOR.white)
@@ -89,9 +105,14 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
         void showPosition(new Chess().fen(), {orientation: COLOR.white, animated: false})
       }
     }
+    if (previous === "brilliant" && mode !== "brilliant") {
+      brilliant.pause()
+      if (view.screen === "brilliant") view.screen = "dashboard"
+      if (nav) nav.set("puzzles", null)
+    }
     view.mode = mode
     for (const [btn, m] of [[el.modePersonal, "personal"], [el.modePractice, "practice"],
-      [el.modeTraining, "training"], [el.modeDecision, "decision"]]) {
+      [el.modeTraining, "training"], [el.modeDecision, "decision"], [el.modeBrilliant, "brilliant"]]) {
       btn.classList.toggle("active", m === mode)
       btn.setAttribute("aria-selected", String(m === mode))
     }
@@ -99,6 +120,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     show(el.practice, mode === "practice")
     show(el.training, mode === "training")
     show(el.decision, mode === "decision")
+    show(el.brilliant, mode === "brilliant")
     if (mode === "decision") {
       view.screen = "decision"
       cancelAuto()
@@ -109,6 +131,16 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       el.counter.textContent = ""
       if (nav) nav.set("puzzles", null)
       if (view.active) void decision.activate()
+    } else if (mode === "brilliant") {
+      view.screen = "brilliant"
+      cancelAuto()
+      show(el.dashboard, true)
+      show(el.solver, false)
+      show(el.trainer, false)
+      el.title.textContent = "Brilliant Finder"
+      el.counter.textContent = ""
+      if (nav) nav.set("puzzles", null)
+      if (view.active) void brilliant.enter()
     } else {
       if (view.screen === "dashboard") el.title.textContent = "Puzzles"
       if (mode === "training") trainer.loadHome(el.training)
@@ -160,6 +192,29 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       show(el.trainer, false)
       show(el.decision, true)
       if (nav) nav.set("puzzles", null)
+    },
+  })
+
+  brilliant = createBrilliantFinder({api, board, showPosition, verifiedMove, isPositionVerified, Chess, COLOR,
+    legalInputHandler, nav, MoveHistory, showNode, setStatus,
+    el: {difficulty: el.brilliantDifficulty, difficultyNote: el.brilliantDifficultyNote,
+      profile: el.brilliantProfile, status: el.brilliantStatus, task: el.brilliantTask,
+      complexity: el.brilliantComplexity, selected: el.brilliantSelected, start: el.brilliantStart,
+      reveal: el.brilliantReveal, skip: el.brilliantSkip, retry: el.brilliantRetry, next: el.brilliantNext,
+      newRound: el.brilliantNewRound, result: el.brilliantResult, verdict: el.brilliantVerdict,
+      explanation: el.brilliantExplanation, setup: el.brilliantSetup, sacrifice: el.brilliantSacrifice,
+      defense: el.brilliantDefense, score: el.brilliantScore, alternative: el.brilliantAlternative,
+      selectedLine: el.brilliantSelectedLine, bestLine: el.brilliantBestLine,
+      recording: el.brilliantRecording, showSelected: el.brilliantShowSelected, showBest: el.brilliantShowBest},
+    onShow() {
+      cancelAuto()
+      view.screen = "brilliant"
+      el.title.textContent = "Brilliant Finder"
+      el.counter.textContent = ""
+      show(el.dashboard, true)
+      show(el.solver, false)
+      show(el.trainer, false)
+      show(el.brilliant, true)
     },
   })
 
@@ -834,6 +889,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
   el.modePractice.addEventListener("click", () => setMode("practice"))
   el.modeTraining.addEventListener("click", () => setMode("training"))
   el.modeDecision.addEventListener("click", () => setMode("decision"))
+  el.modeBrilliant.addEventListener("click", () => setMode("brilliant"))
   el.hint.addEventListener("click", onHint)
   el.solution.addEventListener("click", onSolution)
   el.retry.addEventListener("click", onRetry)
@@ -858,6 +914,10 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
       trainer.activate()
       if (view.screen === "trainer") {
         await trainer.enter()
+        return
+      }
+      if (view.screen === "brilliant" && view.mode === "brilliant") {
+        await brilliant.enter()
         return
       }
       if (view.screen === "decision" && view.mode === "decision") {
@@ -916,6 +976,7 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     leave() {
       trainer.leave()
       decision.leave()
+      brilliant.pause()
       cancelAuto()
       view.active = false
       view.token++  // a pending reply animation stops; the attempt stays as it was
@@ -925,12 +986,12 @@ export function setupPuzzles({api, board, showPosition, clearMarkers, addMarkers
     },
     readable() {
       return view.screen === "trainer" ? $("tr-report") : view.screen === "solver" ? el.feedback
-        : view.screen === "decision" ? decision.readable() : el.personal
+        : view.screen === "decision" ? decision.readable() : view.screen === "brilliant" ? brilliant.readable() : el.personal
     },
     // for the e2e test / debugging
     state: () => ({screen: view.screen, mode: view.mode, pos: view.pos, total: view.set.length,
       id: puzzle() && puzzle().id, done: Boolean(view.attempt && view.attempt.done),
-      training: trainer.state(), decision: decision.state()}),
+      training: trainer.state(), decision: decision.state(), brilliant: brilliant.state()}),
     sameMove,
   }
 }

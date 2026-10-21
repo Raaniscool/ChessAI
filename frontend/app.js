@@ -31,7 +31,13 @@ const REQUIRED_IDS = ["board", "board-status", "messages", "feedback-slot", "les
   "ga-username", "ga-fetch-btn", "ga-paste", "ga-import-btn", "ga-status", "ga-import", "ga-overview", "ga-review", "ga-title", "ga-counter",
   "ga-back", "ga-prev", "ga-next", "ga-body",
   "tab-puzzles", "puzzles-side", "puzzles-pane", "pz-set", "pz-title", "pz-counter", "pz-dashboard", "pz-solver",
-  "pz-mode-personal", "pz-mode-practice", "pz-personal", "pz-practice", "pz-status", "pz-info", "pz-feedback",
+  "pz-mode-personal", "pz-mode-practice", "pz-mode-brilliant", "pz-personal", "pz-practice", "pz-status", "pz-info", "pz-feedback",
+  "pz-brilliant", "pz-brilliant-difficulty", "pz-brilliant-difficulty-note", "pz-brilliant-profile", "pz-brilliant-status", "pz-brilliant-task",
+  "pz-brilliant-complexity", "pz-brilliant-selected", "pz-brilliant-start", "pz-brilliant-reveal",
+  "pz-brilliant-skip", "pz-brilliant-retry", "pz-brilliant-next", "pz-brilliant-new-round", "pz-brilliant-result",
+  "pz-brilliant-verdict", "pz-brilliant-explanation", "pz-brilliant-setup", "pz-brilliant-sacrifice", "pz-brilliant-defense",
+  "pz-brilliant-score", "pz-brilliant-alternative", "pz-brilliant-selected-line", "pz-brilliant-best-line",
+  "pz-brilliant-recording", "pz-brilliant-show-selected", "pz-brilliant-show-best",
   "pz-explain", "pz-hint", "pz-solution", "pz-retry", "pz-next", "pz-back",
   "board-nav", "nav-prev", "nav-next", "nav-label", "nav-back"]
 const missingIds = REQUIRED_IDS.filter(id => !document.getElementById(id))

@@ -649,6 +649,38 @@ details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-
 .decision-engine p { margin: 5px 0; overflow-wrap: anywhere; }
 .decision-engine b { color: #d6dbe0; }
 .decision-result .muted { font-size: 12.5px; }
+.brilliant-finder { max-width: 850px; }
+.brilliant-finder h3 { margin: 2px 0; }
+.brilliant-intro, .brilliant-profile, .brilliant-settings p { margin: 2px 0; line-height: 1.45; }
+.brilliant-settings { display: grid; grid-template-columns: auto minmax(150px, 220px); align-items: center; gap: 5px 12px;
+  padding: 10px 12px; background: var(--panel-2); border: 1px solid #39434d; border-radius: 9px; }
+.brilliant-settings label { font-size: 13px; }
+#pz-brilliant-difficulty { width: 100%; padding: 7px 9px; color: var(--text); background: var(--bg);
+  border: 1px solid #3c4550; border-radius: 7px; font: inherit; }
+#pz-brilliant-difficulty-note { grid-column: 1 / -1; font-size: 12px; }
+.brilliant-profile { font-size: 12px; }
+.brilliant-task { display: flex; flex-direction: column; gap: 8px; }
+.brilliant-complexity { font-size: 15px; font-weight: 650; color: #d6dbe0; }
+.brilliant-selected { margin: 0; font-size: 13px; }
+.brilliant-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.brilliant-result { padding: 12px 14px; background: var(--panel-2); border: 1px solid #39434d; border-radius: 9px;
+  line-height: 1.5; }
+.brilliant-result h4 { margin: 0 0 6px; font-size: 19px; }
+.brilliant-result p { margin: 6px 0; overflow-wrap: anywhere; }
+.brilliant-result .brilliant-verdict.sound_sacrifice,
+.brilliant-result .brilliant-verdict.playable_sacrifice,
+.brilliant-result .brilliant-verdict.strong_tactical_move,
+.brilliant-result .brilliant-verdict.strong_non_sacrifice { color: var(--accent-2); }
+.brilliant-result .brilliant-verdict.incorrect_sacrifice,
+.brilliant-result .brilliant-verdict.stronger_alternative { color: #f1b7b5; }
+.brilliant-result .brilliant-verdict.inconclusive,
+.brilliant-result .brilliant-verdict.revealed { color: var(--muted); }
+.brilliant-result .brilliant-verdict.solved { color: var(--accent-2); }
+.brilliant-result .brilliant-verdict.retry { color: #e3b341; }
+.brilliant-detail { font-weight: 550; }
+.brilliant-lines { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;
+  margin: 10px 0; padding: 9px 0; border-top: 1px solid #414b56; border-bottom: 1px solid #414b56; font-size: 13px; }
+.brilliant-lines p { margin: 4px 0; font-family: ui-monospace, Consolas, monospace; }
 /* Training (Puzzles tab) */
 .tr-modes { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .tr-mode { flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; }

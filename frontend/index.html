@@ -125,6 +125,8 @@
                     title="Short games against a bot near your level — they show what to practise">🏁 Training</button>
             <button id="pz-mode-decision" class="pz-mode" role="tab" aria-selected="false"
                     title="Judge a proposed move and explain your reasoning">🧠 Decision Puzzles</button>
+            <button id="pz-mode-brilliant" class="pz-mode" role="tab" aria-selected="false"
+                    title="Find a sacrifice or another engine-supported tactical move">✨ Brilliant Finder</button>
           </div>
           <div id="pz-personal" class="pz-section"></div>
           <div id="pz-practice" class="pz-section hidden"></div>
@@ -161,6 +163,54 @@
                 <div id="pz-decision-engine" class="decision-engine hidden"></div>
               </div>
             </div>
+          </section>
+          <section id="pz-brilliant" class="pz-section brilliant-finder hidden" aria-labelledby="pz-brilliant-heading">
+            <h3 id="pz-brilliant-heading">Brilliant Finder</h3>
+            <p class="muted brilliant-intro">Play every required move yourself on the board. Each legal move is processed immediately, and only the next legal reply from the verified puzzle line is played automatically. Reveal the solution only if you choose.</p>
+            <div class="brilliant-settings">
+              <label for="pz-brilliant-difficulty"><b>Difficulty</b></label>
+              <select id="pz-brilliant-difficulty" aria-describedby="pz-brilliant-difficulty-note">
+                <option value="adaptive">Adaptive</option>
+                <option value="beginner">Beginner</option>
+                <option value="easy">Easy</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="expert">Expert</option>
+              </select>
+              <p id="pz-brilliant-difficulty-note" class="muted">Adaptive starts from your learner profile and improves with game, Training, and puzzle evidence. Manual labels describe relative complexity in this collection, not a promised human Elo.</p>
+            </div>
+            <p id="pz-brilliant-profile" class="brilliant-profile muted" aria-live="polite"></p>
+            <div id="pz-brilliant-status" class="pz-status muted" aria-live="polite"></div>
+            <div id="pz-brilliant-task" class="brilliant-task hidden">
+              <div id="pz-brilliant-complexity" class="brilliant-complexity"></div>
+              <p id="pz-brilliant-selected" class="brilliant-selected muted" aria-live="polite"></p>
+              <div class="controls brilliant-controls">
+                <button id="pz-brilliant-reveal" class="btn hidden">Reveal solution</button>
+                <button id="pz-brilliant-skip" class="btn hidden">Skip (no result)</button>
+                <button id="pz-brilliant-retry" class="btn hidden">Retry this position</button>
+                <button id="pz-brilliant-next" class="btn primary hidden">Next position →</button>
+                <button id="pz-brilliant-new-round" class="btn hidden">Start a new review round</button>
+              </div>
+              <div id="pz-brilliant-result" class="brilliant-result hidden" aria-live="polite">
+                <h4 id="pz-brilliant-verdict"></h4>
+                <p id="pz-brilliant-explanation"></p>
+                <p id="pz-brilliant-setup" class="brilliant-detail"></p>
+                <p id="pz-brilliant-sacrifice" class="brilliant-detail"></p>
+                <p id="pz-brilliant-defense" class="brilliant-detail"></p>
+                <p id="pz-brilliant-score" class="muted"></p>
+                <p id="pz-brilliant-alternative"></p>
+                <div class="brilliant-lines">
+                  <div><b>Full verified solution</b><p id="pz-brilliant-selected-line"></p></div>
+                  <div><b>Stockfish line from the sacrifice position</b><p id="pz-brilliant-best-line"></p></div>
+                </div>
+                <p id="pz-brilliant-recording" class="muted"></p>
+                <div class="controls brilliant-controls">
+                  <button id="pz-brilliant-show-selected" class="btn">Review verified solution</button>
+                  <button id="pz-brilliant-show-best" class="btn">Review Stockfish line</button>
+                </div>
+              </div>
+            </div>
+            <button id="pz-brilliant-start" class="btn primary">Find a position</button>
           </section>
           <div id="pz-status" class="pz-status muted" aria-live="polite"></div>
         </div>

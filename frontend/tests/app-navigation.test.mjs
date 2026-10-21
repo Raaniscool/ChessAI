@@ -8,6 +8,7 @@ const here = new URL("../index.html", import.meta.url)
 const html = readFileSync(fileURLToPath(here), "utf8")
 const app = readFileSync(fileURLToPath(new URL("../app.js", import.meta.url)), "utf8")
 const puzzles = readFileSync(fileURLToPath(new URL("../puzzles.js", import.meta.url)), "utf8")
+const brilliant = readFileSync(fileURLToPath(new URL("../brilliant-finder.js", import.meta.url)), "utf8")
 
 function buttonMarkup(id) {
   const match = html.match(new RegExp(`<button\\b(?=[^>]*\\bid="${id}")[\\s\\S]*?<\\/button>`))
@@ -45,6 +46,18 @@ test("switching top-level views updates the current-page accessibility state", (
   assert.match(switcher, /tab\.classList\.toggle\("active", on\)/)
   assert.match(switcher, /if \(on\) tab\.setAttribute\("aria-current", "page"\)\s+else tab\.removeAttribute\("aria-current"\)/)
   assert.doesNotMatch(switcher, /aria-selected=/)
+})
+
+test("Brilliant Finder is immediate guided board play with explicit reveal and no submit button", () => {
+  assert.match(html, /Play every required move yourself on the board/)
+  assert.match(html, /id="pz-brilliant-reveal"[^>]*>Reveal solution/)
+  assert.match(html, /id="pz-brilliant-retry"[^>]*>Retry this position/)
+  assert.doesNotMatch(html, /pz-brilliant-submit|Submit move|Submit this move/)
+  assert.match(brilliant, /api\(apiPath\(task, "move"\), "POST"/)
+  assert.match(brilliant, /verifiedMove\(player\.after_fen, response\.opponent_move\.uci/)
+  assert.match(brilliant, /response\.outcome === "incorrect"|\["incorrect", "playable", "unverified_alternative"\]/)
+  assert.match(brilliant, /apiPath\(task, "reveal"\)/)
+  assert.match(puzzles, /createBrilliantFinder\(\{api, board, showPosition, verifiedMove, isPositionVerified/)
 })
 
 test("puzzle modes and board move-history navigation remain distinct from app navigation", () => {

@@ -289,10 +289,13 @@ class LearnerProfile:
                  "solved": bool(solved and not revealed), "first_try": bool(first_try), "hints": max(0, hints),
                  "revealed": bool(revealed), "score": score, "explanation_requested": bool(asked),
                  "explanations": {k: asked.get(k, 0) for k in HELP_KINDS}, "seq": st.attempts}
-        # Keep structured Decision Puzzle evidence, never the learner's free-form answer text.
+        # Keep structured Decision Puzzle and Brilliant Finder evidence, never free-form text.
         decision = ctx.get("decision")
         if isinstance(decision, dict):
             entry["decision"] = decision
+        brilliant_finder = ctx.get("brilliant_finder")
+        if isinstance(brilliant_finder, dict):
+            entry["brilliant_finder"] = brilliant_finder
         self._log(entry)
         self.touch()
         return {"concept": concept, "score": score, "rating_before": before, "rating_after": st.rating}

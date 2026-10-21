@@ -24,6 +24,14 @@
     POST /api/puzzles/decision/{task_id}/answer -> separate Stockfish Yes/No verdict and bounded,
                                                    evidence-constrained explanation assessment
     GET  /api/puzzles/decision/profile          -> persistent ability, difficulty, evidence and needs
+    GET  /api/puzzles/brilliant/profile         -> saved Finder difficulty, verified supply and
+                                                   Adaptive evidence from the existing learner model
+    POST /api/puzzles/brilliant/preferences     -> persist Adaptive or one of five manual levels
+    POST /api/puzzles/brilliant/next            -> a verified guided line with the solution hidden
+    POST /api/puzzles/brilliant/{task_id}/move  -> process one board move and play a verified reply
+    GET  /api/puzzles/brilliant/{task_id}/state -> current authoritative turn, no pending solution
+    POST /api/puzzles/brilliant/{task_id}/reveal -> explicitly reveal the stored verified solution
+    POST /api/puzzles/brilliant/{task_id}/retry -> issue a fresh attempt at the same position
     POST /api/puzzles/adapt {mode, concept?, weakness?, done, remaining, set_ids}
                                                -> swaps the remaining puzzles of a running set that
                                                   fell out of the learner's zone (session adaptation)
@@ -122,6 +130,23 @@ class DecisionAnswerRequest(BaseModel):
     explanation: str = Field(min_length=8, max_length=2000)
 
 
+BrilliantDifficulty = Literal["adaptive", "beginner", "easy", "intermediate", "advanced", "expert"]
+
+
+class BrilliantPreferenceRequest(BaseModel):
+    difficulty: BrilliantDifficulty = "adaptive"
+
+
+class BrilliantNextRequest(BaseModel):
+    exclude: list[str] = Field(default_factory=list)
+
+
+class BrilliantMoveRequest(BaseModel):
+    step_index: int = Field(ge=0, le=20)
+    move: str = Field(min_length=4, max_length=5)
+    before_fen: str | None = Field(None, min_length=10, max_length=120)
+
+
 def _error(status: int, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content={"error": message})
 
@@ -198,6 +223,108 @@ def answer_decision_puzzle(task_id: str, body: DecisionAnswerRequest) -> dict:
     try:
         return submit_decision_answer(task_id, body.choice, body.explanation)
     except DecisionPuzzleError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.get("/brilliant/profile")
+def brilliant_finder_profile() -> dict:
+    """Difficulty preference, verified supply, and the existing learner evidence behind Adaptive."""
+    from .knowledge.usage import get_usage
+    from .learner import get_store
+    from .puzzles.brilliant import profile_summary
+
+    return profile_summary(_knowledge(), get_store().get("local"), get_usage())
+
+
+@router.post("/brilliant/preferences")
+def set_brilliant_finder_preference(body: BrilliantPreferenceRequest) -> dict:
+    """Persist a Finder difficulty preference; an already-issued task keeps its original band."""
+    from .learner import get_store
+    from .puzzles.brilliant import BrilliantFinderError, set_preference
+
+    try:
+        return get_store().update("local", lambda profile: set_preference(profile, body.difficulty))
+    except BrilliantFinderError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.post("/brilliant/next")
+def next_brilliant_finder_position(body: BrilliantNextRequest) -> dict:
+    """Select a verified sacrifice by the saved preference and learner.difficulty calibration."""
+    from .knowledge.usage import get_usage
+    from .learner import get_profile
+    from .puzzles.brilliant import BrilliantFinderError, issue_task, task_payload
+
+    try:
+        task = issue_task(_knowledge(), get_profile(), get_usage(), exclude=body.exclude)
+        return task_payload(task)
+    except BrilliantFinderError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.post("/brilliant/{task_id}/move")
+def move_brilliant_finder_position(task_id: str, body: BrilliantMoveRequest) -> dict:
+    """Process one board move; only a verified stored reply can be played automatically."""
+    from .engine import EngineUnavailable, get_engine
+    from .knowledge.usage import get_usage
+    from .learner import get_store
+    from .puzzles.brilliant import (BrilliantFinderError, get_brilliant_task_store,
+                                    process_task_move)
+
+    try:
+        task = get_brilliant_task_store().get(task_id)
+        engine = None
+        # The verified line is adjudicated from its stored profile on every turn. Start Stockfish
+        # only at the terminal move, for the optional end-of-puzzle interpretation.
+        if body.step_index >= len(task.puzzle.steps) - 1:
+            try:
+                engine = get_engine()
+            except EngineUnavailable:
+                engine = None
+        return process_task_move(task_id, body.step_index, body.move, before_fen=body.before_fen,
+                                 knowledge=_knowledge(), profile_store=get_store(),
+                                 usage=get_usage(), engine=engine)
+    except BrilliantFinderError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.get("/brilliant/{task_id}/state")
+def brilliant_finder_state(task_id: str) -> dict:
+    """Return the active authoritative turn without exposing a pending solution line."""
+    from .puzzles.brilliant import BrilliantFinderError, get_brilliant_task_store
+
+    try:
+        task = get_brilliant_task_store().get(task_id)
+        return {"task_id": task.task_id, "id": task.puzzle.id, "status": task.status,
+                "current_fen": task.current_fen, "step_index": task.step_index,
+                "played": [{"role": item["role"], "uci": item["uci"], "san": item["san"],
+                            "after_fen": item["after_fen"]} for item in task.played],
+                "result": task.result if task.status == "complete" else None}
+    except BrilliantFinderError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.post("/brilliant/{task_id}/reveal")
+def reveal_brilliant_finder_solution(task_id: str) -> dict:
+    """Explicitly disclose a verified solution line; revealing records a non-solved attempt."""
+    from .knowledge.usage import get_usage
+    from .learner import get_store
+    from .puzzles.brilliant import BrilliantFinderError, reveal_task
+
+    try:
+        return reveal_task(task_id, knowledge=_knowledge(), profile_store=get_store(), usage=get_usage())
+    except BrilliantFinderError as exc:
+        return _error(exc.status_code, str(exc))
+
+
+@router.post("/brilliant/{task_id}/retry")
+def retry_brilliant_finder_position(task_id: str) -> dict:
+    """Start a fresh guided attempt at the same position and retain its original difficulty band."""
+    from .puzzles.brilliant import BrilliantFinderError, retry_task, task_payload
+
+    try:
+        return task_payload(retry_task(task_id))
+    except BrilliantFinderError as exc:
         return _error(exc.status_code, str(exc))
 
 

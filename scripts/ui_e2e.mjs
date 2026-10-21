@@ -1,7 +1,7 @@
 // Browser-level smoke test of the real frontend code against a running server.
 //
 //   npm install --no-save jsdom@24          (one-time; not a project dependency)
-//   node scripts/ui_e2e.mjs [http://127.0.0.1:8000/]
+//   node scripts/ui_e2e.mjs [http://127.0.0.1:8080/]
 //
 // Drives app.js through cm-chessboard's own move-input callback, so it tests
 // the exact code paths a mouse/touch move goes through. Needs the engine.
@@ -11,7 +11,7 @@ import fs from "node:fs"
 import path from "node:path"
 import {fileURLToPath} from "node:url"
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "frontend")
-const BASE = process.argv[2] || "http://127.0.0.1:8000/"
+const BASE = process.argv[2] || "http://127.0.0.1:8080/"
 const html = fs.readFileSync(`${ROOT}/index.html`, "utf8").replace(/<script type="module".*<\/script>/, "")
 const dom = new JSDOM(html, {url: BASE, pretendToBeVisual: true})
 const w = dom.window
@@ -37,10 +37,15 @@ const planIds = async () => (await (await realFetch(new URL("api/plans", BASE)))
 const existingPlans = new Set(await planIds())
 const {Chessboard, INPUT_EVENT_TYPE} = await import(`${ROOT}/vendor/cm-chessboard/src/Chessboard.js`)
 let board
+let currentFen = null
 const orig = Chessboard.prototype.enableMoveInput
 Chessboard.prototype.enableMoveInput = function (...a) { board = this; return orig.apply(this, a) }
 const origSet = Chessboard.prototype.setPosition
-Chessboard.prototype.setPosition = function (...a) { board = this; return origSet.apply(this, a) }
+Chessboard.prototype.setPosition = function (...a) {
+  board = this
+  if (typeof a[0] === "string" && a[0].trim().split(/\s+/).length >= 6) currentFen = a[0]
+  return origSet.apply(this, a)
+}
 await import(`${ROOT}/app.js`)
 const {Chess} = await import(`${ROOT}/vendor/chess.mjs/Chess.js`)
 
@@ -52,13 +57,20 @@ async function waitFor(fn, label, ms = 30000) {
   while (Date.now() - t0 < ms) { if (fn()) return; await sleep(100) }
   throw new Error("timeout waiting for " + label + " | status=" + $("board-status").textContent + " | msgs=" + JSON.stringify(lastMsgs(3)))
 }
-function move(from, to) {
+function move(from, to, fenBefore = currentFen) {
   const cb = board.state.moveInputCallback
   if (!cb) return "input-disabled"
-  const started = cb({type: INPUT_EVENT_TYPE.moveInputStarted, squareFrom: from, chessboard: board})
+  const piece = board.getPiece(from)
+  const started = cb({type: INPUT_EVENT_TYPE.moveInputStarted, squareFrom: from, piece, chessboard: board})
   if (!started) return "cannot-pick-up"
-  const valid = cb({type: INPUT_EVENT_TYPE.validateMoveInput, squareFrom: from, squareTo: to, chessboard: board})
+  const valid = cb({type: INPUT_EVENT_TYPE.validateMoveInput, squareFrom: from, squareTo: to, piece, chessboard: board})
   if (!valid) return "illegal"
+  const position = new Chess(fenBefore || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+  const legal = position.moves({square: from, verbose: true}).find(candidate => candidate.to === to)
+  if (!legal || !position.move({from, to, promotion: legal.promotion || "q"})) return "illegal"
+  // The real drag updates the cm-chessboard piece model before moveInputFinished acknowledges it.
+  currentFen = position.fen()
+  void board.setPosition(currentFen, false)
   cb({type: INPUT_EVENT_TYPE.moveInputFinished, squareFrom: from, squareTo: to, legalMove: true, chessboard: board})
   return "ok"
 }
@@ -90,7 +102,8 @@ async function wrongMove(p) {
   const avoid = new Set([p.steps[0].uci, ...p.steps[0].accepted, ...p.steps[0].good].map(u => u.slice(0, 4)))
   const m = chess.moves({verbose: true}).find(x => { const c = new Chess(p.fen); c.move(x); return !avoid.has(x.from + x.to) && !c.in_checkmate() })
   const before = board.getPosition()
-  check(move(m.from, m.to) === "ok", "a wrong move can be played")
+  const result = move(m.from, m.to, p.fen)
+  check(result === "ok", `a wrong move can be played (${result})`)
   await waitFor(() => /✗/.test($("pz-feedback").textContent), "wrong-move feedback", 5000)
   await waitFor(() => board.getPosition() === before && board.state.moveInputCallback, "wrong move taken back", 5000)
 }
